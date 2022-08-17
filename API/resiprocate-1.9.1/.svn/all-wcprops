@@ -1,0 +1,143 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/1471/trunk/src/API/resiprocate-1.9.1
+END
+MakeAll.sh
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/MakeAll.sh
+END
+install.sh
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/install.sh
+END
+reSIProcate_8_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reSIProcate_8_0.sln
+END
+reSIProcate_9_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reSIProcate_9_0.sln
+END
+AUTHORS
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/AUTHORS
+END
+.travis.yml
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/.travis.yml
+END
+ax_resip.m4
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/ax_resip.m4
+END
+eclipse-ellemtel-code-style.xml
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/eclipse-ellemtel-code-style.xml
+END
+reSIProcate_10_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reSIProcate_10_0.sln
+END
+configure.sh
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/557/trunk/src/API/resiprocate-1.9.1/configure.sh
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/README
+END
+VisualStudioReadme.htm
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/VisualStudioReadme.htm
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/configure.ac
+END
+buginfo.pl
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/buginfo.pl
+END
+.gitignore
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/.gitignore
+END
+INSTALL
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/INSTALL
+END
+acinclude.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/acinclude.m4
+END
+svn-authors.ldif
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/svn-authors.ldif
+END
+svn-authors.txt
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/svn-authors.txt
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/COPYING
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/Makefile.am
+END
+RELEASE-PROCESS.txt
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/RELEASE-PROCESS.txt
+END
+resiprocate.spec.in
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resiprocate.spec.in
+END

@@ -1,0 +1,45 @@
+<TC_CODEC_LIST>
+   <SOURCE Codec="MP3">
+    <T_CODEC Type='Audio' TargetID='MP3C' AudioCodecID='MP3C' Format='mp3' ACodec='mp3' Tool='ffmpeg' Metadata='true' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='MP3' AudioCodecID='MP3' Format='mp3' ACodec='mp3' Tool='ffmpeg' Metadata='true' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='WMA' AudioCodecID='WMA2' Format='asf' ACodec='wmav2' Tool='ffmpeg' Metadata='true' Etc='-map 0 -map -0:v'></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='K3G' AudioCodecID='AAC' Format='3gp' ACodec='aac' Tool='ffmpeg' Metadata='false' Etc='-map 0 -map -0:v'></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='3GP' AudioCodecID='AAC' Format='3gp' ACodec='aac' Tool='ffmpeg' Metadata='false' Etc='-map 0 -map -0:v'></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='VOX' AudioCodecID='VOX' Format='s16le' ACodec='pcm_s16le' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='AMR' AudioCodecID='AMRWB' Format='AMR' ACodec='AMR_WB' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='AMR' AudioCodecID='AMR' Format='AMR' ACodec='AMR_RFC53' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='G711' AudioCodecID='G711' Format='RAW' ACodec='G711A' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='MMF' AudioCodecID='MMF' Format='mmf' ACodec='adpcm_yamaha' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+   </SOURCE>
+   <SOURCE Codec='WAV'>
+    <T_CODEC Type='Audio' TargetID='WMA' AudioCodecID='WMA2' Format='asf' ACodec='wmav2' Tool='ffmpeg' Metadata='false' Etc='-map 0 -map -0:v'></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='VOX' AudioCodecID='VOX' Format='s16le' ACodec='pcm_s16le' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='AMR' AudioCodecID='AMRWB' Format='AMR' ACodec='AMR_WB' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='AMR' AudioCodecID='AMR' Format='AMR' ACodec='AMR_RFC53' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='G711' AudioCodecID='G711' Format='RAW' ACodec='G711A' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Audio' TargetID='MMF' AudioCodecID='MMF' Format='mmf' ACodec='adpcm_yamaha' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+  </SOURCE>
+  <SOURCE Codec='3G2'>
+    <T_CODEC Type='Video' TargetID='3G2' AudioCodecID='AMR' VideoCodecID='MPEG4' Format='3gp' ACodec='libopencore_amrnb' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC></T_CODEC>
+  </SOURCE>
+  <SOURCE Codec='3GP'>
+    <T_CODEC Type='Audio' TargetID='WMA' AudioCodecID='WMA2' Format='asf' ACodec='wmav2' Tool='ffmpeg' Metadata='false' Etc='-map 0 -map -0:v'></T_CODEC>
+    <T_CODEC Type='Video' TargetID='K3G' AudioCodecID='AMR' VideoCodecID='MPEG4' Format='3gp' ACodec='libopencore_amrnb' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Video' TargetID='3GP' AudioCodecID='AMR' VideoCodecID='MPEG4' Format='3gp' ACodec='libopencore_amrnb' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+  </SOURCE>
+  <SOURCE Codec='K3G'>
+    <T_CODEC Type='Video' TargetID='3GP' AudioCodecID='AMR' VideoCodecID='MPEG4' Format='3gp' ACodec='libopencore_amrnb' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Video' TargetID='K3G' AudioCodecID='AMR' VideoCodecID='MPEG4' Format='3gp' ACodec='libopencore_amrnb' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Video' TargetID='K3G' AudioCodecID='QCELP' VideoCodecID='MPEG4' Format='MP4' ACodec='QCP13K' VCodec='MPEG4' Tool='MCONV' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC Type='Video' TargetID='MP4' AudioCodecID='AAC' VideoCodecID='MPEG4' Format='mp4' ACodec='libfdk_aac' VCodec='mpeg4' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+  </SOURCE>
+  <SOURCE Codec='JPEG'>
+    <T_CODEC Type='Image' TargetID='JPEG' VideoCodecID='JPEG' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC></T_CODEC>
+  </SOURCE>
+  <SOURCE Codec='PNG'>
+    <T_CODEC Type='Image' TargetID='PNG' VideoCodecID='PNG' Tool='ffmpeg' Metadata='false' Etc=''></T_CODEC>
+    <T_CODEC></T_CODEC>
+  </SOURCE>
+</TC_CODEC_LIST>

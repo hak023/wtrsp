@@ -1,0 +1,4 @@
+07:34:33.123) TID-0xb54ed720) ERR  ) Add DelLog Path=./log/,File=testFlexIf,Limit=0, Ret = 0
+07:34:58.798) TID-0xc55cb720) ERR  ) Add DelLog Path=./log/,File=testFlexIf,Limit=0, Ret = 0
+07:35:50.365) TID-0xa0ff6720) ERR  ) Add DelLog Path=./log/,File=testFlexIf,Limit=0, Ret = 0
+07:36:42.384) TID-0xd2152720) ERR  ) Add DelLog Path=./log/,File=testFlexIf,Limit=0, Ret = 0

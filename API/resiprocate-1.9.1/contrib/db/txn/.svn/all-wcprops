@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn
+END
+txn.src
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn.src
+END
+txn_recover.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_recover.c
+END
+txn_auto.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_auto.c
+END
+txn_autop.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_autop.c
+END
+txn_chkpt.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_chkpt.c
+END
+txn_rec.c
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_rec.c
+END
+txn_stat.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_stat.c
+END
+txn_util.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_util.c
+END
+txn.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn.c
+END
+txn_method.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_method.c
+END
+txn_failchk.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_failchk.c
+END
+txn_region.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/txn/txn_region.c
+END

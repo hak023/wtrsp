@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp
+END
+SdpHelperResip.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpHelperResip.hxx
+END
+SdpMediaLine.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpMediaLine.cxx
+END
+SdpCandidatePair.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCandidatePair.cxx
+END
+SdpCandidate.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCandidate.cxx
+END
+SdpMediaLine.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpMediaLine.hxx
+END
+SdpCandidatePair.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCandidatePair.hxx
+END
+SdpCodec.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCodec.cxx
+END
+Sdp.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/Sdp.cxx
+END
+SdpCandidate.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCandidate.hxx
+END
+SdpCodec.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpCodec.hxx
+END
+SdpHelperResip.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/SdpHelperResip.cxx
+END
+Sdp.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/sdp/Sdp.hxx
+END

@@ -1,0 +1,804 @@
+#ifndef __KSIPPARSE_H
+#define __KSIPPARSE_H
+#include "string.hxx"
+#include "StlMap.hxx"
+namespace eSipUtil
+{
+/*
+Exclamation    !         0x21
+Quotation    "            0x22
+Number_sign  #         0x23
+Dollar_sign      $        0x24
+Percent_sign  %        0x25
+Ampersand_sign &      0x26
+Apostrophe   '            0x27
+Left_Parenthesis   (     0x28
+Right_Parenthesis    )  0x29
+Asterisk      *             0x2A
+Plus_sign   +               0x2B
+Comma  ,                    0x2C
+Hyphen_Minus    -         0x2D
+Full_Stop    .                0x2E
+Solidus   /                   0x2F
+Colon   :                      0x3A
+Semicolon  ;                 0x3B
+Less_Than_sign      <      0x3C
+Equals_sign   =               0x3D
+Greater_Than_sign   >     0x3E
+Question_Mark   ?           0x3F
+Commercial_At   @          0x40
+Reverse_Solidus    \        0x5C
+Circumflex_Accent   ^     0x5E
+Low_Line   _                  0x5F
+*/
+typedef enum
+{
+	E_SIP_HEX_EXCLAMATION = 0x21,
+	E_SIP_HEX_QUOTATION = 0x22,
+	E_SIP_HEX_NUMBER = 0x23,
+	E_SIP_HEX_DOLLAR = 0x24,
+	E_SIP_HEX_PERCENT = 0x25,
+	E_SIP_HEX_AMPERSAND = 0x26,
+	E_SIP_HEX_APOSTROPHE = 0x27,
+	E_SIP_HEX_LEFT_PARENTHESIS = 0x28,
+	E_SIP_HEX_RIGTH_PARENTHESIS = 0x29,
+	E_SIP_HEX_ASTERISK = 0x2A,
+	E_SIP_HEX_PLUS = 0x2B,
+	E_SIP_HEX_COMMA =  0x2C,
+	E_SIP_HEX_HYPHEN_MINUS =  0x2D,
+	E_SIP_HEX_FULL_STOP = 0x2E,
+	E_SIP_HEX_SOLIDUS = 0x2F,
+	E_SIP_HEX_COLON = 0x3A,
+	E_SIP_HEX_SEMICOLON = 0x3B,
+	E_SIP_HEX_LESS_THAN = 0x3C,
+	E_SIP_HEX_EQUALS = 0x3D,
+	E_SIP_HEX_GREATER_THAN = 0x3E,
+	E_SIP_HEX_QUESTION = 0x3D,
+	E_SIP_HEX_COMMERCAIL_AT = 0x40,
+	E_SIP_HEX_REVERSE_SOLIDUS = 0x5C,
+	E_SIP_HEX_CIRCUMFLEX_ACCENT = 0x5E,
+	E_SIP_HEX_LOW_LINE = 0x5F
+}EComHexChar_t;
+class KSipParse;
+class KSipContentLength;
+class KSipContentsType;
+class KSipCSeq;
+class KSipOtherHeaders;
+class KSipOthers;
+class KSipOther;
+class KSipNameAddrs;
+class KSipNameAddr;
+class KSipHost;
+class KSipVias;
+class KSipVia;
+class KSipParams;
+class KSipParam;
+class KSipFirstLine;
+/************************ First Line(Request or Respone) **************************************/
+class KSipFirstLine
+{
+	public:
+		typedef enum 
+		{
+			E_PARSE_FIRST_NONE = 0,
+			E_PARSE_FIRST_SEG1,
+			E_PARSE_FIRST_SEG1_SP,
+			E_PARSE_FIRST_SEG2,
+			E_PARSE_FIRST_SEG2_SP,
+			E_PARSE_FIRST_SEG3
+		}EParseFirstLine_t;
+		typedef bool (*PFuncParseState)(KSipFirstLine *_pclsObj, const char _cInput);
+		KSipFirstLine();
+		~KSipFirstLine();
+		KSipFirstLine & operator=(KSipFirstLine & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		EParseFirstLine_t m_eSt;
+		KString m_clsSeg1;   // INVITE or  SIP/2.0
+		KString m_clsSeg2;   // request_uri or Rsp_Code
+		KString m_clsSeg3;   // SIP/2.0 or Rsp_Descrition(OK)
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_FIRST_NONE(KSipFirstLine *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_FIRST_SEG1(KSipFirstLine *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_FIRST_SEG1_SP(KSipFirstLine *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_FIRST_SEG2(KSipFirstLine *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_FIRST_SEG2_SP(KSipFirstLine *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_FIRST_SEG3(KSipFirstLine *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_FIRST_SEG3+1];
+};
+/************************ Common Param **************************************************/
+class KSipParam : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_PARAM_NONE = 0,
+			E_PARSE_PARAM_KEY,
+			E_PARSE_PARAM_KEY_SP,
+			E_PARSE_PARAM_VAL,
+		}EParseRuParam_t;
+		typedef bool (*PFuncParseState)(KSipParam *_pclsObj, const char _cInput);
+		KSipParam();
+		~KSipParam();
+		KSipParam & operator=(KSipParam & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unLen);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsKey;
+		KString m_clsVal;
+		EParseRuParam_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_PARAM_NONE(KSipParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_KEY(KSipParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_KEY_SP(KSipParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_VAL(KSipParam *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_PARAM_VAL+1];
+};
+/************************ Common Param List ***********************************************/
+class KSipParams
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_PARAMS_NONE = 0,
+			E_PARSE_PARAMS_SP,
+			E_PARSE_PARAMS
+		}EParseParams_t;
+		typedef bool (*PFuncParseState)(KSipParams *_pclsObj, const char _cInput);
+		KSipParams();
+		~KSipParams();
+		KSipParams & operator=(KSipParams &_rclsSrc);
+		void m_fnClear(){m_eSt = E_PARSE_PARAMS_NONE;m_pclsCurrentParam=NULL;m_listParams.m_fnClear();}
+		bool m_fnParse(char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unLen);
+		void m_fnEncode(KString &_rclsEncode);
+		KSipParam * m_fnFindParam(const char * _pszParam);
+		KSipParam * m_fnAddParam(const char * _pszKey, const char * _pszVal);
+		bool m_fnRemoveParam(const char * _pszKey);
+		KSipParam * m_fnBegin(ListItr_t & _rclsItor){return (KSipParam *)m_listParams.m_fnBegin(_rclsItor);}
+		KSipParam * m_fnNext(ListItr_t & _rclsItor){return (KSipParam *)m_listParams.m_fnNext(_rclsItor);}
+		KSipParam * m_fnGetNext(Iterator & _rclsItor){return (KSipParam *)m_listParams.m_fnGetNext(_rclsItor);}
+		void m_fnTrimTailing();
+		EParseParams_t m_eSt;
+		StlList m_listParams;
+		KSipParam * m_pclsCurrentParam;
+		bool m_bTrim;
+	private:
+		void m_fnKeyReinit();
+		void m_fnAddParseParam();
+		static bool m_fnE_PARSE_PARAMS_NONE(KSipParams *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAMS_SP(KSipParams *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAMS(KSipParams *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_PARAMS+1];
+};
+/************************ Via ***********************************************************/
+class KSipVia : public StlObject
+{
+	public:
+		#define DEF_VIA_COOKIE "z9hG4bK"
+		typedef enum
+		{
+			E_PARSE_VIA_NONE = 0,
+			E_PARSE_VIA_PROTO,
+			E_PARSE_VIA_PROTO_SP,
+			E_PARSE_VIA_VER,
+			E_PARSE_VIA_VER_SP,
+			E_PARSE_VIA_TRANSPORT,
+			E_PARSE_VIA_TRANSPORT_SP,
+			E_PARSE_VIA_ADDRESS,
+			E_PARSE_VIA_ADDRESS_SP,
+			E_PARSE_VIA_PARAMS
+		}ESipParseViaSt_t;
+		typedef bool (*PFuncParseState)(KSipVia *_pclsObj, const char _cInput);
+		KSipVia();
+		~KSipVia();
+		KSipVia & operator=(KSipVia & _rclsSrc);
+		void m_fnClear();
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode,bool _bCrLf = true);
+		void m_fnTrimTailing();
+		KString m_clsName;
+		KString m_clsProto;
+		KString m_clsVerNum;
+		KString m_clsTransportType;
+		KString m_clsAddress;
+		KSipParams m_clsParams;
+		ESipParseViaSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_VIA_NONE(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_PROTO(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_PROTO_SP(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_VER(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_VER_SP(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_TRANSPORT(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_TRANSPORT_SP(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_ADDRESS(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_ADDRESS_SP(KSipVia *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIA_PARAMS(KSipVia *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_VIA_PARAMS+1];
+};
+/************************ Via List ********************************************************/
+class KSipVias
+{
+	friend class KSipParse;
+	public:
+		typedef enum
+		{
+			E_PARSE_VIAS_NONE = 0,
+			E_PARSE_VIAS_SP,
+			E_PARSE_VIAS
+		}ESipParseViasSt_t;
+		typedef bool (*PFuncParseState)(KSipVias *_pclsObj, const char _cInput);
+		KSipVias();
+		~KSipVias();
+		KSipVias & operator=(KSipVias & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode, bool _bCrLf=true);
+		KSipVia * m_fnAddVia(bool _bFront=true);
+		KSipVia * m_fnTopVia(){Iterator stItor; return m_fnGetNext(stItor);}
+		bool m_fnDelTopVia();
+		KSipVia * m_fnBegin(ListItr_t & _rclsItor){return (KSipVia*)m_listVia.m_fnBegin(_rclsItor);}
+		KSipVia * m_fnNext(ListItr_t & _rclsItor){return (KSipVia*)m_listVia.m_fnNext(_rclsItor);}
+		KSipVia * m_fnGetNext(Iterator & _rclsItor){return (KSipVia*)m_listVia.m_fnGetNext(_rclsItor);}
+		void m_fnTrimTailing();
+		KSipVia *m_pclsCurrentVia;
+		StlList m_listVia;	
+		ESipParseViasSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		void m_fnReInitForMultiLine();
+		void m_fnAddParseVia();
+		static bool m_fnE_PARSE_VIAS_NONE(KSipVias *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIAS_SP(KSipVias *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_VIAS(KSipVias *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_VIAS+1];
+};
+/************************ Host **********************************************************/
+class KSipHost : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_HOST_NONE = 0,
+			E_PARSE_HOST_ADDR,
+			E_PARSE_HOST_ADDR_SP,
+			E_PARSE_HOST_NONEV6_SP,
+			E_PARSE_HOST_ADDRV6,
+			E_PARSE_HOST_ADDRV6_SP,
+			E_PARSE_HOST_PORT,
+		}ESipParseHost_t;
+		typedef bool (*PFuncParseState)(KSipHost * _pclsObj, const char _cInput);
+		KSipHost();
+		~KSipHost();
+		KSipHost & operator=(KSipHost & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		ESipParseHost_t m_eSt;
+		KString m_clsAddr;
+		KString m_clsPort;
+		bool m_bV6;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_HOST_NONE(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_ADDR(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_ADDR_SP(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_NONEV6_SP(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_ADDRV6(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_ADDRV6_SP(KSipHost *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_HOST_PORT(KSipHost *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_HOST_PORT+1];
+};
+/************************ NameAddr ******************************************************/
+typedef enum
+{
+	E_RU_URI_NONE=0,
+	E_RU_URI_TEL,
+	E_RU_URI_SIP,
+	E_RU_URI_SIPS,
+	E_RU_URI_FAX,
+	E_RU_URI_MODEM,
+	E_RU_URI_URN,
+	E_RU_URI_UNDEFINED
+}ERuSipUri_t;
+class KSipUriScheme
+{
+	public:
+		KSipUriScheme(){}
+		~KSipUriScheme(){}
+		inline static ERuSipUri_t m_fnEnumScheme(const char * _pszScheme)
+		{
+			if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"sips",4)==0) return E_RU_URI_SIPS;
+			else if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"sip",3)==0) return E_RU_URI_SIP;
+			else if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"tel",3)==0) return E_RU_URI_TEL;
+			else if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"fax",3)==0) return E_RU_URI_FAX;
+			else if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"modem",5)==0) return E_RU_URI_MODEM;
+			else if(KString::m_fnStrnCmp((char*)_pszScheme,(char*)"urn",3)==0) return E_RU_URI_URN;
+			else return E_RU_URI_UNDEFINED;
+		}
+		inline static const char * m_fnStringScheme(ERuSipUri_t _eT)
+		{
+			switch(_eT)
+			{
+				case E_RU_URI_TEL: return "tel";
+				case E_RU_URI_SIP: return "sip";
+				case E_RU_URI_SIPS: return "sips";
+				case E_RU_URI_FAX: return "fax";
+				case E_RU_URI_MODEM: return "modem";
+				case E_RU_URI_URN: return "urn";
+				default: return "unknown";
+			}
+			return "unknown";
+		}
+		inline static bool m_fnIsDefinedScheme(const char * _pszScheme)
+		{
+			if(m_fnEnumScheme(_pszScheme) == E_RU_URI_UNDEFINED) return false;
+			return true;
+		}
+};
+class KSipParseUrn : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_URN_NONE = 0,
+			E_PARSE_URN_NID,
+			E_PARSE_URN_NID_SP,
+			E_PARSE_URN_NSS
+		}ESipParseUrnSt_t;
+		typedef bool (*PFuncParseState)(KSipParseUrn *_pclsObj, const char _cInput);
+		KSipParseUrn();
+		~KSipParseUrn();
+		KSipParseUrn & operator=(KSipParseUrn & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszSrc,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsNID;
+		KString m_clsNSS;
+		ESipParseUrnSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_URN_NONE(KSipParseUrn *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_URN_NID(KSipParseUrn *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_URN_NID_SP(KSipParseUrn *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_URN_NSS(KSipParseUrn *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_URN_NSS+1];
+};
+class KSipParseSubHeader : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_SUB_NONE = 0,
+			E_PARSE_SUB_KEY_SP,
+			E_PARSE_SUB_KEY,
+			E_PARSE_SUB_VALUE_SP,
+			E_PARSE_SUB_VALUE
+		}ESipParseNameAddrSubSt_t;
+		typedef bool (*PFuncParseState)(KSipParseSubHeader *_pclsObj, const char _cInput);
+		KSipParseSubHeader();
+		~KSipParseSubHeader();
+		KSipParseSubHeader & operator=(KSipParseSubHeader & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszSrc,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsName;
+		KSipParams m_clsParams;
+		ESipParseNameAddrSubSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_SUB_NONE(KSipParseSubHeader *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_KEY_SP(KSipParseSubHeader *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_KEY(KSipParseSubHeader *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_VALUE_SP(KSipParseSubHeader *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_VALUE(KSipParseSubHeader *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_SUB_VALUE+1];
+};
+class KSipParseSubHeaders : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_SUB_HDR_NONE = 0,
+			E_PARSE_SUB_HDR_SP,
+			E_PARSE_SUB_HDR_VALUE
+		}ESipParseNameAddrSubSt_t;
+		typedef bool (*PFuncParseState)(KSipParseSubHeaders *_pclsObj, const char _cInput);
+		KSipParseSubHeaders();
+		~KSipParseSubHeaders();
+		KSipParseSubHeaders & operator=(KSipParseSubHeaders & _rclsSrc);
+		void m_fnClear(){m_pclsCurrentSub = NULL;m_eSt = E_PARSE_SUB_HDR_NONE;m_clslist.m_fnClear();}
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszSrc,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		KSipParseSubHeader * m_fnFindHeader(const char * _pszName);
+		bool m_fnRemoveHeader(const char * _pszName);
+		KSipParseSubHeader* m_fnAddSubHeader(){return m_fnAddParseSubHeader();}
+		KSipParseSubHeader * m_fnBegin(ListItr_t &_rclsIter){return (KSipParseSubHeader*)m_clslist.m_fnBegin(_rclsIter);}
+		KSipParseSubHeader * m_fnNext(ListItr_t &_rclsIter){return (KSipParseSubHeader*)m_clslist.m_fnNext(_rclsIter);}
+		KSipParseSubHeader * m_fnGetNext(Iterator &_rclsIter){return (KSipParseSubHeader*)m_clslist.m_fnGetNext(_rclsIter);}
+		void m_fnTrimTailing();
+		StlList m_clslist;
+		KSipParseSubHeader * m_pclsCurrentSub;
+		ESipParseNameAddrSubSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		KSipParseSubHeader* m_fnAddParseSubHeader();
+		static bool m_fnE_PARSE_SUB_HDR_NONE(KSipParseSubHeaders *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_HDR_SP(KSipParseSubHeaders *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_SUB_HDR_VALUE(KSipParseSubHeaders *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_SUB_HDR_VALUE+1];
+};
+// RawDisplay <RawUri> RawParam
+class KSipNameAddr : public  StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_NAME_ADDR_NONE = 0,
+			E_PARSE_NAME_ADDR_PREPARSING,
+			E_PARSE_NAME_ADDR_PREPARSING_TYPE,
+			E_PARSE_NAME_ADDR_PREPARSING_USER,
+			E_PARSE_NAME_ADDR_PREPARSING_HOST,
+			E_PARSE_NAME_ADDR_DISPLAY,
+			E_PARSE_NAME_ADDR_DISPLAY_SP,
+			E_PARSE_NAME_ADDR_TYPE,
+			E_PARSE_NAME_ADDR_TYPE_SP,
+			E_PARSE_NAME_ADDR_USER,
+			E_PARSE_NAME_ADDR_USER_SP,
+			E_PARSE_NAME_ADDR_HOST,
+			E_PARSE_NAME_ADDR_HOST_SP,
+			E_PARSE_NAME_ADDR_URI_PARAMS,
+			E_PARSE_NAME_ADDR_URI_SP,
+			E_PARSE_NAME_ADDR_PARAMS,
+			E_PARSE_NAME_ADDR_URI_QSP,
+			E_PARSE_NAME_ADDR_SUBHEADERS,
+			E_PARSE_NAME_ADDR_URN
+		}ESipParseNameAddr_t;
+		typedef bool (*PFuncParseState)(KSipNameAddr * _pclsObj, const char _cInput);
+		KSipNameAddr();
+		~KSipNameAddr();
+		KSipNameAddr & operator=(KSipNameAddr & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		bool m_fnCheckParsed();   // after parse, must call this function
+		void m_fnDebug(char * _pszDebug,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode,bool _bCrLf=true);
+		void m_fnTrimTailing();
+		const char *m_fnFindParam(const char * _pszName);
+		const char *m_fnFindUriParam(const char * _pszName);
+		KSipParseSubHeader * m_fnFindSubHeader(const char * _pszName);
+		const char * m_fnFindSubHeaderParam(const char * _pszSubHdr, const char * _pszParam);
+		void m_fnAddUriParam(const char * _pszName, const char * _pszVal);
+		void m_fnAddParam(const char * _pszName, const char * _pszVal);
+		bool m_fnRemoveSubHeader(const char * _pszName);
+		KSipParseSubHeader * m_fnAddSubHeader(const char * _pszSubName);
+		KString m_clsDisplay;
+		KString m_clsType;
+		KString m_clsUser;
+		KString m_clsHost;
+		KString m_clsRaw;
+		KString m_clsRawUri;
+		KString m_clsRawParams;
+		KSipParams m_clsUriParams;
+		KSipParams m_clsParams;
+		KSipParseSubHeaders m_clsUriSubHeaders;
+		KSipParseUrn m_clsUrn;
+		ESipParseNameAddr_t m_eSt;
+		ERuSipUri_t m_eScheme;
+		bool m_bThanSign;
+		bool m_bCommercialAt;
+		bool m_bAllStar;
+		bool m_bExistDisplay;
+		bool m_bCheckDisplayed;
+		bool m_bCheckParsed;
+		
+		bool m_bTrim;
+	private:
+		KSipParseSubHeader * m_fnAddParseSubHeader(const char * _pszSubName);
+		static bool m_fnE_PARSE_NAME_ADDR_NONE(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_PREPARSING(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_PREPARSING_TYPE(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_PREPARSING_USER(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_PREPARSING_HOST(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_DISPLAY(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_DISPLAY_SP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_TYPE(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_TYPE_SP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_USER(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_USER_SP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_HOST(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_HOST_SP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_URI_PARAMS(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_URI_SP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_PARAMS(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_URI_QSP(KSipNameAddr *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAME_ADDR_SUBHEADERS(KSipNameAddr *_pclsObj, const char _cInput);
+		// Urn Handle
+		static bool m_fnE_PARSE_NAME_ADDR_URN(KSipNameAddr *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_NAME_ADDR_URN+1];
+};
+/************************ NameAddrs *****************************************************/
+class KSipNameAddrs
+{
+	friend class KSipParse;
+	public:
+		typedef enum
+		{
+			E_PARSE_NAMEADDRS_NONE = 0,
+			E_PARSE_NAMEADDRS_SP,
+			E_PARSE_NAMEADDRS
+		}ESipParseNameAddrsSt_t;
+		typedef bool (*PFuncParseState)(KSipNameAddrs *_pclsObj, const char _cInput);
+		KSipNameAddrs();
+		~KSipNameAddrs();
+		KSipNameAddrs & operator=(KSipNameAddrs & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug,unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode,bool _bCrLf=true);
+		KSipNameAddr * m_fnAddNameAddr(bool _bFront=true);
+		void m_fnReInitForMultiLine(const char * _pszName); // next header parse
+		bool m_fnDelNameAddr(bool _bFront=true);
+		void m_fnReverseNameAddr();
+		KSipNameAddr * m_fnBegin(ListItr_t & _rclsItor);
+		KSipNameAddr * m_fnNext(ListItr_t & _rclsItor);
+		KSipNameAddr * m_fnGetNext(Iterator & _rclsItor);
+		KSipNameAddr * m_fnTopAddr();
+		const char * m_fnGetTag();
+		void m_fnTrimTailing();
+		KSipNameAddr *m_pclsCurrentAddr;
+		KString m_clsName;
+		StlList m_listNameAddr;
+		ESipParseNameAddrsSt_t m_eSt;
+		bool m_bTrim;
+	private:
+		void m_fnAddParseNameAddr(const char * _pszName);
+		static bool m_fnE_PARSE_NAMEADDRS_NONE(KSipNameAddrs *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAMEADDRS_SP(KSipNameAddrs *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_NAMEADDRS(KSipNameAddrs *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_NAMEADDRS+1];
+};
+/************************ Other Header ***************************************************/
+class KSipOther : public StlObject
+{
+	public:
+		KSipOther();
+		~KSipOther();
+		KSipOther & operator=(KSipOther & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsVal;
+		bool m_bTrim;
+};
+/************************ Multi Line Other Header ********************************************/
+class KSipOthers : public StlObject
+{
+	friend class KSipParse;
+	friend class KSipOtherHeaders;
+	public:
+		typedef enum
+		{
+			E_PARSE_OTHERS_NONE = 0,
+			E_PARSE_OTHERS_SP,
+			E_PARSE_OTHERS
+		}ESipParseOthersSt_t;
+		typedef bool (*PFuncParseState)(KSipOthers *_pclsObj, const char _cInput);
+		KSipOthers();
+		~KSipOthers();
+		KSipOthers & operator=(KSipOthers & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		KSipOther * m_fnAddHeader(bool _bFront=false);
+		KSipOther * m_fnTopHeader();
+		KSipOther * m_fnBegin(ListItr_t & _rclsItor){return (KSipOther*)m_listOther.m_fnBegin(_rclsItor);}
+		KSipOther * m_fnNext(ListItr_t & _rclsItor){return (KSipOther*)m_listOther.m_fnNext(_rclsItor);}
+		KSipOther * m_fnGetNext(Iterator & _rclsItor){return (KSipOther*)m_listOther.m_fnGetNext(_rclsItor);}
+		void m_fnTrimTailing();
+		KString m_clsKey;
+		KSipOther *m_pclsCurrent;
+		StlList m_listOther;
+		ESipParseOthersSt_t m_eSt;
+		bool m_bTrim;
+		bool m_bCrLfEncode;
+	private:
+		void m_fnReInitForMultiLine();
+		void m_fnAddParseHeader();
+		static bool m_fnE_PARSE_OTHERS_NONE(KSipOthers *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_OTHERS_SP(KSipOthers *_pclsObj, const char _cInput);
+		static bool m_fnE_PARSE_OTHERS(KSipOthers *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_OTHERS+1];
+};
+/************************ Total Other Header ***********************************************/
+class KSipOtherHeaders
+{
+	friend class KSipParse;
+	public:
+		KSipOtherHeaders();
+		~KSipOtherHeaders();
+		KSipOtherHeaders & operator=(KSipOtherHeaders & _rclsSrc);
+		KSipOthers * m_fnFind(const char * _pszHeader);
+		KSipOther * m_fnAddHeader(const char * _pszHeader,KSipOthers ** _ppOthers,bool _bFront=false);
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		KSipOthers * m_fnBegin(ListItr_t & _rclsItor){return (KSipOthers*)m_listOther.m_fnBegin(_rclsItor);}
+		KSipOthers * m_fnNext(ListItr_t & _rclsItor){return (KSipOthers*)m_listOther.m_fnNext(_rclsItor);}
+		KSipOthers * m_fnGetNext(Iterator & _rclsItor){return (KSipOthers*)m_listOther.m_fnGetNext(_rclsItor);}
+		void m_fnTrimTailing();
+		StlList m_listOther;
+		bool m_bTrim;
+	private:
+		KSipOthers *m_fnSet(const char * _pszHeader);
+};
+/************************ CSeq *********************************************************/
+class KSipCSeq
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_CSEQ_NONE = 0,
+			E_PARSE_CSEQ_NUM,
+			E_PARSE_CSEQ_NUM_SP,
+			E_PARSE_CSEQ_METHOD,
+		}EParseRuCSeq_t;
+		typedef bool (*PFuncParseState)(KSipCSeq *_pclsObj, const char _cInput);
+		KSipCSeq();
+		~KSipCSeq();
+		KSipCSeq & operator=(KSipCSeq & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unLen);
+		void m_fnEncode(KString &_rclsEncode);
+		int m_fnGetSeqNum();
+		void m_fnTrimTailing();
+		KString m_clsNum;
+		KString m_clsMethod;
+		int m_nNum;
+		EParseRuCSeq_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_CSEQ_NONE(KSipCSeq *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CSEQ_NUM(KSipCSeq *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CSEQ_NUM_SP(KSipCSeq *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CSEQ_METHOD(KSipCSeq *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_CSEQ_METHOD+1];
+};
+/************************ Contents-Type **************************************************/
+class KSipContentsType
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_CTYPE_NONE = 0,
+			E_PARSE_CTYPE_SEG1,
+			E_PARSE_CTYPE_SEG1_SP,
+			E_PARSE_CTYPE_SEG2,
+		}EParseRuCType_t;
+		typedef bool (*PFuncParseState)(KSipContentsType *_pclsObj, const char _cInput);
+		KSipContentsType();
+		~KSipContentsType();
+		KSipContentsType & operator=(KSipContentsType & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(char * _pszDebug, unsigned int _unLen);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsSeg1;
+		KString m_clsSeg2;
+		EParseRuCType_t m_eSt;
+		bool m_bTrim;
+	private:
+		static bool m_fnE_PARSE_CTYPE_NONE(KSipContentsType *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CTYPE_SEG1(KSipContentsType *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CTYPE_SEG1_SP(KSipContentsType *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_CTYPE_SEG2(KSipContentsType *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_CTYPE_SEG2+1];
+};
+/************************ Content-Length *************************************************/
+class KSipContentLength
+{
+	public:
+		KSipContentLength();
+		~KSipContentLength();
+		KSipContentLength & operator=(KSipContentLength & _rclsSrc);
+		bool m_fnParse(const char _cInput);
+		int m_fnGetLen();
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		void m_fnTrimTailing();
+		KString m_clsVal;
+		int m_nLen;
+		bool m_bTrim;
+};
+/************************ SIP Parse ******************************************************/
+class KSipParse
+{
+	public:
+		typedef enum
+		{
+			E_SIP_PARSE_NONE = 0,
+			E_SIP_PARSE_FIRSTLINE,
+			E_SIP_PARSE_FIRSTLINE_CR,
+			E_SIP_PARSE_FIRSTLINE_LF,
+			E_SIP_PARSE_H_NAME,
+			E_SIP_PARSE_H_NMAE_SP,
+			E_SIP_PARSE_H_VAL,
+			E_SIP_PARSE_H_FROM,
+			E_SIP_PARSE_H_TO,
+			E_SIP_PARSE_H_CALLID,
+			E_SIP_PARSE_H_CONTACT,
+			E_SIP_PARSE_H_R,
+			E_SIP_PARSE_H_RR,
+			E_SIP_PARSE_H_VIA,
+			E_SIP_PARSE_H_CTYPE,
+			E_SIP_PARSE_H_CLEN,
+			E_SIP_PARSE_H_CSEQ,
+			E_SIP_PARSE_H_CR,
+			E_SIP_PARSE_H_LF,
+			E_SIP_PARSE_H_DOUBLE_CR,
+			E_SIP_PARSE_H_DOUBLE_LF,
+			E_SIP_PARSE_BODY
+		}ESipMsgParse_t;
+		typedef bool (*PFuncParseState)(KSipParse * _pclsObj, const char _cInput);
+		KSipParse();
+		~KSipParse();
+		bool m_fnParse(const char * _pszMsg, unsigned int _unLen);
+		void m_fnDebug(char * _pszDebug, unsigned int _unSize);
+		void m_fnEncode(KString &_rclsEncode);
+		// Parsing Temp Data
+		ESipMsgParse_t m_eSt;
+		KString m_clsTmpHeaderName;
+		KSipOthers * m_pclsCurrentOther;
+		// Parsing Data
+		KSipFirstLine m_clsFirstLine;             // Request/Response Line
+		KSipNameAddrs m_clsFrom;              // From
+		KSipNameAddrs m_clsTo;                  // To
+		KString m_clsCallID;                       // Call-ID
+		KSipNameAddrs m_clsContact;          // Contact
+		KSipNameAddrs m_clsR;                   // Route
+		KSipNameAddrs m_clsRR;                 // Record-Route
+		KSipVias m_clsVias;                        // Vias
+		KSipCSeq m_clsSeq;                       // CSeq
+		KSipOtherHeaders m_clsOthers;        // Others
+		KSipContentsType m_clsCType;        // Content-Type
+		KSipContentLength m_clsLength;      // Content-Length
+		KString m_clsBody;                        // Body
+	private:
+		static bool m_fnE_SIP_PARSE_NONE(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_FIRSTLINE(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_FIRSTLINE_CR(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_FIRSTLINE_LF(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_NAME(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_NMAE_SP(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_VAL(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_FROM(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_TO(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CALLID(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CONTACT(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_R(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_RR(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_VIA(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CTYPE(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CLEN(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CSEQ(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_CR(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_LF(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_DOUBLE_CR(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_H_DOUBLE_LF(KSipParse *_pclsObj, const char _cInput);
+		static bool m_fnE_SIP_PARSE_BODY(KSipParse *_pclsObj, const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_SIP_PARSE_BODY+1];
+};
+void g_fnKSipParseTest();
+}
+#endif
+

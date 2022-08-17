@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build
+END
+openssl.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build/openssl.cxx
+END
+vector2array.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build/vector2array.cxx
+END
+inet6.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build/inet6.cxx
+END
+socket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build/socket.cxx
+END
+test.pl
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tests/build/test.pl
+END

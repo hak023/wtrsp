@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60
+END
+db_config.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60/db_config.h
+END
+clib_port.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60/clib_port.h
+END
+db_int.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60/db_int.h
+END
+bdb_s60.mmp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60/bdb_s60.mmp
+END
+db.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_s60/db.h
+END

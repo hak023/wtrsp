@@ -1,0 +1,188 @@
+#ifndef _ESIPUTIL_COLUMFILE_H_
+#define _ESIPUTIL_COLUMFILE_H_
+#include "string.hxx"
+#include "ConfigFile.hxx"
+
+namespace eSipUtil
+{
+class ColumParam : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_PARAM_NONE = 0,
+			E_PARSE_PARAM_KEY,
+			E_PARSE_PARAM_KEY_SP,
+			E_PARSE_PARAM_VAL,
+		}EParseRuParam_t;
+		typedef bool (*PFuncParseState)(ColumParam *_pclsObj, const char _cInput);
+		ColumParam();
+		~ColumParam();
+		ColumParam & operator=(ColumParam & _rclsSrc);
+		bool operator==(ColumParam & _rclsSrc);
+		bool operator==(KSTR _pszInput);
+		bool operator==(KCSTR _pszInput);
+		bool operator==(KUINT _unInput);
+		operator KUINT(){return (KUINT)m_clsVal;}
+		operator KSTR(){return (KSTR)m_clsVal;}
+		operator KCSTR(){return (KCSTR)m_clsVal;}
+		operator KULONG(){return (KULONG)m_clsVal;}
+		void m_fnChangeParamKeyword(const char _cKeyword);
+		bool m_fnParse(const char _cInput);
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnTrimTailing();
+		void m_fnBuild(KString &_rclsBuild);
+		KString m_clsKey;
+		KString m_clsVal;
+		EParseRuParam_t m_eSt;
+		bool m_bTrim;
+		char m_cKeyword;
+	private:
+		static bool m_fnE_PARSE_PARAM_NONE(ColumParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_KEY(ColumParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_KEY_SP(ColumParam *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAM_VAL(ColumParam *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_PARAM_VAL+1];
+};
+/************************ Common Param List ***********************************************/
+class ColumParams : public StlObject
+{
+	public:
+		typedef enum
+		{
+			E_PARSE_PARAMS_NONE = 0,
+			E_PARSE_PARAMS_SP,
+			E_PARSE_PARAMS
+		}EParseParams_t;
+		typedef bool (*PFuncParseState)(ColumParams * _pclsObj, const char _cInput);
+		ColumParams();
+		~ColumParams();
+		void m_fnChangeParamKeyword(const char _cKeyword);
+		ColumParams & operator=(ColumParams &_rclsSrc);
+		bool operator==(ColumParams &_rclsSrc);
+		void m_fnClear(){m_eSt = E_PARSE_PARAMS_NONE;m_pclsCurrentParam=NULL;m_listParams.m_fnClear();}
+		void m_fnParseParams(const char * _pszLine);
+		bool m_fnParse(char _cInput);
+		void m_fnDebug(KString &_rclsDebug);
+		ColumParam & m_fnGetParam(const char * _pszParam);
+		ColumParam * m_fnFindParam(const char * _pszParam);
+		ColumParam * m_fnAddParam(const char * _pszKey, KString _clsVal);
+		bool m_fnRemoveParam(const char * _pszKey);
+		ColumParam * m_fnBegin(ListItr_t & _rclsItor){return (ColumParam *)m_listParams.m_fnBegin(_rclsItor);}
+		ColumParam * m_fnNext(ListItr_t & _rclsItor){return (ColumParam *)m_listParams.m_fnNext(_rclsItor);}
+		void m_fnTrimTailing();
+		void m_fnBuild(KString &_rclsBuild);
+		EParseParams_t m_eSt;
+		StlList m_listParams;
+		ColumParam * m_pclsCurrentParam;
+		bool m_bTrim;
+		char m_cKeyword;
+	private:
+		void m_fnKeyReinit();
+		void m_fnAddParseParam();
+		static bool m_fnE_PARSE_PARAMS_NONE(ColumParams *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAMS_SP(ColumParams *_pclsObj,const char _cInput);
+		static bool m_fnE_PARSE_PARAMS(ColumParams *_pclsObj,const char _cInput);
+		static PFuncParseState m_pfnParseHandle[E_PARSE_PARAMS+1];
+		ColumParam m_clsExp;
+};
+class ColumGroup : public StlObject
+{
+	public:
+		ColumGroup();
+		~ColumGroup();
+		ColumGroup & operator=(ColumGroup & _rclsSrc);
+		bool operator==(ColumGroup & _rclsSrc);
+		unsigned int m_fnGetNums();
+		bool m_fnAddParams(ColumParams * _pclsNew);
+		ColumParams * m_fnBegin(ListItr_t &_ritrItem);
+		ColumParams * m_fnNext(ListItr_t &_ritrItem);
+		void m_fnBuild(KString &_rclsBuild);
+		void m_fnDebug(KString &_rclsDebug);
+		KString m_clsName;
+		StlList m_listParams;
+};
+class ColumFile;
+typedef void (*PFuncColumChanged_t)(ColumFile * _pclsObj);
+/*
+	static void s_fnCbk(ColumFile *_pclsObj)
+	{
+		void * _pvUser = _pclsObj->m_fnGetUser();
+		// user coding
+	}
+*/
+typedef struct ColumTimerData_t
+{
+	ColumTimerData_t(){}
+	~ColumTimerData_t(){}
+	ColumFile * m_pclsColum;
+}ColumTimerData_t;
+class ColumFile
+{
+	public:
+		ColumFile();
+		~ColumFile();
+		void m_fnChangeParamKeyword(const char _cKeyword);
+		ColumFile & operator=(ColumFile & _rclsSrc);
+		bool operator==(ColumFile & _rclsSrc);
+		//------> Instance Init 
+		bool m_fnLoadConfig(const char * _pszPath,const char * _pszDefaultComment=NULL);
+		//------> Notify Changed. and User Must Reloading
+		bool m_fnReLoadingConfig(const char * _pszDefaultComment=NULL);
+		//------> Write File Function
+		bool m_fnWriteFile(const char * _pszRaw = NULL);
+		//------> Get Path String Function
+		const char * m_fnGetPath(){return (KCSTR)m_clsPath;}
+		//------> Set User Instance
+		void m_fnSetUser(void * _pvUser){m_pvUser = _pvUser;}
+		//------> Get User Instance
+		void * m_fnGetUser(){return m_pvUser;}
+		//------> Set Register Changed CallBack Function , Additional User Instance Pointer
+		void m_fnSetNotifyChangedFile(PFuncColumChanged_t _pFn,bool _bEnhanced=false ,void * _pvUser=NULL);
+		void m_fnSetNotifyChangedFileWithRead(PFuncColumChanged_t _pFn,bool _bEnhanced=false ,void * _pvUser=NULL);
+		//------> Inter File Check Function
+		bool m_fnTimerCheckProc();
+		//------> Get Line Number Function
+		unsigned int m_fnGetNums()
+		{
+			unsigned int unNum =  m_listLine.m_fnGetSize(); ListItr_t stItor;
+			ColumGroup * pclsFind = m_fnBeginGroup(stItor);
+			while(pclsFind)
+			{
+				unNum += pclsFind->m_fnGetNums();
+				pclsFind = m_fnNextGroup(stItor);
+			}
+			return unNum;
+		}
+		//------> Add New Line Function
+		bool m_fnAddParams(ColumParams * _pclsNew){return m_listLine.m_fnPushBack(_pclsNew);}
+		//------> Add new Group
+		bool m_fnAddGroup(ColumGroup * _pclsNew){return m_listGroup.m_fnPushBack(_pclsNew,true);}
+		//------> Find Group
+		ColumGroup * m_fnFindGroup(const char * _pszKey){return (ColumGroup*)m_listGroup.m_fnFindNode(_pszKey);}
+		//------> Stl List Iterator Functions
+		ColumParams * m_fnBegin(ListItr_t &_ritrItem){return(ColumParams*)m_listLine.m_fnBegin(_ritrItem);}
+		ColumParams * m_fnNext(ListItr_t &_ritrItem){return(ColumParams*)m_listLine.m_fnNext(_ritrItem);}
+		ColumGroup * m_fnBeginGroup(ListItr_t &_ritrItem){return(ColumGroup*)m_listGroup.m_fnBegin(_ritrItem);}
+		ColumGroup * m_fnNextGroup(ListItr_t &_ritrItem){return(ColumGroup*)m_listGroup.m_fnNext(_ritrItem);}
+		//------> Clear All Data
+		void m_fnClearLine(){m_listLine.m_fnClear();m_listGroup.m_fnClear();}
+		//------> Encoding Colum File Raw Data
+		void m_fnBuild(KString &_rclsBuild);
+		void m_fnDebug(KString &_rclsDebug);
+		//------> Paser String
+		bool m_fnParse(char  * _pszSrc);
+		KString m_clsPath;
+		CfgFileInfo m_clsFileInfo;
+		StlList m_listLine;
+		StlList m_listGroup;
+		char m_cKeyword;
+		bool m_bReadChange;
+	private:
+		PFuncColumChanged_t m_pfnChanged;
+		void * m_pvUser;
+		char * m_pszDefComment;
+};
+}
+#endif
+

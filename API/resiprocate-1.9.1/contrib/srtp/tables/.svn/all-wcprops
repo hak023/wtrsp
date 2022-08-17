@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/tables
+END
+aes_tables.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/tables/aes_tables.c
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/tables/.cvsignore
+END

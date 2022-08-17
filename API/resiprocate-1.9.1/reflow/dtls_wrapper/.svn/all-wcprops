@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper
+END
+DtlsFactory.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsFactory.cxx
+END
+DtlsSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsSocket.cxx
+END
+DtlsFactory.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsFactory.hxx
+END
+DtlsSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsSocket.hxx
+END
+bf_dwrap.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/bf_dwrap.c
+END
+DtlsTimer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsTimer.cxx
+END
+bf_dwrap.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/bf_dwrap.h
+END
+DtlsTimer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/DtlsTimer.hxx
+END

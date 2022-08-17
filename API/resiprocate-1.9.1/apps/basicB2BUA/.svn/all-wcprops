@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA
+END
+BasicConfiguration.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicConfiguration.hxx
+END
+ContextRule.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/ContextRule.hxx
+END
+BasicManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicManager.hxx
+END
+sample-config.xml
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/sample-config.xml
+END
+Context.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/Context.cxx
+END
+XMLHelpers.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/XMLHelpers.hxx
+END
+MyServerAuthManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/MyServerAuthManager.cxx
+END
+Context.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/Context.hxx
+END
+Peer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/Peer.cxx
+END
+BasicB2BUA.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicB2BUA.cxx
+END
+MyServerAuthManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/MyServerAuthManager.hxx
+END
+Peer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/Peer.hxx
+END
+BasicB2BUA.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicB2BUA.hxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/Makefile.am
+END
+BasicConfiguration.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicConfiguration.cxx
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/README.txt
+END
+ContextRule.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/ContextRule.cxx
+END
+BasicManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/basicB2BUA/BasicManager.cxx
+END

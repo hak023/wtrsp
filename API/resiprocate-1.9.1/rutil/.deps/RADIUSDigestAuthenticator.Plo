@@ -1,0 +1,6 @@
+RADIUSDigestAuthenticator.lo: RADIUSDigestAuthenticator.cxx \
+ /usr/include/stdc-predef.h ../config.h
+
+/usr/include/stdc-predef.h:
+
+../config.h:

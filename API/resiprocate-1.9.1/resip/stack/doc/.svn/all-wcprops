@@ -1,0 +1,407 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc
+END
+ReSIP_diagrams.sitx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams.sitx
+END
+ReSIP_diagrams_-_Process_Incoming_UDP.png
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_Process_Incoming_UDP.png
+END
+ClassDiag.vsd
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ClassDiag.vsd
+END
+ReSIP_diagrams_-_Architecture.png
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_Architecture.png
+END
+server-noninvite-tree.tif
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/server-noninvite-tree.tif
+END
+ResipArchitecture.pdf
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ResipArchitecture.pdf
+END
+design.css
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/design.css
+END
+ReSIP_diagrams.pdf
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams.pdf
+END
+using.txt
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/using.txt
+END
+ResipArchitecture.jpg
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ResipArchitecture.jpg
+END
+FifoFlow.vsd
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/FifoFlow.vsd
+END
+stale-state.tif
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/stale-state.tif
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/.cvsignore
+END
+FifoFlow.pdf
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/FifoFlow.pdf
+END
+ReSIP_diagrams_-_Main_Event_Loop.png
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_Main_Event_Loop.png
+END
+client-invite-tree.tif
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/client-invite-tree.tif
+END
+ReSIP_diagrams_-_10.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_10.png
+END
+ReSIP_diagrams_-_11.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_11.png
+END
+fsm-dot.awk
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/fsm-dot.awk
+END
+ReSIP_diagrams_-_12.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_12.png
+END
+ReSIP_diagrams_-_13.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_13.png
+END
+ReSIP_diagrams_-_14.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_14.png
+END
+ReSIP_diagrams_-_15.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_15.png
+END
+ReSIP_diagrams_-_16.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_16.png
+END
+ReSIP_diagrams_-_17.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_17.png
+END
+ReSIP_diagrams_-_18.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_18.png
+END
+ReSIP_diagrams_-_19.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_19.png
+END
+reSIProcate-logo.ai
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/reSIProcate-logo.ai
+END
+oxygenProject.xpr
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/oxygenProject.xpr
+END
+ReSIP_diagrams_-_1.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_1.png
+END
+client-invite-state.tif
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/client-invite-state.tif
+END
+ReSIP_diagrams_-_2.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_2.png
+END
+ReSIP_diagrams_-_3.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_3.png
+END
+using-dialogUsageManager.pdf
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/using-dialogUsageManager.pdf
+END
+ReSIP_diagrams_-_4.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_4.png
+END
+reSIProcate-logo.svg
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/reSIProcate-logo.svg
+END
+ReSIP_diagrams_-_5.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_5.png
+END
+ReSIP_diagrams_-_6.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_6.png
+END
+ReSIP_diagrams_-_7.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_7.png
+END
+ReSIP_diagrams_-_8.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_8.png
+END
+server-invite-tree.tif
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/server-invite-tree.tif
+END
+ReSIP_diagrams_-_9.png
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_9.png
+END
+htmlcss.xsl
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/htmlcss.xsl
+END
+stale-tree.tif
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/stale-tree.tif
+END
+reSIProcate-logo-small.gif
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/reSIProcate-logo-small.gif
+END
+ReSIP_diagrams_-_20.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_20.png
+END
+ReSIP_diagrams_-_21.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_21.png
+END
+ReSIP_diagrams_-_22.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_22.png
+END
+reSIProcate-logo-small-w.gif
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/reSIProcate-logo-small-w.gif
+END
+ReSIP_diagrams_-_23.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_23.png
+END
+ReSIP_diagrams_-_24.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_24.png
+END
+ReSIP_diagrams_-_25.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_25.png
+END
+resip-epoll-notes.txt
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/resip-epoll-notes.txt
+END
+ReSIP_diagrams_-_26.png
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ReSIP_diagrams_-_26.png
+END
+server-invite-state.tif
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/server-invite-state.tif
+END
+ResipArchitecture.png
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ResipArchitecture.png
+END
+design-overview.xml
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/design-overview.xml
+END
+reSIProcate-logo-big.gif
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/reSIProcate-logo-big.gif
+END
+client-noninvite-state.tif
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/client-noninvite-state.tif
+END
+srv-inv-tree.dot
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/srv-inv-tree.dot
+END
+ResipArchitecture.graffle
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/ResipArchitecture.graffle
+END
+using-dialogUsageManager.xml
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/using-dialogUsageManager.xml
+END
+client-noninvite-tree.tif
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/client-noninvite-tree.tif
+END
+using-dialogUsageManager.html
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/using-dialogUsageManager.html
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/Makefile.am
+END
+srv-inv-fsm.dot
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/srv-inv-fsm.dot
+END
+server-noninvite-state.tif
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/doc/server-noninvite-state.tif
+END

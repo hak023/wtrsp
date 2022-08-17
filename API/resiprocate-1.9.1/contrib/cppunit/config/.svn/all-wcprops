@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config
+END
+ac_cxx_namespaces.m4
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_cxx_namespaces.m4
+END
+ac_cxx_have_sstream.m4
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_cxx_have_sstream.m4
+END
+ac_cxx_rtti.m4
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_cxx_rtti.m4
+END
+depcomp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/depcomp
+END
+config.guess
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/config.guess
+END
+ac_cxx_have_strstream.m4
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_cxx_have_strstream.m4
+END
+ax_cxx_gcc_abi_demangle.m4
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ax_cxx_gcc_abi_demangle.m4
+END
+ltmain.sh
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ltmain.sh
+END
+config.sub
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/config.sub
+END
+ac_dll.m4
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_dll.m4
+END
+ac_create_prefix_config_h.m4
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_create_prefix_config_h.m4
+END
+config.h.in
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/config.h.in
+END
+bb_enable_doxygen.m4
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/bb_enable_doxygen.m4
+END
+missing
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/missing
+END
+ac_cxx_string_compare_string_first.m4
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/ac_cxx_string_compare_string_first.m4
+END
+install-sh
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/config/install-sh
+END

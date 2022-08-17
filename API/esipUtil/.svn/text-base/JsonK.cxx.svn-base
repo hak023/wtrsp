@@ -1,0 +1,598 @@
+#include "JsonK.hxx"
+#include "log.hxx"
+#include "ConfigFile.hxx"
+
+namespace eSipUtil
+{
+/********************************** Json Text Sample **************************************/
+const char g_pszJTest[]=
+"{																			     \r\n"
+"	\"Version\": \"Rel 1.35_linux\",                                                                                                                     \r\n"
+"	\"History\": [\"1\",\"2\",\"3\"],														     \r\n"
+"	\"History2\": 																	     \r\n"
+"	[																		     \r\n"
+"		{                                                                                                                                            \r\n"
+"			\"aa\": \"a_a_\",\"bb\": \"b_b_\"		                                                                                     \r\n"
+"		},                                                                                                                                           \r\n"
+"		{                                                                                                                                            \r\n"
+"			\"cc\": \"c_c_\",\"dd\": \"d_d_\"		                                                                                     \r\n"
+"		}                                                                                                                                            \r\n"
+"	],																	             \r\n"
+"	\"LOC_KT\":                                                                                                                                          \r\n"
+"	{                                                                                                                                                    \r\n"
+"		\"Addr\":{\"IP\": \"0.0.0.0\",\"Port\": \"5060\",\"Type\": \"UDP\",\"Domain\": \"iok.com\"},                                                 \r\n"
+"		\"RMT\":                                                                                                                                     \r\n"
+"		{                                                                                                                                            \r\n"
+"			\"RMT_KT\" :                                                                                                                         \r\n"
+"			{                                                                                                                                    \r\n"
+"				\"RTE\":                                                                                                                     \r\n"
+"				{                                                                                                                            \r\n"
+"					\"RTE_KT_01\":                                                                                                       \r\n"
+"					{                                                                                                                    \r\n"
+"						\"Addr\":{\"IP\": \"0.0.0.0\",\"Port\": \"5060\",	\"Type\": \"UDP\",	\"Domain\": \"ibc1.kt.com\"} \r\n"
+"					},                                                                                                                   \r\n"
+"					\"RTE_KT_02\":                                                                                                       \r\n"
+"					{                                                                                                                    \r\n"
+"						\"Addr\":{\"IP\": \"0.0.0.0\",\"Port\": \"5060\",	\"Type\": \"UDP\",	\"Domain\": \"ibc2.kt.com\"} \r\n"
+"					}                                                                                                                    \r\n"
+"				},                                                                                                                           \r\n"
+"				\"RSEQ\":                                                                                                                    \r\n"
+"				{                                                                                                                            \r\n"
+"					\"RSEQ_KT_01\": [ \"RTE_KT_01\", \"RTE_KT_02\" ],                                                                    \r\n"
+"					\"RSEQ_KT_02\": [ \"RTE_KT_02\", \"RTE_KT_01\" ]                                                                     \r\n"
+"				},                                                                                                                           \r\n"
+"				\"SSEQ\":                                                                                                                    \r\n"
+"				{                                                                                                                            \r\n"
+"					\"SSEQ_KT_1_1\":{\"RTE_KT_01\": \"1\",\"RTE_KT_02\": \"1\"},                                                         \r\n"
+"					\"SSEQ_KT_1_5\":{\"RTE_KT_01\": \"1\",	\"RTE_KT_02\": \"5\"}                                                        \r\n"
+"				},                                                                                                                           \r\n"
+"				\"TEST\": [{\"123\": \"abc\"},\"a\",\"b\",\"c\",\"d\",{\"123\": \"abc\"}]   						     \r\n"
+"			}                                                                                                                                    \r\n"
+"		},                                                                                                                                           \r\n"
+"		\"SRV\":	   															     \r\n"
+"		{																	     \r\n"
+"			\"key1\": \"val1\",\"key2\": \"val2\" 												     \r\n"
+"		}																	     \r\n"
+"	},                                                                                                                                                   \r\n"
+"	\"GRP_1\":	   																     \r\n"
+"	{																		     \r\n"
+"		\"key1\": \"val1\",\"key2\": \"val2\" 													     \r\n"
+"	},																		     \r\n"
+"	\"End\": [{\"a\": \"aaa\"},{\"b\": \"bbb\"},{\"c\": \"ccc\"}],											     \r\n"
+"	\"subdupArr\":																	     \r\n"
+"	[                                                                                                                                                    \r\n"
+"		{                                                                                                                                            \r\n"
+"			\"subsubarr\": [\"a\",\"b\",\"c\"],                                                                                                  \r\n"
+"			\"subsubarr2\": [\"d\",\"e\",\"f\"]                                                                                                  \r\n"
+"		},                                                                                                                                           \r\n"
+"		{                                                                                                                                            \r\n"
+"			\"subsubarr\": [\"a\",\"b\",\"c\"],                                                                                                  \r\n"
+"			\"subsubarr2\": [\"d\",\"e\",\"f\"]                                                                                                  \r\n"
+"		},                                                                                                                                           \r\n"
+"	],                                                                                                                                                   \r\n"
+"	\"service\":                                                                                                                                         \r\n"
+"	{                                                                                                                                                    \r\n"
+"		\"trace\": \"true\",                                                                                                                         \r\n"
+"		\"charging\": \"false\"                                                                                                                      \r\n"
+"	},                                                                                                                                                   \r\n"
+"	\"timer\":                     	                                                                                                                     \r\n"
+"	{                                                                                                                                                    \r\n"
+"		\"garbage\": \"60000\",                                                                                                                      \r\n"
+"		\"refresh\": \"1000\"                                                                                                                        \r\n"
+"	}                                                                                                                                                    \r\n"
+"}                                                                                                                                                           \r\n";
+/******************************** Test Functions *****************************************/
+void g_fnJsonTest()
+{
+	//==========> Json Parse Test
+	JsonK clsParseTest;
+	if(clsParseTest.m_fnParseJson(g_pszJTest))
+	{
+		
+		LogInternal(E_LOG_ERR,"Parse Test\r\n%s\r\n",clsParseTest.m_fnBuild());
+		JsonK clsParseTest2; clsParseTest2 = clsParseTest;
+		LogInternal(E_LOG_ERR,"Parse Test\r\n%s\r\n",clsParseTest2.m_fnBuild());
+		JsonObject * pclsFind = clsParseTest2.m_fnFindObj("History");
+		if(pclsFind)
+		{
+			ListItr_t stItor;JsonObject * pclsBegin = pclsFind->m_fnBegin(stItor);
+			if(pclsBegin) LogInternal(E_LOG_ERR,"History Begine : %s\r\n",(KCSTR)pclsBegin->m_clsJData);
+		}
+		JsonObject * pclsFindLoc = clsParseTest2.m_fnFindObj("LOC_KT");
+		if(pclsFindLoc)
+		{
+			JsonObject * pclsAddr = pclsFindLoc->m_fnFindObj("Addr");
+			if(pclsAddr)
+			{
+				JsonObject * pclsDomain = pclsAddr->m_fnFindObj("Domain");
+				if(pclsDomain)
+				{
+					LogInternal(E_LOG_ERR,"LOC_KT's Domain = %s\r\n",(KCSTR)pclsDomain->m_clsJData);
+				}
+			}
+		}
+		JsonObject * pclsService = clsParseTest2.m_fnFindObj("service");
+		if(pclsService)
+		{
+			if(pclsService->m_fnFindVal("trace") == true)
+			{
+				LogInternal(E_LOG_ERR,"Trace Enabled....\r\n");
+			}
+		}
+		JsonObject * pclsTimer = clsParseTest2.m_fnFindObj("timer");
+		if(pclsTimer)
+		{
+			if(pclsTimer->m_fnFindVal("garbage") == 60000)
+			{
+				LogInternal(E_LOG_ERR,"Garbage Timer is 60000.\r\n");
+			}
+			unsigned int unRefresh = pclsTimer->m_fnFindVal("refresh");
+			LogInternal(E_LOG_ERR,"Refresh Timer is %u.\r\n",unRefresh);
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR,"Parse Error \r\n");
+	}
+	//==========> Json Build Test
+	JsonK clsBuildTest;
+	JsonObject *  pclsBuild = clsBuildTest.m_fnAddObj(json_type_object,"key1",KNULL);
+	if(pclsBuild)
+	{
+		JsonObject * pclsArr = pclsBuild->m_fnAddObj(json_type_array,"arr", KNULL);
+		if(pclsArr)
+		{
+			pclsArr->m_fnAddObj(json_type_array_item, KNULL,"arr_0");
+			pclsArr->m_fnAddObj(json_type_array_item, KNULL,"arr_1");
+			pclsArr->m_fnAddObj(json_type_array_item, KNULL,"arr_2");
+		}
+		pclsBuild->m_fnAddObj(json_type_string,"sub_name1","name_val1");
+		pclsBuild->m_fnAddObj(json_type_string,"sub_name2","name_val2");
+	}
+	JsonObject * pclsOther = clsBuildTest.m_fnAddObj(json_type_array,"subArr",KNULL);
+	if(pclsOther)
+	{
+		JsonObject * pclsSubItem = pclsOther->m_fnAddObj(json_type_object,"subArr_key1",KNULL);
+		if(pclsSubItem)
+		{
+			pclsSubItem->m_fnAddObj(json_type_string,"subkey1","sub_val1");
+			pclsSubItem->m_fnAddObj(json_type_string,"subkey2","sub_val2");
+		}
+		pclsOther->m_fnAddObj(json_type_array_item,KNULL, "EleVal1");
+		pclsOther->m_fnAddObj(json_type_array_item,KNULL, "EleVal2");
+		JsonObject * pclsDupDup = pclsOther->m_fnAddObj(json_type_object,"dupdup",KNULL);
+		if(pclsDupDup)
+		{
+			JsonObject * pclsDupArr = pclsDupDup->m_fnAddObj(json_type_array,"duparr",KNULL);
+			if(pclsDupArr)
+			{
+				pclsDupArr->m_fnAddObj(json_type_array_item,KNULL,"dup_val1");
+				pclsDupArr->m_fnAddObj(json_type_array_item,KNULL,"dup_val2");
+				pclsDupArr->m_fnAddObj(json_type_array_item,KNULL,"dup_val3");
+			}
+		}
+	}
+	LogInternal(E_LOG_ERR,"Encoding Test\r\n%s\r\n",clsBuildTest.m_fnBuild());
+}
+/*********************************** Json Object ****************************************/
+JsonObject::JsonObject()
+{
+	m_eType = json_type_null;m_pclsOwner=NULL;
+}
+JsonObject::~JsonObject()
+{
+	m_pclsOwner=NULL;
+}
+JsonObject & JsonObject::operator=(JsonObject & _rclsSrc)
+{
+	m_fnClear();
+	m_fnSetKey(_rclsSrc.m_uiKey);
+	m_fnSetKey(_rclsSrc.m_pszKey);
+	m_eType = _rclsSrc.m_eType;
+	m_clsJKey = _rclsSrc.m_clsJKey;
+	m_clsJData = _rclsSrc.m_clsJData;
+	ListItr_t stItor;
+	JsonObject * pclsFind = _rclsSrc.m_fnBegin(stItor);
+	JsonObject * pclsNew = NULL;
+	while(pclsFind)
+	{
+		pclsNew = new JsonObject;
+		*pclsNew = *pclsFind;
+		pclsNew->m_pclsOwner = this;
+		m_listJson.m_fnPushBack(pclsNew);
+		pclsFind = _rclsSrc.m_fnNext(stItor);
+	}
+	return *this;
+}
+void JsonObject::m_fnClear()
+{
+	if(m_pszKey) delete [] m_pszKey;
+	m_uiKey = 0;
+	m_eType  = json_type_null;
+	m_clsJKey = KNULL;
+	m_clsJData = KNULL;
+	m_pclsOwner = NULL;
+	m_listJson.m_fnClear();
+}
+void JsonObject::m_fnBuild(KString & _rclsBuild, unsigned int _unDepth)
+{
+	if(m_eType == json_type_boolean || m_eType == json_type_double
+		|| m_eType == json_type_int || m_eType == json_type_string)
+	{
+		if(m_clsJKey.m_unRealLen > 0 && m_clsJData.m_unRealLen > 0)
+		{
+			m_fnCatDepth(_rclsBuild,_unDepth);
+			_rclsBuild<<"\""<<m_clsJKey<<"\": \""<<m_clsJData<<"\"";
+		}
+	}
+	else if(m_eType == json_type_object)
+	{
+		if(!(m_pclsOwner && m_pclsOwner->m_eType == json_type_array))
+		{
+			m_fnCatDepth(_rclsBuild,_unDepth);
+			_rclsBuild<<"\""<<m_clsJKey<<"\":\r\n";
+		}
+		m_fnCatDepth(_rclsBuild,_unDepth);
+		_rclsBuild<<"{\r\n";
+		ListItr_t stItor; JsonObject * pclsFind = (JsonObject*)m_listJson.m_fnBegin(stItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnBuild(_rclsBuild,_unDepth+1);
+			pclsFind = (JsonObject*)m_listJson.m_fnNext(stItor);
+			if(pclsFind)
+				_rclsBuild<<",\r\n";
+			else
+				_rclsBuild<<"\r\n";
+		}
+		m_fnCatDepth(_rclsBuild,_unDepth);
+		_rclsBuild<<"}";
+	}
+	else if(m_eType == json_type_array)
+	{
+		if(!(m_pclsOwner && m_pclsOwner->m_eType == json_type_array))
+		{
+			m_fnCatDepth(_rclsBuild,_unDepth);
+			_rclsBuild<<"\""<<m_clsJKey<<"\":\r\n";
+		}
+		m_fnCatDepth(_rclsBuild,_unDepth);
+		_rclsBuild<<"[\r\n";
+		ListItr_t stItor; JsonObject * pclsFind = (JsonObject*)m_listJson.m_fnBegin(stItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnBuild(_rclsBuild,_unDepth+1);
+			pclsFind = (JsonObject*)m_listJson.m_fnNext(stItor);
+			if(pclsFind)
+				_rclsBuild<<",\r\n";
+			else
+				_rclsBuild<<"\r\n";
+		}
+		m_fnCatDepth(_rclsBuild,_unDepth);
+		_rclsBuild<<"]";
+	}
+	else if(m_eType == json_type_array_item)
+	{
+		m_fnCatDepth(_rclsBuild,_unDepth);
+		_rclsBuild<<"\""<<m_clsJData<<"\"";
+	}
+}
+KString & JsonObject::m_fnFindVal(const char * _pszKey)
+{
+	JsonObject * pclsFind = m_fnFindObj(_pszKey);
+	if(pclsFind == NULL) return m_clsNull;
+	return pclsFind->m_clsJData;
+}
+JsonObject *JsonObject::m_fnAddObj(json_type _eT,const char *_pszKey, KString _clsVal)
+{
+	JsonObject * pclsAdd = m_fnAddObjInternal(_eT,_pszKey);
+	if(pclsAdd) pclsAdd->m_clsJData = _clsVal;
+	return pclsAdd;
+}
+JsonObject *JsonObject::m_fnAddObjInternal(json_type _eT,const char *_pszKey)
+{
+	if(!(m_eType == json_type_object || m_eType == json_type_array))
+	{
+		LogInternal(E_LOG_ERR,"Insert Child Obj Fail , %s/%s, My is Not Object(%s).",
+												(KCSTR)m_clsJKey,
+												(KCSTR)m_clsJData,
+												JsonK::m_fnGetStringJsonT(m_eType));
+		return NULL;
+	}
+	if(m_eType == json_type_array)
+	{
+		if(!(_eT == json_type_object ||	_eT == json_type_array_item))
+		{
+			LogInternal(E_LOG_ERR,"Insert Child Obj Fail , %s - %s",
+												JsonK::m_fnGetStringJsonT(m_eType),
+												JsonK::m_fnGetStringJsonT(_eT));
+			return NULL;
+		}
+	}
+	JsonObject *pclsObj = new JsonObject;pclsObj->m_fnSetKey(_pszKey);
+	pclsObj->m_eType = _eT;pclsObj->m_clsJKey = _pszKey;
+	pclsObj->m_pclsOwner = this;
+	if(m_listJson.m_fnPushBack(pclsObj) == false)
+	{
+		delete pclsObj;return NULL;
+	}
+	return pclsObj;
+}
+void JsonObject::m_fnCatDepth(KString &_rclsBuff,unsigned int _unDepth)
+{
+	for(unsigned int i=0;i<_unDepth;i++)  _rclsBuff<<'\t';
+}
+/******************************** JSON ************************************************/
+JsonK::JsonK()
+{
+	m_pclsCurObj = NULL;
+}
+JsonK::~JsonK()
+{
+}
+JsonK & JsonK::operator=(JsonK & _rclsSrc)
+{
+	m_clsRaw = _rclsSrc.m_clsRaw;
+	m_listJson.m_fnClear();
+	ListItr_t stItor;
+	JsonObject * pclsFind = _rclsSrc.m_fnBegin(stItor);
+	JsonObject * pclsNew = NULL;
+	while(pclsFind)
+	{
+		pclsNew = new JsonObject;
+		*pclsNew = *pclsFind;
+		m_listJson.m_fnPushBack(pclsNew);
+		pclsFind = _rclsSrc.m_fnNext(stItor);
+	}
+	return *this;
+}
+bool JsonK::m_fnParseJson(const char *_pszRaw)
+{
+	m_clsRaw = _pszRaw;
+	LogInternal(E_LOG_DEBUG, "Data\r\n%s\r\n", _pszRaw);
+	json_object *new_obj = json_tokener_parse(_pszRaw);
+	if (is_error(new_obj))
+	{
+		LogInternal(E_LOG_ERR, "error parsing json: %s", json_tokener_errors[-(unsigned long)new_obj]);
+		json_object_put(new_obj);
+		return false;
+	}
+	m_pclsCurObj = NULL; m_listJson.m_fnClear();
+	bool bErr = false;
+	m_fnExtractJson(new_obj, 0,&bErr);
+	if(bErr)
+	{
+		LogInternal(E_LOG_ERR, "error parsing json: eSipUtil Detected.");
+		json_object_put(new_obj);
+		return false;
+	}
+	json_object_put(new_obj);
+	return true;
+}
+KString & JsonK::m_fnFindVal(const char * _pszKey)
+{
+	JsonObject * pclsFind = m_fnFindObj(_pszKey);
+	if(pclsFind == NULL) return m_clsNull;
+	return pclsFind->m_clsJData;
+}
+void JsonK::m_fnClear()
+{
+	m_listJson.m_fnClear();
+}
+JsonObject *JsonK::m_fnAddObj(json_type _eT,const char * _pszKey,KString _clsVal)
+{
+	JsonObject * pclsAdd = m_fnAddObjInternal(_eT,_pszKey);
+	if(pclsAdd) pclsAdd->m_clsJData = _clsVal;
+	return pclsAdd;
+}
+JsonObject *JsonK::m_fnAddObjInternal(json_type _eT,const char *_pszKey)
+{
+	if(_eT == json_type_array_item) return NULL;
+	JsonObject *pclsObj = new JsonObject;pclsObj->m_fnSetKey(_pszKey);
+	pclsObj->m_eType = _eT; pclsObj->m_clsJKey = _pszKey;
+	if(m_listJson.m_fnPushBack(pclsObj) == false)
+	{
+		delete pclsObj;return NULL;
+	}
+	return pclsObj;
+}
+char * JsonK::m_fnBuild()
+{
+	m_clsRaw = KNULL; m_clsRaw.m_fnReSize(DEF_CFG_1M);
+	ListItr_t stItor;JsonObject * pclsFind = (JsonObject*)m_listJson.m_fnBegin(stItor);
+	m_clsRaw<<"{\r\n";
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(m_clsRaw,1);
+		pclsFind = (JsonObject*)m_listJson.m_fnNext(stItor);
+		if(pclsFind)
+				m_clsRaw<<",\r\n";
+			else
+				m_clsRaw<<"\r\n";
+	}
+	m_clsRaw<<"\r\n}\r\n";
+	return (KSTR)m_clsRaw;
+}
+void JsonK::m_fnExtractJson(json_object *obj, unsigned int _unDepth,bool * _pbError)
+{
+	int arr_cnt = 0; json_type mtype; json_object *temp_obj = NULL;
+	JsonObject *pTmp_Json = m_pclsCurObj;
+	JsonObject *pTmp_Json2 = NULL;
+	JsonObject *pTmp_Json3 = NULL;
+	if(_unDepth == 0)
+	{
+		lh_table * ptable = json_object_get_object(obj);
+		if(ptable==NULL)
+		{
+			if(_pbError) * _pbError = true;
+			return;
+		}
+	}
+	json_object_object_foreach(obj, key, val)
+	{
+		mtype = json_object_get_type(val);
+		KString clsVal;
+		switch (mtype)
+		{
+		case json_type_null:
+			break;
+		case json_type_boolean:
+			//printf("key=%s, Val = %d\r\n",key,json_object_get_boolean(val));
+			clsVal = json_object_get_boolean(val);
+			if (_unDepth == 0) m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			else m_pclsCurObj->m_fnAddObj(mtype, key, (KCSTR)clsVal);
+
+			break;
+		case json_type_double:
+			//printf("key=%s, Val = %lf\r\n",key,json_object_get_double(val));
+			clsVal = json_object_get_double(val);
+			if (_unDepth == 0) m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			else m_pclsCurObj->m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			break;
+		case json_type_int:
+			//printf("key=%s, Val = %d\r\n",key,json_object_get_int(val));
+			clsVal = json_object_get_int(val);
+			if (_unDepth == 0) m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			else m_pclsCurObj->m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			break;
+		case json_type_string:
+			//printf("key=%s, Val = %s\r\n",key,json_object_get_string(val));
+			clsVal = json_object_get_string(val);
+			if (_unDepth == 0) m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			else m_pclsCurObj->m_fnAddObj(mtype, key, (KCSTR)clsVal);
+			break;
+		case json_type_object:
+			if (m_pclsCurObj == NULL)
+			{
+				//printf("key=%s, Val = Json Objec, Owner = null, Depth = %u\r\n",key,_unDepth);
+				m_pclsCurObj = m_fnAddObj(json_type_object, key, "Json_Obj");
+				m_fnExtractJson(val, _unDepth + 1,_pbError);
+			}
+			else
+			{
+				//printf("key=%s, Val = Json Objec, Owner = %p, Depth=%u\r\n",key,m_pclsCurObj,_unDepth);
+				if (_unDepth == 0)
+				{
+					m_pclsCurObj = m_fnAddObj(json_type_object, key, "Json_Obj");
+					pTmp_Json = m_pclsCurObj;
+				}
+				else
+					pTmp_Json = m_pclsCurObj->m_fnAddObj(json_type_object, key, "Json_Obj");
+				pTmp_Json2 = m_pclsCurObj; m_pclsCurObj = pTmp_Json;
+				m_fnExtractJson(val, _unDepth + 1,_pbError);	m_pclsCurObj = pTmp_Json2;
+			}
+			break;
+		case json_type_array:
+			arr_cnt = json_object_array_length(val);
+			//printf("Key=%s, Val = **Json Array**, Arr Cnt : %d, Depth=%u\r\n",key,arr_cnt,_unDepth);
+			if (_unDepth == 0)
+			{
+				m_pclsCurObj = m_fnAddObj(json_type_array, key, "Json_Arr");
+				pTmp_Json = m_pclsCurObj;
+			}
+			else
+				pTmp_Json = m_pclsCurObj->m_fnAddObj(json_type_array, key, "Json_Arr");
+			pTmp_Json2 = m_pclsCurObj;
+			for (int i = 0; i<arr_cnt; i++)
+			{
+				temp_obj = json_object_array_get_idx(val, i);
+				mtype = json_object_get_type(temp_obj);
+				#if 0
+				if (mtype == json_type_object || mtype == json_type_array)
+				{
+					if (mtype == json_type_object)
+					{
+						//printf("Key=%s, Val = **Json Obj**, Depth=%u\r\n",key,_unDepth);
+						pTmp_Json3 = pTmp_Json->m_fnAddObj(json_type_object, key, "Json_Obj");
+					}
+					else
+					{
+						//printf("Key=%s, Val = **Json Arr**, Depth=%u\r\n",key,_unDepth);
+						pTmp_Json3 = pTmp_Json->m_fnAddObj(json_type_array, key, "Json_Arr");
+					}
+					m_pclsCurObj = pTmp_Json3;
+					m_fnExtractJson(temp_obj, _unDepth + 1);
+					m_pclsCurObj = pTmp_Json;
+				}
+				#else
+				if(mtype == json_type_array)
+				{
+					if(_pbError) *_pbError = true;
+					return;
+				}
+				else if (mtype == json_type_object)
+				{
+					//printf("Key=%s, Val = **Json Obj**, Depth=%u\r\n",key,_unDepth);
+					pTmp_Json3 = pTmp_Json->m_fnAddObj(json_type_object, key, "Json_Obj");
+					m_pclsCurObj = pTmp_Json3;
+					m_fnExtractJson(temp_obj, _unDepth + 1,_pbError);
+					m_pclsCurObj = pTmp_Json;
+				}
+				#endif
+				else
+				{
+					KString clsArrVal;
+					switch (mtype)
+					{
+					case json_type_boolean:
+						//printf("key=%s, Val = %d\r\n",key,json_object_get_boolean(temp_obj));
+						clsArrVal = json_object_get_boolean(temp_obj);
+						pTmp_Json->m_fnAddObj(json_type_array_item, "Json_Arr_Item", (KCSTR)clsArrVal);
+						break;
+					case json_type_double:
+						//printf("key=%s, Val = %lf\r\n",key,json_object_get_double(temp_obj));
+						//pTmp_Json->m_fnAddObj(json_type_array_item,"Json_Arr_Item", json_object_get_double(temp_obj));
+						clsArrVal = json_object_get_double(temp_obj);
+						pTmp_Json->m_fnAddObj(json_type_array_item, "Json_Arr_Item", (KCSTR)clsArrVal);
+						break;
+					case json_type_int:
+						//printf("key=%s, Val = %d\r\n",key,json_object_get_int(temp_obj));
+						clsArrVal = json_object_get_int(temp_obj);
+						pTmp_Json->m_fnAddObj(json_type_array_item, "Json_Arr_Item", (KCSTR)clsArrVal);
+						break;
+					case json_type_string:
+						//printf("key=%s, Val = %s\r\n",key,json_object_get_string(temp_obj));
+						pTmp_Json->m_fnAddObj(json_type_array_item, "Json_Arr_Item",
+							json_object_get_string(temp_obj));
+					default:
+						break;
+					};
+				}
+			}
+			m_pclsCurObj = pTmp_Json2;
+			break;
+		default:
+			break;
+		};
+	}
+}
+ const char * JsonK::m_fnGetStringJsonT(json_type _eT)
+{
+	switch(_eT)
+	{
+		case json_type_null: return "json_type_null";
+		case json_type_boolean: return "json_type_boolean";
+		case json_type_double: return "json_type_double";
+		case json_type_int: return "json_type_int";
+		case json_type_object: return "json_type_object";
+		case json_type_array: return "json_type_array";
+		case json_type_string: return "json_type_string";
+		case json_type_array_item: return "json_type_array_item";
+		
+	}
+	return "UnKnown";
+}
+ void JsonK::m_fnBuildItem(KString &_rclsBuild,const char * _pszKey,KString _clsVal)
+{
+	if(KString::m_fnStrLen(_pszKey) > 0 && _clsVal.m_unRealLen > 0)
+	{
+		_rclsBuild<<"\""<<_pszKey<<"\":\""<<_clsVal<<"\"";
+	}
+	else if(KString::m_fnStrLen(_pszKey) ==0 && _clsVal.m_unRealLen > 0)
+	{
+		_rclsBuild<<"\""<<_clsVal<<"\"";
+	}
+}
+ void JsonK::m_fnCatDepth(KString &_rclsBuff,unsigned int _unDepth)
+{
+	for(unsigned int i=0;i<_unDepth;i++)  _rclsBuff<<'\t';
+}
+}

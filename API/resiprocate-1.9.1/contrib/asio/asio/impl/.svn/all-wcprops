@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl
+END
+write.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/write.ipp
+END
+read.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/read.ipp
+END
+serial_port_base.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/serial_port_base.ipp
+END
+write_at.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/write_at.ipp
+END
+read_at.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/read_at.ipp
+END
+error_code.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/error_code.ipp
+END
+read_until.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/read_until.ipp
+END
+io_service.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/impl/io_service.ipp
+END

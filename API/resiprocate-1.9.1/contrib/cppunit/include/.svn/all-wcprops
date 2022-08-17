@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/Makefile.in
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/Makefile.am
+END

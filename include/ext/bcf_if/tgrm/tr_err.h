@@ -1,0 +1,709 @@
+#ifndef __PI_TR_ERRROR_DEF_H__
+#define __PI_TR_ERRROR_DEF_H__
+
+namespace TGRM
+{
+
+struct TGReason
+{
+
+   enum ReasonCode 
+   {
+
+      RcNoErr                    = 0x00000000, // normal call clearing
+
+      // TrGW Base
+		RcTGBase                   = 0x20000000,
+
+		/***** TGAgent ********/
+		RcTGAgentBase              = 0x20010000,
+
+		RcTGAIllegalParam          = 0x20010001, // Parameter error
+		RcTGASendtoTGRMFail        = 0x20010002, // Send to As error
+      RcTGAOutofService          = 0x20010003, // OOS checking error & Out Of Service
+		RcTGANotReady              = 0x20010004, // TGA Not Ready
+		RcTGAInternalError         = 0x20010005, // Internal error
+
+      RcTGASetLocAddrFail        = 0x20011001, // Set Local Addr fail ###
+		RcTGASetTmpAddrFail        = 0x20011002, // Set TmpAddr fail ###
+      RcTGASetSessionFail        = 0x20011003, // Set Session fail ###
+      RcTGASetRecoverSessionFail = 0x20011004, // Set Recover Session fail ###
+		RcTGAClearLocFail          = 0x20011005, // Clear Loacl Addr fail ###
+		RcTGAClearTmpFail          = 0x20011006, // Clear TmpAddr fail ###
+		RcTGAClearSesFail          = 0x20011007, // Clear Session fail ###
+		RcTGAClearAllFail          = 0x20011008, // Clear All Session fail ###
+		RcTGAResetFail             = 0x20011009, // Reset fail ###
+		RcTGAInitFail              = 0x2001100A, // Init fail
+		RcTGAGetLocAddrFail        = 0x2001100B, // Get Local Addr fail
+		RcTGAAssignFail            = 0x2001100C, // Assign Addr fail
+		RcTGAAliveCheckFail        = 0x2001100D, // Chekc Alive fail ###
+		RcTGASetLocEncFail         = 0x2001100E, // Set Local Encryprion infomation fail ###
+
+		RcTGANotActiveMode         = 0x20012001, // Not Active mode ###
+		RcTGAInvalidIPVersion      = 0x20012002, // Invalid IP Version ###
+		RcTGANetDeviceDown         = 0x20012003, // Network Device Down ###
+
+		/***** TGAS    ********/
+		RcTGASBase                 = 0x20020000,
+
+		RcASMakeSdpFail            = 0x20020001, // make sdp fail
+		RcASSessionFindFail        = 0x20020002, // session find error
+		//RcASConnectFailTGRM        = 0x20020003, // tgrm send fail
+		RcASInvalidNode            = 0x20020004, // invalid node
+		RcASSessionFull            = 0x20020005, // tgas 내부 세션 full..
+		RcASInternalError          = 0x20020006, // tgas internal error
+		RcASNegoFail               = 0x20020007, // tgas mod nego fail
+      RcASNotFoundAudio          = 0x20020008, // tgrm not send audio info
+      RcASNotFoundVideo          = 0x20020009, // tgrm not send video info
+      RcASNotFoundCodec          = 0x2002000A, // user codec not found
+      RcASGarbageCollect         = 0x2002000B, // garbage collect
+		RcASConnectFailTCRM        = 0x2002000C, // tcrm send fail
+		//RcASConnectFailMSRPRM      = 0x2002000D, // msrprm send fail
+		RcASSessionBusy            = 0x2002000E, // session busy
+		RcASSdpParseError          = 0x2002000F, // sdp parse error
+      RcASNotFoundMsrp           = 0x20020010, // msrp info not found
+      RcASNetfailKill            = 0x20020011, // netfail kill enable
+      RcASRetransFail            = 0x20020012, // retrans flag fail
+		RcASContentTypeError       = 0x20020013, // contenet type error
+		RcASConnectFailTGA         = 0x20020014, // tga send fail
+		RcASConnectFailMSRPA       = 0x20020015, // msrpa send fail
+		RcASSdpSyntaxError         = 0x20020016, // sdp syntax error
+		RcASEarlySessionNotSupport = 0x20020017, // early session not support
+
+		RcASTimeout                = 0x20021000, // timeout
+		RcASAddTimeout             = 0x20021001, // add req timeout
+		RcASModTimeout             = 0x20021002, // mod req timeout
+		RcASDelTimeout             = 0x20021003, // del req timeout
+		RcASCallDurationTimeout    = 0x20021004, // call duration timeout
+		RcASAddRspTimeout          = 0x20021005, // add rsp timeout
+		RcASOfferRspTimeout        = 0x20021006, // offer rsp timeout(modrsp(offer)~modreq)
+
+		RcASNotFoundPTGroup        = 0x20022000, // Not Found PT Group 
+		RcASNotFoundCodecList      = 0x20022001, // Not Found CodecList 
+		RcASAlreadyExistPTList     = 0x20022002, // Already Exist PT List 
+		RcASNotFoundPTList         = 0x20022003, // Not Found PT List 
+		RcASAlreadyExistPTGroup    = 0x20022004, // Already Exist PT Group 
+		RcASAlreadyExistCodecList  = 0x20022005, // Already Exist Codec List
+		RcASAlreadyExistCodecName  = 0x20022006, // Already Exist Codec List(CodecName) 
+		RcASAlreadyExistRuleList   = 0x20022007, // Already Exist Rule List 
+		RcASNotFoundRuleList       = 0x20022008, // Not Found Rule List 
+		RcASExistCID               = 0x20022009, // Exist CID (RULE)
+		RcASExistRID               = 0x2002200A, // Exist RID (PT Group)
+		RcASRuleMaxCntOver         = 0x2002200B, // rule cnt over
+		RcASIllegalCodecType       = 0x2002200C, // audio, video type not found
+
+		RcASSwitchBDStatusFail     = 0x20023001, // switch 가 될수 없는 상태의 board 
+		RcASIPAllocFail            = 0x20023002, // switch시에 ip alloc fail 
+
+		RcASAlreadyExistSdpMID		= 0x20024001, // R104 PKG. SdpManipulation ID가 이미 존재할경우.
+		RcASNotFoundSdpMID			= 0x20024002, // R104 PKG. SdpManipulation ID를 찾지 못한 경우.
+		RcASManipulationMaxCntOver	= 0x20024003, // R104 PKG. SdpManipulation 개수가 모두 찬 경우.
+		RcASNotValidSampleRate		= 0x20024004, // R104 PKG. SdpManipulation Samplerate 필드 입력이 잘못된 경우.
+		RcASNotValidFMTP			= 0x20024005, // R104 PKG. SdpManipulation FMTP 필드 입력이 잘못된 경우.
+		RcASNotValidFrameRate		= 0x20024006, // R104 PKG. SdpManipulation Framerate 필드 입력이 잘못된 경우.
+		RcASNotValidCommandType		= 0x20024007, // R104 PKG. SdpManipulation CommandType 필드 입력이 잘못된 경우.
+		RcASNotValidMediaType		= 0x20024008, // R104 PKG. SdpManipulation MediaType 필드 입력이 잘못된 경우.
+		RcASNotValidCodecName		= 0x20024009, // R104 PKG. SdpManipulation CodecName 필드 입력이 잘못된 경우.
+
+		RcASAlreadyExistSdpRuleID	= 0x20025001, // R104 PKG. SdpRule ID가 이미 존재할경우.
+		RcASNotFoundSdpRule			= 0x20025002, // R104 PKG. SdpRule ID를 찾지 못한 경우.
+		RcASSdpRuleMaxCntOver		= 0x20025003, // R104 PKG. SdpRule ID 개수가 모두 찬 경우.
+		RcASNotFoundTrte			= 0x20025004, // R104 PKG. SdpRule에 입력된 Trte를 찾지 못한경우
+		RcASNotValidMaching			= 0x20025005, // R104 PKG. SdpRule에 Maching 필드 입력이 잘못된 경우.
+		RcASNotValidCondition		= 0x20025006, // R104 PKG. SdpRule에 Condition 필드 입력이 잘못된 경우.
+		RcASNotValidUserAgent		= 0x20025007, // R104 PKG. SdpRule에 UserAgent 필드 입력이 잘못된 경우.
+		RcASNotValidRuleame			= 0x20025008, // R104 PKG. SdpRule에 Name 필드 입력이 잘못된 경우.
+
+		RcASMoreInfoRequire			= 0x20026001, // R104 PKG. 필수정보가 입력되지 않은 경우.
+		RcASNotValidInfo			= 0x20026002, // R104 PKG. 입력된 정보가 유효하지 않은 경우.
+
+		RcASNotAllowDuplicationOn	= 0x20027001, // R125 PKG. Hang감시 관련. HA와 Restart는 동시 On되지 않음. Do not allow (HA=On, ReStart=On)
+
+		RcASAlreadyExistCodecManagerId		= 0x20028001, // R126 PKG. SdpCodecManager ID가 이미 존재할경우.
+		RcASNotFoundCodecManagerId			= 0x20028002, // R126 PKG. SdpCodecManager ID를 찾지 못한 경우.
+		RcASFullCodecManager	= 0x20028003, // R126 PKG. SdpCodecManager 개수가 모두 찬 경우.
+		RcASCodecManagerNotValidRule		= 0x20028004, // R126 PKG. SdpCodecManager RULE ID 입력이 잘못된 경우.
+		RcASCodecManagerNotValidCodecList			= 0x20028005, // R126 PKG. SdpCodecManager CODEC_LIST 입력이 잘못된 경우.
+		RcASCodecManagerNotValidAs		= 0x20028006, // R126 PKG. SdpCodecManager AS 필드 입력이 잘못된 경우.
+		RcASCodecManagerNotValidNotDeleteAs		= 0x20028007, // R126 PKG. SdpCodecManager NOT_DELETE_AS 필드 입력이 잘못된 경우.
+		RcASCodecManagerNotValidManagerOn		= 0x20028008, // R126 PKG. SdpCodecManager MANAGER_ON 필드 입력이 잘못된 경우.
+		RcASCodecManagerNotValidName		= 0x20028009, // R126 PKG. SdpCodecManager NAME 필드 입력이 잘못된 경우.
+
+		/***** TGRM    ********/
+		RcTGRMBase                 = 0x20030000,
+
+#if 0
+		RcRMIllegalParam           = 0x20030001, // Parameter error ###
+		RcRMSendtoAsFail           = 0x20030002, // Send to As error
+		RcRMSendtoCompFail         = 0x20030003, // Send to Comp error ###
+      RcRMOutofService           = 0x20030004, // OOS checking error & Out Of Service ###
+		RcRMAsDown                 = 0x20030005, // As down
+		RcRMCompDown               = 0x20030006, // Comp down ###
+		RcRMConnectFailTGAS        = 0x20030007, // tgas connect fail 
+		RcRMConnectFailTGA         = 0x20030008, // tga connect fail 
+		RcRMInternalError          = 0x20030009, // Internal error ###
+		RcRmNetFailError           = 0x2003000A, // NetFail error ###
+#endif
+
+		RcRMSessionAllocFail       = 0x20031001, // RM 내부 세션 할당 fail ###
+		RcRMSessionBusy            = 0x20031002, // 할당할 내부 세션이 없음.. busy
+		RcRMSessionFull            = 0x20031003, // 할당할 내부 세션이 없음.. full ###
+		RcRMSessionIdle            = 0x20031004, // 할당할 내부 세션이 없음.. idle ###
+		RcRMInsufficientResource   = 0x20031005, // Not Ready ###
+		RcRMNotEnabled             = 0x20031006, // Not Enabled ###
+		RcRMAlreadyEnabled         = 0x20031007, // Already Enabled ###
+		RcRMInvalidStatus          = 0x20031008, // Invalid Status ###
+
+		RcRMNotFoundRoute          = 0x20032001, // Route 찾지 못함
+		RcRMNotFoundBoard          = 0x20032002, // Board 찾지 못함
+		RcRMNotFoundTga            = 0x20032003, // Tga 찾지 못함
+		RcRMNotFoundPool           = 0x20032004, // Pool 찾지 못함 ###
+		RcRMNotFoundRsc            = 0x20032005, // Rsc 찾지 못함 ###
+		RcRMNotFoundPort           = 0x20032006, // Port 찾지 못함
+		RcRMNotFoundId             = 0x20032007, // AppID 찾지 못함 ###
+		RcRMNotFoundSession        = 0x20032008, // Session 찾지 못함 ###
+		RcRMNotFoundAddr           = 0x20032009, // Addr 찾지 못함
+		RcRMExistRoute             = 0x2003200A, // Exist Route ###
+		RcRMExistBoard             = 0x2003200B, // Exist Board ###
+		RcRMExistPool              = 0x2003200C, // Exist Pool ###
+		RcRMExistRsc               = 0x2003200D, // Exist Rsc ###
+		RcRMDuplicateRoute         = 0x2003200E, // Duplicate Route ###
+		RcRMDuplicateBoard         = 0x2003200F, // Duplicate Board
+		RcRMDuplicateIP            = 0x20032010, // Duplicate IP ###
+		RcRMDuplicateRsc           = 0x20032011, // Duplicate Rsc
+		RcRMAlreadyExistRoute      = 0x20032012, // Route Add.. already exist route
+
+		RcRMTGAAddrSetFail         = 0x20033001, // TGA Virtual IP Set fail
+		RcRMTGABoardNotActive      = 0x20033002, // TGA Board Not Active
+		RcRMGarbageCollect         = 0x20033003, // garbage collect delete ###
+		RcRMAlreadyRecvAddReq      = 0x20033004, // already recv ADD_REQ ###
+		RcRMInvalidIPVersion       = 0x20033005, // Invalid IP Version ###
+		RcRMFileSaveFail           = 0x20033006, // Add, Mod, Del시에 config file save fail ###
+		RcRMLongCallDel            = 0x20033007, // recv long call del
+
+		RcRMRouteFullAlloc         = 0x20034001, // Route Full ###
+		RcRMBoardFullAlloc         = 0x20034002, // Board Full
+		RcRMPoolFullAlloc          = 0x20034003, // Pool Full ###
+		RcRMRscFullAlloc           = 0x20034004, // Rsc Full ###
+		RcRMInvalidRoute           = 0x20034005, // Invalid Route ###
+		RcRMInvalidBoard           = 0x20034006, // Invalid Board
+		RcRMInvalidPool            = 0x20034007, // Invalid Pool
+		RcRMInvalidRsc             = 0x20034008, // Invalid Rsc
+		RcRMModRouteFail           = 0x20034009, // Mod Route Fail ###
+		RcRMDelRouteFail           = 0x2003400A, // Del Route Fail ###
+		RcRMModBoardFail           = 0x2003400B, // Mod Rsc Fail
+		RcRMDelBoardFail           = 0x2003400C, // Del Rsc Fail
+		RcRMModPoolFail            = 0x2003400D, // Mod Pool Fail ###
+		RcRMDelPoolFail            = 0x2003400E, // Del Pool Fail ###
+		RcRMModRscFail             = 0x2003400F, // Mod Rsc Fail ###
+		RcRMDelRscFail             = 0x20034010, // Del Rsc Fail ###
+		RcRMSwitchBDStatusFail     = 0x20034011, // Switch Fail ###
+		RcRMAddRouteFail           = 0x20034012, // Add Route Fail ###
+		RcRMExistTRTE              = 0x20034013, // if route del, exist TRTE fail ###
+		RcRMBlockRoute             = 0x20034014, // block route ###
+		RcRMBlockBoard             = 0x20034015, // block board ###
+		RcRMBlockPool              = 0x20034016, // block pool ###
+		RcRMBlockRsc               = 0x20034017, // block rsc ###
+
+		RcRMTimeout                = 0x20035000, // timeout ###
+		RcRMDelReqTimeout          = 0x20035001, // del req timeout ###
+		RcRMStopReqTimeout         = 0x20035002, // stop req timeout ###
+		RcRMTgaInitTimeout         = 0x20035003, // tga init timeout
+		RcRMTgaDownTimeout         = 0x20035004, // tga down timeout
+
+		/***** MSRPRM    ********/
+		RcMSRPRMBase                   = 0x20040000,
+
+		RcMSRPRMInsufficientResource   = 0x20040001,
+		RcMSRPRMDuplicateCh            = 0x20040002,
+		RcMSRPRMNotFoundCh             = 0x20040003,
+		RcMSRPRMNotFoundMsrpa          = 0x20040004,
+		RcMSRPRMConnectFailMsrpa       = 0x20040005,  
+		RcMSRPRMConnectFailTgas        = 0x20040006,  
+		RcMSRPRMInternalError          = 0x20040007,  
+		RcMSRPRMSessionFindFail        = 0x20040008,  
+		RcMSRPRMMsrpaDown              = 0x20040009,  
+		RcMSRPRMSessionBusy            = 0x2004000A,  
+		RcMSRPRMAlreadyRecvInit        = 0x2004000B,  
+		RcMSRPRMGarbageCollect         = 0x2004000C,  
+		RcMSRPRMCloseReqTimeout        = 0x2004000D,  
+
+		RcMSRPRMNotFoundBoard          = 0x20040010, // not found board 
+		RcMSRPRMSwitchBDStatusFail     = 0x20040011, // switch 가 될수 없는 상태의 board 
+		RcMSRPRMIPAllocFail            = 0x20040012, // switch시에 ip alloc fail 
+		RcMSRPRMAlreadyExistRoute      = 0x20040013, // route가 이미 존재 
+		RcMSRPRMNotFoundRoute          = 0x20040014, // not found route 
+		RcMSRPRMBlockRoute             = 0x20040015, // 블럭된 Route 
+		RcMSRPRMBlockBoard             = 0x20040016, // 블럭된 Board 
+		RcMSRPRMBlockPool              = 0x20040017, // 블럭된 Pool 
+		RcMSRPRMBlockRsc               = 0x20040018, // 블럭된 Rsc 
+		RcMSRPRMNotFoundPool           = 0x20040019, // not found pool 
+		RcMSRPRMNotFoundRsc            = 0x2004001A, // not found rsc 
+		RcMSRPRMSwitchBDModeFail       = 0x2004001B, // switch 가 될수 없는 Mode의 board 
+		RcMSRPRMExistTRTE              = 0x2004001C, // RSC에 TRTE 존재 
+
+	  	/***** MSRPA *****/
+	  	RcMSRPABase					= 0x20050000,
+	  	
+	  	RcMSRPASessionAddFail			= 0x20050001,
+	  	RcMSRPAConnectionAddFail		= 0x20050002,
+	  	RcMSRPAConnectionNormalClose	= 0x20050003,
+	  	RcMSRPAConnectionErrClose		= 0x20050004,
+	  	RcMSRPANotFoundSession		= 0x20050005,
+	  	RcMSRPAInternalErr				= 0x20050006,
+	  	
+		/***** TCRM(MPRM)    ********/
+		RcTCRMBase                     = 0x20060000,
+
+	   // 60010-600FF MPReason
+		RcTCRMCommandSyntaxError       = 0x20061001,
+		RcTCRMIllegalParam             = 0x20061002,
+		RcTCRMSoftwareFail             = 0x20061003,
+		RcTCRMNotReady                 = 0x20061004,
+		RcTCRMInsufficientResource     = 0x20061005,
+		RcTCRMInternalError            = 0x20061006,
+		RcTCRMSessionAllocFail         = 0x20061007, // MPRM 내부 세션 할당 fail
+		RcTCRMSessionBusy              = 0x20061008, // 할당할 내부 세션이 없음.. busy
+		RcTCRMSessionFindFail          = 0x20061009, // 해당하는 내부 세션이 없음.. 
+		RcTCRMConnectFailTgas          = 0x20061011, // tgas connect fail 
+		RcTCRMConnectFailMpa           = 0x20061012, // mpa connect fail 
+		RcTCRMGarbageCollect           = 0x20061013, // garbage collect delete
+		RcTCRMTimeout                  = 0x20061014, // timeout
+		RcTCRMAlreadyRecvStartReq      = 0x20061015, // already recv start
+		RcTCRMNotFoundSession          = 0x20061016, // 해당하는 mpa sesid 
+		RcTCRMDuplicateSession         = 0x20061017, // 해당하는 mpa sesid 중복사용
+		RcTCRMMpaDown                  = 0x20061018, // MPA down
+		RcTCRMStopReqTimeout           = 0x20062000, // stop req timeout
+		RcTCRMAlreadyClear             = 0x20062001, // already clear
+
+		RcMax
+	};
+
+	static const char* geterr_str(unsigned int rc)
+	{
+		switch(rc & 0xffff0000)
+		{
+			case RcNoErr:
+				return "NoErr";
+				break;
+			case RcTGAgentBase:
+			{
+				switch(rc)
+				{    
+					case RcTGAIllegalParam:
+					   return "TGA - Parameter error";
+					case RcTGASendtoTGRMFail:
+					   return "TGA - Send to TGRM error";
+					case RcTGAOutofService:
+					   return "TGA - OOS checking error & Out of Service";
+					case RcTGANotReady:
+					   return "TGA - TGA Not Ready";
+					case RcTGAInternalError:
+					   return "TGA - Internal error";
+					case RcTGASetLocAddrFail:
+					   return "TGA - Set Local Addr fail";
+					case RcTGASetTmpAddrFail:
+					   return "TGA - Set TmpAddr Addr fail";
+					case RcTGASetSessionFail:
+					   return "TGA - Set Session fail";
+					case RcTGASetRecoverSessionFail:
+					   return "TGA - Set Recover Session fail";
+					case RcTGAClearLocFail:
+					   return "TGA - Clear Loacl Addr fail";
+					case RcTGAClearTmpFail:
+					   return "TGA - Clear TmpAddr fail";
+					case RcTGAClearSesFail:
+					   return "TGA - Clear Session fail";
+					case RcTGAClearAllFail:
+					   return "TGA - Clear All Session fail";
+					case RcTGAResetFail:
+					   return "TGA - Reset fail";
+					case RcTGAInitFail:
+					   return "TGA - Init fail";
+					case RcTGAGetLocAddrFail:
+					   return "TGA - Get Local Addr fail";
+					case RcTGAAssignFail:
+					   return "TGA - Assign Addr fail";
+					case RcTGAAliveCheckFail:
+					   return "TGA - Check Alive fail";
+					case RcTGASetLocEncFail:
+					   return "TGA - Set Local Encryprion information fail";
+					case RcTGANotActiveMode:
+					   return "TGA - Not Active mode";
+					case RcTGAInvalidIPVersion:
+					   return "TGA - Invalid IP Version";
+					case RcTGANetDeviceDown:
+					   return "TGA - Network Device Down";
+					default: 
+					   return "TGA - undefine";
+				}    
+			}
+			break;
+
+			case RcTGASBase:
+			{
+				switch(rc)
+				{    
+					case RcASMakeSdpFail:
+					   return "AS - Make SDP Fail";
+               case RcASSessionFindFail:
+					   return "AS - Session Find Fail";
+					case RcASInvalidNode:
+					   return "AS - Invalid Node";
+					case RcASSessionFull:
+					   return "AS - Session Full";
+					case RcASInternalError:
+					   return "AS - Internal Error";
+					case RcASNegoFail:
+					   return "AS - Nego Fail";
+					case RcASNotFoundAudio:
+					   return "AS - Not Found Audio";
+					case RcASNotFoundVideo:
+					   return "AS - Not Found Video";
+					case RcASNotFoundCodec:
+					   return "AS - Not Found Codec";
+					case RcASGarbageCollect:
+					   return "AS - Garbage Collect";
+					case RcASConnectFailTCRM:
+					   return "AS - TCRM Send Fail";
+					case RcASSessionBusy:
+					   return "AS - Session Busy";
+					case RcASSdpParseError:
+					   return "AS - SDP Parse Error";
+					case RcASNotFoundMsrp:
+					   return "AS - Not Found Msrp Info";
+					case RcASNetfailKill:
+					   return "AS - Netfail Kill";
+					case RcASRetransFail:
+					   return "AS - Retrans Fail";
+					case RcASContentTypeError:
+					   return "AS - Content Type Error";
+					case RcASConnectFailTGA:
+					   return "AS - Connect Fail TGA";
+					case RcASConnectFailMSRPA:
+					   return "AS - Connect Fail MSRPA";
+					case RcASSdpSyntaxError:
+					   return "AS - SDP Syntax Error";
+					case RcASTimeout:
+					   return "AS - Timeout";
+					case RcASAddTimeout:
+					   return "AS - Add Timeout";
+					case RcASModTimeout:
+					   return "AS - Mod Timeout";
+					case RcASDelTimeout:
+					   return "AS - Del Timeout";
+					case RcASCallDurationTimeout:
+					   return "AS - Call Duration Timeout";
+					case RcASAddRspTimeout:
+					   return "AS - AddRsp Timeout";
+					case RcASOfferRspTimeout:
+					   return "AS - OfferRsp Timeout";
+					case RcASNotFoundPTGroup:
+					   return "AS - Not Found PT Group";
+					case RcASNotFoundCodecList:
+					   return "AS - Not Found Codec List";
+					case RcASAlreadyExistPTList:
+					   return "AS - Already Exist PT List";
+					case RcASNotFoundPTList:
+					   return "AS - Not Found PT List";
+					case RcASAlreadyExistPTGroup:
+					   return "AS - Already Exist PT Group";
+					case RcASAlreadyExistCodecList:
+					   return "AS - Already Exist Codec List";
+					case RcASAlreadyExistCodecName:
+					   return "AS - Already Exist Codec List(CodecName)";
+					case RcASAlreadyExistRuleList:
+					   return "AS - Already Exist Rule List";
+					case RcASNotFoundRuleList:
+					   return "AS - Not Found Rule List";
+					case RcASExistCID:
+					   return "AS - Exist Codec ID(dependancy)";
+					case RcASExistRID:
+					   return "AS - Exist Rule ID(dependancy)";
+					case RcASRuleMaxCntOver:
+					   return "AS - Rule Count Over";
+					case RcASIllegalCodecType:
+					   return "AS - Codec type not found(audio or video)";
+
+					default: 
+					   return "AS - undefine";
+				}    
+			}
+			break;
+
+			case RcTGRMBase:
+			{
+				switch(rc)
+				{    
+#if 0
+					case RcRMIllegalParam:
+					   return "RM - Parameter Error";
+               case RcRMSendtoAsFail:
+                  return "RM - Send to As Fail";
+               case RcRMSendtoCompFail:
+                  return "RM - Send to Comp Fail";
+               case RcRMOutofService:
+                  return "RM - OOS checking error & Out of Service";
+               case RcRMAsDown:
+                  return "RM - As Down";
+               case RcRMCompDown:
+                  return "RM - Comp Down";
+               case RcRMConnectFailTGAS:
+                  return "RM - Connect Fail TGAS";
+               case RcRMConnectFailTGA:
+                  return "RM - Connect Fail TGA";
+               case RcRMInternalError:
+                  return "RM - Internal Error";
+					case RcRmNetFailError:
+					   return "RM - NetFailError";
+#endif
+               case RcRMSessionAllocFail:
+                  return "RM - Session Alloc Fail";
+               case RcRMSessionBusy:
+                  return "RM - Session Busy";
+               case RcRMSessionFull:
+                  return "RM - Session Full";
+               case RcRMSessionIdle:
+                  return "RM - Session Idle";
+					case RcRMInsufficientResource:
+					   return "RM - Insufficient Resource";
+					case RcRMNotEnabled:
+					   return "RM - Not Enabled";
+					case RcRMAlreadyEnabled:
+					   return "RM - Already Enabled";
+					case RcRMInvalidStatus:
+					   return "RM - Invalid Status";
+
+               case RcRMNotFoundRoute:
+                  return "RM - Not Found Route";
+               case RcRMNotFoundBoard:
+                  return "RM - Not Found Board";
+               case RcRMNotFoundTga:
+                  return "RM - Not Found Tga";
+               case RcRMNotFoundPool:
+                  return "RM - Not Found Pool";
+               case RcRMNotFoundRsc:
+                  return "RM - Not Found Rsc";
+               case RcRMNotFoundPort:
+                  return "RM - Not Found Port";
+					case RcRMNotFoundId:
+					   return "RM - Not Found AppId";
+					case RcRMNotFoundSession:
+					   return "RM - Not Found Session";
+					case RcRMNotFoundAddr:
+					   return "RM - Not Found Addr";
+					case RcRMExistRoute:
+					   return "RM - Exist Route";
+					case RcRMExistBoard:
+					   return "RM - Exist Board";
+					case RcRMExistPool:
+					   return "RM - Exist Pool";
+					case RcRMExistRsc:
+					   return "RM - Exist Rsc";
+					case RcRMDuplicateRoute:
+					   return "RM - Duplicate Route";
+					case RcRMDuplicateBoard:
+					   return "RM - Duplicate Board";
+					case RcRMDuplicateIP:
+					   return "RM - Duplicate IP";
+					case RcRMDuplicateRsc:
+					   return "RM - Duplicate Rsc";
+					case RcRMAlreadyExistRoute:
+					   return "RM - Already Exist Route";
+
+					case RcRMTGAAddrSetFail:
+					   return "RM - TGA Virtual Address Set Fail";
+					case RcRMTGABoardNotActive:
+					   return "RM - TGA Board Not Active Mode";
+               case RcRMGarbageCollect:
+                  return "RM - Garbage Collect";
+               case RcRMAlreadyRecvAddReq:
+                  return "RM - Already Recv Add Request";
+               case RcRMInvalidIPVersion:
+                  return "RM - Invalid IP Version";
+               case RcRMFileSaveFail:
+                  return "RM - File Save Fail";
+               case RcRMLongCallDel:
+                  return "RM - Long Call Delete";
+
+					case RcRMRouteFullAlloc:
+					   return "RM - Route Full";
+					case RcRMBoardFullAlloc:
+					   return "RM - Board Full";
+					case RcRMPoolFullAlloc:
+					   return "RM - Pool Full";
+					case RcRMRscFullAlloc:
+					   return "RM - Rsc Full";
+					case RcRMInvalidRoute:
+					   return "RM - Invalid Route";
+					case RcRMInvalidBoard:
+					   return "RM - Invalid Board";
+					case RcRMInvalidPool:
+					   return "RM - Invalid Pool";
+					case RcRMInvalidRsc:
+					   return "RM - Invalid Rsc";
+					case RcRMModRouteFail:
+					   return "RM - Modify Route Fail";
+					case RcRMDelRouteFail:
+					   return "RM - Delete Route Fail";
+					case RcRMModBoardFail:
+					   return "RM - Modify Board Fail";
+					case RcRMDelBoardFail:
+					   return "RM - Delete Board Fail";
+					case RcRMModPoolFail:
+					   return "RM - Modify Pool Fail";
+					case RcRMDelPoolFail:
+					   return "RM - Delete Pool Fail";
+					case RcRMModRscFail:
+					   return "RM - Modify Rsc Fail";
+					case RcRMDelRscFail:
+					   return "RM - Delete Rsc Fail";
+					case RcRMSwitchBDStatusFail:
+					   return "RM - Switch Board Status Fail";
+					case RcRMAddRouteFail:
+					   return "RM - Add Route Fail";
+					case RcRMExistTRTE:
+					   return "RM - Exist TRTE";
+					case RcRMBlockRoute:
+					   return "RM - Block Route";
+					case RcRMBlockBoard:
+					   return "RM - Block Board";
+					case RcRMBlockPool:
+					   return "RM - Block Pool";
+					case RcRMBlockRsc:
+					   return "RM - Block Rsc";
+
+               case RcRMTimeout:
+					   return "RM - Timeout";
+               case RcRMDelReqTimeout:
+                  return "RM - Delete Request Timeout";
+				   case RcRMStopReqTimeout:
+					   return "RM - Stop Request Timeout";
+				   case RcRMTgaInitTimeout:
+					   return "RM - Tga Init Timeout";
+					case RcRMTgaDownTimeout:
+					   return "RM - Tga Down Timeout";
+				   
+					default: 
+					   return "RM - undefine";
+				}
+			}
+
+			case RcMSRPRMBase:
+			{
+				switch(rc)
+				{    
+					case RcMSRPRMInsufficientResource:
+					   return "MSRPRM - Insufficient Resource";
+               case RcMSRPRMDuplicateCh:
+                  return "MSRPRM - Duplicate Channel";
+               case RcMSRPRMNotFoundCh:
+                  return "MSRPRM - Not Found Channel";
+               case RcMSRPRMNotFoundMsrpa:
+                  return "MSRPRM - Not Found MSRPA";
+               case RcMSRPRMConnectFailMsrpa:
+                  return "MSRPRM - Connect Faill MSRPA";
+               case RcMSRPRMConnectFailTgas:
+                  return "MSRPRM - Connect Fail TGAS";
+               case RcMSRPRMInternalError:
+                  return "MSRPRM - Internal Error";
+               case RcMSRPRMSessionFindFail:
+                  return "MSRPRM - Session Find Fail";
+               case RcMSRPRMMsrpaDown:
+                  return "MSRPRM - MSRPA DOWN";
+               case RcMSRPRMSessionBusy:
+                  return "MSRPRM - Session Busy";
+               case RcMSRPRMAlreadyRecvInit:
+                  return "MSRPRM - Already Recv Add";
+               case RcMSRPRMGarbageCollect:
+                  return "MSRPRM - Garbage Collect";
+					case RcMSRPRMCloseReqTimeout:
+					   return "MSRPRM - Close Req Timeout";
+               case RcMSRPRMNotFoundBoard:
+                  return "MSRPRM - Not Found Board";
+               case RcMSRPRMSwitchBDStatusFail:
+                  return "MSRPRM - Switch Board Status Fail";
+               case RcMSRPRMIPAllocFail:
+                  return "MSRPRM - IP Alloc Fail";
+               case RcMSRPRMAlreadyExistRoute:
+                  return "MSRPRM - Already Exist Route";
+               case RcMSRPRMNotFoundRoute:
+                  return "MSRPRM - Not Found Route";
+               case RcMSRPRMBlockRoute:
+                  return "MSRPRM - Block Route";
+               case RcMSRPRMBlockBoard:
+                  return "MSRPRM - Block Board";
+               case RcMSRPRMBlockPool:
+                  return "MSRPRM - Block Pool";
+               case RcMSRPRMBlockRsc:
+                  return "MSRPRM - Block Resource";
+               case RcMSRPRMNotFoundPool:
+                  return "MSRPRM - Not Found Pool";
+               case RcMSRPRMNotFoundRsc:
+                  return "MSRPRM - Not Found Resource";
+               case RcMSRPRMSwitchBDModeFail:
+                  return "MSRPRM - Switch Board Mode Fail";
+               case RcMSRPRMExistTRTE:
+                  return "MSRPRM - Exist TRTE(from Rsc)";
+
+					default: 
+					   return "MSRPRM - undefine";
+				}
+			}
+
+			case RcTCRMBase:
+			{
+				switch(rc)
+				{    
+					case RcTCRMCommandSyntaxError:
+					   return "TCRM - Command Syntax Error";
+               case RcTCRMIllegalParam:
+                  return "TCRM - Illegal Param";
+               case RcTCRMSoftwareFail:
+                  return "TCRM - Software Fail";
+               case RcTCRMNotReady:
+                  return "TCRM - Not Found Ready";
+					case RcTCRMInsufficientResource:
+					   return "TCRM - Insufficient Resource";
+               case RcTCRMInternalError:
+                  return "TCRM - Internal Error";
+               case RcTCRMSessionAllocFail:
+                  return "TCRM - Session Alloc Fail";
+               case RcTCRMSessionBusy:
+                  return "TCRM - Session Busy";
+               case RcTCRMSessionFindFail:
+                  return "TCRM - Session Find Fail";
+               case RcTCRMConnectFailTgas:
+                  return "TCRM - Connect Fail TGAS";
+               case RcTCRMConnectFailMpa:
+                  return "TCRM - Connect Fail MPA";
+               case RcTCRMGarbageCollect:
+                  return "TCRM - Garbage Collect";
+               case RcTCRMTimeout:
+                  return "TCRM - Timeout";
+               case RcTCRMAlreadyRecvStartReq:
+                  return "TCRM - Already Recv Start Req";
+               case RcTCRMNotFoundSession:
+                  return "TCRM - Not Found Session";
+               case RcTCRMDuplicateSession:
+                  return "TCRM - Duplicate Session";
+               case RcTCRMMpaDown:
+                  return "TCRM - MPA DOWN";
+               case RcTCRMStopReqTimeout:
+                  return "TCRM - Stop Req Timeout";
+               case RcTCRMAlreadyClear:
+                  return "TCRM - Already Clear";
+					default: 
+					   return "TCRM - undefine";
+				}
+			}
+
+         default: return "not defined error";
+      }
+
+	}
+   
+}; //name space TGRM
+
+}
+#endif

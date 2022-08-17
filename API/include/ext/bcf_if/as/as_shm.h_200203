@@ -1,0 +1,386 @@
+#ifndef __AS_SHM_H__
+#define __AS_SHM_H__
+
+#include <string>
+
+enum e_max_codec {
+   E_CODEC_TYPE_AUDIO = 1,
+   E_CODEC_TYPE_VIDEO = 2,
+   //E_CODEC_MAX_USER = 8,
+   E_CODEC_MAX_NODE = 20,
+   E_CODEC_MAX_LIST = 20,
+   E_RULE_MAX_LIST = 20,
+   E_RULE_MAX_CNT = 8,
+   E_PT_MAX_GROUP = 10,
+   E_PT_MAX_LIST = E_CODEC_MAX_LIST * E_PT_MAX_GROUP, // 200
+   E_NODE_MAX_CODEC_CNT = 10,
+   E_CODEC_MAX_SDP_RULE = 20, // R104 PKG Add by hak.
+   E_CODEC_MAX_SDP_MANIPULATION = 20, // R104 PKG Add by hak.
+   E_SET_MAX_MANIPULATION = 3, //한 호당 최대 manipulation 가능한 개수.
+   E_CODEC_MAX_SDP_CODEC_MANAGER = 40, // R126 PKG Add by hak.
+   E_CODEC_CHECK_MAX_SDP_CODEC_MANAGER = 21, // R126 PKG Add by hak. 실제 확인할 CodecManager 갯수. ID 1 ~ 21
+};
+
+typedef struct st_as_base {
+	unsigned int uReason;
+	unsigned char ucEnabled;
+	unsigned char ucValid;
+	unsigned char ucID;
+	unsigned char ucStatus;
+
+} st_as_base, *pst_as_base;
+
+struct st_codeclist : public st_as_base {
+   enum { e_maxnum_name=128 };
+
+	unsigned char ucCID;
+	char cDtmf;
+	unsigned char ucType;
+	unsigned char ucReserved;
+	int nMaxPps;
+
+   char szName[e_maxnum_name];
+   char szCodecName[e_maxnum_name];
+
+   char *str(char *pBuf, int nLen)
+   {
+      snprintf(pBuf, nLen, "CID:%d NAME:%s CODECNAME:%s TYPE:%d DTMF:%d MAX_PPS:%d",
+         ucCID, szName, szCodecName, ucType, cDtmf, nMaxPps);
+      return pBuf;
+   }
+};
+
+struct st_codec_info{
+   enum { e_maxnum_name=24, e_maxnum_fmtp=256, e_maxnum_fs=16 }; // R103 PKG by hak. fmtp 128 -> 256 change.
+   unsigned char ucType;
+   unsigned char ucCID;
+	char cDtmf;
+	char cMod;
+   char cModOrgId;
+	char cReserved[3];
+
+   int nFrameRate;
+   int nPT;                   //payload type
+   int nRate; // sample rate
+	int nReserved;
+	int nParameter;		//by hak. R102PKG. ex)AMR-WB/16000/1 -> parameter value : 1
+
+	short sImgAttrSendX;
+	short sImgAttrSendY;
+	short sImgAttrRecvX;
+	short sImgAttrRecvY;
+
+   char szName[e_maxnum_name];
+   char szFmtp[e_maxnum_fmtp];
+   char szFrameSize[e_maxnum_fs];
+
+   char *str(char *pBuf, int nLen)
+   {
+      if (ucType == E_CODEC_TYPE_VIDEO)
+      {
+         snprintf(pBuf, nLen, "CID:%d NAME:%s PT:%d RATE:%d PR:%d FMTP:%s FR:%d FS:%s IMG(S:%d-%d R:%d-%d)", 
+            ucCID, szName, nPT, nRate, nParameter, szFmtp, nFrameRate, szFrameSize,
+				sImgAttrSendX, sImgAttrSendY, sImgAttrRecvX, sImgAttrRecvY);
+      }
+      else
+      {
+         snprintf(pBuf, nLen, "CID:%d NAME:%s PT:%d RATE:%d PR:%d DTMF:%d FMTP:%s", 
+            ucCID, szName, nPT, nRate, nParameter, cDtmf, szFmtp);
+      }
+      return pBuf;
+   }
+};
+
+enum E_RULE_TYPE {
+	E_RULE_TYPE_ADD = 1,
+	E_RULE_TYPE_MOD = 2,
+	E_RULE_TYPE_DEL = 3,
+	E_RULE_TYPE_MAX = 4,
+};
+
+enum E_CHG_TYPE {
+	E_CHG_TYPE_PT = 1,
+	E_CHG_TYPE_FMTP, // fmtp
+	E_CHG_TYPE_RATE, // sameple rate
+	E_CHG_TYPE_FS, // framesize
+	E_CHG_TYPE_MAX,
+};
+
+struct st_rulelist : public st_as_base {
+   enum { e_maxnum_name=128, e_maxnum_fmtp=256, e_maxnum_value=128 }; // R103 PKG by hak. fmtp 128 -> 256 change.
+
+	unsigned char ucRID;
+	unsigned char ucType; // TYPE
+	unsigned char ucKeyCID; // KEY_CID
+	unsigned char ucChgType; // CHG_TYPE
+	int nKeyRate; // KEY_RATE
+
+	char szKeyFmtp[e_maxnum_fmtp]; // KEY_FMTP 
+	char szChgValue[e_maxnum_value]; // CHG_VALUE
+   char szName[e_maxnum_name];
+
+	st_codec_info addinfo;
+
+   char *str(char *pBuf, int nLen)
+   {
+		char szType[32]; 
+		char szChgType[16]; 
+		char szBody[256]; 
+
+		memset(szBody, 0, sizeof(szBody));
+
+		switch(ucChgType)
+		{
+			case E_CHG_TYPE_PT: snprintf(szChgType, sizeof(szChgType), "PT"); break;
+			case E_CHG_TYPE_FMTP: snprintf(szChgType, sizeof(szChgType), "FMTP"); break;
+			case E_CHG_TYPE_RATE: snprintf(szChgType, sizeof(szChgType), "RATE"); break;
+			case E_CHG_TYPE_FS: snprintf(szChgType, sizeof(szChgType), "FS"); break;
+			default: snprintf(szChgType, sizeof(szChgType), "unknown chgtype:%d", ucChgType); break;
+		}
+
+		switch(ucType)
+		{
+			case E_RULE_TYPE_ADD: 
+			{
+				snprintf(szType, sizeof(szType), "ADD"); 
+				addinfo.str(szBody, sizeof(szBody));
+			}
+			break;
+			case E_RULE_TYPE_MOD: 
+			{
+				snprintf(szType, sizeof(szType), "MOD"); 
+				snprintf(szBody, sizeof(szBody), "CHG(TYPE:%s VALUE:%s)", szChgType, szChgValue);
+			}
+			break;
+			case E_RULE_TYPE_DEL: snprintf(szType, sizeof(szType), "DEL"); break;
+			default: snprintf(szType, sizeof(szType), "unknown type:%d", ucType); break;
+		}
+
+      snprintf(pBuf, nLen, 
+			"RID:%d NAME:%s KEY(CID:%d RATE:%d FMTP:%s) TYPE:%s %s", 
+			ucRID, szName, ucKeyCID, nKeyRate, szKeyFmtp, szType, szBody);
+      return pBuf;
+	}
+};
+
+struct st_ptgroup : public st_as_base {
+   enum { e_maxnum_name=128 };
+
+	unsigned char ucPID;
+	unsigned char ucReserved[3];
+	int nRuleCnt;
+
+	int nRule[E_RULE_MAX_CNT];
+
+   char szName[e_maxnum_name];
+
+   char *str(char *pBuf, int nLen)
+   {
+		char szRule[128];
+		std::string strRule = "";
+		int i;
+		for(i=0;i<nRuleCnt;i++)
+		{
+			memset(szRule, 0, sizeof(szRule));
+			if (strRule.length())
+				strRule += " ";
+			snprintf(szRule, sizeof(szRule), "%d", nRule[i]); 
+			strRule += szRule;
+		}
+
+      snprintf(pBuf, nLen, "PID:%d NAME:%s RULE(%s)",
+         ucPID, szName, strRule.c_str());
+      return pBuf;
+   }
+};
+
+struct st_ha_status {
+   enum { e_maxnum_ip=32 };
+	char cEnable; // 사용여부..
+	unsigned char ucStatus; // 0: standby, 1: active
+	unsigned char ucReserved[6];
+
+	char szVIP[e_maxnum_ip];
+
+   char *str(char *pBuf, int nLen)
+   {
+		char szStatus[8];
+		if (ucStatus || (cEnable == 0) )
+			sprintf(szStatus, "ACT");
+		else
+			sprintf(szStatus, "SB");
+
+      snprintf(pBuf, nLen, "Enable:%d Status:%s VIP:%s",
+         cEnable, szStatus, szVIP);
+      return pBuf;
+   }
+};
+
+//for R104 PKG add by hak Start.
+enum E_MANIPULATION_TYPE {
+	E_MANIPULATION_TYPE_ADD = 1,
+	E_MANIPULATION_TYPE_MOD = 2,
+	E_MANIPULATION_TYPE_DEL = 3,
+	E_MANIPULATION_TYPE_MAX = 4,
+};
+
+enum E_SDP_RULE_MACHING_TYPE {
+	E_SDP_NOTHING_MACHING = 0,
+	E_SDP_FULL_MACHING = 1,
+	E_SDP_PARTIAL_MACHING = 2,
+	E_SDP_PREFIX_MACHING = 3,
+	E_SDP_MACHING_LEVEL_MAX = 4,
+};
+
+enum E_SDP_CONDITION_TYPE {
+	E_SDP_CONDITION_NOTHING = 0,
+	E_SDP_CONDITION_INCLUDE = 1,
+	E_SDP_CONDITION_EXCLUDE = 2,
+	E_SDP_CONDITION_MAX_LEVEL = 3,
+};
+
+enum E_SDP_MEDIA_TYPE {
+	E_SDP_TYPE_AUDIO = 1,
+	E_SDP_TYPE_VIDEO = 2,
+	E_SDP_TYPE_MAX = 3,
+};
+
+
+struct st_sdp_rule : public st_as_base {
+   enum { e_maxnum_name=128 }; 
+
+	int nRID; //SDP Rule의 ID를 사용
+	unsigned char ucMaching; // Full-Maching or Partial Maching.
+	unsigned char ucCondition; // include or Exclude.
+	unsigned char ucReserved[2]; // Reserved Field.
+	int nCallerTrte; // Caller의 TrTe조건 
+	int nCalledTrte; // Called의 TrTe조건 
+	int nCallerGroupId; // Caller의 GroupId조건
+	int nCalledGroupId; // Called의 GroupId조건
+	
+	char szName[e_maxnum_name]; // RuleName
+	char szUserAgent[e_maxnum_name]; // User-Agent 정보 저장
+	
+	char *str(char *pBuf, int nLen)
+	{
+   		char szMaching[16]; memset(szMaching, 0x00, sizeof(szMaching));
+   		char szCondition[16]; memset(szCondition, 0x00, sizeof(szCondition));
+
+   		switch(ucMaching)
+   		{
+   			case E_SDP_FULL_MACHING:
+		   		snprintf(szMaching, sizeof(szMaching), "Full");
+		   		break;
+   			case E_SDP_PARTIAL_MACHING:
+	   			snprintf(szMaching, sizeof(szMaching), "Partial");
+	   			break;
+   			case E_SDP_PREFIX_MACHING:
+	   			snprintf(szMaching, sizeof(szMaching), "Prefix");
+	   			break;	
+   		}
+   		switch(ucCondition)
+   		{
+   			case E_SDP_CONDITION_INCLUDE:
+		   		snprintf(szCondition, sizeof(szCondition), "Include");
+		   		break;
+   			case E_SDP_CONDITION_EXCLUDE:
+	   			snprintf(szCondition, sizeof(szCondition), "Exclude");
+	   			break;
+   		}
+   		
+		snprintf(pBuf, nLen, "RID=%d, NAME=%s, erTrte=%d, edTrte=%d, UA=%s, Mach=%s, CD=%s, erGID=%d, edGID=%d"
+									, nRID, szName, nCallerTrte, nCalledTrte, szUserAgent, szMaching, szCondition, nCallerGroupId, nCalledGroupId);
+		return pBuf;
+	}
+};
+
+struct st_sdp_manipulation : public st_as_base {
+   enum { e_maxnum_name=128, e_maxnum_fmtp=256, e_maxnum_value=128 }; // R103 PKG by hak. fmtp 128 -> 256 change.
+
+	int nMID; // SDP Manipulation의 ID
+	unsigned char ucCommandType; // ADD, MOD, DEL
+	unsigned char ucMediaType; // Audio or Video
+	unsigned char reserved[2]; // reserved.
+	int nManipulationOn; // on, off flag.
+	int nPT; // PT 숫자 입력
+	int nSampleRate; // samplerate 값 지정
+	int nFrameRate; // FrameRate 값 지정
+
+	char szRID[e_maxnum_value]; //SDP Rule의 ID를 사용, 다중 RuleID 입력으로 char 형으로 변경함.
+	char szName[e_maxnum_name]; // Name
+	char szCodecName[e_maxnum_name]; // CODEC의 이름 기재
+	char szFMTP[e_maxnum_fmtp]; // 입력할 FMTP
+	char szFrameSize[e_maxnum_value]; // Video일 경우 FrameSize
+	char szImageAttr[e_maxnum_value]; // Video일 경우 ImageAttr
+	
+	char *str(char *pBuf, int nLen)
+	{
+   		char szCommandType[8]; memset(szCommandType, 0x00, sizeof(szCommandType));
+   		char szMediaType[8]; memset(szMediaType, 0x00, sizeof(szMediaType));
+   		
+   		switch(ucCommandType)
+   		{
+	   		case E_MANIPULATION_TYPE_ADD:
+	   			snprintf(szCommandType, sizeof(szCommandType), "Add"); 
+	   			break;
+   			case E_MANIPULATION_TYPE_MOD:
+	   			snprintf(szCommandType, sizeof(szCommandType), "Mod"); 
+	   			break;
+   			case E_MANIPULATION_TYPE_DEL:
+	   			snprintf(szCommandType, sizeof(szCommandType), "Del"); 
+	   			break;
+	   	}
+   		switch(ucMediaType)
+   		{
+	   		case E_SDP_TYPE_AUDIO:
+	   			snprintf(szMediaType, sizeof(szMediaType), "Audio"); 
+	   			break;
+   			case E_SDP_TYPE_VIDEO:
+	   			snprintf(szMediaType, sizeof(szMediaType), "Video"); 
+	   			break;
+	   	}	   	
+   		
+		snprintf(pBuf, nLen, "MID=%d, Name=%s, RID=%s, ON=%d, CT=%s, MT=%s, CD=%s, PT=%d, SR=%d, FMTP=%s, FR=%d, FS=%s, IA=%s"
+									, nMID, szName, szRID, nManipulationOn, szCommandType, szMediaType, szCodecName, nPT
+									, nSampleRate, szFMTP, nFrameRate, szFrameSize, szImageAttr);
+		return pBuf;
+	}
+};
+//for R104 PKG add by hak End.
+
+//for R126 PKG add by hak Start.
+struct st_sdp_codec_manager : public st_as_base {
+   enum { e_maxnum_name=128, e_maxnum_value=128 };
+
+	int nID; // SDP Codec Manager의 ID
+	char szName[e_maxnum_name]; // Name
+	char szRID[e_maxnum_value]; //SDP Rule의 ID를 사용, 다중 RuleID 입력으로 char 형으로 변경함.
+	char szCodecList[e_maxnum_value]; //SDP CODEC LIST를 list 형태로 입력 가능함. ex) 1/2/5/6/8
+	int nIfCodecDeleteThenAudioAs; //만약 codecList에 의하여 Delete될 경우 세팅되는 Audio AS의 값.
+	int nIfCodecDeleteThenVideoAs; //만약 codecList에 의하여 Delete될 경우 세팅되는 Video AS의 값.
+	int nIfNotDeleteThenAudioAs; //만약 codecList에 의하여 Delete 되지 않을 경우 세팅되는 Audio AS의 값.
+	int nIfNotDeleteThenVideoAs; //만약 codecList에 의하여 Delete 되지 않을 경우 세팅되는 Video AS의 값.
+	int nManagerOn;	// ON, OFF flag.
+	char szReason[e_maxnum_name];	//Response시에 실패로 응답할 경우 이유를 세팅하여 전송함.
+
+	char *str(char *pBuf, int nLen)
+	{
+		snprintf(pBuf, nLen, "ID=%d, Name=%s, RID=%s, CodecList=%s, DelAuAS=%d, DelViAs=%d, NotDelAuAs=%d, NotDelViAs=%d, ON=%d"
+									, nID, szName, szRID, szCodecList, nIfCodecDeleteThenAudioAs, nIfCodecDeleteThenVideoAs,
+									nIfNotDeleteThenAudioAs, nIfNotDeleteThenVideoAs, nManagerOn);
+		return pBuf;
+	}
+};
+//for R126 PKG add by hak End.
+
+struct st_as_shm {
+	st_codeclist stCodecList[E_CODEC_MAX_LIST];
+	st_rulelist stRuleList[E_RULE_MAX_LIST];
+	st_ptgroup stPTGroup[E_PT_MAX_GROUP];
+	st_ha_status stHa;
+	st_sdp_rule stSdpRule[E_CODEC_MAX_SDP_RULE]; //for R104 PKG add by hak 
+	st_sdp_manipulation stSdpManipulation[E_CODEC_MAX_SDP_MANIPULATION]; //for R104 PKG add by hak 
+	st_sdp_codec_manager stSdpCodecManager[E_CODEC_MAX_SDP_CODEC_MANAGER];	//for R126 PKG add by hak.
+};
+
+#endif

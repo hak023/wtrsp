@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi
+END
+winbuild.bat
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/winbuild.bat
+END
+features.in
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/features.in
+END
+links.in
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/links.in
+END
+files.in
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/files.in
+END
+environment.in
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/environment.in
+END
+dbcorewix.in
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/dbcorewix.in
+END
+dbwix.m4
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/dbwix.m4
+END
+dbvarsbat.in
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/dbvarsbat.in
+END
+s_winmsi.fcn
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/dist/winmsi/s_winmsi.fcn
+END

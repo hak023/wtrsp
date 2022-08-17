@@ -1,0 +1,593 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm
+END
+CheckPrivacy.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckPrivacy.hxx
+END
+tfm.sln
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfm.sln
+END
+Event.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Event.hxx
+END
+ExpectAction.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ExpectAction.cxx
+END
+tfm.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfm.vcproj
+END
+Box.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Box.cxx
+END
+CppTestSelector.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CppTestSelector.hxx
+END
+StunEndPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunEndPoint.cxx
+END
+tfm_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfm_9_0.vcproj
+END
+Source.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Source.cxx
+END
+SipEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SipEvent.hxx
+END
+CheckFetchedContacts.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckFetchedContacts.hxx
+END
+Resolver.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Resolver.hxx
+END
+SubDecls.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SubDecls.hxx
+END
+DnsUtils.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/DnsUtils.hxx
+END
+DialogSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/DialogSet.cxx
+END
+SequenceSetThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceSetThread.cxx
+END
+SubDefns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SubDefns.hxx
+END
+TestUser.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestUser.cxx
+END
+BindPointerAction.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/BindPointerAction.hxx
+END
+EndPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/EndPoint.cxx
+END
+StunServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunServer.cxx
+END
+RouteGuard.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/RouteGuard.cxx
+END
+SequenceClassConstructorDefns.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceClassConstructorDefns.cxx
+END
+CountDown.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CountDown.hxx
+END
+TestEndPoint.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestEndPoint.hxx
+END
+AsciiGraphic.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/AsciiGraphic.cxx
+END
+TestProxy.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestProxy.hxx
+END
+TfmHelper.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TfmHelper.cxx
+END
+WrapperEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/WrapperEvent.hxx
+END
+Expect.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Expect.cxx
+END
+ExpectActionEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ExpectActionEvent.cxx
+END
+SequenceSet.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceSet.hxx
+END
+TelnetClient.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TelnetClient.cxx
+END
+CPTestProgressListener.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CPTestProgressListener.cxx
+END
+StunEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunEvent.hxx
+END
+TfmDns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TfmDns.hxx
+END
+TestSipEndPoint.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestSipEndPoint.hxx
+END
+TestException.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestException.hxx
+END
+TestSipElement.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestSipElement.cxx
+END
+RtpEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/RtpEvent.cxx
+END
+TransportDriver.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TransportDriver.cxx
+END
+TestRtp.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestRtp.hxx
+END
+Renderer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Renderer.hxx
+END
+CheckPrivacy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckPrivacy.cxx
+END
+Sequence.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Sequence.hxx
+END
+ActionBase.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ActionBase.hxx
+END
+SipRawMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SipRawMessage.hxx
+END
+CheckContacts.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckContacts.hxx
+END
+Event.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Event.cxx
+END
+CppTestSelector.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CppTestSelector.cxx
+END
+PortAllocator.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/PortAllocator.hxx
+END
+ExpectAction.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ExpectAction.hxx
+END
+SipEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SipEvent.cxx
+END
+Box.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Box.hxx
+END
+CheckFetchedContacts.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckFetchedContacts.cxx
+END
+StunEndPoint.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunEndPoint.hxx
+END
+ExpectFunctorDefs.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ExpectFunctorDefs.hxx
+END
+Resolver.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Resolver.cxx
+END
+DnsUtils.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/DnsUtils.cxx
+END
+Source.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Source.hxx
+END
+CPTextTestProgressListener.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CPTextTestProgressListener.hxx
+END
+DialogSet.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/DialogSet.hxx
+END
+CountDown.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CountDown.cxx
+END
+TestEndPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestEndPoint.cxx
+END
+SequenceSetThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceSetThread.hxx
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/LICENSE
+END
+TestProxy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestProxy.cxx
+END
+TestUser.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestUser.hxx
+END
+SequenceSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceSet.cxx
+END
+SequenceClassConstructorDecls.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceClassConstructorDecls.hxx
+END
+EndPoint.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/EndPoint.hxx
+END
+StunServer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunServer.hxx
+END
+RouteGuard.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/RouteGuard.hxx
+END
+SequenceClassConstructorDefns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SequenceClassConstructorDefns.hxx
+END
+CommonAction.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CommonAction.hxx
+END
+AsciiGraphic.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/AsciiGraphic.hxx
+END
+StunEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/StunEvent.cxx
+END
+TfmDns.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TfmDns.cxx
+END
+TfmHelper.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TfmHelper.hxx
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/README
+END
+TestSipEndPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestSipEndPoint.cxx
+END
+ExpectActionEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ExpectActionEvent.hxx
+END
+Expect.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Expect.hxx
+END
+TestException.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestException.cxx
+END
+TelnetClient.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TelnetClient.hxx
+END
+TestRtp.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestRtp.cxx
+END
+Renderer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Renderer.cxx
+END
+Sequence.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Sequence.cxx
+END
+SeqDecls.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SeqDecls.hxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/Makefile.am
+END
+ActionBase.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/ActionBase.cxx
+END
+SipRawMessage.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SipRawMessage.cxx
+END
+TestSipElement.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TestSipElement.hxx
+END
+RtpEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/RtpEvent.hxx
+END
+CheckContacts.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/CheckContacts.cxx
+END
+SeqDefns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/SeqDefns.hxx
+END
+TransportDriver.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/TransportDriver.hxx
+END

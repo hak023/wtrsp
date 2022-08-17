@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include
+END
+ut_sim.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/ut_sim.h
+END
+getopt_s.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/getopt_s.h
+END
+rtp.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/rtp.h
+END
+rtp_priv.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/rtp_priv.h
+END
+srtp.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/srtp.h
+END
+srtp_priv.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/srtp/include/srtp_priv.h
+END

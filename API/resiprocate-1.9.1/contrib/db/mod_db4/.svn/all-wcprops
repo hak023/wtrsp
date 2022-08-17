@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4
+END
+utils.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/utils.c
+END
+configure
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/configure
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/Makefile.in
+END
+skiplist.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/skiplist.c
+END
+sem_utils.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/sem_utils.c
+END
+configure.in
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/configure.in
+END
+utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/utils.h
+END
+skiplist.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/skiplist.h
+END
+mod_db4.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/mod_db4.c
+END
+sem_utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/sem_utils.h
+END
+mm_hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/mm_hash.c
+END
+mod_db4_export.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/mod_db4_export.h
+END
+config.h.in
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/config.h.in
+END
+mm_hash.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/mm_hash.h
+END
+INSTALL
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/INSTALL
+END
+BSD
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/BSD
+END
+ABOUT
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/mod_db4/ABOUT
+END

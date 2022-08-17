@@ -1,0 +1,177 @@
+
+#ifndef ESIPUTIL_THREAD_H
+#define ESIPUTIL_THREAD_H
+
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <pthread.h>
+
+#include "define.hxx"
+#include "log.hxx"
+#include "StlMap.hxx"
+#include "string.hxx"
+#include "lock.hxx"
+
+namespace eSipUtil
+{
+#define DEF_E_MAX_TH_NAME 128
+#define DEF_E_MAX_THREAD  200
+class ThreadMon;
+class ThreadMonInfo : public StlObject
+{
+	public:
+		ThreadMonInfo(ThreadMon * _pclsOwner);
+		~ThreadMonInfo();
+		pthread_t m_stThreadID;    //pthread_self();
+		unsigned int m_unState;      // 0 Not Working  1 Working
+		unsigned int m_unStartEvSec;
+		unsigned int m_unStartEvMsec;
+		unsigned int m_unFinishEvSec;
+		unsigned int m_unFinishEvMsec;
+		unsigned int m_unDiffSec;
+		unsigned int m_unDiffMsec;
+		KString m_szName;
+		void m_fnReset();
+		void m_fnBuild(KString & _rclsBuild);
+		//==========> Set Functions
+		void m_fnSetThreadID();
+		void m_fnSetThreadID(unsigned int _unID);
+		void m_fnSetStartEvTime();
+		void m_fnSetFinishEvTime();
+		void m_fnSetName(const char * _pszName);
+		//==========> Get Functions
+		unsigned int m_fnGetThreadID();
+		unsigned int m_fnGetStartSec();
+		unsigned int m_fnGetStartMsec();
+		unsigned int m_fnGetFinishSec();
+		unsigned int m_fnGetFinishMsec();
+		unsigned int m_fnGetDiffSec();
+		unsigned int m_fnGetDiffMsec();
+		char * m_fnGetName();
+		ThreadMon * m_pclsOwner;
+};
+class ThreadMon
+{
+	public :
+		ThreadMon();
+		~ThreadMon();
+		static ThreadMon * m_fnGetInstance(const char * _pszProcName=NULL);
+		static void m_CbkProc(ThreadMon * _pclsObj);
+		ThreadMonInfo * m_fnAdd(const char * _pszName,unsigned int _unThreadID =0);
+		void m_fnOnOff(bool _bOn);
+		void m_fnDebug();
+		StlList m_listInfo;
+		char  m_szProcName[DEF_E_MAX_TH_NAME];
+		bool m_bOn;
+	private:
+		RwMutex m_clsLock;
+};
+class BaseThread
+{
+	public :
+		BaseThread(const char * _pszThreadName = NULL);
+		virtual ~BaseThread();
+
+		virtual bool run();
+		bool run_(int _nCoreID, int _nStackSize, bool _bDetached = false);
+		virtual void shutdown();
+		virtual bool waitForShutdown(int _nMs) const;
+		void join();
+		void detach();
+		bool isShutdown() const;
+		void setName(const char * _pszThreadName);
+		const char * getName() const;
+		unsigned long getId();
+		int getKernelTid() const;
+		ThreadMonInfo * m_pclsInfo;
+	protected :
+		static void * threadWrapper(void * _data);
+		
+		virtual void process() = 0;
+
+		pthread_t m_threadId;
+		int m_nKernelTid;
+		char m_szThreadName[32];
+		
+		bool m_bShutdown;
+		mutable pthread_mutex_t m_shutdownMutex;
+		mutable pthread_cond_t m_shutdownCondition;
+	private:
+		int m_fnSetCore(int _nCoreID);
+		
+};
+template <class T>
+class NormalThread : public BaseThread
+{
+	public :
+		typedef void (* PfuncProcess)(T * _pclsT);
+		
+		NormalThread(const char * _pszThreadName = NULL);
+		virtual ~NormalThread();
+
+		void setProcessCb(PfuncProcess _pfnProcessCb);
+		void setObject(T * _pclsT);
+
+	protected :
+		virtual void process();
+		
+		PfuncProcess m_pfnProcessCb;
+		T * m_pclsObject;
+		
+};
+template <class T>
+NormalThread<T>::NormalThread(const char * _pszThreadName)
+	: BaseThread(_pszThreadName), m_pfnProcessCb(NULL), m_pclsObject(NULL)
+{
+}
+template <class T>
+NormalThread<T>::~NormalThread()
+{
+}
+template <class T>
+void NormalThread<T>::setProcessCb(PfuncProcess _pfnProcessCb)
+{
+	m_pfnProcessCb = _pfnProcessCb;
+}
+template <class T>
+void NormalThread<T>::setObject(T * _pclsT)
+{
+	m_pclsObject = _pclsT;
+}
+template <class T>
+void NormalThread<T>::process()
+{
+	m_nKernelTid = syscall(SYS_gettid);
+
+	LogInternal(E_LOG_INFO, "NormalThread[%s]. Tid[%d] : process : start", m_szThreadName, m_nKernelTid);
+	
+	if( m_pfnProcessCb )
+	{	
+		while( !isShutdown() )
+		{
+			if (m_pclsInfo) m_pclsInfo->m_fnSetStartEvTime();
+			m_pfnProcessCb(m_pclsObject);
+			if (m_pclsInfo) m_pclsInfo->m_fnSetFinishEvTime();
+		}
+	}
+	LogInternal(E_LOG_INFO, "NormalThread[%s]. Tid[%d] : process : stop", m_szThreadName, m_nKernelTid);
+}
+}
+
+#define INIT_TMONITOR(A) \
+do\
+{\
+	eSipUtil::ThreadMon * pclsMon = eSipUtil::ThreadMon::m_fnGetInstance(A);\
+	pclsMon->m_fnAdd("Main",0);\
+	pclsMon->m_fnOnOff(true);\
+}while(false)
+
+#define ADD_TMONITOR(NAME,ID) \
+do\
+{\
+	eSipUtil::ThreadMon::m_fnGetInstance(NULL)->m_fnAdd(NAME,ID);\
+}while(false)
+
+#endif
+

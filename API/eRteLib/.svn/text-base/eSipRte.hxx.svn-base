@@ -1,0 +1,946 @@
+/**
+ * @file  eSipRte.h
+ * the sip route message header
+ *
+ * @attention Copyright (c) 2014 POINT-I Co., Ltd, Seoul, South Korea \n\n
+ * All rights are reserved.  This is unpublished proprietary source
+ * code of POINT-I.\n The copyright notice does not evidence any actual
+ * publication of such source code.
+ *
+ * @par Project : Point-I Service Platform
+ * @par Last Changed : 
+ * @par 2014.11.12   hc_yun   1.0     first written
+ * @par 2015.02.10   hc_yun   1.2     modify local/remote/route/routeseq/srseq
+ * @par 2015.03.04   hc_yun   1.5     add EIPNodeStatus_t INIT
+ *                                    add routegroup/trgw/reasoncode/overload_env
+ *                                    add DSCP in the routegroup
+ *                                    mod m_nRspCode->m_nRspID in the routegroup
+ *                                    add resreved section in the main db struct
+ * @par 2015.03.16   hc_yun   1.6     add DSCP int the remote
+ *                                    del DSCP in the routegroup
+ *                                    add TPS in the routegroup
+ *                                    add TPS in the GlobalOverLoadEnv_t
+ *                                    mod ETransPortType_t
+ * @par 2015.04.15   hc_yun   1.8     add Timer/Trace interface
+ * @par 2015.04.17   hc_yun   1.9     modify the max number of trace 10 -> 100
+ *                                    modify Timer element
+ * @par 2015.04.21   hc_yun   2.0     modify uint -> int ARTE Type in SipRouteSeq_t
+ * @par 2015.04.30   hc_yun   2.1     add param (m_nMAXCnt) in the SipRoute_t
+ *                                    add param (m_nDeactRsp) in the SipRoute_t
+ *                                    modify param (m_nChkMSG) in the GlobalOverLoadEnv_t
+ *                                    add param (m_nGarbageTime) in the SipCoreTimer_t
+ *                   
+ * @par 2015.11.02   hc_yun   2.2     add Emergency, modify  GlobalOverLoadEnv_t
+ * @par 2015.11.07   hc_yun   2.3     modify timer element
+ * @par 2015.11.17   hc_yun   2.4     change shared memsize
+ * @par 2015.11.26   hc_yun   2.5     change ssreq param: unsinged int m_uiRSEQ -> int
+ * @par 2016.02.22   hc_yun   2.6     R106
+ *                                    max remote, route node 64 -> 300
+ *                                    max rseq 100 -> 300
+ *                                    max rseq in ssreq 20  -> 100
+ * @par 2016.07.27   hc_yun   2.7     R111 
+ *                                    add param(RCS_ON)  in  SipNodeLocal_t
+ *                                    add param(Charging etc)  in SipRouteGroup_t
+ *                                    modify max RouteGroup count. 8 -> 40
+ * @par 2017.03.17   hc_yun   2.8     add param sip_local_node @local_nat
+ */
+
+#ifndef __ESIP_CORE_SIP_ROUTE__
+#define __ESIP_CORE_SIP_ROUTE__
+
+
+#define DEF_RTE_MAXLEN_DESC         (40)
+#define DEF_RTE_MAXLEN_DOMAIN       (40)
+#define DEF_RTE_MAXLEN_IP           (40)
+#define DEF_RTE_MAXLEN_STRIUNAVAIL  (56)
+
+#include <stdio.h>
+#include <string.h>
+
+///defines the transport protocol
+enum ETransPortType_t
+{
+   E_ESIP_TRANSPORT_UNKONWN  = 0x00,
+   E_ESIP_TRANSPORT_TLS      , //using from this
+   E_ESIP_TRANSPORT_TCP      ,
+   E_ESIP_TRANSPORT_UDP      , //using to this
+   E_ESIP_TRANSPORT_SCTP     , 
+   E_ESIP_TRANSPORT_DCCP     , 
+   E_ESIP_TRANSPORT_DTLS     , 
+   E_ESIP_TRANSPORT_WS       , 
+   E_ESIP_TRANSPORT_WSS      , 
+   E_ESIP_TRANSPORT_MAX      
+};
+
+///defines the ip node status
+//enum PI_IP_NODE_STATUS_E
+enum EIPNodeStatus_t
+{
+   E_ESIP_STATUS_AVAIL            = 0x00,
+   E_ESIP_STATUS_UNAVAIL          = 0x01,
+   E_ESIP_STATUS_UNAVAIL_INIT     = 0x02, //when Optmode=ACT, not yet received the status(AVAIL or UNAVAIL)
+   E_ESIP_STATUS_MAX    // cwkim local status 2017/03/27
+};
+
+///defines the sip node local
+struct SipNodeLocal_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED= 8
+   };
+   unsigned int   m_uiID                   ; //0. M, LOC_ID, 1~9999999
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //1. M, NAME,  
+   char m_szDomain[DEF_RTE_MAXLEN_DOMAIN]  ; //2. M, DOMAIN, 
+   unsigned short m_usIPver                ; //3. M, IPV, IP4/IP6, No Modify
+   unsigned short m_usPort                 ; //4. M, PORT, 1 ~ 65535, No Modify
+   char m_szIP[DEF_RTE_MAXLEN_IP]          ; //5. M, IP, No Modify
+   unsigned char m_ucProto                 ; //6. M, PROTOCOL, UDP/TCP/TLS, No Modify
+//mod 2.7 @R111 2016/09 ADD RCS Flag
+#if 0
+   unsigned char m_ucReserved[15]          ; //7. nothing
+#else
+   char m_cRCSOn                           ; //7. M, RCS_ON, 1:ON, 0:OFF
+//add 2.8 @local_nat 2017/03/17
+   char m_cNATOn                           ; //8. M, NAT_NO, 1:ON, 0:OFF
+   unsigned char m_ucReserved[13]          ; //9. nothing
+#endif
+   ////////the below api set ////////////////
+   unsigned char  m_ucStatus               ; //status, see eum EIPNodeStatus_t, print
+   unsigned char  m_ucUsed                 ; //O, used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned char  m_ucReserved2            ; //reserved
+   int            m_nIndex                 ; //internal
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      const char* sType="UNKNOWN";
+      if(m_ucProto == E_ESIP_TRANSPORT_UDP ) sType="UDP";
+      else if(m_ucProto == E_ESIP_TRANSPORT_TCP ) sType="TCP";
+      else if(m_ucProto == E_ESIP_TRANSPORT_TLS ) sType="TLS";
+      else if(m_ucProto == E_ESIP_TRANSPORT_SCTP ) sType="SCTP";
+//mod 2.7 @R111 2016/09 ADD RCS Flag
+#if 0
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, Domain:%s, IP/Port(%u):%s/%u/%s, S/U/Idx:%s(%d)/%u/%d",
+         m_uiID,m_szDesc,m_szDomain,m_usIPver,m_szIP,m_usPort,sType,
+         m_ucStatus == E_ESIP_STATUS_AVAIL?"AVAIL":"UNAVAIL",m_ucStatus,m_ucUsed,m_nIndex);
+#else
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, Domain:%s, IP/Port(%u):%s/%u/%s, S/R/N/U/I/D:%s(%d)/%d/%d/%u/%d/%d",
+         m_uiID,m_szDesc,m_szDomain,m_usIPver,m_szIP,m_usPort,sType,
+         m_ucStatus == E_ESIP_STATUS_AVAIL?"AVAIL":"UNAVAIL",m_ucStatus,m_cRCSOn,m_cNATOn,m_ucUsed,
+         m_nIndex,m_ucInterDel);
+#endif
+      return _pBuf;
+   }
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipNodeLocal_t));
+//mod 2.7 @R111 2016/09 ADD RCS Flag
+      m_cRCSOn=-1;
+      m_cNATOn=-1;
+	  m_ucStatus = E_ESIP_STATUS_MAX; // cwkim local status 2017/03/27
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+      m_szDomain[DEF_RTE_MAXLEN_DOMAIN-1]=0x00;
+      m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+   }
+};
+
+///defines the sip node remote 
+struct SipNodeRemote_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED= 12 
+   };
+   unsigned int   m_uiID                   ; //0. M, RMT_ID, 1~9999999
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //1. M, NAME,  
+   char m_szDomain[DEF_RTE_MAXLEN_DOMAIN]  ; //2. M, DOMAIN, 
+   unsigned short m_usIPver                ; //3. M, IPV, IP4/IP6, No Modify
+   unsigned short m_usPort                 ; //4. M, PORT, 1 ~ 65535, No Modify
+   char m_szIP[DEF_RTE_MAXLEN_IP]          ; //5. M, IP, No Modify
+   unsigned char m_ucProto                 ; //6. M, PROTOCOL, UDP/TCP/TLS, No Modify
+   unsigned char m_ucReserved              ; //nothing
+   short         m_sNATOn                  ; //7. M, NAT_ON, 
+   int           m_nDSCP                   ; //8. O, DSCP,
+   ////////the below api set ////////////////
+   char m_szNATIP[DEF_RTE_MAXLEN_IP]       ; //9.  O, REAL_IP, print
+   unsigned short m_usNATPort              ; //10. O, REAL_PORT, 1 ~ 65535, print
+   unsigned char  m_ucStatus               ; //11. O, status, see eum EIPNodeStatus_t, print
+   unsigned char  m_ucUsed                 ; //O, used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned char  m_ucReserved2[3]         ; //reserved
+   int            m_nIndex                 ; //internal
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      const char* sType="UNKNOWN";
+      if(m_ucProto == E_ESIP_TRANSPORT_UDP ) sType="UDP";
+      else if(m_ucProto == E_ESIP_TRANSPORT_TCP ) sType="TCP";
+      else if(m_ucProto == E_ESIP_TRANSPORT_TLS ) sType="TLS";
+      else if(m_ucProto == E_ESIP_TRANSPORT_SCTP ) sType="SCTP";
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, Domain:%s, IP/Port(%u):%s/%u/%s, NAT/DSCP/IP/Port=%d/%d/%s/%d, S/U/I/D:%s(%d)/%u/%d/%d",
+         m_uiID,m_szDesc,m_szDomain,m_usIPver,m_szIP,m_usPort,sType,
+         m_sNATOn,m_nDSCP,m_szNATIP,m_usNATPort,
+         m_ucStatus == E_ESIP_STATUS_AVAIL?"AVAIL":"UNAVAIL",m_ucStatus,m_ucUsed, m_nIndex,m_ucInterDel);
+      return _pBuf;
+   }
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipNodeRemote_t));
+      m_sNATOn=m_nDSCP=-1;
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+      m_szDomain[DEF_RTE_MAXLEN_DOMAIN-1]=0x00;
+      m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+   }
+};
+//defines route group id
+struct SipRouteGroup_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED= 15
+   };
+   unsigned int   m_uiID                   ; //0. M, GROUP_ID,    1~9999999
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //1. M, NAME,  
+   //@vibc
+   int            m_nMaxCPS_LB             ; //2. M, LMT_LB_CPS,   1~1000
+   int            m_nCtrlCPSOn_LB          ; //3. M, LMT_LB_CPS_ON, 0:OFF, 1:ON
+   int            m_nMaxTPS_LB             ; //4. M, LMT_LB_TPS,   1~9999999
+   int            m_nCtrlTPSOn_LB          ; //5. M, LMT_LB_TPS_ON, 0:OFF, 1:ON
+   int            m_nMaxCPS                ; //6. M, LMT_CM_CPS,   1~1000
+   int            m_nCtrlCPSOn             ; //7. M, LMT_CM_CPS_ON, 0:OFF, 1:ON
+   int            m_nMaxTPS                ; //8. M, LMT_CM_TPS,   1~9999999
+   int            m_nCtrlTPSOn             ; //9. M, LMT_CM_TPS_ON, 0:OFF, 1:ON
+   int            m_nRspID                 ; //10. M, RSP_ID,    1~9999999
+//mod 2.7 @R111 2016/09 ADD Billing Code
+   int            m_nChargingOn            ; //11. M, CHARGING_ON, 1:ON/0:OFF
+   int            m_nChargingCode          ; //12. M, CHARGING_CODE, 1~9999999
+   int            m_nChargingIDC           ; //13. M, CHARGING_IDC, 0 ~ 9999999
+   int            m_nRoamingIDC            ; //14. M, ROAMING_IDC, 0 ~ 9999999
+   ////////the below api set ////////////////
+   int            m_nCurCPS                ; //15. O, CUR_CPS, print
+   int            m_nCurTPS                ; //16. O, CUR_TPS, print
+   unsigned char  m_ucUsed                 ; //used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned char  m_ucReserved[2]          ; //reserved
+   int            m_nIndex                 ; //internal
+
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+//mod 2.7 @R111 2016/09 ADD Billing Code
+#if 0
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, CPS(%d/%d,ON:%d), TPS(%d/%d,ON:%d), RSP_ID:%d, U/Idx:%u/%d",
+         m_uiID,m_szDesc,m_nCurCPS,m_nMaxCPS,m_nCtrlCPSOn,
+         m_nCurTPS,m_nMaxTPS,m_nCtrlTPSOn,
+         m_nRspID,m_ucUsed,m_nIndex);
+#else
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, LB(%d/ON:%d, %d/ON:%d), CM(%d/ON:%d, %d/ON:%d), RSP_ID:%d, C(%d/%d/%d/%d), C:%d,%d U/I/D:%u/%d/%d",
+         m_uiID,m_szDesc,
+         m_nMaxCPS_LB,m_nCtrlCPSOn_LB,m_nMaxTPS_LB,m_nCtrlTPSOn_LB,
+         m_nMaxCPS,m_nCtrlCPSOn,m_nMaxTPS,m_nCtrlTPSOn,
+         m_nRspID,m_nChargingOn,m_nChargingCode,m_nChargingIDC,m_nRoamingIDC,
+         m_nCurCPS,m_nCurTPS, m_ucUsed,m_nIndex,m_ucInterDel);
+#endif
+      return _pBuf;
+   }
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipRouteGroup_t));
+      m_nMaxCPS_LB=m_nCtrlCPSOn_LB=m_nMaxTPS_LB=m_nCtrlTPSOn_LB=-1;
+      m_nMaxCPS=m_nCtrlCPSOn=m_nMaxTPS=m_nCtrlTPSOn=-1;
+      m_nRspID=-1;
+//mod 2.7 @R111 2016/09 ADD Billing Code
+      m_nChargingOn=m_nChargingCode=m_nChargingIDC=m_nRoamingIDC=-1;
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+   }
+};
+
+///defines the sip route 
+struct SipRoute_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 16 
+   };
+   //defines sip node type enum ENodeType
+   enum ENodeType_t
+   {
+      E_TYPE_MINE            = 0x01, //mine
+      E_TYPE_OTHER           = 0x02, //other
+   };
+   //defined mgw routed/direct
+   enum EMgwRouteFlag_t
+   {
+      E_MGW_ROUTED            = 0x01, //mgw truncated
+      E_MGW_DIRECTED          = 0x02, //needn't mgw 
+   };
+   //defined node management 
+   enum ENodeManagement_t
+   {
+      E_MANAGE_ACT             = 0x00, //act
+      E_MANAGE_BYPASS          = 0x01, //bypass
+      E_MANAGE_DEACT           = 0x02, //deact
+   };
+   //defines deact response control
+   enum EDeactResponseControl_t
+   {
+      E_SEND_RESPONSE          = 0x01, //send response
+      E_DROP_RESPONSE          = 0x02  //drop response
+   };
+   unsigned int   m_uiID                   ; //0. M, RTE, 1 ~ 9999999 
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //1. M, NAME, 
+   unsigned int   m_uiLID                  ; //2. M, LOC_ID, 1 ~ 9999999, No Modify
+   unsigned int   m_uiRID                  ; //3. M, RMT_ID, 1 ~ 9999999, No Modify
+   unsigned int   m_uiTRTE                 ; //4. M, TRTE, 1 ~ 9999999
+   unsigned char  m_ucType                 ; //5. M, TYPE, MINE/OTHER
+   unsigned char  m_ucDoRouteMedia         ; //6. M, MEDIA, see enum EMgwRouteFlag_t (1:ROUTED, 2:DIRECTED)
+   short          m_sOptTime               ; //7. M, OPT_TIME, (sec) (0 ~ 999999)
+   short          m_sOptRetry              ; //8. M, RETRY, (0 ~ 999999)
+   short          m_sOptAction             ; //9. M, ACTION, see enum ENodeManagement_t
+   short          m_sSesRefreshTime        ; //10. M, SES_TIM, 0 ~ 999999
+   int            m_nRouteGroup            ; //11. O, GROUP, 1 ~ 999999
+   //modify 2.1 2015/04/30
+   //unsigned char  m_ucReserved[12]          ; //nothing.
+   int            m_nMAXCnt                ; //12. M, MAX_CNT, 1 ~ 999999
+   int            m_nDeactRsp              ; //13. M, DEACT_RSP, see num  EDeactResponseControl_t
+   unsigned char  m_ucReserved[4]          ; //nothing.
+   ////////the below api set ////////////////
+   unsigned char  m_ucStatus               ; //status, see eum EIPNodeStatus_t, print
+   unsigned char  m_ucProto                ; //nothing. see ETransPortType_t
+   unsigned char  m_ucUsed                 ; //used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned int   m_uiBusyCnt              ; //O, busy count, print
+   unsigned int   m_uiICCnt                ; //O, ic count, print
+   unsigned int   m_uiOGCnt                ; //O, og count, print
+   int            m_nCurRetry              ; //current retry
+   int            m_nIndex                 ; //internal index
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      const char* strAct="ACT";
+      if(m_sOptAction == E_MANAGE_BYPASS ) strAct="BYPASS";
+      else if(m_sOptAction == E_MANAGE_DEACT ) strAct="DEACT";
+
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, LID/RID/TRTE:%u/%u/%u, Type/Media/Group:%s/%s/%d, OPT_T/R/A/SES:%d/%d/%s/%d, S/U:%s(%u)/%u, CNT_T/IC/OG/Retry/MAX:%u/%u/%u/%d/%d, Deact:%d, Type:%u,I/D:%d/%d",
+         m_uiID,m_szDesc,m_uiLID,m_uiRID, m_uiTRTE,
+         m_ucType == E_TYPE_MINE ?"MINE":"OTHER",
+         m_ucDoRouteMedia == E_MGW_ROUTED ?"ROUTE":"DIRECT",
+         m_nRouteGroup, m_sOptTime,m_sOptRetry,strAct,m_sSesRefreshTime,
+         m_ucStatus== E_ESIP_STATUS_AVAIL?"AVAIL":"UNAVAIL",m_ucStatus,m_ucUsed,
+         m_uiBusyCnt,m_uiICCnt,m_uiOGCnt,m_nCurRetry,m_nMAXCnt,m_nDeactRsp,
+         m_ucProto, m_nIndex,m_ucInterDel);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipRoute_t));
+      m_sOptTime=m_sOptRetry=m_sOptAction=m_sSesRefreshTime=m_nRouteGroup=-1;
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+   }
+   
+};
+
+///defines the sip route sequence
+struct SipRouteSeq_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 3
+   };
+   //number mandatory field 
+   enum ENumberOfRoute_t 
+   { 
+      E_MAX_ARTE = 20 
+   };
+   unsigned int   m_uiID                   ; //RSEQ, 1 ~ 999999
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //NAME
+   unsigned int   m_uiDRTE                 ; //DRTE, 1 ~ 9999999
+   int            m_uiARTE[E_MAX_ARTE]     ; //ARTE, 0 ~ 9999999: -1:no mod, 0: delete
+   //unsigned int   m_uiARTE[E_MAX_ARTE]     ; //ARTE, 0 ~ 9999999
+   unsigned char  m_ucReserved[16]         ; //nothing.
+   ////////the below api set ////////////////
+   unsigned char  m_ucUsed                 ; //used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned char  m_ucReserved2[2]         ; 
+   int            m_nIndex                 ; //internal index
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      char szTmpBuf[1024]; szTmpBuf[0]=0x00;
+      int nTmpLen1=0;
+      int nTmpLen2=0;
+      for( int i=0; i < E_MAX_ARTE ; i++){
+         nTmpLen1=strlen(szTmpBuf); 
+         nTmpLen2=(sizeof(szTmpBuf)-nTmpLen1);
+         if( nTmpLen2 <=0 ){
+            nTmpLen2=0;
+            break;
+         }
+         snprintf(szTmpBuf+nTmpLen1,nTmpLen2,"%d|",m_uiARTE[i]);
+      }
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, DR:%u, AR:%s, U/I/D:%u/%d/%d",
+         m_uiID,m_szDesc,m_uiDRTE,szTmpBuf,m_ucUsed,m_nIndex,m_ucInterDel);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipRouteSeq_t));
+      for( int i=0 ; i < E_MAX_ARTE ; i++){
+         m_uiARTE[i]=-1;
+      }
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+   }
+};
+
+
+///defines the sip special route sequence
+struct SipSpecialRouteSeq_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 4
+   };
+   //number mandatory field 
+   enum ENumberOfRoute_t 
+   { 
+      //mod yun @R106 20160222
+      //E_MAX_RSEQ = 20
+      E_MAX_RSEQ =100 
+   };
+   unsigned int   m_uiID                   ; //SSEQ
+   char m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //NAME
+   //modify 2.5
+   //unsigned int   m_uiRSEQ[E_MAX_ARTE]     ; //RSEQ, 0 ~ 9999999
+   int            m_uiRSEQ[E_MAX_RSEQ]     ; //RSEQ, 0 ~ 9999999 
+   int            m_nRATE[E_MAX_RSEQ]      ; //RATE, 0 ~ 99999999 
+   unsigned char  m_ucReserved[16]         ; //nothing.
+   ////////the below api set ////////////////
+   unsigned char  m_ucUsed                 ; //used flag
+   unsigned char  m_ucInterDel             ; //internal delete
+   unsigned char  m_ucReserved2[2]         ;
+   int            m_nIndex                 ; //internal index
+   int            m_nCurRATE[E_MAX_RSEQ]   ; //internal
+   int            m_nRNum                  ; //internal
+   int            m_nCurPos                ; //internal
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      //@R106 201603
+      //char szTmpBuf[1024]; szTmpBuf[0]=0x00;
+      char szTmpBuf[2048]; szTmpBuf[0]=0x00;
+      int nTmpLen1=0;
+      int nTmpLen2=0;
+      for( int i=0; i < E_MAX_RSEQ ; i++){
+         nTmpLen1=strlen(szTmpBuf); 
+         nTmpLen2=(sizeof(szTmpBuf)-nTmpLen1);
+         if( nTmpLen2 <=0 ){
+            nTmpLen2=0;
+            break;
+         }
+         snprintf(szTmpBuf+nTmpLen1,nTmpLen2,"%d:%d/",m_uiRSEQ[i],m_nRATE[i]);
+      }
+      //@R106 201603
+      //char szTmpBuf2[1024]; szTmpBuf2[0]=0x00;
+      char szTmpBuf2[2048]; szTmpBuf2[0]=0x00;
+      for( int i=0; i < m_nRNum && i < E_MAX_RSEQ ; i++){
+         nTmpLen1=strlen(szTmpBuf2); 
+         nTmpLen2=(sizeof(szTmpBuf2)-nTmpLen1);
+         if( nTmpLen2 <=0 ){
+            nTmpLen2=0;
+            break;
+         }
+         snprintf(szTmpBuf2+nTmpLen1,nTmpLen2,"%d/",m_nCurRATE[i]);
+      }
+      
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s, SEQ:RATE:%s, U/I/D:%u/%d/%d, Cur_Num/Pos/R:%d/%d/%s",
+         m_uiID,m_szDesc,szTmpBuf,m_ucUsed,m_nIndex,m_ucInterDel,m_nRNum,m_nCurPos,szTmpBuf2);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipSpecialRouteSeq_t));
+      for( int i= 0; i < E_MAX_RSEQ ; i ++){
+         //add 2.5
+         m_uiRSEQ[i]=-1;
+         m_nRATE[i]=-1;
+      }
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+   }
+};
+struct TrGWRoute_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 9
+   };
+   //status
+   enum ETrGWConnectionStatus_t
+   {
+      E_TRGW_STATUS_AVAIL            = 0x00,
+      E_TRGW_STATUS_FBLOCK           = 0x01,
+      E_TRGW_STATUS_MBLOCK           = 0x02,
+   };
+
+   unsigned int   m_uiID                             ; //0. M, ID, 1~9999999
+   char           m_szDesc[DEF_RTE_MAXLEN_DESC]      ; //1. M, NAME,  
+   //active
+   char           m_szSvrIP[DEF_RTE_MAXLEN_IP]       ; //2. M, SVR_IP, No Modify
+   char           m_szTrGWIP[DEF_RTE_MAXLEN_IP]      ; //3. M, TrGW_IP, No Modify
+   unsigned short m_usSvrPort                        ; //4. M, SVR_PORT, 1 ~ 65535, No Modify
+   unsigned short m_usTrGWPort                       ; //5. M, TrGW_PORT, 1 ~ 65535, No Modify
+   //count
+   int            m_nCallRate                        ; //6. M. CALL_RATE
+   int            m_nMaxCount                        ; //7. M. MAX_SES
+   int            m_nStatus                          ; //8. M. STATUS. see ETrGWConnectionStatus_t
+   ////////the below api set ////////////////
+   int            m_nCurCount                        ; //9. O. SES_CNT. print
+   int            m_nIndex                           ; //internal index
+   unsigned char  m_ucUsed                           ; //used flag
+   unsigned char  m_ucInterDel                       ; //internal delete
+   unsigned char  m_ucReserved[2]                    ;
+
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      char szTmpBuf[256]; szTmpBuf[0]=0x00;
+      char szStatus[128]; szStatus[0]=0x00;
+      snprintf(szTmpBuf,sizeof(szTmpBuf)-1,"S(%s/%u), C(%s/%u)",
+               m_szSvrIP,m_usSvrPort,m_szTrGWIP,m_usTrGWPort);
+      if( m_nStatus == E_TRGW_STATUS_AVAIL ){
+         strcpy(szStatus,"AVAIL");
+      }else{
+         if( (m_nStatus&E_TRGW_STATUS_MBLOCK) &&
+              (m_nStatus&E_TRGW_STATUS_FBLOCK)){
+            strcpy(szStatus,"M&F_BLK");
+         }else if (  (m_nStatus&E_TRGW_STATUS_MBLOCK)) {
+            strcpy(szStatus,"M_BLK");
+         }else if (  (m_nStatus&E_TRGW_STATUS_FBLOCK)) {
+            strcpy(szStatus,"F_BLK");
+         }
+      }
+
+      snprintf(_pBuf,_nLen,
+         "ID:%u, DESC:%s,%s, S:%s, Rate:%d, Cnt:%d/%d, U/I/D:%u/%d/%d", 
+         m_uiID,m_szDesc,szTmpBuf,szStatus,m_nCallRate,m_nCurCount,m_nMaxCount,
+         m_ucUsed,m_nIndex,m_ucInterDel);
+         
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(TrGWRoute_t));
+      m_nCallRate=m_nMaxCount=m_nStatus=-1;
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+      m_szSvrIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+      m_szTrGWIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+   }
+};
+
+///reason code
+struct SipReasonCode_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 56 
+   };
+   //cause index
+   enum ECauseIndex_t
+   {
+      E_SYSTEM_OVERLOAD_CAUSE         = 0,
+      E_CPS_OVERLOAD_CAUSE            = 1, 
+      E_CPU_OVERLOAD_CAUSE            = 2,
+      E_MEM_OVERLOAD_CAUSE            = 3,
+      E_UNKNOWN_ROUTE_CAUSE           = 4,
+      E_ROUTING_FAIL_CAUSE            = 5,
+      E_INTERNAL_ERR_CAUSE            = 6,
+      E_INCORRECT_MSG_CAUSE           = 7,
+      E_FILTER_DENY_CAUSE             = 8,
+      E_SESSION_NOT_EXIST_CAUSE       = 9,
+      E_TIMEOUT_ERR_CAUSE             =10,
+      E_MP_NOTCONT_CAUSE              =11,
+      E_TRGW_NEGO_FAIL_CAUSE          =12,
+      E_TRGW_NO_RTP_FAIL_CAUSE        =13,
+      E_TRGW_INSUFFICIENT_RSC_CAUSE   =14,
+      E_TRGW_SDP_INCORRECT_CAUSE      =15,
+      E_TRGW_INCORRECT_CAUSE          =16,
+      E_ROUTE_STS_DOWN_CAUSE          =17,
+      E_CAUSE_MAX                     =18,
+   };
+
+   unsigned int   m_uiID                                            ;  //0. M, ID, 1~9999999
+   char           m_szDesc[DEF_RTE_MAXLEN_DESC]                     ;  //1. M, NAME,  
+   int            m_nCauseCode[E_CAUSE_MAX]                         ;  //2. M, CAUSE,     1 ~ 9999999
+   int            m_nRspCode[E_CAUSE_MAX]                           ;  //3. M, RSP_CODE,  100 ~ 699
+   char           m_szCause[E_CAUSE_MAX][DEF_RTE_MAXLEN_STRIUNAVAIL];  //4. M, TEXT,
+   ////////the below api set ////////////////
+   int            m_nIndex                           ; //internal index
+   unsigned char  m_ucUsed                           ; //used flag
+   unsigned char  m_ucInterDel                       ; //internal delete
+   unsigned char  m_ucReserved[2]                    ;
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      //@R106 20160222. del unused val
+      //char szTmpBuf[256]; szTmpBuf[0]=0x00;
+      snprintf(_pBuf,_nLen-1,
+         "ID:%u, DESC:%s, I/U/D=%d/%d/%d\n",m_uiID,m_szDesc,m_nIndex,m_ucUsed,m_ucInterDel);
+      int nStrLen=0;
+      int nRemainLen=0;
+      for( int i=0 ; i < E_CAUSE_MAX ; i++){
+         nStrLen=strlen(_pBuf);
+         nRemainLen=(_nLen-nStrLen)-1;
+         if( nRemainLen <= 10 ) break;
+         if( i!=0 && i%3==0){
+            snprintf(_pBuf+nStrLen,nRemainLen-1,"%d/%d/%s\r\n",
+                  m_nCauseCode[i],m_nRspCode[i],m_szCause[i]);
+         }else{
+            snprintf(_pBuf+nStrLen,nRemainLen-1,"%d/%d/%s,",
+                  m_nCauseCode[i],m_nRspCode[i],m_szCause[i]);
+         }
+      }
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipReasonCode_t));
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+      for( int i = 0 ; i < E_CAUSE_MAX ; i++){
+         m_szCause[i][DEF_RTE_MAXLEN_STRIUNAVAIL-1]=0x00;
+      }
+   }
+};
+//EmergencyCall
+struct EmergencyCall_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED =3,
+      E_MINMAX_NUMBER=36
+   };
+   unsigned int   m_uiID                        ;  //0. M, ID, 1~9999999
+   char           m_szDesc[DEF_RTE_MAXLEN_DESC] ;  //1. M, NAME,  
+   char           m_szMIN[E_MINMAX_NUMBER]      ;  //2. M. MIN
+   ////////the below api set ////////////////
+   int            m_nIndex         ; //internal index
+   unsigned char  m_ucUsed         ; //used flag
+   unsigned char  m_ucInterDel     ; //internal delete
+   unsigned char  m_ucReserved[2]  ;
+
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      snprintf(_pBuf,_nLen-1,
+         "ID:%u, DESC:%s, MIN:%s, I/U/D=%d/%d/%d",m_uiID,m_szDesc,m_szMIN,m_nIndex,m_ucUsed,m_ucInterDel);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(EmergencyCall_t));
+   }
+   void m_fnStrTerm(){
+      m_szDesc[DEF_RTE_MAXLEN_DESC-1]=0x00;
+      m_szMIN[E_MINMAX_NUMBER-1]=0x00;
+   }
+};
+
+
+//overload
+struct GlobalOverLoadEnv_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED =16
+   };
+   enum EMaxMSGCtrol_t 
+   { 
+      E_MAXMSG_CTRL_NOTTHING    = 0x00, 
+      E_MAXMSG_DROP             = 0x01, 
+      E_MAXMSG_RSP_ERROR        = 0x02, 
+      E_MAXMSG_CTRL_RELAY_TCP   = 0x03,
+   };
+   int            m_nMaxSES        ; //1. M, MAX_SES  (1 ~ 10000000)
+   int            m_nChkSES        ; //2. M, SES_CHK_ON  (0/1)
+   int            m_nMaxMSG        ; //3. M, MSG_SIZE (1400 ~ 9999999)
+   //modify 2.1 2015/04/30 modify the meaning
+   //int            m_nChkMSG        ; //4. M, MSG_CHK_ON (0/1)
+   int            m_nChkMSG        ; //4. M, MSG_CTRL see enum EMaxMSGCtrol_t
+   int            m_nMaxCPS        ; //5. M, MAX_CPS  (1 ~ 700)
+   int            m_nChkCPS        ; //6. M, CPS_CHK_ON (0/1)
+   int            m_nMaxCPU        ; //7. M, HW_OVERLOAD_CPU(1 ~ 100)
+   int            m_nChkCPU        ; //8. M, CPU_CHK_ON (0/1)
+   int            m_nMaxMEM        ; //9. M, HW_OVERLOAD_MEM(1 ~ 100)
+   int            m_nChkMEM        ; //10. M, MEM_CHK_ON (0/1)
+   int            m_nMaxTPS        ; //11. M, MAX_TPS
+   int            m_nChkTPS        ; //12. M, TPS_CHK_ON (0/1)
+   //modify 2.2 2015/11/02 
+   int            m_nMinCPS_Emer   ; //13. M, EMER_MINCPS (1 ~ 700)
+   int            m_nMaxCPS_Audio  ; //14. M, AUDIO_MAXCPS(1 ~ 700)
+   int            m_nMaxCPS_Video  ; //15. M, VIDEO_MAXCPS(1 ~ 700)
+   int            m_nChkCPSClass   ; //16. M, CPS_CLASS_ON(0/1)
+   ////////the below api set ////////////////
+   int            m_nCurSES        ;
+   int            m_nCurCPS        ;
+   int            m_nCurCPU        ;
+   int            m_nCurMEM        ;
+   int            m_nCurTPS        ;
+   int            m_nIndex         ; //internal index
+   unsigned char  m_ucUsed         ; //used flag
+   unsigned char  m_ucInterDel     ; //internal delete
+   unsigned char  m_ucReserved[2]  ;
+
+   //string
+   char* m_fnStr(char* _pBuf,int _nLen){
+      snprintf(_pBuf,_nLen-1,
+         "SES/MSG/CPS/CPU/MEM/TPS=%d/%d/%d/%d/%d/%d, CHK_SES/MSG/CPS/CPU/MEM/TPS=%d/%d/%d/%d/%d/%d, C_SES/CPS/CPU/MEM/TPS=%d/%d/%d/%d/%d, E/A/V/ON=%d/%d/%d/%d",
+         m_nMaxSES,m_nMaxMSG,m_nMaxCPS,m_nMaxCPU,m_nMaxMEM,m_nMaxTPS,
+         m_nChkSES,m_nChkMSG,m_nChkCPS,m_nChkCPU,m_nChkMEM,m_nChkTPS,
+         m_nCurSES,m_nCurCPS,m_nCurCPU,m_nCurMEM,m_nCurTPS,
+         m_nMinCPS_Emer,m_nMaxCPS_Audio,m_nMaxCPS_Video,m_nChkCPSClass);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(GlobalOverLoadEnv_t));
+      m_nMaxSES=m_nChkSES=m_nMaxMSG=m_nChkMSG=m_nMaxCPS=m_nChkCPS=-1;
+      m_nMaxCPU=m_nChkCPU=m_nMaxMEM=m_nChkMEM=m_nMaxTPS=m_nChkTPS=-1;
+      m_nMinCPS_Emer=m_nMaxCPS_Audio=m_nMaxCPS_Video=m_nChkCPSClass=-1;
+   }
+   void m_fnStrTerm(){
+   }
+};
+//sip timer
+struct SipCoreTimer_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED = 17 
+   };
+   //modify 2.3
+   int            m_nTimeT2                   ; //1. M, T2 (1 ~ 10000)
+   int            m_nTimeTA                   ; //2. M, TA (1 ~ 180000)
+   int            m_nTimeTB                   ; //3. M, TB (1 ~ 180000)
+   int            m_nTimeTC                   ; //4. M, TC (1 ~ 180000)
+   int            m_nTimeTD                   ; //5. M, TD (1 ~ 180000)
+   int            m_nTimeTE                   ; //6. M, TE (1 ~ 180000)
+   int            m_nTimeTF                   ; //7. M, TF (1 ~ 180000)
+   int            m_nTimeTG                   ; //8. M, TG (1 ~ 180000)
+   int            m_nTimeTH                   ; //9. M, TH (1 ~ 180000)
+   int            m_nTimeTI                   ; //10. M, TI (1 ~ 180000)
+   int            m_nTimeTJ                   ; //11. M, TJ (1 ~ 180000)
+   int            m_nTimeTK                   ; //12. M, TK (1 ~ 180000)
+   int            m_nTimeTL                   ; //13. M, TL (1 ~ 180000)
+   int            m_nTimeTM                   ; //14. M, TM (1 ~ 180000)
+   int            m_nTimeDAlive               ; //15. M, DIAL_ALIVE  (1 ~ 300)   . sec
+   int            m_nTimeDTerm                ; //16. M, DIAL_TERMINATED (1 ~ 300). sec
+   int            m_nTimeTrGW                ; //17. M, TRGW_ALIVE (1 ~ 10). sec
+   unsigned char  m_ucReserved1[12]           ;
+   ////////the below api set ////////////////
+   int            m_nIndex        ; //internal index
+   unsigned char  m_ucUsed        ; //used flag
+   unsigned char  m_ucInterDel    ; //internal delete
+   unsigned char  m_ucReserved[2] ;
+
+   char* m_fnStr(char* _pBuf,int _nLen){
+      snprintf(_pBuf,_nLen-1,
+         "/2/A/B/C/D/E/F/G/H/I/J/K/L/M=%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d,"
+         "DA/DT/TG=%d/%d/%d",
+         m_nTimeT2,m_nTimeTA,m_nTimeTB,m_nTimeTC,m_nTimeTD,m_nTimeTE, m_nTimeTF,
+         m_nTimeTG,m_nTimeTH,m_nTimeTI,m_nTimeTJ,m_nTimeTK,m_nTimeTL,m_nTimeTM,
+         m_nTimeDAlive,m_nTimeDTerm,m_nTimeTrGW);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipCoreTimer_t));
+      //m_nTimeTG_ON=m_nTimeRetry1xx_ON=-1;
+   }
+   void m_fnStrTerm(){
+   }
+};
+//sip trace
+struct SipCoreTrace_t
+{
+   //number mandatory field 
+   enum ENumberOfMandatoryField_t 
+   { 
+      E_NUMOF_VALIDFILED =5,
+      E_MINMAX_NUMBER=36
+   };
+   enum ESpecificTraceType_SIP_t
+   {
+      E_TRACE_TYPE_SIP = 0x08
+   };
+   enum ETrace_Type{
+      SET_ALL  = 0xFF,
+      SET_IPC  = 0x01,
+      SET_MSRP = 0x02,
+      SET_RTP  = 0x04, 
+      SET_SIP  = 0x08, 
+      SET_RTCP = 0x10, 
+      SET_DUMP = 0x20,
+      SET_DIAM = 0x40,
+      SET_MEGACO = 0x80,
+   };
+
+   int            m_uiID        ; //1. M, ID (0 ~ 99999)
+   int            m_nType       ; //2. M, TYPE
+   int            m_nLevel      ; //3. M, TYPE
+   int            m_nNodeID     ; //4-1. O, NODEID (1 ~ 99999)
+   char           m_szMIN[E_MINMAX_NUMBER]   ; //4-2. O, MIN 
+   ////////the below api set ////////////////
+   int            m_nIndex        ; //internal index
+   unsigned char  m_ucUsed        ; //used flag
+   unsigned char  m_ucInterDel    ; //internal delete
+   unsigned char  m_ucReserved[2] ;
+
+   char* m_fnStr(char* _pBuf,int _nLen){
+      snprintf(_pBuf,_nLen-1,
+         "ID/TYPE/LEVEL/NODEID/MIN=%d/0x%04x/%d/%d/%s, I/U/D=%d/%d/%d",
+         m_uiID,m_nType,m_nLevel,m_nNodeID,m_szMIN,m_nIndex,m_ucUsed,m_ucInterDel);
+      return _pBuf;
+   } 
+   void m_fnMakeMod_Init(){
+      memset(this,0x00,sizeof(SipCoreTrace_t));
+   }
+   void m_fnStrTerm(){
+      m_szMIN[E_MINMAX_NUMBER-1]=0x00;
+   }
+};
+///defines the sip Node Local
+struct SipLocalNodeDataBase_t
+{
+   enum { E_MAXNUM= 40 };
+   int m_nNumber;
+   SipNodeLocal_t m_stNodeLocal[E_MAXNUM];
+};
+
+///defines the sip Node Remote
+struct SipRemoteNodeDataBase_t
+{
+   //mod 2.6 @R106 20160222 
+   //enum { E_MAXNUM= 64 };
+   enum { E_MAXNUM= 300 };
+   int m_nNumber;
+   SipNodeRemote_t m_stNodeRmt[E_MAXNUM];
+};
+
+///defines the sip route group
+struct SipRouteGroupDataBase_t
+{
+//mod 2.7 @R111 2016/09
+//   enum { E_MAXNUM= 8 };
+   enum { E_MAXNUM= 40 };
+   int m_nNumber;
+   SipRouteGroup_t m_stRteGroup[E_MAXNUM];
+};
+
+
+///defines the sip route
+struct SipRouteDataBase_t
+{
+   //mod 2.6 @R106 20120222 
+   //enum { E_MAXNUM= 64 };
+   enum { E_MAXNUM= 300 };
+   int m_nNumber;
+   SipRoute_t m_stRte[E_MAXNUM];
+};
+
+///defines the sip route sequence
+struct SipRouteSeqDataBase_t
+{
+   //mod 2.6 @R106 20120222 
+   //enum { E_MAXNUM= 100 };
+   enum { E_MAXNUM= 300 };
+   int m_nNumber;
+   SipRouteSeq_t m_stRteSeq[E_MAXNUM];
+};
+///defines the sip special route sequence
+struct SipSpecialRouteSeqDataBase_t
+{
+   enum { E_MAXNUM= 100 };
+   int m_nNumber;
+   SipSpecialRouteSeq_t m_stSpecialRteSeq[E_MAXNUM];
+};
+
+///defines the sip Node Local
+struct TrGWDataBase_t
+{
+   enum { E_MAXNUM= 8 };
+   int m_nNumber;
+   TrGWRoute_t    m_stTrGW[E_MAXNUM];
+   ///using only api
+   int            m_nCurRATE[E_MAXNUM]; //internal
+   int            m_nCurPos           ; //internal
+};
+
+///defines the sip reason code
+struct SipReasonCodeDataBase_t
+{
+   enum { E_MAXNUM= 8 };
+   int m_nNumber;
+   SipReasonCode_t    m_stData[E_MAXNUM];
+};
+
+///defines the sip reason code
+struct SipTraceDataBase_t
+{
+   enum { E_MAXNUM= 100};
+   int m_nNumber;
+   SipCoreTrace_t    m_stData[E_MAXNUM];
+};
+
+//defines the emergecy call
+struct EmergencyCallDataBase_t
+{
+   enum { E_MAXNUM= 100};
+   int m_nNumber;
+   EmergencyCall_t   m_stData[E_MAXNUM];
+};
+
+///defines the sip route Manager memory
+struct SipRouteManagerDataBase_t
+{
+   enum EReservedBytes_t{ 
+      E_BYTE_RESERVED= (1024*2)
+   };
+   SipLocalNodeDataBase_t         m_stDBLocal;
+   SipRemoteNodeDataBase_t        m_stDBRmt;
+   SipRouteGroupDataBase_t        m_stDBRteGroup;
+   SipRouteDataBase_t             m_stDBRte;
+   SipRouteSeqDataBase_t          m_stDBRteSeq;
+   SipSpecialRouteSeqDataBase_t   m_stDBSpecialRteSeq;
+   TrGWDataBase_t                 m_stDBTrGW;
+   SipReasonCodeDataBase_t        m_stDBReason;
+   GlobalOverLoadEnv_t            m_stDBEnv;
+   //@vibc
+   GlobalOverLoadEnv_t            m_stDBEnv_LB;
+   SipCoreTimer_t                 m_stDBTimer;
+   SipTraceDataBase_t             m_stDBTrace;
+   EmergencyCallDataBase_t        m_stDBEmer;
+   //modify 2.1 2015/04/30
+   //char                           m_szReserved[1024*2];
+   char                           m_szReserved[E_BYTE_RESERVED];
+};
+
+///defines shared memory key path. for omc
+#define ESIPRTE_SHMKEY_FILE      "../ipc/esiprte"
+//@vibc 20170314
+#define ESIPRTE_SHMKEY_INT      (0x10001101)
+
+#endif

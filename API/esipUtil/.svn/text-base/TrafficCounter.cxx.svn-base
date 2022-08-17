@@ -1,0 +1,171 @@
+#include "TrafficCounter.hxx"
+#include "timerTable.hxx"
+namespace eSipUtil
+{
+class TrafficTime
+{
+	public:
+		TrafficTime(){}
+		TrafficCounter * m_pclsMy;
+};
+TimerTable<TrafficTime> * g_pclsTrafficTimer = NULL;
+static void s_fnCbkTrafficTimeOut(TrafficTime * _pstData);
+/*********************************** Traffic Slice ****************************************/
+TrafficSlice::TrafficSlice()
+{
+	m_unIdx=0;
+	m_ulCnt = 0;
+	m_pclsPrev = NULL;
+	m_pclsNext = NULL;
+}
+TrafficSlice::~TrafficSlice(){}
+void TrafficSlice::m_fnIncre(unsigned long _ulCnt)
+{
+	m_ulCnt += _ulCnt;
+}
+void TrafficSlice::m_fnDebug(KString & _rclsDebug)
+{
+	_rclsDebug<<"Index["<<m_unIdx<<"] Cnt = "<<m_ulCnt<<"\r\n";
+}
+/*********************************** Traffic Counter **************************************/
+TrafficCounter::TrafficCounter()
+{
+	m_unMaxCircleMs = 10000;
+	m_unSliceMs = 100;
+	m_unTrafficDurationMs = 1000;
+	m_unMaxCircleNums = m_unMaxCircleMs/m_unSliceMs;
+	m_unTrafficCalNums = m_unTrafficDurationMs/m_unSliceMs;
+	m_pclsSlice = NULL;
+	m_bInit = false;
+}
+TrafficCounter::~TrafficCounter()
+{
+	if(m_pclsSlice) delete [] m_pclsSlice;
+}
+bool TrafficCounter::m_fnInit(unsigned int _unMaxCircleMs, unsigned int _unSliceMs, unsigned int _unTrafficDurationMs)
+{
+	if(m_bInit == true) return false;
+	m_bInit = true;
+	unsigned int unIllegal = _unMaxCircleMs%_unSliceMs;
+	if(_unMaxCircleMs <= _unSliceMs || unIllegal) return false;
+	unIllegal = _unTrafficDurationMs%_unSliceMs;
+	if(_unTrafficDurationMs <= _unSliceMs|| unIllegal) return false;
+	m_unMaxCircleMs = _unMaxCircleMs;
+	m_unSliceMs = _unSliceMs;
+	m_unTrafficDurationMs = _unTrafficDurationMs;
+	m_unMaxCircleNums = _unMaxCircleMs/_unSliceMs;
+	m_unTrafficCalNums = _unTrafficDurationMs/_unSliceMs;
+	m_pclsSlice = m_fnCreateSlice(m_unMaxCircleNums);
+	return true;
+}
+bool TrafficCounter::m_fnChangeDuration(unsigned int _unTrafficDurationMs)
+{
+	unsigned int unIllegal = _unTrafficDurationMs%m_unSliceMs;
+	if(_unTrafficDurationMs <= m_unSliceMs|| unIllegal) return false;
+	m_clsLock.m_fnWriteLock();
+	m_unTrafficDurationMs = _unTrafficDurationMs;
+	m_unTrafficCalNums = _unTrafficDurationMs/m_unSliceMs;
+	m_clsLock.m_fnUnlock();
+	return true;
+}
+void TrafficCounter::m_fnIncre(unsigned long _ulCnt)
+{
+	if (m_bInit == false) return;
+	m_clsLock.m_fnWriteLock();
+	TrafficSlice * pclsCur = m_fnGetCurSlice(); 
+	pclsCur->m_fnIncre(_ulCnt);
+	for (unsigned int i = 0; i<m_unTrafficCalNums; i++)
+	{
+		pclsCur = pclsCur->m_pclsNext; 
+		pclsCur->m_ulCnt = 0;
+	}
+	m_clsLock.m_fnUnlock();
+}
+unsigned long TrafficCounter::m_fnGetSumPerDuration()
+{
+	if (m_bInit == false) return 0;
+	unsigned long ulTotalCnt = 0; TrafficSlice * pclsCur = NULL;
+	m_clsLock.m_fnReadLock();
+	pclsCur = m_fnGetCurSlice();
+	for (unsigned int i = 0; i<m_unTrafficCalNums; i++)
+	{
+		pclsCur = pclsCur->m_pclsPrev; 
+		ulTotalCnt += pclsCur->m_ulCnt;
+		pclsCur->m_ulCnt = 0;
+	}
+	m_clsLock.m_fnUnlock();
+	return ulTotalCnt;
+}
+void TrafficCounter::m_fnClearNextSlice()
+{
+	if (m_bInit == false) return;
+	m_clsLock.m_fnWriteLock();
+	TrafficSlice * pclsCur = m_fnGetCurSlice(); 
+	for (unsigned int i = 0; i<m_unTrafficCalNums; i++)
+	{
+		pclsCur = pclsCur->m_pclsNext; 
+		pclsCur->m_ulCnt = 0;
+	}
+	m_clsLock.m_fnUnlock();
+}
+void TrafficCounter::m_fnDebug(KString &_rclsDebug)
+{
+	if (m_bInit == false) return;
+	TrafficSlice * pclsCur = NULL;
+	m_clsLock.m_fnReadLock();
+	pclsCur = m_fnGetCurSlice();
+	_rclsDebug<<"Index[Current] Not Display\r\n";
+	for(unsigned int i=1;i<m_unMaxCircleNums;i++)
+	{
+		pclsCur = pclsCur->m_pclsPrev;
+		pclsCur->m_fnDebug(_rclsDebug);
+	}
+	m_clsLock.m_fnUnlock();
+}
+TrafficSlice * TrafficCounter::m_fnCreateSlice(unsigned int _unNums)
+{
+	TrafficSlice * pclsSlice = new TrafficSlice[m_unMaxCircleNums];
+	for(unsigned int i = 0;i< m_unMaxCircleNums;i++)
+	{
+		pclsSlice[i].m_unIdx = i;
+		if(i==0) 
+		{
+			pclsSlice[0].m_pclsNext = &pclsSlice[1];
+			pclsSlice[0].m_pclsPrev = &pclsSlice[m_unMaxCircleNums-1];
+		}
+		else if(i == (m_unMaxCircleNums -1))
+		{
+			pclsSlice[i].m_pclsNext = &pclsSlice[0];
+			pclsSlice[i].m_pclsPrev = &pclsSlice[i-1];
+		}
+		else
+		{
+			pclsSlice[i].m_pclsNext = &pclsSlice[i+1];
+			pclsSlice[i].m_pclsPrev = &pclsSlice[i-1];
+		}
+	}
+	if (g_pclsTrafficTimer == NULL)
+		g_pclsTrafficTimer = new TimerTable<TrafficTime>(s_fnCbkTrafficTimeOut, "TrafficTimer");
+	TrafficTime * pstTime = new TrafficTime;
+	pstTime->m_pclsMy = this;
+	g_pclsTrafficTimer->setTimer(pstTime, m_unTrafficDurationMs);
+	return &pclsSlice[0];
+}
+TrafficSlice * TrafficCounter::m_fnGetCurSlice()
+{
+	unsigned long ulTimeMs = UtilTimeWheel::fnGetCurrentMs();
+	unsigned int unMySliceMs = ulTimeMs%m_unMaxCircleMs;
+	unsigned int unMySliceNum = unMySliceMs/m_unSliceMs;
+	return &m_pclsSlice[unMySliceNum];
+}
+static void s_fnCbkTrafficTimeOut(TrafficTime * _pstData)
+{
+	if (g_pclsTrafficTimer == NULL) { delete _pstData; return; }
+	_pstData->m_pclsMy->m_fnClearNextSlice();
+	TrafficTime * pstTime = new TrafficTime;
+	pstTime->m_pclsMy = _pstData->m_pclsMy;
+	g_pclsTrafficTimer->setTimer(pstTime, _pstData->m_pclsMy->m_unTrafficDurationMs);
+	delete _pstData;
+}
+}
+

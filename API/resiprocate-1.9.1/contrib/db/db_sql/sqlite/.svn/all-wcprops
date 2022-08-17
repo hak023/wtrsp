@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite
+END
+parse.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/parse.h
+END
+sqliteInt.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/sqliteInt.h
+END
+sqlprintf.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/sqlprintf.c
+END
+sqliteLimit.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/sqliteLimit.h
+END
+sqlite3.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/sqlite3.h
+END
+parse.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/parse.c
+END
+keywordhash.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/db_sql/sqlite/keywordhash.h
+END

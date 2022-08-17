@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp
+END
+configure
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/configure
+END
+LICENSE
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/LICENSE
+END
+Doxyfile
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/Doxyfile
+END
+CHANGES
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/CHANGES
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/COPYING
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/README
+END

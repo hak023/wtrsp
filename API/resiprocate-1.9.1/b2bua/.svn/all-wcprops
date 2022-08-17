@@ -1,0 +1,251 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua
+END
+MyDialogSetHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyDialogSetHandler.cxx
+END
+MediaManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MediaManager.hxx
+END
+RtpProxyRecurringTask.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/RtpProxyRecurringTask.hxx
+END
+MediaProxy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MediaProxy.cxx
+END
+MyDialogSetHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyDialogSetHandler.hxx
+END
+MediaProxy.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MediaProxy.hxx
+END
+DummyRegistrationPersistenceManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DummyRegistrationPersistenceManager.cxx
+END
+DailyCDRHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DailyCDRHandler.cxx
+END
+Logging.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/Logging.hxx
+END
+DummyRegistrationPersistenceManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DummyRegistrationPersistenceManager.hxx
+END
+B2BCall.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BCall.cxx
+END
+MyAppDialog.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyAppDialog.cxx
+END
+B2BCall.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BCall.hxx
+END
+AuthenticationManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/AuthenticationManager.cxx
+END
+MyAppDialog.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyAppDialog.hxx
+END
+DummyServerRegistrationHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DummyServerRegistrationHandler.cxx
+END
+AuthenticationManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/AuthenticationManager.hxx
+END
+DummyServerRegistrationHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DummyServerRegistrationHandler.hxx
+END
+DialogUsageManagerRecurringTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DialogUsageManagerRecurringTask.cxx
+END
+CallHandle.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/CallHandle.cxx
+END
+DialogUsageManagerRecurringTask.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DialogUsageManagerRecurringTask.hxx
+END
+AccountingManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/AccountingManager.hxx
+END
+B2BUA.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BUA.cxx
+END
+B2BCallManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BCallManager.cxx
+END
+CallHandle.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/CallHandle.hxx
+END
+TaskManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/TaskManager.cxx
+END
+AuthorizationManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/AuthorizationManager.hxx
+END
+B2BUA.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BUA.hxx
+END
+DefaultAuthorizationManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DefaultAuthorizationManager.cxx
+END
+B2BCallManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/B2BCallManager.hxx
+END
+TaskManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/TaskManager.hxx
+END
+DefaultAuthorizationManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/DefaultAuthorizationManager.hxx
+END
+RtpProxyUtil.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/RtpProxyUtil.cxx
+END
+MyInviteSessionHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyInviteSessionHandler.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/Makefile.am
+END
+MediaManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MediaManager.cxx
+END
+README.txt
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/README.txt
+END
+RtpProxyUtil.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/RtpProxyUtil.hxx
+END
+CDRHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/CDRHandler.hxx
+END
+MyInviteSessionHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/MyInviteSessionHandler.hxx
+END
+RtpProxyRecurringTask.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/b2bua/RtpProxyRecurringTask.cxx
+END

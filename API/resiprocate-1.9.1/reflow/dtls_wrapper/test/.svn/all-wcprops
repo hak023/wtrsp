@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test
+END
+TestDtlsUdp.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/TestDtlsUdp.cxx
+END
+CreateCert.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/CreateCert.cxx
+END
+TestDtlsUdp.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/TestDtlsUdp.hxx
+END
+TestTimerContext.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/TestTimerContext.cxx
+END
+CreateCert.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/CreateCert.hxx
+END
+TestTimerContext.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/TestTimerContext.hxx
+END
+testDtlsServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsServer.cxx
+END
+testDtlsServer_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsServer_8_0.vcproj
+END
+testDtlsServer_7_1.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsServer_7_1.vcproj
+END
+testDtlsClient.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsClient.cxx
+END
+dtls_wrapper_test_8_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/dtls_wrapper_test_8_0.sln
+END
+dtls_wrapper_test_7_1.sln
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/dtls_wrapper_test_7_1.sln
+END
+testDtlsWrapper.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsWrapper.cxx
+END
+testDtlsClient_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsClient_8_0.vcproj
+END
+testDtlsClient_7_1.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/testDtlsClient_7_1.vcproj
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/dtls_wrapper/test/Makefile
+END

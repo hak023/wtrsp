@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc
+END
+tcp_echo_server.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/tcp_echo_server.dsp
+END
+udp_echo_server.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/udp_echo_server.dsp
+END
+Netxx.dsw
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/Netxx.dsw
+END
+http_get.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/http_get.dsp
+END
+multi_server.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/multi_server.dsp
+END
+tcp_daytime_client.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/tcp_daytime_client.dsp
+END
+tcp_echo_client.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/tcp_echo_client.dsp
+END
+udp_daytime_client.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/udp_daytime_client.dsp
+END
+udp_echo_client.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/udp_echo_client.dsp
+END
+Netxx.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/build/msvc/Netxx.dsp
+END

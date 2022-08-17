@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/repos/vIBC/!svn/ver/2007/trunk/src/include/ext/comas
+END
+eventdefs_mgc.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/2007/trunk/src/include/ext/comas/eventdefs_mgc.h
+END
+calltrace_vic.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/2007/trunk/src/include/ext/comas/calltrace_vic.h
+END
+sipif_fx_msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/1215/trunk/src/include/ext/comas/sipif_fx_msg.h
+END
+sipif_new_fx_def.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/1630/trunk/src/include/ext/comas/sipif_new_fx_def.h
+END
+calltrace_mgc.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/2007/trunk/src/include/ext/comas/calltrace_mgc.h
+END
+inet_udp_alarm.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/761/trunk/src/include/ext/comas/inet_udp_alarm.h
+END
+eventdefs_vic.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/2007/trunk/src/include/ext/comas/eventdefs_vic.h
+END

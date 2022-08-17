@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1471/trunk/src/API/resiprocate-1.9.1/resip
+END
+update-svn-ignores.sh
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/update-svn-ignores.sh
+END
+README.windows
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/README.windows
+END
+stack.zip
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack.zip
+END
+COPYING
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/COPYING
+END
+sip.mcp.xml
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/sip.mcp.xml
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/Makefile.am
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/.cvsignore
+END

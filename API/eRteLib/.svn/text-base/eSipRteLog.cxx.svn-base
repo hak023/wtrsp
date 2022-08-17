@@ -1,0 +1,74 @@
+#include "eSipRteLog.hxx"
+#include "eSipRteMgr.hxx"
+
+namespace eSIP
+{
+
+CSipRteLog* CSipRteLog::m_pIns=NULL;
+
+CSipRteLog::CSipRteLog()
+   : m_nLevel(E_ESipRteLogLevel_INF)
+{
+
+}
+
+CSipRteLog::~CSipRteLog()
+{
+
+}
+
+CSipRteLog* CSipRteLog::GetInstance()
+{
+   if( m_pIns == NULL){
+      m_pIns=new CSipRteLog;
+   }
+   return m_pIns;
+}
+
+
+void CSipRteLog::m_fnSetLogLevel(int _nLevel)
+{
+   m_nLevel=_nLevel;
+   if( m_nLevel >= E_ESipRteLogLevel_DEB ) m_nLevel=E_ESipRteLogLevel_DEB;
+}
+
+int CSipRteLog::m_fnLog(int _nLevel, const char *_pFormat, ...)
+{
+   if( _nLevel > m_nLevel ) return 0;
+   char szTmpBuf[2048];szTmpBuf[0]=0x00;
+   va_list ap;
+   va_start(ap, _pFormat);
+   vsnprintf(szTmpBuf,sizeof(szTmpBuf)-1 ,_pFormat, ap);
+   va_end(ap);
+
+   const char* pLevel="DEB";
+   if( _nLevel == E_ESipRteLogLevel_CRI ){
+      pLevel="CRI";
+   }else if ( _nLevel == E_ESipRteLogLevel_ERR ){
+      pLevel="ERR";
+   }else if ( _nLevel == E_ESipRteLogLevel_WAR ){
+      pLevel="WAR";
+   }else if ( _nLevel == E_ESipRteLogLevel_INF ){
+      pLevel="INF";
+   }
+
+#if 0
+   //time
+   char szTBuf[128];szTBuf[0]=0x00;
+   CSipRteUtil::GetStrCurrentTimeMs(szTBuf);
+
+
+   char szLogBuf[2048];
+   snprintf(szLogBuf,sizeof(szLogBuf)-1,"%s [%s] %s",szTBuf,pLevel,szTmpBuf);
+   if(THESIPRTECB->m_pfuncESipRteApiPrintLog){
+      THESIPRTECB->m_pfuncESipRteApiPrintLog(_nLevel,szLogBuf);
+   }
+#else
+   if(THESIPRTECB->m_pfuncESipRteApiPrintLog){
+      THESIPRTECB->m_pfuncESipRteApiPrintLog(_nLevel,szTmpBuf);
+   }
+#endif
+   return 0;
+}
+
+} /* end namesapce */

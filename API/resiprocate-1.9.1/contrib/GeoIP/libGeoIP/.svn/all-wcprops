@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/Makefile.in
+END
+GeoIPCity.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIPCity.h
+END
+Makefile.vc
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/Makefile.vc
+END
+GeoIP.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIP.c
+END
+GeoIP_internal.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIP_internal.h
+END
+global.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/global.h
+END
+GeoIPUpdate.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIPUpdate.c
+END
+GeoIP.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIP.h
+END
+types.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/types.h
+END
+GeoIPUpdate.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIPUpdate.h
+END
+regionName.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/regionName.c
+END
+md5.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/md5.c
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/Makefile.am
+END
+timeZone.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/timeZone.c
+END
+md5.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/md5.h
+END
+GeoIPCity.c
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/GeoIP/libGeoIP/GeoIPCity.c
+END

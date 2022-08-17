@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test
+END
+TestClient.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient.cxx
+END
+TestAsyncClient_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient_8_0.vcproj
+END
+TestAsyncClient_7_1.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient_7_1.vcproj
+END
+TestAsyncClient_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient_9_0.vcproj
+END
+TestAsyncClient_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient_10_0.vcxproj
+END
+TestClient_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient_8_0.vcproj
+END
+TestClient_7_1.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient_7_1.vcproj
+END
+TestClient_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient_9_0.vcproj
+END
+TestClient_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient_10_0.vcxproj
+END
+TestAsyncClient_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient_10_0.vcxproj.filters
+END
+TestClient_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestClient_10_0.vcxproj.filters
+END
+ca.pem
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/ca.pem
+END
+TestRtpLoad.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestRtpLoad.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/Makefile.am
+END
+TestAsyncClient.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/test/TestAsyncClient.cxx
+END

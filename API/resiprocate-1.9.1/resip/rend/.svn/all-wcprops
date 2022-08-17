@@ -1,0 +1,173 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend
+END
+RendDlgAcct.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendDlgAcct.hxx
+END
+RendDlg.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendDlg.cxx
+END
+RendTroop.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendTroop.hxx
+END
+RendRunner.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendRunner.cxx
+END
+RendPres.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendPres.cxx
+END
+todo.txt
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/todo.txt
+END
+RendAcct.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendAcct.cxx
+END
+RendDlg.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendDlg.hxx
+END
+rendIt.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/rendIt.cxx
+END
+RendReg.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendReg.cxx
+END
+RendRunner.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendRunner.hxx
+END
+RendAcct.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendAcct.hxx
+END
+RendReport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendReport.hxx
+END
+RendSketch.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendSketch.cxx
+END
+flownotes.txt
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/flownotes.txt
+END
+RendSketch.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendSketch.hxx
+END
+rend_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/rend_9_0.vcproj
+END
+tlsrootcert.pem
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/tlsrootcert.pem
+END
+RendMisc.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendMisc.cxx
+END
+RendKa.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendKa.cxx
+END
+RendMisc.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendMisc.hxx
+END
+RendKa.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendKa.hxx
+END
+RendDlgAcct.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendDlgAcct.cxx
+END
+RendWavePres.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendWavePres.hxx
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/readme.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/Makefile
+END
+RendTroop.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/RendTroop.cxx
+END
+design-notes.txt
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/rend/design-notes.txt
+END

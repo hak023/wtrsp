@@ -1,0 +1,320 @@
+#include "StlMap.hxx"
+namespace eSipUtil
+{
+StlList::StlList()
+{
+}
+StlList::~StlList(){m_fnClear();}
+bool StlList::m_fnPushBack(StlObject *_pclsObj,bool _bChk)
+{
+	if(_bChk == true && m_fnFindNode(_pclsObj))
+	{
+		delete _pclsObj;	return false;
+	}
+	m_listR.push_back((unsigned long)_pclsObj);
+	return true;
+}
+bool StlList::m_fnPushFront(StlObject *_pclsObj,bool _bChk)
+{
+	if(_bChk == true && m_fnFindNode(_pclsObj))
+	{
+		delete _pclsObj;return false;
+	}
+	m_listR.push_front((unsigned long)_pclsObj);
+	return true;
+}
+bool StlList::m_fnInsertIndex(StlObject * _pclsObj,unsigned int _uiIndex,bool _bChk)
+{
+	ListItr_t itrFind;unsigned int uiCnt = 0;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		if(uiCnt == _uiIndex)
+		{
+			m_listR.insert(itrFind,(unsigned long)_pclsObj);
+			return true;
+		}
+		itrFind++;uiCnt++;
+	}
+	return m_fnPushBack(_pclsObj,_bChk);
+}
+void * StlList::m_fnFindNode(unsigned int _uiKey)
+{
+	if(m_listR.size() ==0) return NULL;
+	ListItr_t itrFind;StlObject *pclsObj = NULL;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		pclsObj = (StlObject *)*itrFind;
+		if(*pclsObj == _uiKey) 
+		{
+			return (void*)pclsObj;
+		}
+		itrFind++;
+	}
+	return NULL;
+}
+void * StlList::m_fnFindNode(const char * _pszKey)
+{
+	if(m_listR.size() ==0) return NULL;
+	ListItr_t itrFind;StlObject *pclsObj = NULL;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		pclsObj = (StlObject *)*itrFind;
+		if(*pclsObj == _pszKey) 
+		{
+			return (void*)pclsObj;
+		}
+		itrFind++;
+	}
+	return NULL;
+}
+void * StlList::m_fnFindNode(StlObject *_pclsObj)
+{
+	if(_pclsObj->m_uiKey) return m_fnFindNode(_pclsObj->m_uiKey);
+	else if(_pclsObj->m_pszKey) return m_fnFindNode(_pclsObj->m_pszKey);
+	return NULL;		
+}
+void * StlList::m_fnGetIndex(unsigned int _uiIndex)
+{
+	if(m_listR.size() ==0) return NULL;
+	ListItr_t itrFind;
+	unsigned int uiCnt = 0;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		if(uiCnt == _uiIndex) return (void*)(*itrFind);
+		itrFind++;uiCnt++;
+	}
+	return NULL;
+}
+bool StlList::m_fnDelHead()
+{
+	if(m_listR.size() ==0) return false;
+	ListItr_t ITOR;
+	ITOR = m_listR.begin();
+	StlObject *pclsObj = (StlObject *)*ITOR;
+	delete pclsObj;
+	m_listR.erase(ITOR);
+	return true;
+}
+bool StlList::m_fnDelNode(unsigned int  _uiKey)
+{
+	if(m_listR.size() ==0) return false;
+	ListItr_t itrFind;StlObject *pclsObj = NULL;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		pclsObj = (StlObject *)*itrFind;
+		if(*pclsObj == _uiKey) 
+		{
+			delete pclsObj;
+			m_listR.erase(itrFind);return true;
+		}
+		itrFind++;
+	}
+	return false;
+}
+bool StlList::m_fnDelNode(const char * _pszKey)
+{
+	if(m_listR.size() ==0) return false;
+	ListItr_t itrFind;StlObject *pclsObj = NULL;
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		pclsObj = (StlObject *)*itrFind;
+		if(*pclsObj == _pszKey) 
+		{
+			delete pclsObj;
+			m_listR.erase(itrFind);return true;
+		}
+		itrFind++;
+	}
+	return false;
+}
+bool StlList::m_fnDelTail()
+{
+	if(m_listR.size() ==0) return false;
+	ListItr_t itrFind;
+	itrFind = m_listR.end();itrFind--;
+	StlObject *pclsObj = (StlObject *)*itrFind;
+	delete pclsObj;
+	m_listR.erase(itrFind);
+	return true;
+}
+bool StlList::m_fnClear()
+{
+	if(m_listR.size() ==0) return false;
+	ListItr_t itrFind;StlObject *pclsObj = NULL; 
+	for(itrFind = m_listR.begin();itrFind != m_listR.end();)
+	{
+		pclsObj = (StlObject *)*itrFind;
+		delete pclsObj;
+		m_listR.erase(itrFind++);
+	}
+	return false;
+}
+void * StlList::m_fnBegin(ListItr_t & _rclsItem)
+{
+	_rclsItem = m_listR.begin();
+	if(m_listR.size() ==0) return NULL;
+	return (void*)*_rclsItem;
+}
+void * StlList::m_fnNext(ListItr_t & _rclsItem)
+{
+	if(_rclsItem != m_listR.end())
+	{
+		_rclsItem++;
+		if(_rclsItem == m_listR.end()) return NULL;
+		return (void*)*_rclsItem;
+	}
+	return NULL;
+}
+
+bool StlList::m_fnIsEnd(ListItr_t & _rclsItem)
+{
+	if(_rclsItem == m_listR.end()) return true;
+	return false;
+}
+void * StlList::m_fnGetNext(Iterator & _rclsItor)
+{
+	if(_rclsItor.m_unCnt==0)
+	{
+		return m_fnBegin(_rclsItor.m_fnGetNextList());
+	}
+	else
+	{
+		return m_fnNext(_rclsItor.m_fnGetNextList());
+	}
+}
+void StlList::m_fnSort(PFuncSortList_t _pfn)
+{
+	if(_pfn) m_listR.sort(_pfn);
+}
+void StlList::m_fnReverse()
+{
+	m_listR.reverse();
+}
+unsigned int StlList::m_fnGetSize(){return m_listR.size();}
+/**************************** STL Map **************************************************/
+StlMap::StlMap(){}
+StlMap::~StlMap(){m_fnClear();}
+void * StlMap::m_fnFindMap(unsigned int _nKey)
+{
+	MapIntItr_t itrFind = m_mapR.find(_nKey);
+	if (itrFind == m_mapR.end()) return NULL;
+	unsigned long ulResult = itrFind->second;return (void*)ulResult;
+}
+void * StlMap::m_fnFindMap(const char * _pszKey)
+{
+	MapStrItr_t itrFind = m_mapS.find(StlMapStr_t::key_type(_pszKey));
+	if (itrFind == m_mapS.end()) return NULL;
+	unsigned long ulData = itrFind->second;return (void*)ulData;
+}		
+bool StlMap::m_fnSetMap(unsigned int _nKey, StlObject * _pclsObj)
+{
+	MapIntItr_t itrFind = m_mapR.find(_nKey);
+	if (itrFind != m_mapR.end())
+	{
+		delete _pclsObj;	return false;
+	}
+	m_mapR.insert(std::pair<unsigned int,unsigned long>(_nKey,(unsigned long)_pclsObj));
+	return true;
+}
+bool StlMap::m_fnSetMap(const char *_pszKey,StlObject * _pclsObj)
+{
+	MapStrItr_t itrFind = m_mapS.find(StlMapStr_t::key_type(_pszKey));
+	if (itrFind != m_mapS.end())
+	{
+		delete _pclsObj;	return false;
+	}
+	m_mapS.insert(std::pair<StlMapStr_t::key_type,unsigned long>(StlMapStr_t::key_type(_pszKey),(unsigned long)_pclsObj));
+	return true;
+}
+bool StlMap::m_fnDelMap(unsigned int _nKey)
+{
+	MapIntItr_t itrFind = m_mapR.find(_nKey);
+	if (itrFind == m_mapR.end()) return false;
+	delete ((StlObject*)(itrFind->second));m_mapR.erase(itrFind);return true;
+}
+bool StlMap::m_fnDelMap(const char *_pszKey)
+{
+	MapStrItr_t itrFind = m_mapS.find(StlMapStr_t::key_type(_pszKey));
+	if (itrFind == m_mapS.end()) return false;
+	delete ((StlObject*)(itrFind->second));m_mapS.erase(itrFind);return true;
+}
+void StlMap::m_fnClear()
+{
+	MapIntItr_t itrInt;MapStrItr_t itrStr;
+	for(itrInt = m_mapR.begin();itrInt != m_mapR.end();)
+	{
+		delete ((StlObject*)itrInt->second);m_mapR.erase(itrInt++);
+	}
+	for(itrStr = m_mapS.begin();itrStr != m_mapS.end();)
+	{
+		delete ((StlObject*)itrStr->second);m_mapS.erase(itrStr++);
+	}
+}
+void * StlMap::m_fnBeginI(MapIntItr_t & _rclsItem)
+{
+	_rclsItem = m_mapR.begin();
+	if(m_mapR.size() ==0) return NULL;
+	return (void*)(_rclsItem->second);
+}
+void * StlMap::m_fnNextI(MapIntItr_t & _rclsItem)
+{
+	if(_rclsItem != m_mapR.end())
+	{
+		_rclsItem++;
+		if(_rclsItem == m_mapR.end()) return NULL;
+		return (void*)(_rclsItem->second);
+	}
+	return NULL;
+}
+bool StlMap::m_fnIsEndI(MapIntItr_t & _rclsItem)
+{
+	if(_rclsItem != m_mapR.end()) return true;
+	return false;
+}
+void * StlMap::m_fnBeginS(MapStrItr_t & _rclsItem)
+{
+	_rclsItem = m_mapS.begin();
+	if(m_mapS.size() ==0) return NULL;
+	return (void*)(_rclsItem->second);
+}
+void * StlMap::m_fnNextS(MapStrItr_t & _rclsItem)
+{
+	if(_rclsItem != m_mapS.end())
+	{
+		_rclsItem++;
+		if(_rclsItem == m_mapS.end()) return NULL;
+		return (void*)(_rclsItem->second);
+	}
+	return NULL;
+}
+bool StlMap::m_fnIsEndS(MapStrItr_t & _rclsItem)
+{
+	if(_rclsItem != m_mapS.end()) return true;
+	return false;
+}
+void * StlMap::m_fnGetNextI(Iterator & _rclsItor)
+{
+	if(_rclsItor.m_unCnt==0)
+	{
+		return m_fnBeginI(_rclsItor.m_fnGetNextMapInt());
+	}
+	else
+	{
+		return m_fnNextI(_rclsItor.m_fnGetNextMapInt());
+	}
+}
+void * StlMap::m_fnGetNextS(Iterator & _rclsItor)
+{
+	if(_rclsItor.m_unCnt==0)
+	{
+		return m_fnBeginS(_rclsItor.m_fnGetNextMapStr());
+	}
+	else
+	{
+		return m_fnNextS(_rclsItor.m_fnGetNextMapStr());
+	}
+}
+unsigned int StlMap::m_fnGetSizeInt(){return m_mapR.size();}
+unsigned int StlMap::m_fnGetSizeStr(){return m_mapS.size();}
+
+}

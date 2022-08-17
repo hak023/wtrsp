@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs
+END
+makeCA
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/makeCA
+END
+extn.cnf
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/extn.cnf
+END
+makeAll
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/makeAll
+END
+Notes
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/Notes
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/Makefile.am
+END
+Readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/Readme.txt
+END
+makeCert
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/makeCert
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/.cvsignore
+END
+hosts.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/certs/hosts.txt
+END

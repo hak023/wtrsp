@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/163/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl
+END
+TlsTransport.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/163/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/TlsTransport.cxx
+END
+TlsConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/TlsConnection.cxx
+END
+DtlsTransport.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/163/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/DtlsTransport.cxx
+END
+TlsTransport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/163/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/TlsTransport.hxx
+END
+WinSecurity.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/WinSecurity.cxx
+END
+Security.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/Security.cxx
+END
+TlsConnection.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/TlsConnection.hxx
+END
+DtlsTransport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/163/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/DtlsTransport.hxx
+END
+MacSecurity.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/MacSecurity.cxx
+END
+WinSecurity.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/WinSecurity.hxx
+END
+Security.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/Security.hxx
+END
+MacSecurity.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/stack/ssl/MacSecurity.hxx
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers
+END
+queuetostream_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers/queuetostream_10_0.vcxproj.filters
+END
+queuetostream.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers/queuetostream.cpp
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers/Makefile.am
+END
+queuetostream_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers/queuetostream_10_0.vcxproj
+END
+queuetostream_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/accountingconsumers/queuetostream_9_0.vcproj
+END

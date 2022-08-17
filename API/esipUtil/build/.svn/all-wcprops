@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/1423/trunk/src/API/esipUtil/build
+END
+lndir.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/lndir.sh
+END
+BuildSystem.txt
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/BuildSystem.txt
+END
+hacksol
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/hacksol
+END
+Makefile.all
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.all
+END
+mkbuildpaths
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/mkbuildpaths
+END
+mkbuildlinks
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/mkbuildlinks
+END
+contrib-tarball.sh
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/contrib-tarball.sh
+END
+Makefile.osarch
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.osarch
+END
+Makefile.pkg
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.pkg
+END
+Makefile.post
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/1423/trunk/src/API/esipUtil/build/Makefile.post
+END
+Makefile.pre
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.pre
+END
+H5VV0I~S
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/H5VV0I~S
+END
+release-tarball.sh
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/release-tarball.sh
+END
+Makefile.buildpaths
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.buildpaths
+END
+Makefile.tools
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/Makefile.tools
+END
+vovida2bsd.sh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/vovida2bsd.sh
+END
+fakepre
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/build/fakepre
+END

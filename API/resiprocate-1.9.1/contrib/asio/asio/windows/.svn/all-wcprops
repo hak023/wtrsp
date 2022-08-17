@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows
+END
+basic_handle.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/basic_handle.hpp
+END
+random_access_handle.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/random_access_handle.hpp
+END
+random_access_handle_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/random_access_handle_service.hpp
+END
+basic_random_access_handle.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/basic_random_access_handle.hpp
+END
+overlapped_ptr.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/overlapped_ptr.hpp
+END
+stream_handle.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/stream_handle.hpp
+END
+stream_handle_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/stream_handle_service.hpp
+END
+basic_stream_handle.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/windows/basic_stream_handle.hpp
+END

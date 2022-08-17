@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd
+END
+reprocmd_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd/reprocmd_10_0.vcxproj
+END
+reprocmd_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd/reprocmd_9_0.vcproj
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd/Makefile.am
+END
+reprocmd_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd/reprocmd_10_0.vcxproj.filters
+END
+reprocmd.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprocmd/reprocmd.cpp
+END

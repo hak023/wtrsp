@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/repos/vIBC/!svn/ver/764/trunk/src/include/alcomm/if
+END
+nwm_api.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/nwm_api.h
+END
+tcpmgr.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/tcpmgr.h
+END
+common_msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/764/trunk/src/include/alcomm/if/common_msg.h
+END
+trace.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/trace.h
+END
+qlogger.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/qlogger.h
+END
+aloxUtil.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/764/trunk/src/include/alcomm/if/aloxUtil.h
+END
+buf_traits.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/buf_traits.h
+END
+aloxProcInfo.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/aloxProcInfo.h
+END
+usrpool.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/usrpool.h
+END
+mgpt_util.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/mgpt_util.h
+END
+tcpif.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/tcpif.h
+END
+nwm_mgr.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/nwm_mgr.h
+END
+usrmap.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/usrmap.h
+END
+aloxConf.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/764/trunk/src/include/alcomm/if/aloxConf.h
+END
+cdrlog.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/cdrlog.h
+END
+aloxCommon.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/aloxCommon.h
+END
+ifcfg.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/ifcfg.h
+END
+ses_traits.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/ses_traits.h
+END
+usrpool2.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/usrpool2.h
+END
+amoption.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/544/trunk/src/include/alcomm/if/amoption.h
+END

@@ -1,0 +1,195 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ESIPUTIL_TEST_TRANSPORT_DATA_H	testTransportData.hxx	3;"	d
+ESIPUTIL_TEST_TRANSPORT_H	testTransport.hxx	3;"	d
+ESIPUTIL_TEST_TRANSPORT_PERFORM_SIP_H	testTransportPerformSip.hxx	3;"	d
+ESIPUTIL_TEST_VCM_H	testVCM.hxx	3;"	d
+ETestTransportDataType	testTransportData.hxx	/^}ETestTransportDataType;$/;"	t	typeref:enum:__anon8
+ETimerType	testVCM.hxx	/^}ETimerType;$/;"	t	typeref:enum:__anon6
+E_CONST_MAX_CALLID_LEN	testVCM.hxx	/^		E_CONST_MAX_CALLID_LEN = 256,$/;"	e	enum:RcvInfo::__anon5
+E_CONST_MAX_DATA_LEN	testTransportData.hxx	/^		E_CONST_MAX_DATA_LEN = 50000,$/;"	e	enum:SendingData::__anon9
+E_CONST_MAX_STR_LEN	testTransport.hxx	/^		E_CONST_MAX_STR_LEN =  eSipUtil::Net5Tuple_t::E_CONST_MAX_STR_LEN+100,$/;"	e	enum:TransportEntity::__anon3
+E_CONST_WORKER_NUM	testVCM.hxx	/^			E_CONST_WORKER_NUM = 4,$/;"	e	enum:SimulVCM::__anon7
+E_MAX_TRANSPORT_MGR_NUM	testTransport.hxx	/^			E_MAX_TRANSPORT_MGR_NUM = 2,$/;"	e	enum:TransportMgrInfo::__anon2
+E_MAX_TRANSPORT_NUM	testTransport.hxx	/^			E_MAX_TRANSPORT_NUM = 50000,$/;"	e	enum:TransportEntityInfo::__anon4
+E_SIP_METHOD_t	testTransportPerformSip.cxx	/^}E_SIP_METHOD_t;$/;"	t	typeref:enum:__anon1	file:
+E_TEST_TRANSPORT_DATA_TYPE_num	testTransportData.hxx	/^	E_TEST_TRANSPORT_DATA_TYPE_num,$/;"	e	enum:__anon8
+E_TEST_TRANSPORT_DATA_TYPE_perform	testTransportData.hxx	/^	E_TEST_TRANSPORT_DATA_TYPE_perform,$/;"	e	enum:__anon8
+E_TEST_TRANSPORT_DATA_TYPE_simpleMsg	testTransportData.hxx	/^	E_TEST_TRANSPORT_DATA_TYPE_simpleMsg = 0,$/;"	e	enum:__anon8
+E_TIMER_TYPE_NUM	testVCM.hxx	/^	E_TIMER_TYPE_NUM,$/;"	e	enum:__anon6
+E_TIMER_TYPE_ping	testVCM.hxx	/^	E_TIMER_TYPE_ping = 0,$/;"	e	enum:__anon6
+LogTest	testQueueThread.cxx	12;"	d	file:
+LogTest	testShm.cxx	12;"	d	file:
+LogTest	testTransport.cxx	27;"	d	file:
+LogTest	testTransportPerformSip.cxx	11;"	d	file:
+LogTest	testVCM.cxx	15;"	d	file:
+PerformSipUas	testTransportPerformSip.cxx	/^PerformSipUas::PerformSipUas()$/;"	f	class:PerformSipUas
+PerformSipUas	testTransportPerformSip.hxx	/^class PerformSipUas$/;"	c
+QueueData	testQueueThread.cxx	/^	QueueData(int _n)$/;"	f	struct:QueueData
+QueueData	testQueueThread.cxx	/^struct QueueData$/;"	s	file:
+QueueData_t	testQueueThread.cxx	/^typedef struct QueueData QueueData_t;$/;"	t	typeref:struct:QueueData	file:
+RcvInfo	testVCM.hxx	/^	RcvInfo()$/;"	f	struct:RcvInfo
+RcvInfo	testVCM.hxx	/^struct RcvInfo$/;"	s
+RcvSipData	testTransportPerformSip.hxx	/^	RcvSipData()$/;"	f	struct:RcvSipData
+RcvSipData	testTransportPerformSip.hxx	/^struct RcvSipData$/;"	s
+RcvSipData_t	testTransportPerformSip.hxx	/^typedef struct RcvSipData RcvSipData_t;$/;"	t	typeref:struct:RcvSipData
+SIP_METHOD_NUM	testTransportPerformSip.cxx	/^	SIP_METHOD_NUM,$/;"	e	enum:__anon1	file:
+SIP_METHOD_ack	testTransportPerformSip.cxx	/^	SIP_METHOD_ack,$/;"	e	enum:__anon1	file:
+SIP_METHOD_bye	testTransportPerformSip.cxx	/^	SIP_METHOD_bye,$/;"	e	enum:__anon1	file:
+SIP_METHOD_invite	testTransportPerformSip.cxx	/^	SIP_METHOD_invite = 0,$/;"	e	enum:__anon1	file:
+SendingData	testTransportData.hxx	/^struct SendingData$/;"	s
+SendingData_t	testTransportData.hxx	/^typedef struct SendingData SendingData_t;$/;"	t	typeref:struct:SendingData
+SimulVCM	testVCM.hxx	/^class SimulVCM$/;"	c
+SipMethodInfo	testTransportPerformSip.cxx	/^struct SipMethodInfo$/;"	s	file:
+SndInfo	testVCM.hxx	/^	SndInfo()$/;"	f	struct:SndInfo
+SndInfo	testVCM.hxx	/^struct SndInfo$/;"	s
+TestData	testQueue.cxx	/^	TestData(int _n)$/;"	f	struct:TestData
+TestData	testQueue.cxx	/^struct TestData$/;"	s	file:
+TestTransportDataTypeInfo	testTransportData.hxx	/^struct TestTransportDataTypeInfo$/;"	s
+TimerInfo	testVCM.hxx	/^	TimerInfo()$/;"	f	struct:TimerInfo
+TimerInfo	testVCM.hxx	/^struct TimerInfo$/;"	s
+TransportEntity	testTransport.hxx	/^	TransportEntity()$/;"	f	struct:TransportEntity
+TransportEntity	testTransport.hxx	/^struct TransportEntity$/;"	s
+TransportEntityInfo	testTransport.hxx	/^		TransportEntityInfo()$/;"	f	class:TransportEntityInfo
+TransportEntityInfo	testTransport.hxx	/^class TransportEntityInfo$/;"	c
+TransportEntity_t	testTransport.hxx	/^typedef struct TransportEntity TransportEntity_t;$/;"	t	typeref:struct:TransportEntity
+TransportMgrInfo	testTransport.hxx	/^		TransportMgrInfo()$/;"	f	class:TransportMgrInfo
+TransportMgrInfo	testTransport.hxx	/^class TransportMgrInfo$/;"	c
+addTransportEntity	testTransport.cxx	/^int TransportEntityInfo::addTransportEntity(const TransportEntity_t & _rstTransportEntity)$/;"	f	class:TransportEntityInfo
+addTransportMgr	testTransport.cxx	/^bool TransportMgrInfo::addTransportMgr(const char * _pszMgrName, unsigned int _unMaxTransportSize, unsigned int _unMaxEpollSize, unsigned int _unMaxThreadQueueSize, int _nThreadQueueWaitMs)$/;"	f	class:TransportMgrInfo
+callback	testQueueThread.cxx	/^void callback(QueueData_t * _pstQueueData, void * _pObject)$/;"	f
+cbAcceptConnection	testTransport.cxx	/^void cbAcceptConnection(TransportMgr & _rclsTransportMgr, Net5Tuple_t & _rstNet5Tuple)$/;"	f
+cbCheckCompleteData4Rcv	testTransport.cxx	/^int cbCheckCompleteData4Rcv(TransportMgr & _rclsTransportMgr, const char * _pRcvData, unsigned int _unRcvDataLen, const Net5Tuple_t & _rstNet5Tuple, void * _pAppBuffer)$/;"	f
+cbCheckCompletePerformSip4Rcv	testTransportPerformSip.cxx	/^int cbCheckCompletePerformSip4Rcv(TransportMgr & _rclsTransportMgr, const char * _pRcvData, unsigned int _unRcvDataLen, const Net5Tuple_t & _rstNet5Tuple, void * _pAppBuffer)$/;"	f
+cbCheckCompleteSlbMsg4Rcv	testVCM.cxx	/^int SimulVCM::cbCheckCompleteSlbMsg4Rcv(TransportMgr & _rclsTransportMgr, const char * _pRcvData, unsigned int _unRcvDataLen, const Net5Tuple_t & _rstNet5Tuple, void * _pAppBuffer)$/;"	f	class:SimulVCM
+cbConnected4NonBlock	testVCM.cxx	/^void SimulVCM::cbConnected4NonBlock(eSipUtil::TransportMgr & _rclsTransportMgr, const eSipUtil::Net5Tuple_t & _rstNet5Tuple)$/;"	f	class:SimulVCM
+cbDelTransport	testTransport.cxx	/^void cbDelTransport(TransportMgr & _rclsTransportMgr, const Net5Tuple_t & _rstNet5Tuple, ETransportErr_t _eTrspErr)$/;"	f
+cbRecv	testVCM.cxx	/^void SimulVCM::cbRecv(TransportMgr & _rclsTransportMgr, char * _pData, unsigned int _unDataLen, const Net5Tuple_t & _rstRcvTuple)$/;"	f	class:SimulVCM
+cbRecvData	testTransport.cxx	/^void cbRecvData(TransportMgr & _rclsTransportMgr, char * _pData, unsigned int _unDataLen, const Net5Tuple_t & _rstNet5Tuple)$/;"	f
+cbRecvPerformSip	testTransportPerformSip.cxx	/^void cbRecvPerformSip(TransportMgr & _rclsTransportMgr, char * _pData, unsigned int _unDataLen, const Net5Tuple_t & _rstNet5Tuple)$/;"	f
+cbSnd	testVCM.cxx	/^void SimulVCM::cbSnd(eSipUtil::TransportMgr & _rclsTransportMgr, const char * _pData, unsigned int _unDataLen, const eSipUtil::Net5Tuple_t & _rstSndTuple, void * _pAppBuffer)$/;"	f	class:SimulVCM
+cbSndPerformSip	testTransportPerformSip.cxx	/^void cbSndPerformSip(TransportMgr & _rclsTransportMgr, const char * _pData, unsigned int _unDataLen, const Net5Tuple_t & _rstNet5Tuple, void * _pSndAppData)$/;"	f
+cmdAddTransport	testTransport.cxx	/^bool cmdAddTransport(int _nMode)$/;"	f
+cmdAddTransport4Vcm	testTransport.cxx	/^bool cmdAddTransport4Vcm(const char * _pszCfgPath)$/;"	f
+cmdDelTransport	testTransport.cxx	/^void cmdDelTransport()$/;"	f
+cmdSendSimpleMsg	testTransport.cxx	/^bool cmdSendSimpleMsg()$/;"	f
+cmdSetLogLevel	testTransport.cxx	/^void cmdSetLogLevel()$/;"	f
+cmdShowTransport	testTransport.cxx	/^void cmdShowTransport()$/;"	f
+delTransportEntity	testTransport.cxx	/^void TransportEntityInfo::delTransportEntity(int _nEntityIdx)$/;"	f	class:TransportEntityInfo
+g_clsTransportEntityInfo	testTransport.cxx	/^TransportEntityInfo g_clsTransportEntityInfo;$/;"	v
+g_clsTransportMgrInfo	testTransport.cxx	/^TransportMgrInfo g_clsTransportMgrInfo;$/;"	v
+g_fnRawHash	testVCM.cxx	/^static unsigned int g_fnRawHash(const unsigned char * _pBuffer, unsigned int _unLen)$/;"	f	file:
+g_nLogInstanceId	testQueueThread.cxx	/^int g_nLogInstanceId = -1;$/;"	v
+g_nLogInstanceId	testShm.cxx	/^int g_nLogInstanceId = -1;$/;"	v
+g_nLogInstanceId	testTransport.cxx	/^int g_nLogInstanceId = -1;$/;"	v
+g_parrTransportMgr	testTransport.hxx	/^		eSipUtil::TransportMgr * g_parrTransportMgr[E_MAX_TRANSPORT_MGR_NUM];$/;"	m	class:TransportMgrInfo
+g_pszLineDelimiter	testTransportPerformSip.cxx	/^static const char * g_pszLineDelimiter = $/;"	v	file:
+g_pszShmPathName	testShm.cxx	/^const char * g_pszShmPathName = ".\/shm1";$/;"	v
+g_szProcName	testTransport.cxx	/^char g_szProcName[100] = {0,};$/;"	v
+getHeaderLength	testTransportData.hxx	/^	unsigned int getHeaderLength() const$/;"	f	struct:SendingData
+getLength	testTransportData.hxx	/^	unsigned int getLength() const$/;"	f	struct:SendingData
+getProc1	testQueue.cxx	/^void * getProc1(void * arg)$/;"	f
+getProc2	testQueue.cxx	/^void * getProc2(void * arg)$/;"	f
+getStr	testTransport.cxx	/^const char * TransportEntity::getStr(char * _pszOutStr, unsigned int _unMaxStrLen, bool _bInitial) const$/;"	f	class:TransportEntity
+getTestTransportDataTypeStr	testTransportData.hxx	/^const char * getTestTransportDataTypeStr(ETestTransportDataType _eType)$/;"	f
+getTransportEntity	testTransport.cxx	/^bool TransportEntityInfo::getTransportEntity(const Net5Tuple_t & _rstNet5Tuple, TransportEntity & _rstTransportEntity)$/;"	f	class:TransportEntityInfo
+getTransportEntity	testTransport.cxx	/^bool TransportEntityInfo::getTransportEntity(int _nEntityIdx, TransportEntity & _rstTransportEntity)$/;"	f	class:TransportEntityInfo
+getTransportEntityIdx	testTransport.cxx	/^int TransportEntityInfo::getTransportEntityIdx(const Net5Tuple_t & _rstNet5Tuple)$/;"	f	class:TransportEntityInfo
+getTransportMgr	testTransport.cxx	/^TransportMgr * TransportMgrInfo::getTransportMgr(int _nMgrIdx)$/;"	f	class:TransportMgrInfo
+getTransportMgrIdx	testTransport.cxx	/^int TransportMgrInfo::getTransportMgrIdx(const char * _pszMgrName)$/;"	f	class:TransportMgrInfo
+getUasIndex4NewTransport	testTransportPerformSip.cxx	/^int getUasIndex4NewTransport()$/;"	f
+i	testQueue.cxx	/^	int i;$/;"	m	struct:TestData	file:
+i	testQueueThread.cxx	/^	int i;$/;"	m	struct:QueueData	file:
+kill_No9_Myself	testTransport.cxx	/^void kill_No9_Myself()$/;"	f
+m_Data	testTransportData.hxx	/^	char m_Data[E_CONST_MAX_DATA_LEN];$/;"	m	struct:SendingData
+m_TransportEntityLock	testTransport.hxx	/^		pthread_mutex_t m_TransportEntityLock;$/;"	m	class:TransportEntityInfo
+m_arrRcvThread	testVCM.cxx	/^eSipUtil::QueueThread< RcvInfo > SimulVCM::m_arrRcvThread[SimulVCM::E_CONST_WORKER_NUM];$/;"	m	class:SimulVCM	file:
+m_arrRcvThread	testVCM.hxx	/^		static eSipUtil::QueueThread< RcvInfo > m_arrRcvThread[E_CONST_WORKER_NUM];$/;"	m	class:SimulVCM
+m_arrTransportEntity	testTransport.hxx	/^		TransportEntity_t m_arrTransportEntity[E_MAX_TRANSPORT_NUM];$/;"	m	class:TransportEntityInfo
+m_bUse	testTransport.hxx	/^	bool m_bUse;$/;"	m	struct:TransportEntity
+m_clsRcvThread	testTransportPerformSip.hxx	/^		eSipUtil::QueueThread< RcvSipData_t > m_clsRcvThread;$/;"	m	class:PerformSipUas
+m_clsTimerTable	testVCM.hxx	/^		static eSipUtil::TimerTable< TimerInfo > m_clsTimerTable;$/;"	m	class:SimulVCM
+m_eOrigSipTransportType	testTransport.hxx	/^	eSipUtil::ETransportType_t m_eOrigSipTransportType;$/;"	m	struct:TransportEntity
+m_eSipMethod	testTransportPerformSip.cxx	/^	E_SIP_METHOD_t m_eSipMethod;$/;"	m	struct:SipMethodInfo	file:
+m_eTestTransportDataType	testTransportData.hxx	/^	ETestTransportDataType m_eTestTransportDataType;$/;"	m	struct:SendingData
+m_eTestTransportDataType	testTransportData.hxx	/^	ETestTransportDataType m_eTestTransportDataType;$/;"	m	struct:TestTransportDataTypeInfo
+m_eTimerType	testVCM.hxx	/^	ETimerType m_eTimerType;$/;"	m	struct:TimerInfo
+m_fnCbProcTimer	testVCM.cxx	/^void SimulVCM::m_fnCbProcTimer(TimerInfo * _pstTimerInfo)$/;"	f	class:SimulVCM
+m_fnChangeSip4Snd	testVCM.cxx	/^bool SimulVCM::m_fnChangeSip4Snd(const char * _pszSrcSip, char * _pszDstSip)$/;"	f	class:SimulVCM
+m_fnChangeTag	testVCM.cxx	/^bool SimulVCM::m_fnChangeTag(bool _bAdd, const char * _pHdrStartPos, const char * _pHdrEndPos, const char ** _pTagStartPos, const char ** _pTagEndPos, std::string & _rclsNewTag)$/;"	f	class:SimulVCM
+m_fnDetermineTargetTuple4SndSip	testVCM.cxx	/^void SimulVCM::m_fnDetermineTargetTuple4SndSip(const TransportEntity & _rstTrspEntity, const SlbInternalSipInfo & _rstInternalSipInfo, const char * _pszRcvSip, eSipUtil::Net5Tuple & _rstTagetTuple)$/;"	f	class:SimulVCM
+m_fnGetCallId	testVCM.hxx	/^	char * m_fnGetCallId(){ return m_szCallId; }$/;"	f	struct:RcvInfo
+m_fnGetCallId	testVCM.hxx	/^	const char * m_fnGetCallId() const{ return m_szCallId; }$/;"	f	struct:RcvInfo
+m_fnGetHdrOwn	testVCM.hxx	/^	SlbInternalMsgHdr * m_fnGetHdrOwn()$/;"	f	struct:RcvInfo
+m_fnInit	testVCM.cxx	/^void SimulVCM::m_fnInit()$/;"	f	class:SimulVCM
+m_fnRecvProc	testVCM.cxx	/^void SimulVCM::m_fnRecvProc(RcvInfo * _pstRcvData, void * _pObject)$/;"	f	class:SimulVCM
+m_fnRecvProc4Sip	testVCM.cxx	/^void SimulVCM::m_fnRecvProc4Sip(SlbInternalMsgHdr & _rstRcvMsgHdr, const eSipUtil::Net5Tuple & _rstInternalRcvTuple, const char * _pszCallId)$/;"	f	class:SimulVCM
+m_fnSendTo	testVCM.cxx	/^void SimulVCM::m_fnSendTo(SndInfo * _pstSndData)$/;"	f	class:SimulVCM
+m_nMgrIndex	testTransport.hxx	/^	int m_nMgrIndex;$/;"	m	struct:TransportEntity
+m_nOrigSipLocalPort	testTransport.hxx	/^	int m_nOrigSipLocalPort;$/;"	m	struct:TransportEntity
+m_nPerformSipUasIndex	testTransport.hxx	/^	int m_nPerformSipUasIndex;$/;"	m	struct:TransportEntity
+m_nTcpRole	testTransport.hxx	/^	int m_nTcpRole; 								\/\/0(server), 1(client), 2(accepted)$/;"	m	struct:TransportEntity
+m_nUasIndex	testTransportPerformSip.hxx	/^	int m_nUasIndex;$/;"	m	struct:RcvSipData
+m_pRcvInternalMsgHdr	testVCM.hxx	/^	SlbInternalMsgHdr * m_pRcvInternalMsgHdr;$/;"	m	struct:RcvInfo
+m_pSndVcmInfo	testVCM.hxx	/^	void * m_pSndVcmInfo;$/;"	m	struct:SndInfo
+m_pszDesc	testTransportData.hxx	/^	const char * m_pszDesc;$/;"	m	struct:TestTransportDataTypeInfo
+m_pszMethod	testTransportPerformSip.cxx	/^	const char * m_pszMethod;$/;"	m	struct:SipMethodInfo	file:
+m_pszSip	testTransportPerformSip.hxx	/^	char * m_pszSip;$/;"	m	struct:RcvSipData
+m_stNet5Tuple	testTransport.hxx	/^	eSipUtil::Net5Tuple_t m_stNet5Tuple;$/;"	m	struct:TransportEntity
+m_stNet5Tuple	testTransportPerformSip.hxx	/^	eSipUtil::Net5Tuple_t m_stNet5Tuple;$/;"	m	struct:RcvSipData
+m_stNet5Tuple	testVCM.hxx	/^	eSipUtil::Net5Tuple m_stNet5Tuple;$/;"	m	struct:TimerInfo
+m_stRcvNet5Tuple	testVCM.hxx	/^	eSipUtil::Net5Tuple_t m_stRcvNet5Tuple;$/;"	m	struct:RcvInfo
+m_stSndNet5Tuple	testVCM.hxx	/^	eSipUtil::Net5Tuple_t m_stSndNet5Tuple;$/;"	m	struct:SndInfo
+m_stTermSipNet5Tuple	testTransport.hxx	/^	eSipUtil::Net5Tuple_t m_stTermSipNet5Tuple;$/;"	m	struct:TransportEntity
+m_szCallId	testVCM.hxx	/^	char m_szCallId[E_CONST_MAX_CALLID_LEN];$/;"	m	struct:RcvInfo
+m_szOrigSipLocalIp	testTransport.hxx	/^	char m_szOrigSipLocalIp[64];$/;"	m	struct:TransportEntity
+m_szStackTagPrefix	testVCM.cxx	/^char SimulVCM::m_szStackTagPrefix[128];$/;"	m	class:SimulVCM	file:
+m_szStackTagPrefix	testVCM.hxx	/^		static char m_szStackTagPrefix[128];$/;"	m	class:SimulVCM
+m_szTagPrefix	testVCM.cxx	/^char SimulVCM::m_szTagPrefix[128];$/;"	m	class:SimulVCM	file:
+m_szTagPrefix	testVCM.hxx	/^		static char m_szTagPrefix[128];$/;"	m	class:SimulVCM
+m_unDataLen	testTransportData.hxx	/^	unsigned int m_unDataLen;$/;"	m	struct:SendingData
+m_unSipLen	testTransportPerformSip.hxx	/^	unsigned int m_unSipLen;$/;"	m	struct:RcvSipData
+m_unTimerMillicSec	testVCM.hxx	/^	unsigned int m_unTimerMillicSec;$/;"	m	struct:TimerInfo
+main	testFlexIf.cxx	/^int main()$/;"	f
+main	testQueue.cxx	/^int main()$/;"	f
+main	testQueueMon_read.cxx	/^int main()$/;"	f
+main	testQueueMon_write.cxx	/^int main()$/;"	f
+main	testQueueThread.cxx	/^int main()$/;"	f
+main	testShm.cxx	/^int main()$/;"	f
+main	testTransport.cxx	/^int main(int _argc, char ** _argv)	$/;"	f
+putProc1	testQueue.cxx	/^void * putProc1(void * arg)$/;"	f
+putProc2	testQueue.cxx	/^void * putProc2(void * arg)$/;"	f
+recvProc	testTransportPerformSip.cxx	/^void recvProc(RcvSipData_t * _pstRcvData, void * _pObject)$/;"	f
+reset	testTransport.hxx	/^	void reset()$/;"	f	struct:TransportEntity
+reset	testTransportData.hxx	/^	void reset()$/;"	f	struct:SendingData
+s_LogLock	testTransport.cxx	/^pthread_mutex_t s_LogLock = PTHREAD_MUTEX_INITIALIZER;$/;"	v
+s_arrMethodInfo	testTransportPerformSip.cxx	/^static const SipMethodInfo s_arrMethodInfo[SIP_METHOD_NUM] =$/;"	v	file:
+s_arrRandomPermutation	testVCM.cxx	/^static const unsigned char s_arrRandomPermutation[256] = $/;"	v	file:
+s_clsPerformSipUas	testTransportPerformSip.cxx	/^static PerformSipUas s_clsPerformSipUas[s_unMaxPerformSipUasNum];$/;"	v	file:
+s_pszBye200	testTransportPerformSip.cxx	/^static const char * s_pszBye200 = $/;"	v	file:
+s_pszCallIdHeaderName	testTransportPerformSip.cxx	/^static const char * s_pszCallIdHeaderName = "\\r\\nCall-ID";$/;"	v	file:
+s_pszContentLengthName	testTransportPerformSip.cxx	/^static const char * s_pszContentLengthName = "\\r\\nContent-Length";$/;"	v	file:
+s_pszEndHeader	testTransportPerformSip.cxx	/^static const char * s_pszEndHeader = "\\r\\n\\r\\n";$/;"	v	file:
+s_pszEndLine	testTransportPerformSip.cxx	/^static const char * s_pszEndLine = "\\r\\n";$/;"	v	file:
+s_pszInv100	testTransportPerformSip.cxx	/^static const char * s_pszInv100 = $/;"	v	file:
+s_pszInv180	testTransportPerformSip.cxx	/^static const char * s_pszInv180 = $/;"	v	file:
+s_pszInv200	testTransportPerformSip.cxx	/^static const char * s_pszInv200 = $/;"	v	file:
+s_pszPrompt	testTransport.cxx	/^static const char * s_pszPrompt = "==> ";$/;"	v	file:
+s_pszTopMenu	testTransport.cxx	/^static const char * s_pszTopMenu = "\\n1: Add\\n2: Del\\n3: Show\\n4: Send\\n5: PerformSipUas\\n6: PerformVcm\\n7: Set LogLevel\\n8: Quit";$/;"	v	file:
+s_unMaxCallIdLen	testTransportPerformSip.cxx	/^static const unsigned int s_unMaxCallIdLen = 256;$/;"	v	file:
+s_unMaxPerformSipUasNum	testTransportPerformSip.cxx	/^static const unsigned int s_unMaxPerformSipUasNum = 5;$/;"	v	file:
+s_unMaxSipLen	testTransportPerformSip.cxx	/^static const unsigned int s_unMaxSipLen = 5000;$/;"	v	file:
+sendData	testTransport.cxx	/^bool sendData(const Net5Tuple_t & _rstNet5Tuple, char * _pData, unsigned int _unDataLen)$/;"	f
+sendTo	testTransportPerformSip.cxx	/^void PerformSipUas::sendTo(RcvSipData_t * _pstData)$/;"	f	class:PerformSipUas
+setPrompt	testTransport.cxx	/^void setPrompt(char * _pszStr, unsigned int _unMaxLen)$/;"	f
+setPrompt	testTransport.cxx	/^void setPrompt(int & _rnI)$/;"	f
+~PerformSipUas	testTransportPerformSip.cxx	/^PerformSipUas::~PerformSipUas()$/;"	f	class:PerformSipUas
+~RcvInfo	testVCM.hxx	/^	~RcvInfo()$/;"	f	struct:RcvInfo
+~RcvSipData	testTransportPerformSip.hxx	/^	~RcvSipData()$/;"	f	struct:RcvSipData
+~SndInfo	testVCM.hxx	/^	~SndInfo()$/;"	f	struct:SndInfo
+~TransportEntityInfo	testTransport.hxx	/^		~TransportEntityInfo()$/;"	f	class:TransportEntityInfo
+~TransportMgrInfo	testTransport.hxx	/^		~TransportMgrInfo()$/;"	f	class:TransportMgrInfo

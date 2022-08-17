@@ -1,0 +1,5045 @@
+#include "eSipRteDBMgr.hxx"
+#include "eSipRteMgr.hxx"
+#include "eSipRteDBHandler.hxx"
+//@R106 201603
+#include "eSipRteStatus.hxx"
+namespace eSIP
+{
+
+//static member
+CSipRteDBMgr* CSipRteDBMgr::m_pIns=NULL;
+CSipRteDBMgr::CSipRteDBMgr()
+   : m_pDB(NULL),
+     m_pDB_SHM(NULL),
+     m_nUseLocal(0),
+     m_pGroupLoad(new CLoadCalculator<>[SipRouteGroupDataBase_t::E_MAXNUM]),
+     m_pGroupLoadTPS(new CLoadCalculator<>[SipRouteGroupDataBase_t::E_MAXNUM]),
+     m_pGlobalLoad(new CLoadCalculator<>),
+     m_pGlobalLoadTPS(new CLoadCalculator<>),
+     //@vibc level_cps 20180219
+     m_pAudioLoad(new CLoadCalculator<>),
+     m_pVideoLoad(new CLoadCalculator<>),
+     m_pLocalStrMap(NULL),
+     m_pRmtStrMap(NULL),
+     m_pRteStrMap(NULL),
+     m_pRteEmerStrMap(NULL),
+     m_nMaintain(0)
+
+{
+   //add init @R106 201603 
+   memset(&m_InterNotify,0x00,sizeof(InternalNotify_t));
+}
+
+CSipRteDBMgr::~CSipRteDBMgr()
+{
+
+}
+
+
+CSipRteDBMgr* CSipRteDBMgr::m_fnGetInstance()
+{
+   if( m_pIns == NULL){
+      m_pIns=new CSipRteDBMgr;
+   }
+   return m_pIns;
+}
+
+int CSipRteDBMgr::m_fnInit2(bool _bUseLocal, bool bClear)
+{
+   int nRet=0;
+   if( _bUseLocal == true ){
+      m_nUseLocal=1;
+   }
+   nRet=m_fnInit(bClear);
+   if( nRet != 0 ){
+      return nRet;
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnInit(bool bClear)
+{
+   unsigned int uiCPS=0;
+   unsigned int uiInCPS=0;
+   (m_pGlobalLoad)->m_fnGetCalcLoad(0,uiCPS,0,uiInCPS);
+
+   //create map
+   for( int i = 0 ; i < CSipRteData::E_SIPRTE_MAX ; i++){
+      m_pIntMap[i]=new CSipData_IntMap;
+   }
+   m_pLocalStrMap=new CSipData_StrMap;
+   m_pRmtStrMap=new CSipData_StrMap;
+   m_pRteStrMap=new CSipData_StrMap;
+   m_pRteEmerStrMap=new CSipData_StrMap;
+
+   //shared memory dir
+   CSipRteUtil::MakeDir((char*)"../ipc");
+
+   //file check
+   struct stat stfile;
+   int nRet=stat(ESIPRTE_SHMKEY_FILE, &stfile);
+   //not found file
+   if( nRet < 0 ){
+      FILE* pFP=NULL; 
+      pFP=fopen(ESIPRTE_SHMKEY_FILE,"w");
+      if( pFP == NULL){
+          SLOG(E_ESipRteLogLevel_ERR,"fail create shm(%s)",ESIPRTE_SHMKEY_FILE);
+          return E_RTE_FailCreate_SharedMemory;
+      }
+      ESIPRTEUTIL_CLOSE_FP(pFP);
+   }
+ 
+   //key_t shmKey=0;
+   if( m_nUseLocal == 1 ){ 
+      m_pDB=new SipRouteManagerDataBase_t;
+      memset(m_pDB,0x00,sizeof(SipRouteManagerDataBase_t));
+
+#if 0
+      m_pDB_SHM=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+               ESIPRTE_SHMKEY_FILE,sizeof(SipRouteManagerDataBase_t),shmKey);
+      if(m_pDB_SHM == NULL){
+         //delete shmared memory
+         CSipRteUtil::m_fnDestroyShm(ESIPRTE_SHMKEY_FILE);
+         //create shared memory
+         shmKey=0;
+         m_pDB_SHM=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+                 ESIPRTE_SHMKEY_FILE,sizeof(SipRouteManagerDataBase_t),shmKey);
+         if(m_pDB_SHM == NULL){
+            SLOG(E_ESipRteLogLevel_ERR,"fail create shm(%s). key=0x%08x",ESIPRTE_SHMKEY_FILE,shmKey);
+            return E_RTE_FailCreate_SharedMemory;
+         }
+      }
+#else
+      m_pDB_SHM=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+               sizeof(SipRouteManagerDataBase_t),(key_t)ESIPRTE_SHMKEY_INT);
+      if(m_pDB_SHM == NULL){
+         SLOG(E_ESipRteLogLevel_ERR,"fail create shm. key=0x%08x",ESIPRTE_SHMKEY_INT);
+         return E_RTE_FailCreate_SharedMemory;
+      }
+#endif
+   }else{
+
+#if 0
+      m_pDB=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+               ESIPRTE_SHMKEY_FILE,sizeof(SipRouteManagerDataBase_t),shmKey);
+      if(m_pDB == NULL){
+         //delete shmared memory
+         CSipRteUtil::m_fnDestroyShm(ESIPRTE_SHMKEY_FILE);
+         //create shared memory
+         shmKey=0;
+         m_pDB=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+                 ESIPRTE_SHMKEY_FILE,sizeof(SipRouteManagerDataBase_t),shmKey);
+         if(m_pDB == NULL){
+            SLOG(E_ESipRteLogLevel_ERR,"fail create shm(%s). key=0x%08x",ESIPRTE_SHMKEY_FILE,shmKey);
+            return E_RTE_FailCreate_SharedMemory;
+         }
+      }
+#else
+      m_pDB=(SipRouteManagerDataBase_t*)CSipRteUtil::m_fnCreateShm(
+               sizeof(SipRouteManagerDataBase_t),(key_t)ESIPRTE_SHMKEY_INT);
+      if(m_pDB == NULL){
+         SLOG(E_ESipRteLogLevel_ERR,"fail create shm. key=0x%08x",ESIPRTE_SHMKEY_INT);
+         return E_RTE_FailCreate_SharedMemory;
+      }
+#endif
+      if( bClear){
+         memset(m_pDB,0x00,sizeof(SipRouteManagerDataBase_t));
+      }
+   }
+   SLOG(E_ESipRteLogLevel_INF,"success create key(0x%08x)",ESIPRTE_SHMKEY_INT);
+   return 0;
+}
+
+void CSipRteDBMgr::m_fnClear(int _nIndex)
+{
+   if( m_pDB == NULL ) return;
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+            _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+   }
+   for( int i=0 ; i < nMaxRecord ; i++){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed != 0) m_fnDelRecordByIndex(_nIndex,i);
+      }
+   }
+   //id clear
+   m_pIntMap[_nIndex]->m_fnClear();
+
+   //string clear
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      m_pLocalStrMap->m_fnClear();
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      m_pRmtStrMap->m_fnClear();
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      m_pRteStrMap->m_fnClear();
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      m_pRteEmerStrMap->m_fnClear();
+   }
+
+   //erase
+   *nCurrentNum =0 ;
+}
+
+void CSipRteDBMgr::m_fnPrintMap()
+{
+   for( int i =0 ;  i < CSipRteData::E_SIPRTE_MAX ; i++){
+      SLOG(E_ESipRteLogLevel_INF,"int map(%d),  count:%d",i,m_pIntMap[i]->m_fnGetCount());
+   }
+   
+   SLOG(E_ESipRteLogLevel_INF,"m_pLocalStrMap  count:%d",m_pLocalStrMap->m_fnGetCount());
+   SLOG(E_ESipRteLogLevel_INF,"m_pRmtStrMap  count:%d",m_pRmtStrMap->m_fnGetCount());
+   SLOG(E_ESipRteLogLevel_INF,"m_pRteStrMap  count:%d",m_pRteStrMap->m_fnGetCount());
+   SLOG(E_ESipRteLogLevel_INF,"m_pRteEmerStrMap  count:%d",m_pRteEmerStrMap->m_fnGetCount());
+
+}
+
+//@vibc
+void CSipRteDBMgr::m_fnSetCompareModRecord(int _nIndex, void* _pvCur,  void* _pvNew)
+{
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      m_fnSetCompareModRecord_LocalNode(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      m_fnSetCompareModRecord_RemoteNode(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      m_fnSetCompareModRecord_RouteGroup(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      m_fnSetCompareModRecord_Route(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      m_fnSetCompareModRecord_RouteSeq(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      m_fnSetCompareModRecord_SRouteSeq(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      m_fnSetCompareModRecord_TrGW(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      m_fnSetCompareModRecord_Reason(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      m_fnSetCompareModRecord_Env(_pvCur,_pvNew,_nIndex);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB){
+      m_fnSetCompareModRecord_Env(_pvCur,_pvNew,_nIndex);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      m_fnSetCompareModRecord_Timer(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      m_fnSetCompareModRecord_Trace(_pvCur,_pvNew);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      m_fnSetCompareModRecord_Emer(_pvCur,_pvNew);
+   }
+}
+
+void CSipRteDBMgr::m_fnClearInternal(int _nIndex)
+{
+   if( m_pDB == NULL ) return;
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+            _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+   }
+   for( int i=0 ; i < nMaxRecord ; i++){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         ((pValue+i))->m_ucInterDel = 1;
+      }
+   }
+}
+void CSipRteDBMgr::m_fnClearInternalMap(int _nIndex)
+{
+   if( m_pDB == NULL ) return;
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+            _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+   }
+
+   unsigned int uiID=0;
+   char szError[256];
+   for( int i=0 ; i < nMaxRecord ; i++){
+      uiID=0;
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+            if( m_fnLocalNodeDelCheck(uiID,szError) != 0 ) continue;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+            if( m_fnRemoteNodeDelCheck(uiID,szError) != 0 ) continue;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+            if( m_fnRouteGroupDelCheck(uiID,szError) != 0 ) continue;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+            if( m_fnRouteDelCheck(uiID,szError) != 0 ) continue;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+            if( m_fnRouteSeqDelCheck(uiID,szError) != 0 ) continue;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         if( ((pValue+i))->m_ucInterDel == 1 ){
+            ((pValue+i))->m_ucInterDel = 0;
+            uiID=((pValue+i))->m_uiID;   
+         }
+      }
+      //delelte
+      if( uiID > 0 ){
+         m_fnDelRecordByIndex(_nIndex,i);
+      }
+   }
+}
+/////////////set mod record 
+int CSipRteDBMgr::m_fnSetModRecord_LocalNode(void* _pvCur, void* _pvNew)
+{
+   
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipNodeLocal_t* _pstCur=(SipNodeLocal_t*)(_pvCur);
+   SipNodeLocal_t* _pstNew=(SipNodeLocal_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipNodeLocal_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   //locking
+   m_pIntMap[CSipRteData::E_SIPRTE_LN]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_LN]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_LocalNode(void* _pvCur, void* _pvNew)
+{
+   
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipNodeLocal_t* _pstCur=(SipNodeLocal_t*)(_pvCur);
+   SipNodeLocal_t* _pstNew=(SipNodeLocal_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipNodeLocal_t); 
+
+   _pstCur->m_ucInterDel=0;
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   //locking
+   m_pIntMap[CSipRteData::E_SIPRTE_LN]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_LN]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_RemoteNode(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipNodeRemote_t* _pstCur=(SipNodeRemote_t*)(_pvCur);
+   SipNodeRemote_t* _pstNew=(SipNodeRemote_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipNodeRemote_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RMT]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RMT]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_RemoteNode(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipNodeRemote_t* _pstCur=(SipNodeRemote_t*)(_pvCur);
+   SipNodeRemote_t* _pstNew=(SipNodeRemote_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipNodeRemote_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RMT]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RMT]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_RouteGroup(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipRouteGroup_t* _pstCur=(SipRouteGroup_t*)(_pvCur);
+   SipRouteGroup_t* _pstNew=(SipRouteGroup_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurCPS));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRouteGroup_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   #ifdef DEF_RTE_R131
+	_pstCur->m_nNpdbEnable = _pstNew->m_nNpdbEnable;
+	_pstCur->m_nHlrEnable = _pstNew->m_nHlrEnable;
+	#endif
+   m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_RouteGroup(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipRouteGroup_t* _pstCur=(SipRouteGroup_t*)(_pvCur);
+   SipRouteGroup_t* _pstNew=(SipRouteGroup_t*)(_pvNew);
+
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurCPS));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRouteGroup_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_Route(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+   
+   SipRoute_t* _pstCur=(SipRoute_t*)(_pvCur);
+   SipRoute_t* _pstNew=(SipRoute_t*)(_pvNew);
+
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRoute_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   //mod param R106 @201603
+   //m_fnChangeRouteStatus(false,_pstCur,true,(int)_pstNew->m_sOptAction,false,0);
+   m_fnChangeRouteStatus(false,_pstCur,true,(int)_pstNew->m_sOptAction,false,0,0);
+
+
+   m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Route(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+   
+   SipRoute_t* _pstCur=(SipRoute_t*)(_pvCur);
+   SipRoute_t* _pstNew=(SipRoute_t*)(_pvNew);
+
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucStatus));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRoute_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   //mod param R106 @201603
+   //m_fnChangeRouteStatus(false,_pstCur,true,(int)_pstNew->m_sOptAction,false,0);
+   m_fnChangeRouteStatus(false,_pstCur,true,(int)_pstNew->m_sOptAction,false,0,0);
+
+
+   m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_RouteSeq(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipRouteSeq_t* _pstCur=(SipRouteSeq_t*)(_pvCur);
+   SipRouteSeq_t* _pstNew=(SipRouteSeq_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucUsed));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRouteSeq_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RSEQ]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RSEQ]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_RouteSeq(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipRouteSeq_t* _pstCur=(SipRouteSeq_t*)(_pvCur);
+   SipRouteSeq_t* _pstNew=(SipRouteSeq_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucUsed));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipRouteSeq_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RSEQ]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RSEQ]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_SRouteSeq(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+   bool bClear=false;
+
+   SipSpecialRouteSeq_t* _pstCur=(SipSpecialRouteSeq_t*)(_pvCur);
+   SipSpecialRouteSeq_t* _pstNew=(SipSpecialRouteSeq_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucUsed));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipSpecialRouteSeq_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   //internal clear
+   if( _pstCur->m_nRNum != _pstNew->m_nRNum ){
+      bClear=true;
+   }
+   for( int i=0 ; i < (SipSpecialRouteSeq_t::E_MAX_RSEQ) && 
+                  (bClear == false) ;i++){
+      if( _pstCur->m_uiRSEQ[i] != _pstNew->m_uiRSEQ[i] ||
+          _pstCur->m_nRATE[i] !=  _pstNew->m_nRATE[i] ){
+         bClear=true;
+         break;
+      }
+   }
+   //lock
+   m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   if( bClear ){
+      _pstCur->m_nRNum=_pstNew->m_nRNum ;
+      memset(_pstCur->m_nCurRATE,0x00,sizeof(_pstCur->m_nCurRATE));
+      _pstCur->m_nCurPos=0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_SRouteSeq(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+   bool bClear=false;
+
+   SipSpecialRouteSeq_t* _pstCur=(SipSpecialRouteSeq_t*)(_pvCur);
+   SipSpecialRouteSeq_t* _pstNew=(SipSpecialRouteSeq_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_ucUsed));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipSpecialRouteSeq_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   //internal clear
+   if( _pstCur->m_nRNum != _pstNew->m_nRNum ){
+      bClear=true;
+   }
+
+   //mod yun 20180214 @vibc_svt
+   if( bClear == false ){
+      //for( int i=0 ; i < (SipSpecialRouteSeq_t::E_MAX_RSEQ) && (bClear == false) ;i++){
+      for( int i=0 ; i < (SipSpecialRouteSeq_t::E_MAX_RSEQ)  ;i++){
+         if( _pstCur->m_uiRSEQ[i] != _pstNew->m_uiRSEQ[i] ||
+             _pstCur->m_nRATE[i] !=  _pstNew->m_nRATE[i] ){
+            bClear=true;
+            break;
+         }
+      }
+   }
+   //lock
+   m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   if( bClear ){
+      _pstCur->m_nRNum=_pstNew->m_nRNum ;
+      memset(_pstCur->m_nCurRATE,0x00,sizeof(_pstCur->m_nCurRATE));
+      _pstCur->m_nCurPos=0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->unlock();
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_TrGW(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   TrGWRoute_t* _pstCur=(TrGWRoute_t*)(_pvCur);
+   TrGWRoute_t* _pstNew=(TrGWRoute_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurCount));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(TrGWRoute_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TRGW]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TRGW]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_TrGW(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   TrGWRoute_t* _pstCur=(TrGWRoute_t*)(_pvCur);
+   TrGWRoute_t* _pstNew=(TrGWRoute_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurCount));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(TrGWRoute_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TRGW]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TRGW]->GetLock()->unlock();
+   
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnSetModRecord_Reason(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipReasonCode_t* _pstCur=(SipReasonCode_t*)(_pvCur);
+   SipReasonCode_t* _pstNew=(SipReasonCode_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipReasonCode_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RSN]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RSN]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Reason(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipReasonCode_t* _pstCur=(SipReasonCode_t*)(_pvCur);
+   SipReasonCode_t* _pstNew=(SipReasonCode_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipReasonCode_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_RSN]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_RSN]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_Env(void* _pvCur,  void* _pvNew, int _nIndex)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   GlobalOverLoadEnv_t* _pstCur=(GlobalOverLoadEnv_t*)(_pvCur);
+   GlobalOverLoadEnv_t* _pstNew=(GlobalOverLoadEnv_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurSES));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(GlobalOverLoadEnv_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[_nIndex]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[_nIndex]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Env(void* _pvCur,  void* _pvNew, int _nIndex)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   GlobalOverLoadEnv_t* _pstCur=(GlobalOverLoadEnv_t*)(_pvCur);
+   GlobalOverLoadEnv_t* _pstNew=(GlobalOverLoadEnv_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nCurSES));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(GlobalOverLoadEnv_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[_nIndex]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[_nIndex]->GetLock()->unlock();
+   
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnSetModRecord_Timer(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipCoreTimer_t* _pstCur=(SipCoreTimer_t*)(_pvCur);
+   SipCoreTimer_t* _pstNew=(SipCoreTimer_t*)(_pvNew);
+
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipCoreTimer_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TIME]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TIME]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Timer(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipCoreTimer_t* _pstCur=(SipCoreTimer_t*)(_pvCur);
+   SipCoreTimer_t* _pstNew=(SipCoreTimer_t*)(_pvNew);
+
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipCoreTimer_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TIME]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TIME]->GetLock()->unlock();
+
+   //only sip timer @vibc 20180222
+   if( THESIPRTECB->m_pfuncESipRteApiChangeTimer ){
+      SipCoreTimer_t stTimer;
+      memcpy(&stTimer,_pstCur,sizeof(SipCoreTimer_t));
+      THESIPRTECB->m_pfuncESipRteApiChangeTimer(
+            &stTimer,
+            false);
+   }
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_Trace(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipCoreTrace_t* _pstCur=(SipCoreTrace_t*)(_pvCur);
+   SipCoreTrace_t* _pstNew=(SipCoreTrace_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipCoreTrace_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TRC]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TRC]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Trace(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   SipCoreTrace_t* _pstCur=(SipCoreTrace_t*)(_pvCur);
+   SipCoreTrace_t* _pstNew=(SipCoreTrace_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(SipCoreTrace_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_TRC]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_TRC]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetModRecord_Emer(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   EmergencyCall_t* _pstCur=(EmergencyCall_t*)(_pvCur);
+   EmergencyCall_t* _pstNew=(EmergencyCall_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(EmergencyCall_t); 
+
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_EMER]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_EMER]->GetLock()->unlock();
+   
+   return 0;
+}
+int CSipRteDBMgr::m_fnSetCompareModRecord_Emer(void* _pvCur,  void* _pvNew)
+{
+   int nModLen=0;
+   int nLen=0;
+   unsigned long ulStart=0;
+   unsigned long ulEnd=0;
+
+   EmergencyCall_t* _pstCur=(EmergencyCall_t*)(_pvCur);
+   EmergencyCall_t* _pstNew=(EmergencyCall_t*)(_pvNew);
+   //basic
+   ulStart=(unsigned long)(_pstCur);
+   ulEnd=(unsigned long)(&(_pstCur->m_nIndex));
+
+   nModLen=(int)(ulEnd-ulStart);
+   nLen=sizeof(EmergencyCall_t); 
+
+   _pstCur->m_ucInterDel=0;
+   if( nModLen <= 0 || nModLen > nLen ){
+      return E_RTE_InternalMemError;
+   }
+   if( memcmp(_pvCur,_pvNew,nModLen) == 0 ){
+      return 0;
+   }
+   m_pIntMap[CSipRteData::E_SIPRTE_EMER]->GetLock()->lock();
+   memcpy(_pstCur,_pstNew,nModLen);
+   m_pIntMap[CSipRteData::E_SIPRTE_EMER]->GetLock()->unlock();
+   
+   return 0;
+}
+//////////////Del Check
+int CSipRteDBMgr::m_fnLocalNodeDelCheck(unsigned int uiID, char* _pError)
+{
+   SipRoute_t* pRte=NULL;
+   //Route check
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(m_pDB->m_stDBRte.m_stRte[i]);
+      if( pRte->m_ucUsed == 0 ) continue;
+      if( uiID == (pRte->m_uiLID)){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the id(%u) exists in the route. route id=%u", uiID,pRte->m_uiID);
+         return E_RTE_FailLocal_ExistRoute;
+      }
+   }
+   return 0;
+}
+int CSipRteDBMgr::m_fnRemoteNodeDelCheck(unsigned int uiID, char* _pError)
+{
+   SipRoute_t* pRte=NULL;
+   //Route check
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(m_pDB->m_stDBRte.m_stRte[i]);
+      if( pRte->m_ucUsed == 0 ) continue;
+      if( uiID == (pRte->m_uiRID)){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the id(%u) exists in the route. route id=%u", uiID,pRte->m_uiID);
+         return E_RTE_FailRemote_ExistRoute;
+      }
+   }
+   return 0;
+}
+//nothing
+int CSipRteDBMgr::m_fnRouteGroupDelCheck(unsigned int uiID, char* _pError)
+{
+   //@R111 201609
+   SipRoute_t* pRte=NULL;
+   //Route check
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(m_pDB->m_stDBRte.m_stRte[i]);
+      if( pRte->m_ucUsed == 0 ) continue;
+      if( uiID == (unsigned int)(pRte->m_nRouteGroup)){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the group id(%u) exists in the route. route id=%u", uiID,pRte->m_uiID);
+         return E_RTE_FailRouteGroup_ExistRoute;
+      }
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnRouteDelCheck(unsigned int uiID, char* _pError)
+{
+   SipRouteSeq_t* pRSeq=NULL;
+   //Route seq check
+   for( int i = 0 ; i < SipRouteSeqDataBase_t::E_MAXNUM ; i++){
+      pRSeq=&(m_pDB->m_stDBRteSeq.m_stRteSeq[i]);
+      if( pRSeq->m_ucUsed == 0 ) continue;
+      //drte
+      if( uiID == (pRSeq->m_uiDRTE)){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the id(%u) exists in the route seq. route id=%u, drte=%u",
+               uiID,pRSeq->m_uiID,(pRSeq->m_uiDRTE));
+         return E_RTE_FailRoute_ExistDRTE_InRouteSeq;
+      }
+      //arte
+      for( int j=0; j < SipRouteSeq_t::E_MAX_ARTE ; j++){
+         if( pRSeq->m_uiARTE[j] == 0 ) break;
+         if( (int)uiID == pRSeq->m_uiARTE[j] ){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+                  "the id(%u) exists in the route seq. route id=%u, arte=%d/idx(%d)",
+                  uiID,pRSeq->m_uiID,pRSeq->m_uiARTE[j],j);
+            return E_RTE_FailRoute_ExistARTE_InRouteSeq;
+         }
+      }
+   }
+   return 0;
+}
+int CSipRteDBMgr::m_fnRouteSeqDelCheck(unsigned int uiID, char* _pError)
+{
+   SipSpecialRouteSeq_t* pSRSeq=NULL;
+   //Route seq check
+   for( int i = 0 ; i < SipSpecialRouteSeqDataBase_t::E_MAXNUM ; i++){
+      pSRSeq=&(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[i]);
+      if( pSRSeq->m_ucUsed == 0 ) continue;
+      //arte @R106 20160222
+      for( int j=0; j < SipSpecialRouteSeq_t::E_MAX_RSEQ ; j++){
+         if( pSRSeq->m_uiRSEQ[j] == 0 ) break;
+         if( uiID == (unsigned int)pSRSeq->m_uiRSEQ[j] ){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+                  "the id(%u) exists in the special route seq. srseq id=%u, route seq=%d/idx(%d)",
+                  uiID,pSRSeq->m_uiID,pSRSeq->m_uiRSEQ[j],j);
+            return E_RTE_FailRouteSeq_ExistSRouteSeq;
+         }
+      }
+      
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnTrGWDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnReasonDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnEnvDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnTimerDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnTraceDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnEmerDelCheck(unsigned int uiID, char* _pError)
+{
+   return 0;
+}
+
+/////////////////////Vaild Check
+int CSipRteDBMgr::m_fnLocalNodeValidCheck(void* _pvData, char* _pError)
+{
+   SipNodeLocal_t* pAdd=(SipNodeLocal_t*)_pvData;
+   SipNodeLocal_t* pValue=m_pDB->m_stDBLocal.m_stNodeLocal;
+   for(int i=0 ; i < SipLocalNodeDataBase_t::E_MAXNUM ; i++){
+      if( (pValue+i)->m_ucUsed == 0) continue;
+      //when modify
+      if( pAdd->m_uiID == (pValue+i)->m_uiID) continue;
+      //ip, port, protocol type
+      if( ((pValue+i)->m_usPort == pAdd->m_usPort) &&
+          ((pValue+i)->m_ucProto == pAdd->m_ucProto) &&
+         strcmp((pValue+i)->m_szIP,pAdd->m_szIP) == 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the ip/port/type already exists in the local node id=%u",(pValue+i)->m_uiID);
+         return E_RTE_CheckLocal_DuplicateIP_Port_Type;
+      }
+            
+   }
+   return 0;
+}
+int CSipRteDBMgr::m_fnRemoteNodeValidCheck(void* _pvData, char* _pError)
+{
+   SipNodeRemote_t* pAdd=(SipNodeRemote_t*)_pvData;
+   SipNodeRemote_t* pValue=m_pDB->m_stDBRmt.m_stNodeRmt;
+   for(int i=0 ; i < SipRemoteNodeDataBase_t::E_MAXNUM ; i++){
+      if( (pValue+i)->m_ucUsed == 0) continue;
+      //when modify
+      if( pAdd->m_uiID == (pValue+i)->m_uiID) continue;
+      //ip, port, protocol type
+      if( ((pValue+i)->m_usPort == pAdd->m_usPort) &&
+          ((pValue+i)->m_ucProto == pAdd->m_ucProto) &&
+          strcmp((pValue+i)->m_szIP,pAdd->m_szIP) == 0 ){
+          snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the ip/port/type already exists in the remote node id=%u",(pValue+i)->m_uiID);
+         return E_RTE_CheckRemote_DuplicateIP_Port_Type;
+      }
+   }
+   return 0;
+}
+int CSipRteDBMgr::m_fnRouteGroupValidCheck(void* _pvData, char* _pError)
+{
+   SipRouteGroup_t* pAdd=(SipRouteGroup_t*)_pvData;
+   if( pAdd->m_nCtrlCPSOn == 1 &&
+       pAdd->m_nMaxCPS == 0 ){
+      return E_RTE_CheckRouteGroup_IllegalParam_CPS_Flag;
+   }
+   //@vibc
+   if( pAdd->m_nCtrlCPSOn_LB == 1 &&
+       pAdd->m_nMaxCPS_LB == 0 ){
+      return E_RTE_CheckRouteGroup_IllegalParam_LBCPS_Flag;
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnRouteValidCheck(void* _pvData, char* _pError, bool _bMod)
+{
+   SipRoute_t* pAdd=(SipRoute_t*)_pvData;
+   //local id
+   int nLID=(int)(pAdd->m_uiLID);
+   //remote id
+   int nRID=(int)(pAdd->m_uiRID);
+
+   //opt check
+   if( (pAdd->m_sOptAction == SipRoute_t::E_MANAGE_ACT) &&
+       pAdd->m_sOptTime == 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR, 
+         "if option = ACT, can't be option's time = 0");
+      return E_RTE_CheckRoute_IllegalParam_Action_Time;
+   }
+   
+   int nRet=0;
+   void* pvLocal=NULL;
+   void* pvRemote=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_LN, nLID, pvLocal);
+   if( nRet < 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "the local id(%d) doesn't exist in the local node",nLID);
+      return E_RTE_CheckRoute_NotFoundLocal;
+   }
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RMT, nRID, pvRemote);
+   if( nRet < 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "the remote id(%d) doesn't exist in the remote node",nLID);
+      return E_RTE_CheckRoute_NotFoundRemote;
+   }
+   if( (((SipNodeLocal_t*)(pvLocal))->m_ucProto != ((SipNodeRemote_t*)(pvRemote))->m_ucProto) ||
+       (((SipNodeLocal_t*)(pvLocal))->m_usIPver != ((SipNodeRemote_t*)(pvRemote))->m_usIPver) )
+   {
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "mis match trans port type local/remote=%d(%d)/%d(%d)",
+            ((SipNodeLocal_t*)(pvLocal))->m_ucProto,
+            ((SipNodeLocal_t*)(pvLocal))->m_usIPver,
+            ((SipNodeRemote_t*)(pvLocal))->m_usIPver,
+            ((SipNodeRemote_t*)(pvRemote))->m_ucProto);
+      return E_RTE_CheckRoute_MismatchTransport;
+   }
+   //@R111 201609
+   int nGID=(int)(pAdd->m_nRouteGroup);
+   void* pvRteGroup=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE, nGID, pvRteGroup);
+   if( nRet < 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "the rte group id(%d) doesn't exist in the route group",nGID);
+      return E_RTE_CheckRoute_NotFoundGroupID;
+   }
+
+   //find local id/remote id
+   void* pvValue=NULL;
+   char szKey[128];szKey[0]=0x00;
+   CSipRteUtil::m_fnMakeRouteNodeKey(pAdd->m_uiLID,pAdd->m_uiRID,szKey);
+   bool bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   //when add new data.
+   if( _bMod == false ){
+      pAdd->m_ucProto = ((SipNodeLocal_t*)(pvLocal))->m_ucProto;
+      //found
+      if( bRet ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "duplicate key(%s)",szKey);
+         return E_RTE_CheckRoute_DuplicateLocalID_RemoteID;
+      }
+   //when modify
+   }else {
+      //not found
+      if( bRet == false ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "not found key(%s)",szKey);
+         return E_RTE_CheckRoute_NotFoundID;
+      }
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnRouteSeqValidCheck(void* _pvData, char* _pError)
+{
+   SipRouteSeq_t* pAdd=(SipRouteSeq_t*)_pvData;
+   //drte
+   int nDR=(int)(pAdd->m_uiDRTE);
+   int nAR=0;
+   int nRet=0;
+   void* pvRecord=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE, nDR, pvRecord);
+   if( nRet < 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "the drte(%d) doesn't exist in the route",nDR);
+      return E_RTE_CheckRouteSeq_NotFoundDRTE;
+   }
+   //extract 0
+   int nCnt=0;
+   int nTmpData[SipRouteSeq_t::E_MAX_ARTE];
+   memset(nTmpData,0x00,sizeof(nTmpData));
+   for( int i = 0 ; i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+      if( pAdd->m_uiARTE[i] > 0 ){
+         nTmpData[nCnt++]=pAdd->m_uiARTE[i];
+      }
+   }
+   if( nCnt > 0 ){
+      memcpy(pAdd->m_uiARTE,nTmpData,sizeof(nTmpData));
+   }
+
+   bool bBeforeIsZero=false;
+   for( int i = 0 ; i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+      //arte
+      nAR=pAdd->m_uiARTE[i];
+      //the first value is zero
+      if( i == 0 && nAR == 0 ) {
+            bBeforeIsZero=true;
+            continue;
+      }
+      if( bBeforeIsZero ){ 
+         if( nAR == 0 ){
+            bBeforeIsZero=true;
+            continue; 
+         }else {
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the arte %d/idx(%d) is not valid. the previous value is 0", nAR,i);
+            return E_RTE_CheckRouteSeq_InvalidARTE;
+         }
+      }else{
+         if( nAR == 0 ){ 
+            bBeforeIsZero=true;
+            continue;
+         }else{
+            bBeforeIsZero=false; 
+         }
+      }
+
+      //dr and ar are the same.
+      if( nAR == nDR){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "the drte(%d) and the arte(%d)/idx(%d) are the same", nDR,nAR,i);
+         return E_RTE_CheckRouteSeq_SameDRTE_ARTE;
+      }
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE, nAR, pvRecord);
+      if( nRet < 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the arte %d/idx(%d) doesn't exist int the route",nAR,i);
+         return E_RTE_CheckRouteSeq_NotFoundARTE;
+      }
+   }
+   //check duplicate arte
+   for( int i=0 ;  i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+      nAR=pAdd->m_uiARTE[i];
+      if( nAR == 0 ) break;
+      for( int j=(i+1) ; j < SipRouteSeq_t::E_MAX_ARTE ; j++){
+         nDR=pAdd->m_uiARTE[j];
+         if(nDR == 0 ) break;
+         if( nAR == nDR ){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+                  "the arte(%d) is duplicate. idx(%d/%d)",nAR,i,j);
+            return E_RTE_CheckRouteSeq_DuplicateARTE;
+         }
+      }
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnSpecialRouteSeqValidCheck(void* _pvData, char* _pError)
+{
+   SipSpecialRouteSeq_t* pAdd=(SipSpecialRouteSeq_t*)_pvData;
+   //drte
+   int nRseq=0;
+   int nRet=0;
+   bool bBeforeIsZero=false;
+   void* pvRecord=NULL;
+   int nRealCnt=0;
+   int i=0;
+
+   //mod yun
+   int nCnt=0;
+   //@R106 20160222
+   int nTmpData[SipSpecialRouteSeq_t::E_MAX_RSEQ];
+   int nTmpRate[SipSpecialRouteSeq_t::E_MAX_RSEQ];
+
+   memset(nTmpData,0x00,sizeof(nTmpData));
+   memset(nTmpRate,0x00,sizeof(nTmpRate));
+   //extract 0
+   for( i = 0 ; i < SipSpecialRouteSeq_t::E_MAX_RSEQ ; i++){
+      if( pAdd->m_uiRSEQ[i] > 0 ){
+         nTmpData[nCnt]=pAdd->m_uiRSEQ[i];
+         nTmpRate[nCnt]=pAdd->m_nRATE[i];
+         nCnt++;
+      }
+   }
+   if( nCnt > 0 ){
+      memcpy(pAdd->m_uiRSEQ,nTmpData,sizeof(nTmpData));
+      memcpy(pAdd->m_nRATE,nTmpRate,sizeof(nTmpRate));
+   }else{
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"the first rseq is zero");
+      return E_RTE_CheckSRouteSeq_FirstRSeqZero;
+   }
+
+   //mod by yun @20160204 R105_P3
+#if 0
+   for( i = 0 ; i < SipSpecialRouteSeq_t::E_MAX_ARTE ; i++){
+#else
+   nRealCnt=nCnt;
+   for( i = 0 ; i < nCnt ; i++){
+#endif
+      //del by yun @20160204 R105_P3
+      //rseq
+      //nRealCnt++;
+
+      nRseq=pAdd->m_uiRSEQ[i];
+      //del by yun @20160204 R105_P3
+#if 0
+      if( i == 0 && nRseq == 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"the first rseq is zero");
+         return E_RTE_CheckSRouteSeq_FirstRSeqZero;
+      }
+      if( bBeforeIsZero ){ 
+         if( nRseq == 0 ){
+            bBeforeIsZero=true;
+            nRealCnt-=2;
+            break; 
+         }else {
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the rseq %u/idx(%d) is not valid. the previous value is 0", nRseq,i);
+            return E_RTE_CheckSRouteSeq_InvalidRSeq;
+         }
+      }else{
+         if( nRseq == 0 ){ 
+            bBeforeIsZero=true;
+            continue;
+         }else{
+            bBeforeIsZero=false; 
+         }
+      }
+#endif
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RSEQ, nRseq,pvRecord);
+      if( nRet < 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the rseq %d/idx(%d) doesn't exist int the route seq",nRseq,i);
+         return E_RTE_CheckSRouteSeq_NotFoundRSeq;
+      }
+   }
+   if( nRealCnt < 1 ) {
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"the valid rseq/rate is zero");
+      return E_RTE_CheckSRouteSeq_InvalidRSeq;
+   }
+   //rseq, rate check
+   int nRate=0;
+   int nRseq2=0;
+   bBeforeIsZero=true;
+   for( i=0; i < nRealCnt ; i++){
+      nRseq=pAdd->m_uiRSEQ[i];
+      //@R106 20160222
+      for( int j=(i+1) ; j < SipSpecialRouteSeq_t::E_MAX_RSEQ ; j++){
+         nRseq2=pAdd->m_uiRSEQ[j];
+         if(nRseq2 == 0 ) break;
+         if( nRseq == nRseq2 ){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+                  "the rseq(%d) is duplicate. idx(%d/%d)",nRseq,i,j);
+            return E_RTE_CheckSRouteSeq_DuplicateRSeq;
+         }
+      }
+      //rate check
+      nRate=pAdd->m_nRATE[i];
+      if( nRate != 0 && bBeforeIsZero){
+         bBeforeIsZero=false;
+      }
+   }
+   if( bBeforeIsZero ) {
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"all rate is zero");
+      return E_RTE_CheckSRouteSeq_InvalidRate;
+   }
+
+   //abnoraml case
+   for( i = nRealCnt ; i < SipSpecialRouteSeq_t::E_MAX_RSEQ ; i++){
+      nRseq=pAdd->m_uiRSEQ[i];
+      nRate=pAdd->m_nRATE[i];
+      if( nRseq != 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"OutofValidRange_Set RSeq idx(%d)",i);
+         return E_RTE_CheckSRouteSeq_OutofValidRange_RSeq;
+      }
+      if( nRate != 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"OutofValidRange_Set Rate idx(%d)",i);
+         return E_RTE_CheckSRouteSeq_OutofValidRange_Rate;
+      }
+   }
+
+   ///////////////initialize
+   pAdd->m_nRNum=nRealCnt;
+   pAdd->m_nCurPos=0;
+   memset(pAdd->m_nCurRATE,0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+   ///////////////initialize
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnTrGWValidCheck(void* _pvData, char* _pError)
+{
+   TrGWRoute_t* pAdd=(TrGWRoute_t*)_pvData;
+   TrGWRoute_t* pValue=NULL;
+   for( int i=0 ; i < TrGWDataBase_t::E_MAXNUM ; i++){
+      pValue=&(m_pDB->m_stDBTrGW.m_stTrGW[i]);
+      if( pValue->m_ucUsed == 0) continue;
+      //when modify
+      if( pAdd->m_uiID == pValue->m_uiID) continue;
+      //sever ip/port 
+      if( //strcmp(pAdd->m_szSvrIP,pValue->m_szSvrIP) == 0 &&
+          pAdd->m_usSvrPort == pValue->m_usSvrPort ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the svr ip/port already exists in the trgw id=%u",pValue->m_uiID);
+         return E_RTE_CheckTrGW_DuplicateSvrIP_Port;
+      }
+#if 0
+      //trgw ip/port 
+      if( strcmp(pAdd->m_szTrGWIP,pValue->m_szTrGWIP) == 0 &&
+          pAdd->m_usTrGWPort == pValue->m_usTrGWPort ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "the svr ip/port already exists in the trgw id=%u",pValue->m_uiID);
+         return E_RTE_CheckTrGW_DuplicateTrGWIP_Port;
+      }
+#endif
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnReasonValidCheck(void* _pvData, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnEnvValidCheck(void* _pvData, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnTimerValidCheck(void* _pvData, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnTraceValidCheck(void* _pvData, char* _pError)
+{
+   return 0;
+}
+int CSipRteDBMgr::m_fnEmerValidCheck(void* _pvData, char* _pError)
+{
+   EmergencyCall_t* pAdd=(EmergencyCall_t*)_pvData;
+   void* pvValue=NULL;
+   char szKey[128];
+   memset(szKey,0x00,sizeof(szKey));
+   strncpy(szKey,pAdd->m_szMIN,sizeof(pAdd->m_szMIN)-1);
+   bool bRet=m_pRteEmerStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == true && pvValue != NULL){
+      EmergencyCall_t* pDB=(EmergencyCall_t*)pvValue;
+      if( pDB->m_uiID != pAdd->m_uiID ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"Duplicated MIN(%s)",szKey);
+         return E_RTE_CheckEmer_DuplicateMIN;
+      }
+   }
+   return 0;
+}
+
+///////////UTIL
+void CSipRteDBMgr::m_fnSetRecordByIndex(int _nIndex, int _nNum, void* _pvData)
+{
+   unsigned int uiBusyCnt=0;
+   unsigned int uiICCnt=0;
+   unsigned int uiOGCnt=0;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      memcpy(&(m_pDB->m_stDBLocal.m_stNodeLocal[_nNum]),_pvData,sizeof(SipNodeLocal_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      memcpy(&(m_pDB->m_stDBRmt.m_stNodeRmt[_nNum]),_pvData,sizeof(SipNodeRemote_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      memcpy(&(m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum]),_pvData,sizeof(SipRouteGroup_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      if( m_nMaintain == 0 ){
+         memcpy(&(m_pDB->m_stDBRte.m_stRte[_nNum]),_pvData,sizeof(SipRoute_t));
+      }else{
+         uiBusyCnt=m_pDB->m_stDBRte.m_stRte[_nNum].m_uiBusyCnt;
+         uiICCnt=m_pDB->m_stDBRte.m_stRte[_nNum].m_uiICCnt;
+         uiOGCnt=m_pDB->m_stDBRte.m_stRte[_nNum].m_uiOGCnt;
+         memcpy(&(m_pDB->m_stDBRte.m_stRte[_nNum]),_pvData,sizeof(SipRoute_t));
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiBusyCnt=uiBusyCnt;
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiICCnt=uiICCnt;
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiOGCnt=uiOGCnt;
+      }
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      memcpy(&(m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum]),_pvData,sizeof(SipRouteSeq_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      memcpy(&(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum]),_pvData,
+               sizeof(SipSpecialRouteSeq_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      memcpy(&(m_pDB->m_stDBTrGW.m_stTrGW[_nNum]),_pvData,sizeof(TrGWRoute_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      memcpy(&(m_pDB->m_stDBReason.m_stData[_nNum]),_pvData,sizeof(SipReasonCode_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      if( m_nMaintain == 0 ){
+         memcpy(&(m_pDB->m_stDBEnv),_pvData,sizeof(GlobalOverLoadEnv_t));
+      }else{
+         uiBusyCnt=m_pDB->m_stDBEnv.m_nCurSES;
+         memcpy(&(m_pDB->m_stDBEnv),_pvData,sizeof(GlobalOverLoadEnv_t));
+         m_pDB->m_stDBEnv.m_nCurSES=uiBusyCnt;
+      }
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      if( m_nMaintain == 0 ){
+         memcpy(&(m_pDB->m_stDBEnv_LB),_pvData,sizeof(GlobalOverLoadEnv_t));
+      }else{
+         uiBusyCnt=m_pDB->m_stDBEnv_LB.m_nCurSES;
+         memcpy(&(m_pDB->m_stDBEnv_LB),_pvData,sizeof(GlobalOverLoadEnv_t));
+         m_pDB->m_stDBEnv_LB.m_nCurSES=uiBusyCnt;
+      }
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      memcpy(&(m_pDB->m_stDBTimer),_pvData,sizeof(SipCoreTimer_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      memcpy(&(m_pDB->m_stDBTrace.m_stData[_nNum]),_pvData,sizeof(SipCoreTrace_t));
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      memcpy(&(m_pDB->m_stDBEmer.m_stData[_nNum]),_pvData,sizeof(EmergencyCall_t));
+   }
+}
+int CSipRteDBMgr::m_fnDelRecordByIndex(int _nIndex, int _nNum)
+{
+   int* nCurrentNum=NULL;
+   int nID=0;
+   void* pvData=NULL;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+      nID=(int)m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBLocal.m_stNodeLocal[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+      nID=(int)m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBRmt.m_stNodeRmt[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+      nID=(int)m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      m_pDB->m_stDBRte.m_stRte[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+      nID=(int)m_pDB->m_stDBRte.m_stRte[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBRte.m_stRte[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+      nID=(int)m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+      nID=(int)m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+      nID=(int)m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBTrGW.m_stTrGW[_nNum];
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      m_pDB->m_stDBReason.m_stData[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+      nID=(int)m_pDB->m_stDBReason.m_stData[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBReason.m_stData[_nNum];
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+              _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      //nothing
+      return 1;
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      //nothing
+      return 1;
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      m_pDB->m_stDBTrace.m_stData[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+      nID=(int)m_pDB->m_stDBTrace.m_stData[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBTrace.m_stData[_nNum];
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      m_pDB->m_stDBEmer.m_stData[_nNum].m_ucUsed=0;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+      nID=(int)m_pDB->m_stDBEmer.m_stData[_nNum].m_uiID;
+      pvData=(void*)&m_pDB->m_stDBEmer.m_stData[_nNum];
+   } 
+
+   m_pIntMap[_nIndex]->m_fnDeleteMap(nID);
+
+   char szKeyStr[128];
+   memset(szKeyStr,0x00,sizeof(szKeyStr));
+   if( _nIndex == CSipRteData::E_SIPRTE_LN  ){
+      CSipRteUtil::m_fnMakeSipNodeKey(
+         m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_szIP,
+         m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_usPort,
+         m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucProto,
+         szKeyStr);
+      m_pLocalStrMap->m_fnDeleteMap(std::string(szKeyStr));
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_RMT  ){
+      CSipRteUtil::m_fnMakeSipNodeKey(
+         m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_szIP,
+         m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_usPort,
+         m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucProto,
+         szKeyStr);
+      m_pRmtStrMap->m_fnDeleteMap(std::string(szKeyStr));
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_RTE  ){
+      CSipRteUtil::m_fnMakeRouteNodeKey(
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiLID,
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiRID,
+         szKeyStr);
+      m_pRteStrMap->m_fnDeleteMap(std::string(szKeyStr));
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_TRC  ){
+      //nothing
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_EMER  ){
+      EmergencyCall_t* pCall=(EmergencyCall_t*)pvData;
+      strncpy(szKeyStr,pCall->m_szMIN,sizeof(pCall->m_szMIN)-1);
+      m_pRteEmerStrMap->m_fnDeleteMap(std::string(szKeyStr));
+   }
+   //last check notify
+   if( _nIndex == CSipRteData::E_SIPRTE_LN  ){
+      if( THESIPRTECB->m_pfuncESipRteApiChangeLocalNode ){
+        THESIPRTECB->m_pfuncESipRteApiChangeLocalNode(1, //delete
+                     (SipNodeLocal_t*)pvData);
+      }
+   }
+   (*nCurrentNum)--;
+   if( (*nCurrentNum) <= 0 ) (*nCurrentNum) = 0;
+   return (*nCurrentNum);
+}
+
+//return current number
+int CSipRteDBMgr::m_fnAddRecordByIndex(int _nIndex, int _nNum, void* _pvData)
+{
+   int* nCurrentNum=NULL;
+   int nMaxRecord=0;
+
+   //add record
+   m_fnSetRecordByIndex(_nIndex,_nNum,_pvData);
+   void* pvRecord=NULL;
+   unsigned char* pUsed=NULL;
+   int nID=0;
+   int nStatus=0;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBLocal.m_stNodeLocal[_nNum]);
+      m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_uiID;
+      m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucUsed=1;
+
+      //@vibc fileloading -> do not set
+      if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_CM ){
+      }else{
+         m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucStatus=E_ESIP_STATUS_UNAVAIL; //init
+      }
+      pUsed=&(m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBRmt.m_stNodeRmt[_nNum]);
+      m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_uiID;
+      m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucUsed=1;
+      m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucStatus=E_ESIP_STATUS_UNAVAIL; //init
+      pUsed=&(m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum]);
+      m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_uiID;
+      m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBRteGroup.m_stRteGroup[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBRte.m_stRte[_nNum]);
+      m_pDB->m_stDBRte.m_stRte[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBRte.m_stRte[_nNum].m_uiID;
+
+#if 1
+      //if act
+      if( m_pDB->m_stDBRte.m_stRte[_nNum].m_sOptAction == SipRoute_t::E_MANAGE_ACT ){
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_ucStatus=E_ESIP_STATUS_UNAVAIL_INIT;
+         //@R106 201603 GET STATUS
+         nStatus=THESIPRTESTS->m_fnGetStatus(nID);
+         //if( nStatus >= E_ESIP_STATUS_AVAIL && nStatus <= E_ESIP_STATUS_UNAVAIL)
+         //only avaliable
+         if( nStatus == E_ESIP_STATUS_AVAIL)
+         {
+            m_pDB->m_stDBRte.m_stRte[_nNum].m_ucStatus=E_ESIP_STATUS_AVAIL;
+         }else {
+            if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_CM ){
+               m_pDB->m_stDBRte.m_stRte[_nNum].m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+            }
+         }
+      }else if ( m_pDB->m_stDBRte.m_stRte[_nNum].m_sOptAction == SipRoute_t::E_MANAGE_DEACT ){
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      }else{
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_ucStatus=E_ESIP_STATUS_AVAIL;
+      }
+#endif
+
+      m_pDB->m_stDBRte.m_stRte[_nNum].m_ucUsed=1;
+      if( m_nMaintain == 0 ){
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiBusyCnt=0; 
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiICCnt=0;
+         m_pDB->m_stDBRte.m_stRte[_nNum].m_uiOGCnt=0;
+      }
+      m_pDB->m_stDBRte.m_stRte[_nNum].m_nCurRetry=0;
+      pUsed=&(m_pDB->m_stDBRte.m_stRte[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum]);
+      m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_uiID;
+      m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBRteSeq.m_stRteSeq[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum]);
+      m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_uiID;
+      m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_ucUsed=1;
+      memset(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_nCurRATE,
+         0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+      pUsed=&(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBTrGW.m_stTrGW[_nNum]);
+      m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_uiID;
+      m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_ucUsed);
+
+      m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nCurCount=0;
+      m_pDB->m_stDBTrGW.m_nCurRATE[_nNum]=0;
+      //@R106 201603
+#if 0
+      if(  m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nStatus == TrGWRoute_t::E_TRGW_STATUS_AVAIL ){
+         m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nStatus=TrGWRoute_t::E_TRGW_STATUS_FBLOCK;
+      }
+#else
+      if(  (m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nStatus & TrGWRoute_t::E_TRGW_STATUS_FBLOCK) == 0 ){
+         m_pDB->m_stDBTrGW.m_stTrGW[_nNum].m_nStatus|=TrGWRoute_t::E_TRGW_STATUS_FBLOCK;
+      }
+#endif
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBReason.m_stData[_nNum]);
+      m_pDB->m_stDBReason.m_stData[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBReason.m_stData[_nNum].m_uiID;
+      m_pDB->m_stDBReason.m_stData[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBReason.m_stData[_nNum].m_ucUsed);
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+              _nIndex == CSipRteData::E_SIPRTE_ENV_LB){
+     //nothing
+      return 1; 
+   }else if ( _nIndex == CSipRteData::E_SIPRTE_TIME){
+     //nothing
+      return 1; 
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBTrace.m_stData[_nNum]);
+      m_pDB->m_stDBTrace.m_stData[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBTrace.m_stData[_nNum].m_uiID;
+      m_pDB->m_stDBTrace.m_stData[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBTrace.m_stData[_nNum].m_ucUsed);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      pvRecord=(void*)&(m_pDB->m_stDBEmer.m_stData[_nNum]);
+      m_pDB->m_stDBEmer.m_stData[_nNum].m_nIndex=_nNum;
+      nID=(int)m_pDB->m_stDBEmer.m_stData[_nNum].m_uiID;
+      m_pDB->m_stDBEmer.m_stData[_nNum].m_ucUsed=1;
+      pUsed=&(m_pDB->m_stDBEmer.m_stData[_nNum].m_ucUsed);
+   }
+
+   bool bRet=false;
+   if( pvRecord != NULL){
+      bRet=m_pIntMap[_nIndex]->m_fnInsertMap(nID,pvRecord);
+      if(bRet == false ){
+         SLOG(E_ESipRteLogLevel_ERR,"insert fail. Table:%d, id:%d",_nIndex,nID);
+         *pUsed=0; //roll back
+         return -1;
+      }
+      char szKeyStr[128];
+      memset(szKeyStr,0x00,sizeof(szKeyStr));
+      if( _nIndex == CSipRteData::E_SIPRTE_LN  ){
+         CSipRteUtil::m_fnMakeSipNodeKey(
+            m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_szIP,
+            m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_usPort,
+            m_pDB->m_stDBLocal.m_stNodeLocal[_nNum].m_ucProto,
+            szKeyStr);
+        bRet=m_pLocalStrMap->m_fnInsertMap(std::string(szKeyStr),pvRecord);
+      }else if (  _nIndex == CSipRteData::E_SIPRTE_RMT  ){
+         CSipRteUtil::m_fnMakeSipNodeKey(
+            m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_szIP,
+            m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_usPort,
+            m_pDB->m_stDBRmt.m_stNodeRmt[_nNum].m_ucProto,
+            szKeyStr);
+         bRet=m_pRmtStrMap->m_fnInsertMap(std::string(szKeyStr),pvRecord);
+      }else if ( _nIndex == CSipRteData::E_SIPRTE_RTE  ){
+         CSipRteUtil::m_fnMakeRouteNodeKey(
+            m_pDB->m_stDBRte.m_stRte[_nNum].m_uiLID,
+            m_pDB->m_stDBRte.m_stRte[_nNum].m_uiRID,
+            szKeyStr);
+         bRet=m_pRteStrMap->m_fnInsertMap(std::string(szKeyStr),pvRecord);
+      }else if ( _nIndex == CSipRteData::E_SIPRTE_TRC  ){
+         //nothing
+      }else if ( _nIndex == CSipRteData::E_SIPRTE_EMER  ){
+         EmergencyCall_t* pCall=(EmergencyCall_t*)pvRecord;
+         strncpy(szKeyStr,pCall->m_szMIN,sizeof(pCall->m_szMIN)-1);
+         bRet=m_pRteEmerStrMap->m_fnInsertMap(std::string(szKeyStr),pvRecord);
+      }
+      if( bRet == false ){
+         SLOG(E_ESipRteLogLevel_ERR,"insert fail. Table Map:%d, id:%d",_nIndex,nID);
+         //add @R106 201603 delete id
+         m_pIntMap[_nIndex]->m_fnDeleteMap(nID);
+         *pUsed=0; //roll back
+         return -1;
+      }
+      //last check notify
+      if( _nIndex == CSipRteData::E_SIPRTE_LN  ){
+         //callback
+         if( THESIPRTECB->m_pfuncESipRteApiChangeLocalNode ){
+            int nRet=THESIPRTECB->m_pfuncESipRteApiChangeLocalNode(0,
+                        (SipNodeLocal_t*)_pvData);
+            unsigned char ucLocStatus=E_ESIP_STATUS_AVAIL;
+            if( nRet != 0 ) ucLocStatus=E_ESIP_STATUS_UNAVAIL;
+            ((SipNodeLocal_t*)(pvRecord))->m_ucStatus=ucLocStatus;
+         }
+      }else if(  _nIndex == CSipRteData::E_SIPRTE_RTE){
+         //mod param R106 @201603
+         //m_fnChangeRouteStatus(true,(SipRoute_t*)pvRecord,false,0,false,0);
+         m_fnChangeRouteStatus(true,(SipRoute_t*)pvRecord,false,0,false,0,0);
+      }
+   }
+   (*nCurrentNum)++;
+   if( (*nCurrentNum) >= nMaxRecord ) (*nCurrentNum) = nMaxRecord;
+   return (*nCurrentNum);
+}
+
+void CSipRteDBMgr::m_fnChangeTrGWStatus(TrGWRoute_t* _pstTrGW, bool bConnect)
+{
+   bool bNoti=false;
+   int nNotiStatus=0;
+   if( bConnect == true){
+      if(_pstTrGW->m_nStatus & TrGWRoute_t::E_TRGW_STATUS_FBLOCK){
+        _pstTrGW->m_nStatus&=~(TrGWRoute_t::E_TRGW_STATUS_FBLOCK);
+         nNotiStatus=1;
+         bNoti=true;
+      }
+   }else{
+      if( (_pstTrGW->m_nStatus & TrGWRoute_t::E_TRGW_STATUS_FBLOCK) == 0 ){
+         _pstTrGW->m_nStatus|=TrGWRoute_t::E_TRGW_STATUS_FBLOCK; 
+         nNotiStatus=0;
+         bNoti=true;
+      }
+   }
+   //del @R106 201603
+   //invoke callback
+   //if( THESIPRTECB->m_pfuncESipRteApiNotifyTrGWStatus == NULL) return;
+   //TrGWRoute_t stNotiTrGW;
+   //memcpy(&stNotiTrGW,_pstTrGW,sizeof(TrGWRoute_t));
+   //stNotiTrGW.m_nStatus=nNotiStatus;
+   //THESIPRTECB->m_pfuncESipRteApiNotifyTrGWStatus( nNotiStatus,&stNotiTrGW,NULL);
+
+   m_fnNotifyTrGWStatus(_pstTrGW);
+}
+
+//add fail reason @R106 201603
+void CSipRteDBMgr::m_fnNotifyTrGWStatus(TrGWRoute_t* _pstTrGW)
+{
+   if( THESIPRTECB->m_pfuncESipRteApiNotifyTrGWStatus == NULL ||
+       _pstTrGW == NULL ) return;
+   TrGWRoute_t stNotiTrGW;
+   memcpy(&stNotiTrGW,_pstTrGW,sizeof(TrGWRoute_t));
+
+   int nStatus=1;
+   char szReason[128];
+   memset(szReason,0x00,sizeof(szReason));
+   if( stNotiTrGW.m_nStatus != TrGWRoute_t::E_TRGW_STATUS_AVAIL ){
+      nStatus=0;
+      if( (stNotiTrGW.m_nStatus & (TrGWRoute_t::E_TRGW_STATUS_MBLOCK)) &&
+         (stNotiTrGW.m_nStatus & (TrGWRoute_t::E_TRGW_STATUS_FBLOCK))){
+         strcpy(szReason,"M&F_BLK(Disconnected CM-EMP)");
+      }else if ( stNotiTrGW.m_nStatus & (TrGWRoute_t::E_TRGW_STATUS_MBLOCK) ) {
+         strcpy(szReason,"M_BLK");
+      }else if ( stNotiTrGW.m_nStatus & (TrGWRoute_t::E_TRGW_STATUS_FBLOCK) ) {
+         strcpy(szReason,"F_BLK(Disconnected CM-EMP)");
+      }
+   }
+   THESIPRTECB->m_pfuncESipRteApiNotifyTrGWStatus(nStatus,&stNotiTrGW,szReason);
+}
+
+void CSipRteDBMgr::m_fnChangeRouteStatus(bool _bAdd, SipRoute_t* _pstRoute,
+                                         bool _bMod, int _nNewMode, 
+                                         bool _bOpt, int _nNewStatus,
+                                         //add response code @R106 201603
+                                         int nResponseCode)
+{
+   bool bNotifyStatus=false;
+   int nNotiFlag=1; //available
+   int nRet=0;
+
+   //invoke callback
+   SipRoute_t stRoute;
+   SipNodeLocal_t stLocal;
+   SipNodeRemote_t stRemote;
+
+   memset(&stRoute,0x00,sizeof(SipRoute_t));
+   memset(&stLocal,0x00,sizeof(SipNodeLocal_t));
+   memset(&stRemote,0x00,sizeof(SipNodeRemote_t));
+
+   //rte lock
+   (m_pRteStrMap->GetLock())->lock();
+   do{
+      if( _bMod ){
+         //check mode
+         if( (int)_pstRoute->m_sOptAction == _nNewMode ) break;
+         //action
+         if( _nNewMode == SipRoute_t::E_MANAGE_ACT){
+            //@vibc_dvt. bypass->Act. LB:AVAIL, CM:UNAVAIL_INIT
+            if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_CM &&
+                THESIPRTEMGR->m_nAttachModule == E_ESipRteAttachModule_SVC ){
+               //nothing
+               break;
+            }
+            _pstRoute->m_ucStatus = E_ESIP_STATUS_UNAVAIL_INIT;
+         }else if( _nNewMode == SipRoute_t::E_MANAGE_BYPASS){
+            nNotiFlag=1;
+            if(_pstRoute->m_ucStatus==E_ESIP_STATUS_UNAVAIL ){
+               bNotifyStatus=true;
+            }
+            _pstRoute->m_ucStatus=E_ESIP_STATUS_AVAIL;
+         }else if ( _nNewMode == SipRoute_t::E_MANAGE_DEACT){
+            nNotiFlag=0;
+            if( _pstRoute->m_ucStatus==E_ESIP_STATUS_AVAIL ||
+                 _pstRoute->m_ucStatus==E_ESIP_STATUS_UNAVAIL_INIT){
+               bNotifyStatus=true;
+            }
+            _pstRoute->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+         }
+      }
+      if( _bOpt ){				
+         //@vibc_svt option & modify(bypass,Deact) race
+         if( (int)_pstRoute->m_sOptAction !=  SipRoute_t::E_MANAGE_ACT) break;
+
+#ifndef _NOTI_ALAM_PERIODIC
+         if( _pstRoute->m_ucStatus == _nNewStatus ) break;
+#endif
+
+         if( _nNewStatus == E_ESIP_STATUS_UNAVAIL ){
+            //@standby LB status change skip
+            if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB &&
+                THESIPRTEMGR->m_nAttachModule == E_ESipRteAttachModule_SVC &&
+                THESIPRTEMGR->m_nHAStatus != E_ESipRteSystemHAStatus_ACTIVE ){
+               //nothing
+               break;
+            }
+
+#ifdef _NOTI_ALAM_PERIODIC
+            nNotiFlag=0; 
+            bNotifyStatus=true;            
+#else
+			  if( _pstRoute->m_ucStatus != E_ESIP_STATUS_UNAVAIL ){
+               nNotiFlag=0; 
+               bNotifyStatus=true;
+            }
+#endif
+         }else if ( _nNewStatus == E_ESIP_STATUS_AVAIL ){
+            if( _pstRoute->m_ucStatus == E_ESIP_STATUS_UNAVAIL ){
+               nNotiFlag=1;
+               bNotifyStatus=true;
+            }else if ( _pstRoute->m_ucStatus == E_ESIP_STATUS_UNAVAIL_INIT){
+               //20160519. @rtestatus add by yun DEACT -> ACT. don't alarm
+               nNotiFlag=1;
+               bNotifyStatus=true;
+            }else if (  _pstRoute->m_ucStatus ==  E_ESIP_STATUS_AVAIL ){
+              //nothing
+            }
+         }
+
+         _pstRoute->m_ucStatus = _nNewStatus;
+      }
+      void* pvRemote=NULL;
+      void* pvLocal=NULL;
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,(int)_pstRoute->m_uiRID,pvRemote);
+      if(nRet < 0){ 
+         bNotifyStatus=false;
+         break;
+      }
+
+      ((SipNodeRemote_t*)pvRemote)->m_ucStatus=_pstRoute->m_ucStatus;
+      if( _bAdd ){ 
+         bNotifyStatus=false;
+         break;
+      }
+
+      if( bNotifyStatus == false) break;
+
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_LN,(int)_pstRoute->m_uiLID,pvLocal);
+      if(nRet < 0){ 
+         bNotifyStatus=false;
+         break;
+      }
+      memcpy(&stRoute,_pstRoute,sizeof(SipRoute_t));
+      memcpy(&stLocal,pvLocal,sizeof(SipNodeLocal_t));
+      memcpy(&stRemote,pvRemote,sizeof(SipNodeRemote_t));
+   }while(0);
+   (m_pRteStrMap->GetLock())->unlock();
+
+   //@R106 201603
+#if 1
+   if( bNotifyStatus == true && _bOpt ){
+      if( _pstRoute && 
+          _pstRoute->m_sOptAction == SipRoute_t::E_MANAGE_ACT)
+      { 
+         if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB &&
+             THESIPRTEMGR->m_nAttachModule == E_ESipRteAttachModule_SVC ){
+            //only availabe status 
+            THESIPRTEDBHANLDER->m_fnAddChangeDB_RteStatus();
+         }
+      }
+   }
+#endif
+
+   //notify status
+   if( bNotifyStatus == false ||
+       THESIPRTECB->m_pfuncESipRteApiNotifyChangeRouteStatus == NULL ){
+       return;
+   }
+   //add response code @R106 201603
+   char szReason[128];
+   memset(szReason,0x00,sizeof(szReason));
+   //if UNAVAILABLE -> add reason string
+   if( _bMod && nNotiFlag == 0 ){
+      if( _nNewMode == SipRoute_t::E_MANAGE_DEACT){
+         strcpy(szReason,"SET DEACT");
+      }
+   }else if ( _bOpt && nNotiFlag == 0 ){
+      if( nResponseCode == 0 ){
+         strcpy(szReason,"OPTIONS REQ-RES TIMEOUT");
+      }else if ( nResponseCode >= 0 && nResponseCode < 700 ){
+         snprintf(szReason,sizeof(szReason)-2,"RECV OPTIONS_RES %d",nResponseCode);
+      }
+   }
+   THESIPRTECB->m_pfuncESipRteApiNotifyChangeRouteStatus(
+      nNotiFlag,&stRoute,&stLocal,&stRemote,szReason);
+}
+//add @vibc rte status update
+void CSipRteDBMgr::m_fnUpdate_RouteStatus()
+{
+   if( m_pDB == NULL ) return;
+
+   SipRoute_t*      pRte=NULL;
+   SipNodeRemote_t* pRmt=NULL; 
+
+   int nStatus1=0;
+   int nStatus2=0;
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(m_pDB->m_stDBRte.m_stRte[i]);
+      if( pRte->m_ucUsed == 0 ) continue;
+      nStatus1=pRte->m_ucStatus;
+      nStatus2=THESIPRTESTS->m_fnGetStatus((int)pRte->m_uiID);
+      if( nStatus2 < 0 ) continue;
+      if( nStatus1 != nStatus2 ){
+         pRte->m_ucStatus = nStatus2;
+      }
+      //if( pRte->m_ucStatus ==
+      for( int j = 0 ; j < SipRemoteNodeDataBase_t::E_MAXNUM ; j++){
+         pRmt=&(m_pDB->m_stDBRmt.m_stNodeRmt[j]);
+         if( pRmt->m_ucUsed == 0 ) continue;
+         if( pRte->m_uiRID != pRmt->m_uiID ) continue;
+          pRmt->m_ucStatus=nStatus2;
+      }
+   } 
+
+}
+
+//@vibc
+int  CSipRteDBMgr::m_fnFindRecord_SHM(int _nIndex, int _nID, void*& _pvOut)
+{
+   if( m_pDB == NULL ) return -1;
+   if( _nIndex != CSipRteData::E_SIPRTE_RTE){
+      return -1;
+   } 
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+
+   nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+   pvRecord=(void*)(m_pDB->m_stDBRte.m_stRte);
+
+   int nTmpID=0;
+   for( int i = 0; i < nMaxRecord ; i ++ ){
+      SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+      pValue=pValue+i;
+      if( pValue->m_ucUsed == 0) continue;
+      nTmpID=(int)(pValue->m_uiID);
+      if( nTmpID == _nID){
+         _pvOut=(void*)pValue;
+         return 0;
+      }
+   }
+   return -1;
+}
+
+//add @vibc shm find record
+int CSipRteDBMgr::m_fnFindRecordChange_SHM(int _nIndex, int _nID, void* _pvOut)
+{
+   if( m_nUseLocal == 0 ) return -1;
+   if( m_pDB_SHM == NULL ) return -1;
+   if( _pvOut == NULL ) return -1;
+
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      pvRecord=(void*)(m_pDB_SHM->m_stDBLocal.m_stNodeLocal);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      pvRecord=(void*)(m_pDB_SHM->m_stDBRmt.m_stNodeRmt);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      pvRecord=(void*)(m_pDB_SHM->m_stDBRteGroup.m_stRteGroup);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      pvRecord=(void*)(m_pDB_SHM->m_stDBRte.m_stRte);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      nMaxRecord=1;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurSES=m_pDB_SHM->m_stDBEnv.m_nCurSES;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurCPS=m_pDB_SHM->m_stDBEnv.m_nCurCPS;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurCPU=m_pDB_SHM->m_stDBEnv.m_nCurCPU;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurMEM=m_pDB_SHM->m_stDBEnv.m_nCurMEM;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurTPS=m_pDB_SHM->m_stDBEnv.m_nCurTPS;
+      return 0;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurSES=m_pDB_SHM->m_stDBEnv_LB.m_nCurSES;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurCPS=m_pDB_SHM->m_stDBEnv_LB.m_nCurCPS;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurCPU=m_pDB_SHM->m_stDBEnv_LB.m_nCurCPU;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurMEM=m_pDB_SHM->m_stDBEnv_LB.m_nCurMEM;
+      ((GlobalOverLoadEnv_t*)_pvOut)->m_nCurTPS=m_pDB_SHM->m_stDBEnv_LB.m_nCurTPS;
+      return 0;
+   }else{
+      return -1;
+   }
+   int nTmpID=0;
+   for( int i = 0; i < nMaxRecord ; i ++ ){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         pValue=pValue+i;
+         if( pValue->m_ucUsed == 0) continue;
+         nTmpID=(int)(pValue->m_uiID);
+         if( nTmpID == _nID){
+            ((SipNodeLocal_t*)_pvOut)->m_ucStatus=pValue->m_ucStatus;
+            return 0;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         pValue=pValue+i;
+         if( pValue->m_ucUsed == 0) continue;
+         nTmpID=(int)(pValue->m_uiID);
+         if( nTmpID == _nID){
+            memcpy(((SipNodeRemote_t*)_pvOut)->m_szNATIP,pValue->m_szNATIP,
+                       sizeof(pValue->m_szNATIP));
+            ((SipNodeRemote_t*)_pvOut)->m_usNATPort=pValue->m_usNATPort;
+            ((SipNodeRemote_t*)_pvOut)->m_ucStatus=pValue->m_ucStatus;
+            return 0;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         pValue=pValue+i;
+         if( pValue->m_ucUsed == 0) continue;
+         nTmpID=(int)(pValue->m_uiID);
+         if( nTmpID == _nID){
+            ((SipRouteGroup_t*)_pvOut)->m_nCurCPS=pValue->m_nCurCPS;
+            ((SipRouteGroup_t*)_pvOut)->m_nCurTPS=pValue->m_nCurTPS;
+            return 0;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         pValue=pValue+i;
+         if( pValue->m_ucUsed == 0) continue;
+         nTmpID=(int)(pValue->m_uiID);
+         if( nTmpID == _nID){
+            ((SipRoute_t*)_pvOut)->m_ucStatus=pValue->m_ucStatus;
+            ((SipRoute_t*)_pvOut)->m_uiBusyCnt=pValue->m_uiBusyCnt;
+            ((SipRoute_t*)_pvOut)->m_uiICCnt=pValue->m_uiICCnt;
+            ((SipRoute_t*)_pvOut)->m_uiOGCnt=pValue->m_uiOGCnt;
+            ((SipRoute_t*)_pvOut)->m_nCurRetry=pValue->m_nCurRetry;
+            return 0;
+         }
+      }
+   }
+   return -1;
+}
+
+//get find id record
+int CSipRteDBMgr::m_fnFindRecord(int _nIndex, int _nID, void*& _pvOut)
+{
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return -1;
+   }
+   ////record is 1
+   if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      _pvOut=(void*)&(m_pDB->m_stDBEnv);
+      //add @vibc
+      if(   m_nUseLocal == 1 && 
+            m_pDB_SHM != NULL){
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_ENV,0,_pvOut);
+      }
+      return 0;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      _pvOut=(void*)&(m_pDB->m_stDBEnv_LB);
+      //add @vibc
+      if(   m_nUseLocal == 1 && 
+            m_pDB_SHM != NULL){
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_ENV_LB,0,_pvOut);
+      }
+      return 0;
+   }
+   if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      _pvOut=(void*)&(m_pDB->m_stDBTimer);
+      return 0;
+   }
+
+   bool bRet=m_pIntMap[_nIndex]->m_fnFindMap(_nID,_pvOut); 
+   if( bRet == false ) return -1;
+   int nMaxRecord=0;
+   int nIdx=0;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nIdx=((SipNodeLocal_t*)(_pvOut))->m_nIndex;
+      m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_LN,_nID,_pvOut);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nIdx= ((SipNodeRemote_t*)(_pvOut))->m_nIndex;
+      m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_RMT,_nID,_pvOut);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nIdx= ((SipRouteGroup_t*)(_pvOut))->m_nIndex;
+      m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_GRTE,_nID,_pvOut);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nIdx= ((SipRoute_t*)(_pvOut))->m_nIndex;
+      m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_RTE,_nID,_pvOut);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nIdx= ((SipRouteSeq_t*)(_pvOut))->m_nIndex;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nIdx= ((SipSpecialRouteSeq_t*)(_pvOut))->m_nIndex;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nIdx= ((TrGWRoute_t*)(_pvOut))->m_nIndex;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nIdx= ((SipReasonCode_t*)(_pvOut))->m_nIndex;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nIdx= ((SipCoreTrace_t*)(_pvOut))->m_nIndex;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nIdx= ((EmergencyCall_t*)(_pvOut))->m_nIndex;
+   }
+
+   if( nIdx >= 0 && nIdx < nMaxRecord ) return nIdx;
+   return -1;
+}
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnDecisionTrGW(TrGWRoute_t* _pstOut,bool& _rbFind,char* _pError)
+{
+   int nRate=0;
+   int nCurRate=0;
+   int nCurPos=0;
+   bool bDecisionRSeq=false;
+   TrGWRoute_t* pData=NULL;
+
+   _rbFind=false;
+   nCurPos=m_pDB->m_stDBTrGW.m_nCurPos;
+   for( int i = 0 ; i < TrGWDataBase_t::E_MAXNUM ; i++, 
+       nCurPos=((nCurPos+1)%TrGWDataBase_t::E_MAXNUM)){
+
+      pData=&(m_pDB->m_stDBTrGW.m_stTrGW[nCurPos]);
+      //used check
+      if( pData->m_ucUsed == 0 ) continue;
+      //status
+      if( pData->m_nStatus != TrGWRoute_t::E_TRGW_STATUS_AVAIL){
+         continue;
+      }
+      //get rate
+      nRate=pData->m_nCallRate;
+      if( nRate <= 0 ){
+          m_pDB->m_stDBTrGW.m_nCurRATE[nCurPos]=0;
+          continue;
+      }
+      //@R106 find over
+      // 1(blk) | 1(avail) -> first fail 
+      if( _rbFind == false ) _rbFind=true;
+      //get current rate
+      nCurRate=m_pDB->m_stDBTrGW.m_nCurRATE[nCurPos];
+      if( (nCurRate+1) <= nRate){
+         bDecisionRSeq=true;
+         break;
+      }else{
+         m_pDB->m_stDBTrGW.m_nCurRATE[nCurPos]=0;
+      }
+   }
+   //decide!!
+   if( bDecisionRSeq ){
+      //pstSRSeq->m_nCurRATE[nCurPos]++;
+   //one term
+   }else{
+      nCurPos=m_pDB->m_stDBTrGW.m_nCurPos;
+   }
+   //check status
+   if( m_pDB->m_stDBTrGW.m_stTrGW[nCurPos].m_nStatus != TrGWRoute_t::E_TRGW_STATUS_AVAIL ||
+       m_pDB->m_stDBTrGW.m_stTrGW[nCurPos].m_nCallRate == 0 )
+   {
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"the all trgw is unavailable");
+      return E_RTE_FailGetTrGW_Unavailable_Status;
+   }
+   m_pDB->m_stDBTrGW.m_nCurPos=nCurPos;
+   m_pDB->m_stDBTrGW.m_nCurRATE[nCurPos]++;
+
+   //set current count
+   m_pDB->m_stDBTrGW.m_stTrGW[nCurPos].m_nCurCount++;
+   if( _pstOut ){
+      memcpy(_pstOut,&m_pDB->m_stDBTrGW.m_stTrGW[nCurPos],sizeof(TrGWRoute_t));
+   }
+   return 0;
+}   
+
+bool CSipRteDBMgr::m_fnFindTrGW(
+                  char* szSvrIP,         //IN, TCP Server IP
+                  int nSvrPort,          //IN, TCP Server Port
+                  char* szTrGWIP,        //IN, TCP Client IP
+                  int nTrGWPort,
+                  TrGWRoute_t*& _rpOut)         //IN, TCP Client Port
+                  
+{                 
+
+   TrGWRoute_t* pValue=NULL;
+   bool bFind=false;
+   for( int i=0 ; i < TrGWDataBase_t::E_MAXNUM ; i++){
+      pValue=&(m_pDB->m_stDBTrGW.m_stTrGW[i]); 
+      if( pValue->m_ucUsed == 0) continue;
+      //sever ip/port 
+      if( //strcmp(szSvrIP,pValue->m_szSvrIP) == 0 &&
+          (unsigned short)nSvrPort == (pValue)->m_usSvrPort ){
+          //strcmp(szTrGWIP,(pValue)->m_szTrGWIP) == 0 &&
+          //(unsigned short)nTrGWPort == (pValue)->m_usTrGWPort ){
+#if 0
+         if( szSvrIP!=NULL && szSvrIP[0]!=0x00  &&
+             pValue->m_szSvrIP[0]==0x00){
+            memset(pValue->m_szSvrIP,0x00,sizeof(pValue->m_szSvrIP));
+            strncpy(pValue->m_szSvrIP,szSvrIP,sizeof(pValue->m_szSvrIP)-1);
+         }  
+#endif
+         if( szTrGWIP!=NULL && szTrGWIP[0]!=0x00 ){
+            if( pValue->m_szTrGWIP[0]==0x00 ){
+               memset(pValue->m_szTrGWIP,0x00,sizeof(pValue->m_szTrGWIP));
+               strncpy(pValue->m_szTrGWIP,szTrGWIP,sizeof(pValue->m_szTrGWIP)-1);
+            }else if ( pValue->m_szTrGWIP[0] != 0x00 &&
+                       strncmp(pValue->m_szTrGWIP,szTrGWIP,sizeof(pValue->m_szTrGWIP)-1) != 0 ){
+               memset(pValue->m_szTrGWIP,0x00,sizeof(pValue->m_szTrGWIP));
+               strncpy(pValue->m_szTrGWIP,szTrGWIP,sizeof(pValue->m_szTrGWIP)-1);
+            }
+         }  
+         if(nTrGWPort != 0 ){
+            if( pValue->m_usTrGWPort == 0 ){
+               pValue->m_usTrGWPort=(unsigned short)nTrGWPort;
+            }else if( pValue->m_usTrGWPort != 0 &&
+                      pValue->m_usTrGWPort != (unsigned short)nTrGWPort){
+               pValue->m_usTrGWPort=(unsigned short)nTrGWPort;
+            }
+         }
+         _rpOut=pValue; 
+         bFind=true;
+         break; 
+      }  
+   }  
+   return bFind;
+} 
+
+int CSipRteDBMgr::m_fnSetRouteStatus(
+         SipNodeLocal_t*     _pstICLocal,    //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstICRemote,   //IN/OUT, ip/port/transport type
+         int                 _nRouteID,      //IN 
+         bool                _bRouteID,
+         int                 _nStatus,
+         char*               _pError)
+{
+
+   
+   int nRet=0; 
+   bool bRet=false;
+   void* pvValue=NULL;
+   void* pvValue2=NULL;
+   char szKey[256]; szKey[0]=0x00;
+   int  nSetStatus=0;
+   if( _nStatus == E_ESIP_STATUS_UNAVAIL ||
+       _nStatus == E_ESIP_STATUS_UNAVAIL_INIT ){
+      nSetStatus=E_ESIP_STATUS_UNAVAIL;
+   }
+
+   if( _bRouteID == false ){
+      //param
+      _pstICLocal->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+      _pstICRemote->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+      //found ic local
+      pvValue=NULL;
+      CSipRteUtil::m_fnMakeSipNodeKey(_pstICLocal->m_szIP,_pstICLocal->m_usPort,
+                                    _pstICLocal->m_ucProto,szKey);
+      bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvValue);
+      if( bRet == false || pvValue == NULL){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found ic local(ip_port_type=%s)",szKey);
+         return E_RTE_FailGetICRoute_NotFoundLocalNode;
+      }
+      memcpy(_pstICLocal,pvValue,sizeof(SipNodeLocal_t));
+
+      //found ic Remote
+      pvValue=NULL;
+      CSipRteUtil::m_fnMakeSipNodeKey(_pstICRemote->m_szIP,_pstICRemote->m_usPort,
+                                    _pstICRemote->m_ucProto,szKey);
+      bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvValue);
+      if( bRet == false || pvValue == NULL){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "not found ic remote(ip_port_type=%s)",szKey);
+         return E_RTE_FailGetICRoute_NotFoundRemoteNode;
+      }
+      SipNodeRemote_t* pRemote=(SipNodeRemote_t*)pvValue;
+      memcpy(_pstICRemote,pvValue,sizeof(SipNodeRemote_t));
+
+      //found ic route
+      pvValue2=NULL;
+      CSipRteUtil::m_fnMakeRouteNodeKey(_pstICLocal->m_uiID,_pstICRemote->m_uiID,szKey);
+      bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue2);
+      if( bRet == false || pvValue2 == NULL){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "not found ic route(LID_RID=%s)",szKey);
+         return E_RTE_FailGetICRoute_NotFoundRoute;
+      }
+      //attach
+      SipRoute_t* pRoute=(SipRoute_t*)pvValue2;
+
+      //set status
+      pRemote->m_ucStatus=nSetStatus; 
+      _pstICRemote->m_ucStatus=nSetStatus;
+      pRoute->m_ucStatus=nSetStatus;
+   }else{
+      //find route
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,_nRouteID,pvValue);
+      if( nRet < 0 || pvValue == NULL){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found route id(%d)",_nRouteID);
+         return E_RTE_CheckRoute_NotFoundID;
+      }
+      SipRoute_t* pRoute=(SipRoute_t*)pvValue;
+
+      //find remote
+      pvValue2=NULL;
+      nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,(int)(pRoute->m_uiRID),pvValue2);
+      if( nRet < 0 || pvValue2 == NULL){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found rmote id(%u)",pRoute->m_uiRID);
+         return E_RTE_CheckRemote_NotFoundID;
+      }
+      SipNodeRemote_t* pRemote=(SipNodeRemote_t*)pvValue2;
+      //set status
+      pRemote->m_ucStatus=nSetStatus; 
+      pRoute->m_ucStatus=nSetStatus;
+   }
+   return 0;
+}
+
+ 
+int CSipRteDBMgr::m_fnCheckCPSByTransport(
+         SipNodeLocal_t*     _pstLocal,      //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote,     //IN/OUT, ip/port/transport type
+         SipRoute_t*         _pstRoute,      //OUT, route info
+         int&                _rnCurCPS,
+         int&                _rnMaxCPS,
+         bool       _bCheckRouteStatus,
+         bool                _bIC,           //IN, IC/OG 
+         bool                _bPlusCnt,      //IN, InCrease Busy Count
+         char*               _pszMIN,
+         bool                _bAudio,
+         char*               _pError)
+{
+   int nRet=0; 
+   SipRoute_t* pRoute=NULL;
+   //ic get
+   nRet=m_fnGetICRoute(_pstLocal,_pstRemote,_pstRoute,pRoute,
+               _bCheckRouteStatus,_pError);
+   if(nRet!=0 || pRoute == NULL ) return nRet;
+   //check used
+   if(pRoute->m_ucUsed == 0) return 0;
+   //if og 
+   if( _bIC == false ) return 0;
+   int nGroupID=0;
+   nGroupID=pRoute->m_nRouteGroup;
+
+   //check cps
+   nRet= m_fnCheckCPSClassByTransport(nGroupID,_rnCurCPS,_rnMaxCPS,_pszMIN,_bAudio,_pError);
+
+   //busy count ++
+   if( _bPlusCnt == true && nRet == 0 ){
+      m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+      pRoute->m_uiBusyCnt++;
+      if( _bIC ){
+         pRoute->m_uiICCnt++;
+      }else{
+         pRoute->m_uiOGCnt++;
+      }
+      m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+   }
+   return nRet;
+}
+int CSipRteDBMgr::m_fnCheckCPSByRouteID(
+         unsigned int        _uiRouteID,
+         int&                _rnCurCPS,
+         int&                _rnMaxCPS,
+         bool                _bIC,           //IN, IC/OG 
+         bool                _bPlusCnt,      //IN, InCrease Busy Count
+         char*               _pszMIN,
+         bool                _bAudio,
+         char*               _pError)
+{
+   void* pvValue=NULL;
+   int nRet=0; 
+   //ic get
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,(int)_uiRouteID,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found route id(%u)",_uiRouteID);
+      return E_RTE_CheckRoute_NotFoundID;
+   }
+   SipRoute_t* _pstRoute=(SipRoute_t*)pvValue;
+   if(_pstRoute->m_ucUsed == 0) return 0;
+
+  
+   //if og 
+   if( _bIC == false ) return 0;
+   int nGroupID=0;
+   nGroupID=_pstRoute->m_nRouteGroup;
+
+   nRet=m_fnCheckCPSClassByTransport(nGroupID,_rnCurCPS,_rnMaxCPS,_pszMIN,_bAudio,_pError);
+   if( _bPlusCnt == true && nRet == 0 ){
+      m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+      _pstRoute->m_uiBusyCnt++;
+      if( _bIC ){
+         _pstRoute->m_uiICCnt++;
+      }else{
+         _pstRoute->m_uiOGCnt++;
+      }
+      m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+   }
+   return nRet;
+}
+int CSipRteDBMgr::m_fnCheckTPSByTransport(
+         SipNodeLocal_t*     _pstLocal,      //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote,     //IN/OUT, ip/port/transport type
+         SipRoute_t*         _pstRoute,
+         int&                _rnCurTPS,
+         int&                _rnMaxTPS,
+         bool        _bCheckRouteStatus,
+         char*  _pError)
+{
+   int nRet=0; 
+   int nGroupID=0;
+   SipRoute_t* pRoute=NULL;
+   //ic get
+   nRet=m_fnGetICRoute(_pstLocal,_pstRemote,_pstRoute,pRoute,_bCheckRouteStatus,_pError);
+   if(nRet!=0 || pRoute == NULL){ 
+      nGroupID=0;
+      //return nRet;//don't need?
+   }else{
+      //check used
+      if(_pstRoute->m_ucUsed == 0){
+         nGroupID=0;
+      }else{
+         nGroupID=_pstRoute->m_nRouteGroup;
+      }
+   }
+   return m_fnCheckTPSByTransport(nGroupID,_rnCurTPS,_rnMaxTPS,_pError);
+}
+int CSipRteDBMgr::m_fnCheckCPSClassByTransport(int nGroupID,int& nCurCPS, int& nMaxCPS,
+                                          char* szMIN, bool bAudio, char* _pError)
+{
+   //overload class
+   bool bEmer=false;
+   char szKey[128];
+   unsigned int uiCPS=0;
+   unsigned int uiInCPS=0;
+   bool bRet=false;
+
+   bool bCheckGlobal=true;
+   memset(szKey,0x00,sizeof(szKey)); 
+
+   nCurCPS=0;
+   nMaxCPS=0;
+
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+
+   do{
+      //check overload class enabled?
+      if( pEnv->m_nChkCPSClass == 0 ){
+         bCheckGlobal=false;
+         break;
+      }
+      //check emergency
+      if( szMIN && szMIN[0]!=0x00){
+         strncpy(szKey,szMIN,sizeof(szKey)-1); 
+         void* pvValue=NULL;
+         bEmer=m_pRteEmerStrMap->m_fnFindMap(std::string(szKey),pvValue);
+      }
+      //emergency
+      if( bEmer ){
+         nMaxCPS=pEnv->m_nMaxCPS;
+         if( nMaxCPS == 0 ){
+            bCheckGlobal=false;
+            break;
+         }
+         //@vibc_svt emer .. plus 1 
+         bRet=m_pGlobalLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+         nCurCPS=(int)uiCPS;
+         pEnv->m_nCurCPS=nCurCPS;
+         nCurCPS=(int)uiInCPS;
+         if( bRet == false){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"overload class emer.(%d/%d)",nCurCPS,nMaxCPS);
+            //@vibc svt
+            m_fnTouchCPSGroup(nGroupID,1);
+            return E_RTE_FailGetICRoute_OverLoadEmergency;
+         }
+      }else {
+         if( bAudio ){
+            nMaxCPS=pEnv->m_nMaxCPS_Audio;
+            if( nMaxCPS <= 0 ){
+               //@vibc level_cps 20180219
+               bEmer=bCheckGlobal=false;
+               break;
+            }
+            //@vibc level_cps 20180219
+            //bRet=m_pGlobalLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+            bRet=m_pAudioLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+            nCurCPS=(int)uiInCPS;
+            if( bRet == false){
+               snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"overload class audio.(%d/%d)",nCurCPS,nMaxCPS);
+               //@vibc svt
+               m_fnTouchCPSGroup(nGroupID);
+               uiCPS=uiInCPS=0;
+               m_pGlobalLoad->m_fnGetCalcLoad(0,uiCPS,0,uiInCPS);
+               return E_RTE_FailGetICRoute_OverLoadAudio;
+            }
+            //@vibc level_cps 20180219
+            bEmer=bCheckGlobal=false;
+         }else{
+            nMaxCPS=pEnv->m_nMaxCPS_Video;
+            if( nMaxCPS <= 0 ){
+               //@vibc level_cps 20180219
+               bEmer=bCheckGlobal=false;
+               break;
+            }
+            //@vibc level_cps 20180219
+            //bRet=m_pGlobalLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+            bRet=m_pVideoLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+            nCurCPS=(int)uiInCPS;
+            if( bRet == false){
+               snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"overload class Video.(%d/%d)",nCurCPS,nMaxCPS);
+               //@vibc svt
+               m_fnTouchCPSGroup(nGroupID);
+               uiCPS=uiInCPS=0;
+               m_pGlobalLoad->m_fnGetCalcLoad(0,uiCPS,0,uiInCPS);
+               return E_RTE_FailGetICRoute_OverLoadVideo;
+            }
+            //@vibc level_cps 20180219
+            bEmer=bCheckGlobal=false;
+         }
+      }
+   }while(0);
+   
+   return m_fnCheckCPSByTransport(nGroupID,nCurCPS,nMaxCPS,bEmer,bCheckGlobal,_pError);
+}
+
+void CSipRteDBMgr:: m_fnTouchCPSGroup(int nGroupID, int nLoad)
+{
+   int nRet=0;
+   int nIdx=0;
+   void* pvRecord=NULL;
+   SipRouteGroup_t* pGroup=NULL;
+   nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+   if( nRet < 0 || pvRecord == NULL) return;
+   pGroup=(SipRouteGroup_t*)pvRecord;
+   if( pGroup->m_ucUsed == 0) return;
+   //check group index
+   nIdx=pGroup->m_nIndex; 
+   if( nIdx < 0 || nIdx >= SipRouteGroupDataBase_t::E_MAXNUM) return;
+
+   unsigned int uiCPS=0;
+   unsigned int uiInCPS=0;
+   (m_pGroupLoad+nIdx)->m_fnGetCalcLoad(nLoad,uiCPS,0,uiInCPS);
+}
+
+int CSipRteDBMgr::m_fnCheckCPSByTransport(int nGroupID,int& nCurCPS, int& nMaxCPS,
+                                          bool bEmer, bool bGlobalCheck, char* _pError)
+{
+   //calculate cps
+   //1.check group cps
+   int nRet=0;
+   void* pvRecord=NULL;
+   int nIdx=0;
+   int nFlag=0;
+   bool bRet=false;
+   SipRouteGroup_t* pGroup=NULL;
+   unsigned int uiCPS=0;
+   unsigned int uiInCPS=0;
+
+   //control group cps
+   do{
+      //if emergency
+      if( bEmer == true ) break;
+
+      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+      if( nRet < 0 || pvRecord == NULL) break;
+      pGroup=(SipRouteGroup_t*)pvRecord;
+      if( pGroup->m_ucUsed == 0) break;
+      //check group index
+      nIdx=pGroup->m_nIndex; 
+      if( nIdx < 0 || nIdx >= SipRouteGroupDataBase_t::E_MAXNUM) break;
+      nFlag=pGroup->m_nCtrlCPSOn;
+      nMaxCPS=pGroup->m_nMaxCPS;
+      //@vibc
+      if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+         nFlag=pGroup->m_nCtrlCPSOn_LB;
+         nMaxCPS=pGroup->m_nMaxCPS_LB;
+      }
+      if( nFlag == 0 ) nMaxCPS=0; 
+      bRet=(m_pGroupLoad+nIdx)->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+      nCurCPS=(int)uiCPS;
+      //set cps
+      pGroup->m_nCurCPS=nCurCPS;
+      nCurCPS=(int)uiInCPS;
+
+#if 0 
+      printf("idx:%d, cps:%d/%d/%d %d, inCPS=%d ",nIdx,uiCPS,nMaxCPS,uiInCPS,bEmer,nCurCPS);
+      fflush(stdout);
+#endif
+
+      //check cps
+      if(nMaxCPS <= 0 || nFlag == 0) break;
+      if(bRet == true ) break;
+  
+      //@vibc svt touch global. if not, don't calc cps 
+      m_pGlobalLoad->m_fnGetCalcLoad(0,uiCPS,0,uiInCPS);
+
+
+      //over cps
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"over group cps(%d/%d)",nCurCPS,nMaxCPS);
+      return E_RTE_FailGetICRoute_OverLoadGroupCPS;
+   }while(0);
+
+   //if emergency already global check
+   if( bEmer == true ) return 0;
+   if( bGlobalCheck == true) return 0;
+
+   //2.check global cps
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   nFlag=pEnv->m_nChkCPS;
+   nMaxCPS=pEnv->m_nMaxCPS;
+   if( nFlag == 0 ) nMaxCPS=0; 
+   uiCPS=uiInCPS=0;
+   bRet=m_pGlobalLoad->m_fnGetCalcLoad(1,uiCPS,nMaxCPS,uiInCPS);
+   nCurCPS=(int)uiCPS;
+   pEnv->m_nCurCPS=nCurCPS;
+
+   nCurCPS=(int)uiInCPS;
+   if(nMaxCPS <= 0 || nFlag == 0) return 0;
+   if(bRet==true) return 0;
+   
+   //over globalcps
+   snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"over global cps(%d/%d)",nCurCPS,nMaxCPS);
+   return E_RTE_FailGetICRoute_OverLoadGlobalCPS;
+}
+
+int CSipRteDBMgr::m_fnCheckTPSByTransport(int nGroupID,int& nCurTPS, int& nMaxTPS, char* _pError)
+{
+   //calculate cps
+   //1.check group cps
+   int nRet=0;
+   void* pvRecord=NULL;
+   int nIdx=0;
+   int nFlag=0;
+   bool bRet=false;
+   SipRouteGroup_t* pGroup=NULL;
+   unsigned int uiTPS=0;
+   unsigned int uiInTPS=0;
+   //control group cps
+   do{
+      if( nGroupID <= 0 ) break;
+      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+      if( nRet < 0 || pvRecord == NULL) break;
+      pGroup=(SipRouteGroup_t*)pvRecord;
+      if( pGroup->m_ucUsed == 0) break;
+      //check group index
+      nIdx=pGroup->m_nIndex; 
+      if( nIdx < 0 || nIdx >= SipRouteGroupDataBase_t::E_MAXNUM) break;
+      nFlag=pGroup->m_nCtrlTPSOn;
+      nMaxTPS=pGroup->m_nMaxTPS;
+      //@vibc
+      if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+         nFlag=pGroup->m_nCtrlTPSOn_LB;
+         nMaxTPS=pGroup->m_nMaxTPS_LB;
+      }
+   
+      if( nFlag == 0 ) nMaxTPS=0; 
+      bRet=(m_pGroupLoadTPS+nIdx)->m_fnGetCalcLoad(1,uiTPS,nMaxTPS,uiInTPS);
+      nCurTPS=(int)uiTPS;
+      //set cps
+      //m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->lock();
+      pGroup->m_nCurTPS=(int)nCurTPS;
+      //m_pIntMap[CSipRteData::E_SIPRTE_GRTE]->GetLock()->unlock();
+      nCurTPS=(int)uiInTPS;
+
+      //check cps
+      if(nMaxTPS <= 0 || nFlag == 0) break;
+      if(bRet == true ) break;
+
+      //over cps
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"over group tps(%d/%d)",nCurTPS,nMaxTPS);
+      return E_RTE_FailGetICRoute_OverLoadGroupTPS;
+   }while(0);
+
+   //2.check global cps
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+
+   nFlag=pEnv->m_nChkTPS;
+   nMaxTPS=pEnv->m_nMaxTPS;
+   if( nFlag == 0 ) nMaxTPS=0; 
+   bRet=m_pGlobalLoadTPS->m_fnGetCalcLoad(1,uiTPS,nMaxTPS,uiInTPS);
+   nCurTPS=(int)uiTPS;
+   pEnv->m_nCurTPS=nCurTPS;
+   nCurTPS=(int)uiInTPS;
+
+   if(nMaxTPS <= 0 || nFlag == 0) return 0;
+   if(bRet==true) return 0;
+   
+   //over globalcps
+   snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"over global tps(%d/%d)",nCurTPS,nMaxTPS);
+   return E_RTE_FailGetICRoute_OverLoadGlobalTPS;
+}
+
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnDecisionTargetByRSeq(
+         unsigned int         _uiRSeqID,     //in
+         SipNodeLocal_t*      _pstICLocal,   //in/out
+         SipNodeRemote_t*     _pstICRemote,  //in/out
+         SipRoute_t*          _pstICRoute,   //out
+         SipNodeLocal_t*      _pstOGLocal,   //out
+         SipNodeRemote_t*     _pstOGRemote,  //out
+         SipRoute_t*          _pstOGRoute,
+         char* _pError,
+         bool _bOnlyTCP) 
+{
+   int nRet=0;
+   nRet=m_fnGetOGRouteByRSeq(_uiRSeqID,_pstOGLocal,_pstOGRemote,_pstOGRoute,_pError,_bOnlyTCP);
+   if(nRet != 0 ){
+      return nRet;
+   }
+   SipRoute_t* pRoute=NULL;
+   nRet=m_fnGetICRoute(_pstICLocal,_pstICRemote,_pstICRoute,pRoute,true,_pError);
+   if(nRet != 0 ){
+      return nRet;
+   }
+   return 0;
+}   
+int CSipRteDBMgr::m_fnDecisionRouteBySpecialRSeq(
+         unsigned int         _uiSRSeqID,     //in
+         SipNodeLocal_t*      _pstOGLocal,   //out
+         SipNodeRemote_t*     _pstOGRemote,  //out
+         SipRoute_t*          _pstOGRoute,   //out
+         char* _pError,
+         bool _bOnlyTCP)
+{
+   int nRet=0;
+   void* pvValue=NULL;
+   SipSpecialRouteSeq_t  stSRSeq;
+   SipSpecialRouteSeq_t*  pstSRSeq=&stSRSeq;
+
+   //found special route sequence
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_SSEQ,(int)_uiSRSeqID,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found srseq(%u)",_uiSRSeqID);
+      return E_RTE_FailGetOGRoute_NotFoundSpecialRSeq;
+   }
+   memcpy(pstSRSeq,pvValue,sizeof(SipSpecialRouteSeq_t));
+
+   //decision RSEQ
+   int nCurPos=pstSRSeq->m_nCurPos;
+   int nRNum=pstSRSeq->m_nRNum;
+
+   //check Real Valid Number
+   int i=0;
+   if( nRNum <= 0 || nRNum > SipSpecialRouteSeq_t::E_MAX_RSEQ ){
+      //restrut
+      for(i=0 ; i < SipSpecialRouteSeq_t::E_MAX_RSEQ ; i ++){
+         if( pstSRSeq->m_uiRSEQ[i] == 0 ) break;
+      }
+      if( i == 0 ) {
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"invaild rseq in the srseq(%u)",_uiSRSeqID);
+         return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+      }
+      pstSRSeq->m_nRNum=nRNum=i+1;
+      //set initialize
+      pstSRSeq->m_nCurPos= nCurPos = 0;
+      memset(pstSRSeq->m_nCurRATE,0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+   }
+   if( nRNum <= 0 ||  nRNum > SipSpecialRouteSeq_t::E_MAX_RSEQ ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"invaild rseq in the srseq(%u)",_uiSRSeqID);
+      return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+   }
+   //check nCurPos
+   if( nCurPos < 0 || nCurPos >= SipSpecialRouteSeq_t::E_MAX_RSEQ){
+      pstSRSeq->m_nCurPos= nCurPos = 0;
+      memset(pstSRSeq->m_nCurRATE,0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+   }
+
+   //////////decide rseq loop
+   int nRSeq=0;
+   int nRate=0;
+   int nCurRate=0;
+   bool bDecisionRSeq=false;
+   for( i = 0 ; i < nRNum ; i++, nCurPos=((nCurPos+1)%nRNum)){
+      //check rseq 
+      nRSeq=(int)pstSRSeq->m_uiRSEQ[nCurPos];
+      if(nRSeq == 0 ){
+         continue;
+      }
+      //check rate
+      nRate=pstSRSeq->m_nRATE[nCurPos];
+      if( nRate <= 0 ){
+          pstSRSeq->m_nCurRATE[nCurPos]=0;
+          continue;
+      }
+      //get current rate
+      nCurRate=pstSRSeq->m_nCurRATE[nCurPos];
+      //mod R120 check route seq
+#if 0
+      if( (nCurRate+1) <= nRate ){
+         bDecisionRSeq=true;
+         break;
+      }else{
+         pstSRSeq->m_nCurRATE[nCurPos]=0;
+      }
+#else
+      if( (nCurRate+1) <= nRate ){
+         //check route seq
+         if( m_fnGetOGRouteByRSeq(nRSeq,_pstOGLocal,_pstOGRemote,
+            _pstOGRoute,_pError,_bOnlyTCP) == 0 ){
+            bDecisionRSeq=true;
+            break;
+         }
+      }
+      //set init ccurrent rate 
+      pstSRSeq->m_nCurRATE[nCurPos]=0;
+#endif
+   }
+   nRet=0;
+   //decide!!
+   if( bDecisionRSeq ){
+      //nothing
+   //one term
+   }else{
+      nCurPos = pstSRSeq->m_nCurPos;
+      nRSeq   = pstSRSeq->m_uiRSEQ[nCurPos];  
+      //check current rate one term
+      if( pstSRSeq->m_nRATE[nCurPos] <= 0 ||
+          nRSeq <= 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"current rate or rseq is zero. idx(%d)",nCurPos);
+         return E_RTE_FailGetOGRoute_InvaildSpecialRSeq; 
+      }
+      //check route seq
+      nRet=m_fnGetOGRouteByRSeq(nRSeq,_pstOGLocal,_pstOGRemote, _pstOGRoute,_pError,_bOnlyTCP);
+   }
+   pstSRSeq->m_nCurPos=nCurPos;
+   pstSRSeq->m_nCurRATE[nCurPos]++;
+
+   SipSpecialRouteSeq_t*  pCur=(SipSpecialRouteSeq_t*)pvValue;
+   if( pCur->m_ucUsed != 0 ){
+      m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->lock();
+
+      pCur->m_nCurPos=pstSRSeq->m_nCurPos;
+      memcpy(pCur->m_nCurRATE,pstSRSeq->m_nCurRATE,sizeof(pstSRSeq->m_nCurRATE));
+
+      m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->unlock();
+   }
+   return nRet;
+}
+int CSipRteDBMgr::m_fnDecisionRSeqBySpecialRSeq(
+         unsigned int         _uiSRSeqID,     //in
+         unsigned int&        _ruiRSeqID,     //out
+         int&                 _rValidCnt,
+         char* _pError)
+{
+   int nRet=0;
+   void* pvValue=NULL;
+   SipSpecialRouteSeq_t  stSRSeq;
+   SipSpecialRouteSeq_t*  pstSRSeq=&stSRSeq;
+
+   //found special route sequence
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_SSEQ,(int)_uiSRSeqID,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found srseq(%u)",_uiSRSeqID);
+      return E_RTE_FailGetOGRoute_NotFoundSpecialRSeq;
+   }
+   memcpy(pstSRSeq,pvValue,sizeof(SipSpecialRouteSeq_t));
+
+   //decision RSEQ
+   int nCurPos=pstSRSeq->m_nCurPos;
+   int nRNum=pstSRSeq->m_nRNum;
+   //check Real Valid Number
+   int i=0;
+   if( nRNum <= 0 || nRNum > SipSpecialRouteSeq_t::E_MAX_RSEQ ){
+      //restrut
+      for(i=0 ; i < SipSpecialRouteSeq_t::E_MAX_RSEQ ; i ++){
+         if( pstSRSeq->m_uiRSEQ[i] == 0 ) break;
+      }
+      if( i == 0 ) {
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"invaild rseq in the srseq(%u)",_uiSRSeqID);
+         return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+      }
+      pstSRSeq->m_nRNum=nRNum=i+1;
+      //set initialize
+      pstSRSeq->m_nCurPos= nCurPos = 0;
+      memset(pstSRSeq->m_nCurRATE,0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+   }
+   _rValidCnt=nRNum;
+   if( nRNum <= 0 ||  nRNum > SipSpecialRouteSeq_t::E_MAX_RSEQ ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"invaild rseq in the srseq(%u)",_uiSRSeqID);
+      return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+   }
+   //check nCurPos
+   if( nCurPos < 0 || nCurPos >= SipSpecialRouteSeq_t::E_MAX_RSEQ){
+      pstSRSeq->m_nCurPos= nCurPos = 0;
+      memset(pstSRSeq->m_nCurRATE,0x00,sizeof(int)*SipSpecialRouteSeq_t::E_MAX_RSEQ);
+   }
+
+   //////////decide rseq loop
+   int nRSeq=0;
+   int nRate=0;
+   int nCurRate=0;
+   bool bDecisionRSeq=false;
+   for( i = 0 ; i < nRNum ; i++, nCurPos=((nCurPos+1)%nRNum)){
+      //check rseq 
+      nRSeq=(int)pstSRSeq->m_uiRSEQ[nCurPos];
+      if(nRSeq == 0 ){
+         //mod by yun @20160211 R105_P3
+#if 0
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"invaild rseq in the srseq(%u)",_uiSRSeqID);
+         return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+#else
+         continue;
+#endif
+      }
+      //check rate
+      nRate=pstSRSeq->m_nRATE[nCurPos];
+      if( nRate <= 0 ){
+          pstSRSeq->m_nCurRATE[nCurPos]=0;
+          continue;
+      }
+      //get current rate
+      nCurRate=pstSRSeq->m_nCurRATE[nCurPos];
+      if( (nCurRate+1) <= nRate ){
+         bDecisionRSeq=true;
+         break;
+      }else{
+         pstSRSeq->m_nCurRATE[nCurPos]=0;
+      }
+   }
+   //decide!!
+   if( bDecisionRSeq ){
+      //pstSRSeq->m_nCurRATE[nCurPos]++;
+   //one term
+   }else{
+      nCurPos=pstSRSeq->m_nCurPos;
+   }
+   //check currrent rate
+   if( pstSRSeq->m_nRATE[nCurPos] <= 0 ||
+       pstSRSeq->m_uiRSEQ[nCurPos] == 0 ){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"current rate or rseq is zero. idx(%d)",nCurPos);
+      return E_RTE_FailGetOGRoute_InvaildSpecialRSeq;
+   }
+
+   pstSRSeq->m_nCurPos=nCurPos;
+   pstSRSeq->m_nCurRATE[nCurPos]++;
+   _ruiRSeqID=pstSRSeq->m_uiRSEQ[nCurPos];
+
+   SipSpecialRouteSeq_t*  pCur=(SipSpecialRouteSeq_t*)pvValue;
+   if( pCur->m_ucUsed != 0 ){
+      m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->lock();
+
+      pCur->m_nCurPos=pstSRSeq->m_nCurPos;
+      memcpy(pCur->m_nCurRATE,pstSRSeq->m_nCurRATE,sizeof(pstSRSeq->m_nCurRATE));
+
+      m_pIntMap[CSipRteData::E_SIPRTE_SSEQ]->GetLock()->unlock();
+   }
+   return 0;
+}
+
+int CSipRteDBMgr::m_fnGetLocal(SipNodeLocal_t*  _pstICLocal,char* _pError)
+{
+   bool bRet=false;
+   void* pvValue=NULL;
+
+   char szKey[256]; szKey[0]=0x00;
+
+   //param
+   _pstICLocal->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+
+   //found ic local
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pstICLocal->m_szIP,_pstICLocal->m_usPort,
+                                 _pstICLocal->m_ucProto,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+         "not found local(ip_port_type=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundLocalNode;
+   }
+   memcpy(_pstICLocal,pvValue,sizeof(SipNodeLocal_t));
+   return 0;
+}
+//@vibc
+int CSipRteDBMgr::m_fnSetLocalStatus(SipNodeLocal_t*  _pstICLocal,
+                                    int                 _nStatus,   //INT, AVAIL(0), UNAVAIL(1)
+                                    char* _pError)
+{
+   bool bRet=false;
+   void* pvValue=NULL;
+
+   char szKey[256]; szKey[0]=0x00;
+
+   //param
+   _pstICLocal->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+
+   //found ic local
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pstICLocal->m_szIP,_pstICLocal->m_usPort,
+                                 _pstICLocal->m_ucProto,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+         "not found local(ip_port_type=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundLocalNode;
+   }
+   //parameter check
+   if( _nStatus != 0 ){
+      _nStatus = 1;
+   }
+   ((SipNodeLocal_t*)pvValue)->m_ucStatus=(unsigned char)_nStatus;
+   return 0;
+}
+
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnGetRemote(SipNodeRemote_t* _pstICRemote, char* _pError) 
+{
+   bool bRet=false;
+   void* pvValue=NULL;
+
+   char szKey[256]; szKey[0]=0x00;
+
+   _pstICRemote->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+
+   //found ic Remote
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pstICRemote->m_szIP,_pstICRemote->m_usPort,
+                                 _pstICRemote->m_ucProto,szKey);
+   bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found remote(ip_port_type=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundRemoteNode;
+   }
+   memcpy(_pstICRemote,pvValue,sizeof(SipNodeRemote_t));
+   return 0;
+}
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnGetRouteByLIDAndRID(
+         unsigned int _uiLID,
+         unsigned int _uiRID,
+         SipRoute_t*  _pstICRoute,   //out
+         char* _pError) 
+{
+   bool bRet=false;
+   void* pvValue=NULL;
+   char szKey[256]; szKey[0]=0x00;
+
+   //found ic route
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeRouteNodeKey(_uiLID,_uiRID,szKey);
+   bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found route(LID_RID=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundRoute;
+   }
+   memcpy(_pstICRoute,pvValue,sizeof(SipRoute_t));
+   return 0;
+}
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnGetICRoute(
+         SipNodeLocal_t*      _pstICLocal,   //in/out
+         SipNodeRemote_t*     _pstICRemote,  //in/out
+         SipRoute_t*          _pstICRoute,   //out
+         SipRoute_t*&         _rpstICRoute, 
+         bool                 _bCheckStatus,
+         char* _pError) 
+{
+   bool bRet=false;
+   void* pvValue=NULL;
+
+   char szKey[256]; szKey[0]=0x00;
+
+   //param
+   _pstICLocal->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+   _pstICRemote->m_szIP[DEF_RTE_MAXLEN_IP-1]=0x00;
+
+
+   //found ic local
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pstICLocal->m_szIP,_pstICLocal->m_usPort,
+                                 _pstICLocal->m_ucProto,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+         "not found ic local(ip_port_type=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundLocalNode;
+   }
+   memcpy(_pstICLocal,pvValue,sizeof(SipNodeLocal_t));
+
+   //found ic Remote
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pstICRemote->m_szIP,_pstICRemote->m_usPort,
+                                 _pstICRemote->m_ucProto,szKey);
+   bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found ic remote(ip_port_type=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundRemoteNode;
+   }
+   memcpy(_pstICRemote,pvValue,sizeof(SipNodeRemote_t));
+
+   //found ic route
+   pvValue=NULL;
+   CSipRteUtil::m_fnMakeRouteNodeKey(_pstICLocal->m_uiID,_pstICRemote->m_uiID,szKey);
+   bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if( bRet == false || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found ic route(LID_RID=%s)",szKey);
+      return E_RTE_FailGetICRoute_NotFoundRoute;
+   }
+   //attach
+   _rpstICRoute=(SipRoute_t*)pvValue;
+   memcpy(_pstICRoute,pvValue,sizeof(SipRoute_t));
+
+   if( _bCheckStatus == true ){
+      if( _pstICRoute->m_ucStatus != E_ESIP_STATUS_AVAIL ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "ic route status unavailable(%u)",_pstICRoute->m_uiID);
+         return E_RTE_FailGetICRoute_UnavalibleRoute; 
+      }
+   }
+   return 0;
+}
+//IC Route -> OG Route.
+int CSipRteDBMgr::m_fnGetOGRouteByRSeq(
+         unsigned int         _uiRSeqID,     //in
+         SipNodeLocal_t*      _pstOGLocal,   //out
+         SipNodeRemote_t*     _pstOGRemote,  //out
+         SipRoute_t*          _pstOGRoute,
+         char* _pError,
+         bool _bOnlyTCP) 
+{
+   int nRet=0;
+   void* pvValue=NULL;
+   /////////////////Found IC Route
+   char szKey[256]; szKey[0]=0x00;
+   SipRouteSeq_t* pstRoutSeq=NULL;
+   //found route sequence
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RSEQ,(int)_uiRSeqID,pvValue);
+   pstRoutSeq=(SipRouteSeq_t*)pvValue;
+   if( nRet < 0 || pstRoutSeq == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,"not found rseq(%u)",_uiRSeqID);
+      return E_RTE_FailGetOGRoute_NotFoundRSeq;
+   }
+   //get drte
+   unsigned int uiRTE=0;
+   uiRTE=pstRoutSeq->m_uiDRTE;
+   pvValue=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,(int)uiRTE,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found drte(%u)",uiRTE);
+      return E_RTE_FailGetOGRoute_NotFoundDRTE;
+   }
+
+   //check route status
+   if( (((SipRoute_t*)(pvValue))->m_ucStatus != E_ESIP_STATUS_AVAIL) ||
+       ( _bOnlyTCP && (((SipRoute_t*)(pvValue))->m_ucProto != E_ESIP_TRANSPORT_TCP))){
+      bool bARTEOK=false;
+      //find arte
+      int i=0;
+      for( i = 0 ; i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+         uiRTE=pstRoutSeq->m_uiARTE[i];
+         if( uiRTE == 0 ) break;
+         //find route
+         pvValue=NULL;
+         nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,(int)uiRTE,pvValue);
+         if( nRet < 0 || pvValue == NULL){
+            snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+                  "not found arte(%u)",uiRTE);
+            return E_RTE_FailGetOGRoute_NotFoundARTE;
+         }
+         //check status
+         if( ((SipRoute_t*)(pvValue))->m_ucStatus != E_ESIP_STATUS_AVAIL ||
+            ( _bOnlyTCP && (((SipRoute_t*)(pvValue))->m_ucProto != E_ESIP_TRANSPORT_TCP))){
+            continue;
+         }
+         bARTEOK=true;
+         break;
+      }
+      if( bARTEOK == false || uiRTE == 0 ){
+         snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+               "og drte/arte unavailable. rseq(%u)",_uiRSeqID);
+         return E_RTE_FailGetOGRoute_UnavalibleRoute;
+      }
+   }
+   //route set
+   memcpy(_pstOGRoute,pvValue,sizeof(SipRoute_t));
+
+   //found og local 
+   pvValue=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_LN,(int)_pstOGRoute->m_uiLID,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "found og local(%u)",_pstOGRoute->m_uiLID);
+      return E_RTE_FailGetOGRoute_NotFoundLocalNode;
+   }
+   memcpy(_pstOGLocal,pvValue,sizeof(SipNodeLocal_t));
+
+   //found og remote 
+   pvValue=NULL;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,(int)_pstOGRoute->m_uiRID,pvValue);
+   if( nRet < 0 || pvValue == NULL){
+      snprintf(_pError,CSipRteData::E_MAXLEN_ERR,
+            "not found og remote(%u)",_pstOGRoute->m_uiRID);
+      return E_RTE_FailGetOGRoute_NotFoundRemoteNode;
+   }
+   memcpy(_pstOGRemote,pvValue,sizeof(SipNodeRemote_t));
+
+   return 0;
+}
+void CSipRteDBMgr::m_fnCtrolRouteCount_SetZeroAll( )
+{
+   SipRoute_t* pRte=NULL;
+   //m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+   //Route check
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(m_pDB->m_stDBRte.m_stRte[i]);
+      if( pRte->m_ucUsed == 0 ) continue;
+      pRte->m_uiBusyCnt=0;
+      pRte->m_uiICCnt=0;
+      pRte->m_uiOGCnt=0;
+   }
+   //m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+}
+
+
+int CSipRteDBMgr::m_fnFindTCPRoute(SipNodeLocal_t* _pLocal,
+                                   SipNodeRemote_t* _pRemote,
+                                   SipRoute_t* _pRoute)
+{
+   if( _pLocal == NULL || _pRemote == NULL )
+   {
+      return E_RTE_IllegalParam;
+   }
+   
+   //find local id/remote id
+   char szKey[128];szKey[0]=0x00;
+   bool bRet=false;
+
+   //find local
+   void*  pvLocal=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pLocal->m_szIP,_pLocal->m_usPort,E_ESIP_TRANSPORT_TCP,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvLocal);
+   if( bRet == false || pvLocal == NULL){
+      return E_RTE_FailGetOGRoute_NotFoundLocalNode;
+   }
+   //set local
+   if( _pLocal ){
+      memcpy(_pLocal,pvLocal,sizeof(SipNodeLocal_t));
+   }
+
+   //found Remote
+   void* pvRemote=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pRemote->m_szIP,_pRemote->m_usPort,E_ESIP_TRANSPORT_TCP,szKey);
+   bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvRemote);
+   if( bRet == false || pvRemote == NULL){
+      return E_RTE_FailGetOGRoute_NotFoundRemoteNode;
+   }
+   //set remote
+   if( _pRemote ){
+      memcpy(_pRemote,pvRemote,sizeof(SipNodeRemote_t));
+   }
+
+   //route 
+   void* pvValue=NULL;
+   CSipRteUtil::m_fnMakeRouteNodeKey( _pLocal->m_uiID,_pRemote->m_uiID,szKey);
+   bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if(bRet==false || pvValue == NULL){
+      return E_RTE_FailGetOGRoute_UnavalibleRoute;
+   }
+   SipRoute_t* pRte=(SipRoute_t*)pvValue;
+   if(pRte->m_ucStatus != E_ESIP_STATUS_AVAIL ){
+
+      return E_RTE_FailGetOGRoute_UnavalibleRoute;
+   }
+   if( _pRoute ){
+      memcpy(_pRoute,pRte,sizeof(SipRoute_t));
+   }
+   return 0;
+}
+
+
+
+void CSipRteDBMgr::m_fnCtrolRouteCount(
+                     unsigned int _uiID,
+                     bool         _bIC,
+                     bool         _bPlusOne,
+                     bool         _bForceZero)
+{
+   int nRet=0;
+   SipRoute_t* pValue=NULL;
+   void* pvRecord=NULL;
+   int nBusy=0, nIC=0, nOG=0;
+   nRet=m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,_uiID,pvRecord);
+   if( nRet < 0 || pvRecord == NULL) return;
+   pValue=(SipRoute_t*)pvRecord;
+   //m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->lock();
+   do{
+      if( _bForceZero == true ){
+         pValue->m_uiBusyCnt=0;
+         pValue->m_uiICCnt=0;
+         pValue->m_uiOGCnt=0;
+         break;
+      }
+      //plus one
+      if( _bPlusOne == true ){
+         pValue->m_uiBusyCnt++;
+         if( _bIC == true ){
+            pValue->m_uiICCnt++;
+         }else{
+            pValue->m_uiOGCnt++;
+         }
+      //minus one
+      }else{
+         nBusy=pValue->m_uiBusyCnt;
+         nIC=pValue->m_uiICCnt;
+         nOG=pValue->m_uiOGCnt;
+         nBusy--;
+         if( _bIC == true){
+            nIC--;
+         }else{
+            nOG--;
+         }
+         if( nBusy < 0 ) nBusy=0;
+         if( nIC < 0 ) nIC=0;
+         if( nOG < 0 ) nOG=0;
+         pValue->m_uiBusyCnt=nBusy;
+         pValue->m_uiICCnt=nIC;
+         pValue->m_uiOGCnt=nOG;
+      }
+   }while(0);
+   //m_pIntMap[CSipRteData::E_SIPRTE_RTE]->GetLock()->unlock();
+}
+
+//add @R106 201603 invoke notify system resource
+void CSipRteDBMgr::m_fnNotifyAlarmSystemLoad(int _nCurUsage, int _nLimitUsage, bool _bCPU)
+{
+   if( THESIPRTECB->m_pfuncESipRteApiNotifySystemResource_t == NULL ) return;
+   if( _nLimitUsage <= 0 ) return;
+
+   unsigned int uiTDiff=0;
+   char szReason[128];
+   memset(szReason,0x00,sizeof(szReason));
+
+   SystemResource_t* pRSC=&(m_InterNotify.m_stCPU);
+   int nRSCFlag=0; //from CPU
+   if( _bCPU == false ){
+      pRSC=&(m_InterNotify.m_stMEM);
+      nRSCFlag=1; //from MEM
+   }
+   //alarm notify 
+   if( _nCurUsage > _nLimitUsage ){
+      if( pRSC->m_nNotifyFlag == 0 ){
+         snprintf(szReason,sizeof(szReason)-2,"%s OVERLOAD(CUR:%d%%,MAX:%d%%)",
+            (nRSCFlag == 0) ? "CPU":"MEM",_nCurUsage,_nLimitUsage);
+
+         THESIPRTECB->m_pfuncESipRteApiNotifySystemResource_t(
+               1, nRSCFlag, _nCurUsage, _nLimitUsage, szReason );
+         pRSC->m_nNotifyFlag=1;
+         pRSC->m_nCurUsage = _nCurUsage;
+         pRSC->m_nLimitUsage = _nLimitUsage;
+         CSipRteUtil::GetTimeDiff(&(pRSC->m_stNotifyTime),true);
+      //notify error per 10sec
+      }else if ( pRSC->m_nNotifyFlag == 1 ){
+         if( pRSC->m_stNotifyTime.timev_s.tv_sec == 0 ){
+            uiTDiff=CSipRteUtil::GetTimeDiff(&(pRSC->m_stNotifyTime),true);
+         }else{
+            uiTDiff=CSipRteUtil::GetTimeDiff(&(pRSC->m_stNotifyTime),false);
+         }
+         //per 10sec,
+         if( uiTDiff >= 10000 ){
+            if(  pRSC->m_nCurUsage != _nCurUsage || pRSC->m_nLimitUsage != _nLimitUsage  ){
+               snprintf(szReason,sizeof(szReason)-2,"%s OVERLOAD(CUR:%d%%,MAX:%d%%)",
+                  (nRSCFlag == 0) ? "CPU":"MEM",_nCurUsage,_nLimitUsage);
+
+               THESIPRTECB->m_pfuncESipRteApiNotifySystemResource_t(
+                     1, nRSCFlag, _nCurUsage, _nLimitUsage, szReason );
+               pRSC->m_nCurUsage = _nCurUsage;
+               pRSC->m_nLimitUsage = _nLimitUsage;
+            }
+            CSipRteUtil::GetTimeDiff(&(pRSC->m_stNotifyTime),true);
+         }
+      }
+   }else {
+      //check clear notify 
+      if( pRSC->m_nNotifyFlag == 1 ){
+         THESIPRTECB->m_pfuncESipRteApiNotifySystemResource_t(
+               0, nRSCFlag, _nCurUsage, _nLimitUsage, szReason);
+         pRSC->m_nNotifyFlag = 0;
+      }
+   }
+}
+
+void CSipRteDBMgr::m_fnSetSystemLoad(int _nCPU, int _nMEM)
+{
+   if( m_pDB == NULL) return;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+
+   pEnv->m_nCurCPU=_nCPU;
+   pEnv->m_nCurMEM=_nMEM;
+
+   //del @R106 20160427. by cvt.
+   //since there is system load(CPU/MEM) alarm, the below logic isn't necessary. 
+#if 0
+   //add @R106 201603 invoke notify system resource
+   if( THESIPRTECB->m_pfuncESipRteApiNotifySystemResource_t == NULL) return;
+   int nLimitCPU=pEnv->m_nMaxCPU;
+   int nLimitMEM=pEnv->m_nMaxMEM;
+
+   m_fnNotifyAlarmSystemLoad(_nCPU,nLimitCPU,true);
+   m_fnNotifyAlarmSystemLoad(_nMEM,nLimitMEM,false);
+#endif
+}
+
+int CSipRteDBMgr::m_fnIsNormalSysLoad(
+            int& _rnCurCPU, int& _rnMaxCPU,
+            int& _rnCurMEM, int& _rnMaxMEM)
+{
+   if( m_pDB == NULL) return 0;
+   int nFlag=0;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+
+   //check cpu
+   nFlag=pEnv->m_nChkCPU;
+   if( nFlag != 0 ){
+      _rnMaxCPU=pEnv->m_nMaxCPU;
+      _rnCurCPU=pEnv->m_nCurCPU;
+      if( _rnMaxCPU > 0 && _rnCurCPU > 0 ){
+         if( _rnCurCPU > _rnMaxCPU ){
+            return E_RTE_FailGetICRoute_OverLoadCPU;
+         }
+      }
+   }
+   //check mem
+   nFlag=pEnv->m_nChkMEM;
+   if( nFlag != 0 ){
+      _rnMaxMEM=pEnv->m_nMaxMEM;
+      _rnCurMEM=pEnv->m_nCurMEM;
+      if( _rnCurMEM > 0 && _rnMaxMEM > 0 ){
+         if( _rnCurMEM > _rnMaxMEM ){
+            return E_RTE_FailGetICRoute_OverLoadMEM;
+         }
+      }
+   }
+   return 0;
+}
+
+void CSipRteDBMgr::m_fnInCrease1SesCount()
+{
+   if( m_pDB == NULL) return;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   pEnv->m_nCurSES++;
+}
+void CSipRteDBMgr::m_fnDeCrease1SesCount()
+{
+   if( m_pDB == NULL) return;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   int nCnt=pEnv->m_nCurSES;
+   nCnt--;
+   if( nCnt <= 0 ) nCnt=0;
+   pEnv->m_nCurSES=nCnt;
+}
+void CSipRteDBMgr::m_fnSetZeroSesCount()
+{
+   if( m_pDB == NULL) return;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   pEnv->m_nCurSES=0;
+}
+void CSipRteDBMgr::m_fnSetSesCount(int nSes)
+{
+   if( m_pDB == NULL) return;
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   if( nSes <= 0 ){
+      nSes=0;
+   }
+   pEnv->m_nCurSES=nSes;
+}
+
+void  CSipRteDBMgr::m_fnSentOption(SipRoute_t* _pRte)
+{
+#ifdef _FIX_OPT_CNT
+   (m_pRteStrMap->GetLock())->lock();
+   _pRte->m_nCurRetry++;
+   (m_pRteStrMap->GetLock())->unlock();
+
+   //exceed retry count
+   if( _pRte->m_nCurRetry >= _pRte->m_sOptRetry )
+   {
+      (m_pRteStrMap->GetLock())->lock();
+      _pRte->m_nCurRetry=0;
+      (m_pRteStrMap->GetLock())->unlock();
+      //mod param R106 @201603
+      //m_fnChangeRouteStatus(false,_pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL);			
+      m_fnChangeRouteStatus(false,_pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL,0);
+      return;
+   }
+#else
+   //exceed retry count
+   if( _pRte->m_nCurRetry > _pRte->m_sOptRetry )
+   {
+      (m_pRteStrMap->GetLock())->lock();
+      _pRte->m_nCurRetry=0;
+      (m_pRteStrMap->GetLock())->unlock();
+      //mod param R106 @201603
+      //m_fnChangeRouteStatus(false,_pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL);			
+      m_fnChangeRouteStatus(false,_pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL,0);
+      return;
+   }
+   (m_pRteStrMap->GetLock())->lock();
+   _pRte->m_nCurRetry++;
+   (m_pRteStrMap->GetLock())->unlock();
+#endif
+}
+
+void CSipRteDBMgr::m_fnSetNATInfo(SipNodeRemote_t* _pRemote, SipNodeRemote_t* _pDBRemote )
+{
+   return;
+   int nNatFlag=(int)_pDBRemote->m_sNATOn; 
+   if( nNatFlag == 0 ) return;
+   //check nat
+   nNatFlag=0;
+   if( _pRemote->m_usNATPort > 0 &&
+       _pRemote->m_szNATIP[0]!=0x00 ){
+      if( _pDBRemote->m_usIPver == 4 ){
+         if( CSipRteUtil::m_fnIsIPv4String(_pRemote->m_szNATIP) ){
+            nNatFlag=1; 
+         }
+      }else if ( _pDBRemote->m_usIPver == 6 ){
+         if( CSipRteUtil::m_fnIsIPv6String(_pRemote->m_szNATIP) ){
+            nNatFlag=1; 
+         }
+      }
+   }
+   if( nNatFlag == 0 ) return;
+
+   //set nat ip/port
+   (m_pRmtStrMap->GetLock())->lock();
+   memset(_pDBRemote->m_szNATIP,0x00,sizeof(_pDBRemote->m_szNATIP));
+   strncpy(_pDBRemote->m_szNATIP,_pRemote->m_szNATIP,sizeof(_pDBRemote->m_szNATIP)-1);
+   _pDBRemote->m_usNATPort =  _pRemote->m_usNATPort;
+   (m_pRmtStrMap->GetLock())->unlock();
+}
+
+
+int CSipRteDBMgr::m_fnRecvOption(SipNodeLocal_t* _pLocal, SipNodeRemote_t* _pRemote)
+{
+   //find local id/remote id
+   char szKey[128];szKey[0]=0x00;
+   bool bRet=false;
+   
+   if( _pLocal == NULL || _pRemote == NULL) return 1;
+
+   //find local
+   void*  pvLocal=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pLocal->m_szIP,_pLocal->m_usPort,_pLocal->m_ucProto,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvLocal);
+   if( bRet == false || pvLocal == NULL){
+      return 1;
+   }
+   //set local
+   if( _pLocal ){
+      memcpy(_pLocal,pvLocal,sizeof(SipNodeLocal_t));
+   }
+
+   //found Remote
+   void* pvRemote=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pRemote->m_szIP,_pRemote->m_usPort,_pRemote->m_ucProto,szKey);
+   bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvRemote);
+   if( bRet == false || pvRemote == NULL){
+      return 1;
+   }
+
+   //check nat info
+   m_fnSetNATInfo(_pRemote,(SipNodeRemote_t*)pvRemote);
+
+   //set remote
+   if( _pRemote ){
+      memcpy(_pRemote,pvRemote,sizeof(SipNodeRemote_t));
+   }
+
+   //route 
+   void* pvValue=NULL;
+   CSipRteUtil::m_fnMakeRouteNodeKey( ((SipNodeLocal_t*)(pvLocal))->m_uiID, 
+            ((SipNodeRemote_t*)(pvRemote))->m_uiID,szKey);
+   bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if(bRet==false) return 1; 
+
+   SipRoute_t* pRte=(SipRoute_t*)(pvValue);
+   if( pRte->m_sOptAction == SipRoute_t::E_MANAGE_DEACT){
+      if ( pRte->m_nDeactRsp == SipRoute_t::E_SEND_RESPONSE ){
+         return 1;
+      }else{
+         return 2; //will drop
+      }
+   }
+   return 0;
+}
+
+void CSipRteDBMgr::m_fnRecvOption200OK(SipNodeLocal_t* _pLocal, 
+                                       SipNodeRemote_t* _pRemote,
+                                       bool _bOKRsp,
+                                       //add param @R106 201603 
+                                       int nResponseCode)
+{
+   //find local id/remote id
+   char szKey[128];szKey[0]=0x00;
+   bool bRet=false;
+
+   //find local
+   void*  pvLocal=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pLocal->m_szIP,_pLocal->m_usPort,_pLocal->m_ucProto,szKey);
+   bRet=m_pLocalStrMap->m_fnFindMap(std::string(szKey),pvLocal);
+   if( bRet == false || pvLocal == NULL){
+      return;
+   }
+   //set local
+   if( _pLocal ){
+      memcpy(_pLocal,pvLocal,sizeof(SipNodeLocal_t));
+   }
+
+   //found Remote
+   void* pvRemote=NULL;
+   CSipRteUtil::m_fnMakeSipNodeKey(_pRemote->m_szIP,_pRemote->m_usPort,_pRemote->m_ucProto,szKey);
+   bRet=m_pRmtStrMap->m_fnFindMap(std::string(szKey),pvRemote);
+   if( bRet == false || pvRemote == NULL){
+      return;
+   }
+   //check nat info
+   m_fnSetNATInfo(_pRemote,(SipNodeRemote_t*)pvRemote);
+
+   //set remote
+   if( _pRemote ){
+      memcpy(_pRemote,pvRemote,sizeof(SipNodeRemote_t));
+   }
+   
+
+   //route 
+   void* pvValue=NULL;
+   CSipRteUtil::m_fnMakeRouteNodeKey( ((SipNodeLocal_t*)(pvLocal))->m_uiID, 
+            ((SipNodeRemote_t*)(pvRemote))->m_uiID,szKey);
+   bRet=m_pRteStrMap->m_fnFindMap(std::string(szKey),pvValue);
+   if(bRet==false) return; 
+
+
+   SipRoute_t* pRte=(SipRoute_t*)(pvValue);
+   (m_pRteStrMap->GetLock())->lock();
+   pRte->m_nCurRetry=0;
+   (m_pRteStrMap->GetLock())->unlock();
+
+   //@R106 201603 if only act mode, or not drop
+   if( pRte->m_sOptAction != SipRoute_t::E_MANAGE_ACT ){
+      return;
+   }
+
+   if( _bOKRsp == true ){
+      //mod param @R106 201603 
+      //m_fnChangeRouteStatus(false,pRte,false,0,true,(int)E_ESIP_STATUS_AVAIL);
+      m_fnChangeRouteStatus(false,pRte,false,0,true,(int)E_ESIP_STATUS_AVAIL,0);
+   }else{
+      //mod param @R106 201603 
+      //m_fnChangeRouteStatus(false,pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL);
+      m_fnChangeRouteStatus(false,pRte,false,0,true,(int)E_ESIP_STATUS_UNAVAIL,nResponseCode);
+   }
+}
+
+///////////////////////////////////
+int CSipRteDBMgr::m_fnFindEmptyRecord(int _nIndex)
+{
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return -1;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_ENV ||
+               _nIndex == CSipRteData::E_SIPRTE_ENV_LB){
+      nMaxRecord=1;
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_TIME){
+      nMaxRecord=1;
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_TRC){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+   }else if (  _nIndex == CSipRteData::E_SIPRTE_EMER){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+   }
+   int i=0 ;
+   for( i=0 ; i < nMaxRecord ; i++){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( (pValue+i)->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipNodeLocal_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipNodeRemote_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipRouteGroup_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipRoute_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipRouteSeq_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipSpecialRouteSeq_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(TrGWRoute_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipReasonCode_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         memset(pvRecord,0x00,sizeof(GlobalOverLoadEnv_t));
+         break;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         memset(pvRecord,0x00,sizeof(SipCoreTimer_t));
+         break;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(SipCoreTrace_t));
+            break;
+         }
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0){
+            memset((pValue+i),0x00,sizeof(EmergencyCall_t));
+            break;
+         }
+      }
+   }
+   //full
+   if( i >= nMaxRecord ) return -1;
+   return i;
+}
+
+void CSipRteDBMgr::m_fnCalculateCurrentCPS( )
+{
+   if( m_pDB == NULL ) return;
+
+   SipRouteGroup_t* pValue=NULL;
+   unsigned int uiCurValue=0;
+   unsigned int uiInCurValue=0;
+   //group cps
+   for( int i=0 ; i < SipRouteGroupDataBase_t::E_MAXNUM ; i++){
+      pValue=&(m_pDB->m_stDBRteGroup.m_stRteGroup[i]);
+      if( pValue->m_ucUsed == 0 ){
+         continue;
+      }
+      uiCurValue=uiInCurValue=0;
+      //get current cps
+      (m_pGroupLoad+i)->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+      pValue->m_nCurCPS=uiCurValue;
+
+      uiCurValue=uiInCurValue=0;
+      //get current tps
+      (m_pGroupLoadTPS+i)->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+      pValue->m_nCurTPS=uiCurValue;
+   }
+   uiCurValue=uiInCurValue=0;
+
+   //@vibc
+   GlobalOverLoadEnv_t* pEnv=&(m_pDB->m_stDBEnv);
+   if( THESIPRTEMGR->m_nAttachSystem == E_ESipRteAttachSystem_LB ){
+      pEnv=&(m_pDB->m_stDBEnv_LB);
+   }
+   //global cps
+   m_pGlobalLoad->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+   pEnv->m_nCurCPS=uiCurValue;
+
+   uiCurValue=uiInCurValue=0;
+   //global tps
+   m_pGlobalLoadTPS->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+   pEnv->m_nCurTPS=uiCurValue;
+
+   //@vibc level_cps 20180219
+   //audio
+   uiCurValue=uiInCurValue=0;
+   m_pAudioLoad->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+
+   //video
+   uiCurValue=uiInCurValue=0;
+   m_pVideoLoad->m_fnGetCalcLoad(0, uiCurValue, 0,uiInCurValue);
+
+}
+
+//get record
+void* CSipRteDBMgr::m_fnGetRecord(int _nIndex)
+{
+   void* pvRecord=NULL;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      pvRecord=(void*)(m_pDB->m_stDBLocal.m_stNodeLocal);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      pvRecord=(void*)(m_pDB->m_stDBRmt.m_stNodeRmt);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      pvRecord=(void*)(m_pDB->m_stDBRteGroup.m_stRteGroup);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      pvRecord=(void*)(m_pDB->m_stDBRte.m_stRte);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      pvRecord=(void*)(m_pDB->m_stDBRteSeq.m_stRteSeq);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      pvRecord=(void*)(m_pDB->m_stDBSpecialRteSeq.m_stSpecialRteSeq);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      pvRecord=(void*)(m_pDB->m_stDBTrGW.m_stTrGW);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      pvRecord=(void*)(m_pDB->m_stDBReason.m_stData);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      pvRecord=(void*)&(m_pDB->m_stDBEnv);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      pvRecord=(void*)&(m_pDB->m_stDBEnv_LB);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      pvRecord=(void*)&(m_pDB->m_stDBTimer);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      pvRecord=(void*)(m_pDB->m_stDBTrace.m_stData);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      pvRecord=(void*)(m_pDB->m_stDBEmer.m_stData);
+   }else{
+      return NULL; //index error
+   }
+   return pvRecord;
+}
+
+bool CSipRteDBMgr::m_fnCheckTrace(
+                  const char*     _pszCaller, //IN,  O, the called number
+                  const char*     _pszCallee, //IN,  O, the callee number
+                  const int       _nRemoteID, //IN,  O, the remote id
+                  int&            _rnCnt,
+                  SipCoreTrace_t* _pstTrace[SipTraceDataBase_t::E_MAXNUM])
+{
+   _rnCnt=0;
+   if( m_pDB == NULL ) return false;
+
+   SipTraceDataBase_t* pDBTrace=&(m_pDB->m_stDBTrace);
+   int nNum=pDBTrace->m_nNumber;
+
+   if( nNum == 0 ) return false;
+   //caller, callee, remote id not set
+   if( _pszCaller == NULL || _pszCaller[0] == 0x00 ){
+      if( _pszCallee == NULL || _pszCallee[0] == 0x00 ){
+         if( _nRemoteID <= 0) return false;
+      }
+   }
+
+   char tmpCaller[128];
+   char tmpCallee[128];
+   memset(tmpCaller,0x00,sizeof(tmpCaller));
+   memset(tmpCallee,0x00,sizeof(tmpCallee));
+   if( _pszCaller!=NULL && _pszCaller[0] != 0x00){
+      strncpy(tmpCaller,_pszCaller,sizeof(tmpCaller)-1);
+   }
+   if( _pszCallee!=NULL && _pszCallee[0] != 0x00){
+      strncpy(tmpCallee,_pszCallee,sizeof(tmpCallee)-1);
+   }
+
+   _pszCaller=tmpCaller;
+   _pszCallee=tmpCallee;
+
+   SipCoreTrace_t* pTrace=NULL;
+   int nLen_Caller=0;
+   int nLen_Callee=0;
+   int nLen_DB=0;
+
+   if( _pszCaller != NULL && _pszCaller[0] != 0x00){
+      nLen_Caller=strlen(_pszCaller);
+   }
+   if( _pszCallee != NULL && _pszCallee[0] != 0x00){
+      nLen_Callee=strlen(_pszCallee);
+   }
+   int nMIN=0;
+   
+   char* pTmpSrc=NULL;
+   char* pTmpFind=NULL;
+   for( int i= 0; i < SipTraceDataBase_t::E_MAXNUM ; i++)
+   {
+      if( nNum <= 0 ) break;
+      pTrace=&(pDBTrace->m_stData[i]);
+      if(pTrace->m_ucUsed == 0 ) continue;
+      nNum--;
+
+      if((pTrace->m_nType&SipCoreTrace_t::SET_SIP) == 0x00 &&
+         (pTrace->m_nType&SipCoreTrace_t::SET_IPC) == 0x00 )
+      {
+         continue;
+      }
+
+      //db len
+      nLen_DB=strlen(pTrace->m_szMIN);
+
+      //caller check 
+      if( nLen_Caller > 0 && nLen_DB > 0 && nLen_Caller >= nLen_DB){
+         nMIN=nLen_DB;
+         pTmpFind=pTrace->m_szMIN;
+         pTmpSrc=(char*)_pszCaller;
+
+         //if( strncmp(_pszCaller,pTrace->m_szMIN,nMIN) == 0 ){
+         if( strstr(pTmpSrc,pTmpFind) != NULL ){
+            if( pTrace->m_nNodeID > 0 ){
+               if(_nRemoteID == pTrace->m_nNodeID ){
+                  _pstTrace[_rnCnt++]=pTrace;
+                  //break;
+                  continue;
+               }
+            }else{
+               _pstTrace[_rnCnt++]=pTrace;
+               //break;
+               continue;
+            }
+         }
+      }
+      //callee check 
+      if( nLen_Callee > 0 && nLen_DB > 0 && nLen_Callee >= nLen_DB){
+         nMIN=nLen_DB;
+         pTmpFind=pTrace->m_szMIN;
+         pTmpSrc=(char*)_pszCallee;
+
+         //if( strncmp(_pszCallee,pTrace->m_szMIN,nMIN) == 0 ){
+         if( strstr(pTmpSrc,pTmpFind) != NULL ){
+            if( pTrace->m_nNodeID > 0 ){
+               if(_nRemoteID == pTrace->m_nNodeID ){
+                  _pstTrace[_rnCnt++]=pTrace;
+                  //break;
+                  continue;
+               }
+            }else{
+               _pstTrace[_rnCnt++]=pTrace;
+               //break; 
+               continue;
+            }
+         }
+      }
+      //remot id check
+      if( nLen_DB <= 0 && _nRemoteID > 0 && pTrace->m_nNodeID > 0){
+         if( _nRemoteID == pTrace->m_nNodeID ){
+            _pstTrace[_rnCnt++]=pTrace;
+            //break;
+            continue;
+         }
+      }
+   }
+   if( _rnCnt <= 0 ) return false;
+   return true;
+}
+
+//print
+void CSipRteDBMgr::m_fnPrint(int _nIndex)
+{
+   if( m_pDB == NULL ) return;
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   const char* pDBStr="local node";
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+      pDBStr="local node";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+      pDBStr="remote node";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+      pDBStr="route group";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+      pDBStr="route";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+      pDBStr="route seq";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+      pDBStr="special route seq";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+      pDBStr="manage trgw";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+      pDBStr="reason code";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      pDBStr="env";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      pDBStr="env_lb";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      pDBStr="time";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+      pDBStr="trace";
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+      pDBStr="emegency";
+   }
+
+   if(  _nIndex != CSipRteData::E_SIPRTE_TRGW ){
+      SLOG(E_ESipRteLogLevel_INF,"db name:%s, num:%d",pDBStr,*(nCurrentNum));
+   }else{
+      SLOG(E_ESipRteLogLevel_INF,"db name:%s, num:%d, pos:%d",pDBStr,*(nCurrentNum),
+         m_pDB->m_stDBTrGW.m_nCurPos);
+   }
+   int i=0 ;
+   char szLogBuf[2048];
+   for( i=0 ; i < nMaxRecord ; i++){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s, Rate:%d",
+            i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1),m_pDB->m_stDBTrGW.m_nCurRATE[i]);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB){
+         GlobalOverLoadEnv_t* pValue=(GlobalOverLoadEnv_t*)(pvRecord);
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         SipCoreTimer_t* pValue=(SipCoreTimer_t*)(pvRecord);
+         //if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         SLOG(E_ESipRteLogLevel_INF,"%d %s",i,(pValue+i)->m_fnStr(szLogBuf,sizeof(szLogBuf)-1));
+      }
+   }
+}
+
+void CSipRteDBMgr::m_fnBuffer2WriteDB(int _nIndex)
+{
+   if( m_pDB == NULL ) return;
+
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   CSipRteData* pHandler=NULL;
+   pHandler=THESIPRTEMGR->m_fnGetDataHandler(_nIndex);
+   if(pHandler == NULL) return;
+
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   //modify by yun @201602 R105_P3. array's index overflow
+#if 0
+   char szBuf[2048]; szBuf[2048]=0x00;
+#else
+   char szBuf[2048]; szBuf[0]=0x00;
+#endif
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+      strcpy(szBuf,"#db - local node\n");
+//@local_node 2017/03/17
+      strcat(szBuf,"#ID|DESC|DOMAIN|IP_VER|PORT|IP|PROTO|STS|RCS|NAT\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+      strcpy(szBuf,"#db - remote node\n");
+      strcat(szBuf,"#ID|DESC|DOMAIN|IPV|PORT|IP|PROTO|NAT|DSCP|NAT_IP|NAT_PORT|STS\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+      strcpy(szBuf,"#db - route group\n");
+//@R120 201609
+#if 0 
+      strcat(szBuf,"#ID|DESC|MAX_CPS|CHK_CPS|MAX_TPS|CHK_TPS|REASON_ID\n");
+#else
+#ifdef DEF_RTE_R131
+      strcat(szBuf,"#ID|DESC|M_CPS_L|C_CPS_L|M_TPS_L|C_TPS_L|M_CPS|C_CPS|M_TPS|C_TPS|R_ID|CF|CC|CI|RI|NPDB|HLR\n");
+#else
+      strcat(szBuf,"#ID|DESC|M_CPS_L|C_CPS_L|M_TPS_L|C_TPS_L|M_CPS|C_CPS|M_TPS|C_TPS|R_ID|CF|CC|CI|RI\n");
+#endif
+#endif
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+      strcpy(szBuf,"#db - route\n");
+      strcat(szBuf,"#ID|DESC|LID|RID|TRTE|TYPE|MEDIA_ROUTE|OPT_TIME|OPT_RETRY|OPT_ACT|SES_TIME|GROUP|MAX_CNT|DEACT_RSP|PROTO|STS\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+      strcpy(szBuf,"#db - route seq\n");
+      strcat(szBuf,"#ID|DESC|DRTE|ARTE[0]|ARTE[1]...\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+      strcpy(szBuf,"#db - special route seq\n");
+      strcat(szBuf,"#ID|DESC|RSEQ[0]|RATE[0]|RSEQ[1]|RATE[1]...\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+      strcpy(szBuf,"#db - trgw\n");
+      strcat(szBuf,"#ID|DESC|SVR_IP|TRGW_IP|SVR_PORT|TRGW_PORT|RATE|MAX_CNT|STS\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+      strcpy(szBuf,"#db - reason code\n");
+      strcat(szBuf,"#ID|DESC|CAUSE[0]|RSP_CODE[0]|TEXT[0]|CAUSE[1]|RSP_CODE[1]|TEXT[1]...\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      strcpy(szBuf,"#db - environment\n");
+      strcat(szBuf,"#MAX_SES|CHK_SES|MAX_MSG|CHK_MSG|MAX_CPS|CHK_CPS|MAX_CPU|CHK_CPU|MAX_MEM|CHK_MEM|MAX_TPS|CHK_TPS|EMER|AUDIO|VIDEO|CLASS\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      strcpy(szBuf,"#db - environment_lb\n");
+      strcat(szBuf,"#MAX_SES|CHK_SES|MAX_MSG|CHK_MSG|MAX_CPS|CHK_CPS|MAX_CPU|CHK_CPU|MAX_MEM|CHK_MEM|MAX_TPS|CHK_TPS|EMER|AUDIO|VIDEO|CLASS\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+      strcpy(szBuf,"#db - timer\n");
+      strcat(szBuf,"#2|A|B|C|D|E|F|G|H|I|J|K|L|M|TG_ON|DA|DT|TG\n");
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      //nothing
+      return;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+      strcpy(szBuf,"#db - emergency call list\n");
+      strcat(szBuf,"#ID|DESC|MIN\n");
+   }
+   int i=0 ;
+
+   int nRet=pHandler->m_fnOpenWriteNeedClose();
+   if(nRet!=0){
+      SLOG(E_ESipRteLogLevel_ERR,"Fail Open File_bak. index(%d)",_nIndex);
+      return;
+   }
+
+   bool bWrite=true;
+   int  nResult=0;
+   nResult=pHandler->m_fnWrite(szBuf);
+   if(nResult != 0 ){
+      SLOG(E_ESipRteLogLevel_ERR,"Fail Write File_bak. index(%d)",_nIndex);
+      bWrite=false;
+      pHandler->m_fnCloseWrite();
+      return;
+   }
+
+   szBuf[0]=0x00; 
+   //pHandler->m_fnLock();
+   for( i=0 ; i < nMaxRecord ; i++){
+      memset(szBuf,0x00,sizeof(szBuf));
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+                _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         nRet=pHandler->m_fnMakeStringWrite(pvRecord,szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         nRet=pHandler->m_fnMakeStringWrite(pvRecord,szBuf);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         //nothing
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         nRet=pHandler->m_fnMakeStringWrite((void*)(pValue+i),szBuf);
+      }
+      if( nRet != 0 || szBuf[0] == 0x00 ) continue;
+      nResult=pHandler->m_fnWrite(szBuf);
+      if(nResult != 0 ){
+         SLOG(E_ESipRteLogLevel_ERR,"Fail Write File_bak. index(%d)",_nIndex);
+         bWrite=false;
+         break;
+      }
+      if(bWrite == false ) bWrite=true;
+   }
+   pHandler->m_fnCloseWrite();
+   //pHandler->m_fnUnLock();
+   if( bWrite ) {
+      pHandler->m_fnBakup2ActiveDB();
+   }
+}
+
+//
+int SipRteDataBaseCompare(const void *_pFirst,const void *_pSecond)
+{
+   if (*(unsigned int*)_pFirst > *(unsigned int*)_pSecond)
+      return 1;
+   else if (*(unsigned int*)_pFirst < *(unsigned int*)_pSecond)
+      return -1;
+   else
+      return 0;
+}
+
+void CSipRteDBMgr::m_fnSortByID(int _nIndex,void* _pvData)
+{
+   if( _pvData == NULL ) return;
+   
+   int nNumber=0;
+   int nSize=0;
+   void* pvFirst=NULL;
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nNumber=((SipLocalNodeDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipNodeLocal_t);
+      pvFirst=((SipLocalNodeDataBase_t*)_pvData)->m_stNodeLocal;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nNumber=((SipRemoteNodeDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipNodeRemote_t);
+      pvFirst=((SipRemoteNodeDataBase_t*)_pvData)->m_stNodeRmt;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nNumber=((SipRouteGroupDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipRouteGroup_t);
+      pvFirst=((SipRouteGroupDataBase_t*)_pvData)->m_stRteGroup;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nNumber=((SipRouteDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipRoute_t);
+      pvFirst=((SipRouteDataBase_t*)_pvData)->m_stRte;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nNumber=((SipRouteSeqDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipRouteSeq_t);
+      pvFirst=((SipRouteSeqDataBase_t*)_pvData)->m_stRteSeq;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nNumber=((SipSpecialRouteSeqDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipSpecialRouteSeq_t);
+      pvFirst=((SipSpecialRouteSeqDataBase_t*)_pvData)->m_stSpecialRteSeq;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nNumber=((TrGWDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(TrGWRoute_t);
+      pvFirst=((TrGWDataBase_t*)_pvData)->m_stTrGW;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nNumber=((SipReasonCodeDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipReasonCode_t);
+      pvFirst=((SipReasonCodeDataBase_t*)_pvData)->m_stData;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+             _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nNumber=1;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nNumber=1;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nNumber=((SipTraceDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(SipCoreTrace_t);
+      pvFirst=((SipTraceDataBase_t*)_pvData)->m_stData;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nNumber=((EmergencyCallDataBase_t*)_pvData)->m_nNumber;
+      nSize=sizeof(EmergencyCall_t);
+      pvFirst=((EmergencyCallDataBase_t*)_pvData)->m_stData;
+   }
+   if( nNumber <= 1 || pvFirst == NULL ) return;
+   qsort(pvFirst,nNumber,nSize,SipRteDataBaseCompare);
+}
+
+//print
+void CSipRteDBMgr::m_fnGetAllRecord(int _nIndex,void* _pvData)
+{
+   if( THESIPRTEMGR->m_fnHasbeenInit() == false){
+      return ;
+   }
+   if( m_pDB == NULL ) return;
+   if( _nIndex >= CSipRteData::E_SIPRTE_MAX){
+      return;
+   }
+   void* pvRecord=NULL;
+   int nMaxRecord=0;
+   int* nCurrentNum=NULL;
+   int nDummyNum=1;
+   pvRecord=m_fnGetRecord(_nIndex);
+   if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+      nMaxRecord=SipLocalNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBLocal.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+      nMaxRecord=SipRemoteNodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRmt.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+      nMaxRecord=SipRouteGroupDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteGroup.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+      nMaxRecord=SipRouteDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRte.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+      nMaxRecord=SipRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+      nMaxRecord=SipSpecialRouteSeqDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBSpecialRteSeq.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+      nMaxRecord=TrGWDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrGW.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+      nMaxRecord=SipReasonCodeDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBReason.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ||
+             _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+      nMaxRecord=1;
+      nCurrentNum=&nDummyNum;
+   }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+      nMaxRecord=SipTraceDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBTrace.m_nNumber);
+   }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+      nMaxRecord=EmergencyCallDataBase_t::E_MAXNUM;
+      nCurrentNum=&(m_pDB->m_stDBEmer.m_nNumber);
+   }
+   int i=0 ;
+   int nCnt=0;
+   for( i=0 ; i < nMaxRecord ; i++){
+      if( _nIndex == CSipRteData::E_SIPRTE_LN ){
+         SipLocalNodeDataBase_t* pMem=(SipLocalNodeDataBase_t*)_pvData;
+         SipNodeLocal_t* pOut=pMem->m_stNodeLocal;
+         SipNodeLocal_t* pValue=(SipNodeLocal_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         //add @vibc
+         void* pvSetValue=(void*)(pValue+i);
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_LN,(int)((pValue+i)->m_uiID),pvSetValue);
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipNodeLocal_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RMT ){
+         SipRemoteNodeDataBase_t* pMem=(SipRemoteNodeDataBase_t*)_pvData;
+         SipNodeRemote_t* pOut=pMem->m_stNodeRmt;
+         SipNodeRemote_t* pValue=(SipNodeRemote_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         //add @vibc
+         void* pvSetValue=(void*)(pValue+i);
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_RMT,(int)((pValue+i)->m_uiID),pvSetValue);
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipNodeRemote_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_GRTE ){
+         SipRouteGroupDataBase_t* pMem=(SipRouteGroupDataBase_t*)_pvData;
+         SipRouteGroup_t* pOut=pMem->m_stRteGroup;
+         SipRouteGroup_t* pValue=(SipRouteGroup_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         //add @vibc
+         void* pvSetValue=(void*)(pValue+i);
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_GRTE,(int)((pValue+i)->m_uiID),pvSetValue);
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipRouteGroup_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RTE ){
+         SipRouteDataBase_t* pMem=(SipRouteDataBase_t*)_pvData;
+         SipRoute_t* pOut=pMem->m_stRte;
+         SipRoute_t* pValue=(SipRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         //add @vibc
+         void* pvSetValue=(void*)(pValue+i);
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_RTE,(int)((pValue+i)->m_uiID),pvSetValue);
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipRoute_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSEQ ){
+         SipRouteSeqDataBase_t* pMem=(SipRouteSeqDataBase_t*)_pvData;
+         SipRouteSeq_t* pOut=pMem->m_stRteSeq;
+         SipRouteSeq_t* pValue=(SipRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipRouteSeq_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_SSEQ ){
+         SipSpecialRouteSeqDataBase_t* pMem=(SipSpecialRouteSeqDataBase_t*)_pvData;
+         SipSpecialRouteSeq_t* pOut=pMem->m_stSpecialRteSeq;
+         SipSpecialRouteSeq_t* pValue=(SipSpecialRouteSeq_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipSpecialRouteSeq_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRGW ){
+         TrGWDataBase_t* pMem=(TrGWDataBase_t*)_pvData;
+         TrGWRoute_t* pOut=pMem->m_stTrGW;
+         TrGWRoute_t* pValue=(TrGWRoute_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(TrGWRoute_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_RSN ){
+         SipReasonCodeDataBase_t* pMem=(SipReasonCodeDataBase_t*)_pvData;
+         SipReasonCode_t* pOut=pMem->m_stData;
+         SipReasonCode_t* pValue=(SipReasonCode_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipReasonCode_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV ){
+         memcpy(_pvData,pvRecord,sizeof(GlobalOverLoadEnv_t));
+         //add @vibc
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_ENV,0,_pvData);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_ENV_LB ){
+         memcpy(_pvData,pvRecord,sizeof(GlobalOverLoadEnv_t));
+         //add @vibc
+         m_fnFindRecordChange_SHM(CSipRteData::E_SIPRTE_ENV_LB,0,_pvData);
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TIME ){
+         memcpy(_pvData,pvRecord,sizeof(SipCoreTimer_t));
+      }else if( _nIndex == CSipRteData::E_SIPRTE_TRC ){
+         SipTraceDataBase_t* pMem=(SipTraceDataBase_t*)_pvData;
+         SipCoreTrace_t* pOut=pMem->m_stData;
+         SipCoreTrace_t* pValue=(SipCoreTrace_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(SipCoreTrace_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }else if( _nIndex == CSipRteData::E_SIPRTE_EMER ){
+         EmergencyCallDataBase_t* pMem=(EmergencyCallDataBase_t*)_pvData;
+         EmergencyCall_t* pOut=pMem->m_stData;
+         EmergencyCall_t* pValue=(EmergencyCall_t*)(pvRecord);
+         if( ((pValue+i))->m_ucUsed == 0) continue;
+         memcpy(pOut+nCnt,(pValue+i),sizeof(EmergencyCall_t));
+         nCnt++;
+         pMem->m_nNumber=nCnt;
+      }
+   }
+   if( *nCurrentNum != nCnt ){
+      *nCurrentNum = nCnt;
+   }
+   m_fnSortByID(_nIndex,_pvData);
+}
+
+} /*end namespace */
+

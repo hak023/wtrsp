@@ -1,0 +1,170 @@
+
+#include "TimeWheel.hxx"
+
+namespace eSipUtil
+{
+/************************* Time Wheel TimeOut Object Class ***********************************/
+UtilTimeBase::UtilTimeBase(){}
+UtilTimeBase::~UtilTimeBase(){}
+/************************* Time Wheel TimeOut List Class *************************************/
+UtilTimeList::UtilTimeList(){m_unCount=0;}
+UtilTimeList::~UtilTimeList(){fnClear(NULL,NULL);}
+bool UtilTimeList::fnPushBack(UtilTimeBase * _pclsTime)
+{
+	m_unCount++;
+	m_listTr.push_back((unsigned long)_pclsTime);
+	return true;
+}
+unsigned int UtilTimeList::fnClear(void * _pvUser, PfuncUtilTimeOut _pfn)
+{
+	unsigned int unRet = m_unCount;
+	m_unCount=0;
+	if(m_listTr.size() ==0) return false;
+	UtilTimeList_t::iterator ITOR;
+	UtilTimeBase *pclsObj = NULL; 
+	for(ITOR = m_listTr.begin();ITOR != m_listTr.end();)
+	{
+		pclsObj = (UtilTimeBase *)*ITOR;
+		if(_pfn) _pfn(_pvUser,pclsObj);
+		delete pclsObj;
+		m_listTr.erase(ITOR++);
+	}
+	return unRet;
+}
+UtilTimeBase * UtilTimeList::fnBegin()
+{
+	m_listItor = m_listTr.begin();
+	if(m_listTr.size() ==0) return NULL;
+	return (UtilTimeBase*)*m_listItor;
+}
+UtilTimeBase * UtilTimeList::fnNext()
+{
+	if(m_listItor != m_listTr.end())
+	{
+		m_listItor++;
+		if(m_listItor == m_listTr.end()) return NULL;
+		return (UtilTimeBase*)*m_listItor;
+	}
+	return NULL;
+}
+unsigned int UtilTimeList::fnTimeOut(void * _pvUser,PfuncUtilTimeOut _pfn)
+{
+	UtilTimeBase * pclsObj = fnBegin();
+	while(pclsObj)
+	{
+		if(_pfn) _pfn(_pvUser,pclsObj);
+		pclsObj = fnNext();
+	}
+	return m_unCount;
+}
+/************************* Time Wheel Slot Class *******************************************/
+UtilTimeSlot::UtilTimeSlot(){}
+UtilTimeSlot::~UtilTimeSlot(){fnClear(NULL,NULL);}
+UtilTimeList * UtilTimeSlot::fnFindMap(unsigned long _nKey)
+{
+	UtilTimeMap_t::iterator bFind = m_mapR.find(_nKey);
+	if (bFind == m_mapR.end()) return NULL;
+	unsigned long ulResult = bFind->second;return (UtilTimeList*)ulResult;
+}
+UtilTimeList * UtilTimeSlot::fnSetMap(unsigned long _nKey)
+{
+	UtilTimeList * pclsObj = new UtilTimeList;
+	m_mapR.insert(std::pair<unsigned long,unsigned long>(_nKey,(unsigned long)pclsObj));
+	return pclsObj;
+}
+unsigned int UtilTimeSlot::fnDelMap(void * _pvUser,unsigned long _nKey,PfuncUtilTimeOut _pfn)
+{
+	UtilTimeMap_t::iterator bFind = m_mapR.find(_nKey);
+	if (bFind == m_mapR.end()) return 0;
+	UtilTimeList * pclsList = ((UtilTimeList*)(bFind->second));
+	unsigned int unRet = pclsList->fnTimeOut(_pvUser,_pfn);
+	delete ((UtilTimeList*)(bFind->second));m_mapR.erase(bFind);
+	return unRet;
+}
+unsigned int  UtilTimeSlot::fnClear(void * _pvUser,PfuncUtilTimeOut _pfn)
+{
+	UtilTimeMap_t::iterator ITOR;	UtilTimeList * pclsList = NULL;
+	unsigned int unRet = 0;
+	for(ITOR = m_mapR.begin();ITOR != m_mapR.end();)
+	{
+		pclsList = ((UtilTimeList*)ITOR->second);
+		unRet += pclsList->fnTimeOut(_pvUser,_pfn);
+		delete ((UtilTimeList*)ITOR->second);m_mapR.erase(ITOR++);
+	}
+	return unRet;
+}
+UtilTimeList * UtilTimeSlot::fnBegin()
+{
+	m_mapItorInt = m_mapR.begin();
+	if(m_mapR.size() ==0) return NULL;
+	return (UtilTimeList*)(m_mapItorInt->second);
+}
+UtilTimeList * UtilTimeSlot::fnNext()
+{
+	if(m_mapItorInt != m_mapR.end())
+	{
+		m_mapItorInt++;
+		if(m_mapItorInt == m_mapR.end()) return NULL;
+		return (UtilTimeList*)(m_mapItorInt->second);
+	}
+	return NULL;
+}
+unsigned int UtilTimeSlot::fnTimeOut(void * _pvUser,unsigned long _ulKey,PfuncUtilTimeOut _pfn)
+{
+	return fnDelMap(_pvUser,_ulKey,_pfn);
+}
+/************************* Time Wheel Class **********************************************/
+UtilTimeWheel::UtilTimeWheel()
+{
+	m_ulNextMs = fnGetCurrentMs();m_unTotalMapCount=0;m_unTotalTrCount=0;
+}
+UtilTimeWheel::~UtilTimeWheel(){}
+void UtilTimeWheel::fnAddTime(UtilTimeBase * _pclsObj, unsigned long msOffset)
+{
+	unsigned long ulFutureMs = fnGetCurrentMs() + msOffset;
+	UtilTimeSlot * pclsSlot = fnAssignSlot(ulFutureMs);
+	UtilTimeList * pclsList = pclsSlot->fnFindMap(ulFutureMs);
+	if(pclsList == NULL)
+	{
+		pclsList = pclsSlot->fnSetMap(ulFutureMs);	
+		m_unTotalMapCount++;
+	}
+	m_unTotalTrCount++;
+	pclsList->fnPushBack(_pclsObj);
+}
+unsigned int UtilTimeWheel::fnProcessTimeOut(void * _pvUser,PfuncUtilTimeOut _pfn)
+{
+	unsigned long ulCurrentTime = fnGetCurrentMs();
+	UtilTimeSlot * pclsSlot = NULL;
+	unsigned int unTimeOutNums = 0;
+	if(m_ulNextMs > ulCurrentTime)  // too fast time Loop, skipp current ms
+	{
+		return unTimeOutNums;   
+	}
+	else if(m_ulNextMs == ulCurrentTime)  // exactly time Loop , only one hash time out
+	{
+		pclsSlot = fnAssignSlot(ulCurrentTime);
+		unTimeOutNums = pclsSlot->fnTimeOut(_pvUser,ulCurrentTime,_pfn);
+		m_unTotalTrCount -= unTimeOutNums;
+		m_ulNextMs++;
+		if(unTimeOutNums) m_unTotalMapCount--;
+	}
+	else   // too slow time Loop, delayed ms_time count hash time out
+	{
+		unsigned int unDelayMs = ulCurrentTime - m_ulNextMs+1;
+		unsigned long unTmp = 0;
+		unsigned int unTmpNums = 0;
+		for(unsigned int i = 0; i<unDelayMs+1;i++)
+		{
+			unTmp = i + m_ulNextMs;
+			pclsSlot = fnAssignSlot(unTmp);
+			unTmpNums = pclsSlot->fnTimeOut(_pvUser,unTmp,_pfn);	
+			unTimeOutNums += unTmpNums;
+			if(unTmpNums) m_unTotalMapCount--;
+		}
+		m_ulNextMs= ulCurrentTime+1;
+		m_unTotalTrCount -= unTimeOutNums;
+	}
+	return unTimeOutNums;
+}
+}

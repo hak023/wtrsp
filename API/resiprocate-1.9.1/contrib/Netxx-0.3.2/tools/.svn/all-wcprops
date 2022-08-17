@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tools
+END
+cxxflags
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tools/cxxflags
+END
+genconfig
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tools/genconfig
+END
+mkrelease.sh
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tools/mkrelease.sh
+END
+mkmf
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/tools/mkmf
+END

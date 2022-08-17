@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr
+END
+PresConfig.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/PresConfig.cpp
+END
+DialogState.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/DialogState.cpp
+END
+ResourceMgr.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/ResourceMgr.h
+END
+PresConfig.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/PresConfig.h
+END
+presSvr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/presSvr.cpp
+END
+DialogState.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/DialogState.h
+END
+SubDialog.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/SubDialog.cpp
+END
+TuPresSvr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/TuPresSvr.cpp
+END
+SubDialog.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/SubDialog.h
+END
+SubDialogMgr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/SubDialogMgr.cpp
+END
+DialogSetMgr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/DialogSetMgr.cpp
+END
+TuPresSvr.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/TuPresSvr.h
+END
+SubDialogMgr.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/SubDialogMgr.h
+END
+DialogSetMgr.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/DialogSetMgr.h
+END
+Resource.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/Resource.cpp
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/Makefile.am
+END
+SubscriptionState.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/SubscriptionState.h
+END
+Resource.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/Resource.h
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/.cvsignore
+END
+ResourceMgr.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/presSvr/ResourceMgr.cpp
+END

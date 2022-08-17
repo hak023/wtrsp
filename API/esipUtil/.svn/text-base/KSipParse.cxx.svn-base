@@ -1,0 +1,2756 @@
+#include "KSipParse.hxx"
+#include "log.hxx"
+namespace eSipUtil
+{
+const char s_testSip[]=
+"INVITE sip:192.168.2.92:5100;q=1 SIP/2.0\r\n"   // request
+"To: <sip:01020995036@whistler.gloo.net>\r\n"   //     11021 username
+"From: \"cwkim haha\" <sip:01012345678@whistler.gloo.net>;tag=ba1aee2d;test=abcd\r\n" // 99998 display name 
+"P-SKT-URI: cwkim <sip:01012345678@whistler.gloo.net;unknownparam=abc;lr>;tag=ba1aee2d\r\n" // 99997 display name 
+"Via: SIP/2.0/UDP 192.168.2.220:5060;branch=z9hG4bK-c87542-da4d3e6a.0-1--c87542-;rport=5060;received=192.168.2.220;stid=579667358,SIP/2.0/UDP 192.168.2.15:5100;branch=z9hG4bK-c87542-579667358-1--c87542-;rport=5100;received=192.168.2.15\r\n"
+//"Via: SIP/2.0/UDP 192.168.2.15:5100;branch=z9hG4bK-c87542-579667358-1--c87542-;rport=5100;received=192.168.2.15\r\n"
+"Call-ID: 6c64b42fce01b007\r\n"
+"CSeq: 2 INVITE\r\n"
+"Contact: <sip:192.168.2.15:5100>\r\n"
+"Content-Length: 0\r\n"
+"Reason: Redirection;cause=8;text=\"normalijuol\"\r\n"    // 103
+"p-skt-o-sfi: gfsdjlgfdjsl\r\n"      // 210
+"P-SKT-MMTEL-INFO: m_change\r\n"   // 220
+"History-Info: <sip:+821022337274@abc.com?Reason=SIP;cause=100;abc=111;lr>;index=1\r\n"    // 118       ?Reason=SIP;
+"History-Info: <sip:+821020979392@sktims.net;cause=101;user=phone;abc=222;lr>;index=1.1\r\n"
+"History-Info: \"Alice\" <sip:01020979393@sktims.net;cause=102;abc=333>;index=1.1.1\r\n"
+"History-Info: <tel:+821022337275;cause=103;abc=444;lr>;index=1.1.1.1\r\n"
+"History-Info: <tel:+821022337275;cause=104;abc=444;lr>;index=1.1.1.1.1\r\n"
+"Route:     cwkim <sip:proxy@192.168.2.220:5060;lr;uriparam=val>;tag=ba1aee2d;test=abcd\r\n"
+"Route: <sip:proxy@192.168.2.220:5060;lr;uriparam=val>;tag=ba1aee2d;test=abcd\r\n"
+"Route: <sip:192.168.2.220:5060;lr;uriparam=val>;tag=ba1aee2d;test=abcd\r\n"
+"Route: sip:proxy@192.168.2.220:5060;tag=ba1aee2d;test=abcd\r\n"
+"Route: sip:192.168.2.220:5060;tag=ba1aee2d;test=abcd\r\n"
+"Route: <tel:proxy;lr;uriparam=val>;tag=ba1aee2d;test=abcd\r\n"
+"Route: tel:proxy;tag=ba1aee2d;test=abcd\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n";
+void g_fnKSipParseTest()
+{
+	KSipParse clsParse;
+	clsParse.m_fnParse(s_testSip,KString::m_fnStrLen((char*)s_testSip));
+	LogInternal(E_LOG_INFO,"Raw \r\n%s",s_testSip);
+	char szDebug[10240];memset(szDebug,0x00,10240);
+	clsParse.m_fnDebug(szDebug,10240);
+	LogInternal(E_LOG_INFO,"Decoding\r\n%s",szDebug);
+	#if 1
+	KSipParse clsCopy; clsCopy = clsParse;
+	memset(szDebug,0x00,10240);
+	clsCopy.m_fnDebug(szDebug,10240);
+	LogInternal(E_LOG_INFO,"Copy\r\n%s",szDebug);
+
+	KString clsEncode;
+	clsCopy.m_fnEncode(clsEncode);
+	LogInternal(E_LOG_INFO,"Encode\r\n%s",(KCSTR)clsEncode);
+	#endif
+}
+/************************ First Line(Request or Respone) **************************************/
+KSipFirstLine::PFuncParseState KSipFirstLine::m_pfnParseHandle[KSipFirstLine::E_PARSE_FIRST_SEG3+1]=
+{
+	KSipFirstLine::m_fnE_PARSE_FIRST_NONE,
+	KSipFirstLine::m_fnE_PARSE_FIRST_SEG1,
+	KSipFirstLine::m_fnE_PARSE_FIRST_SEG1_SP,
+	KSipFirstLine::m_fnE_PARSE_FIRST_SEG2,
+	KSipFirstLine::m_fnE_PARSE_FIRST_SEG2_SP,
+	KSipFirstLine::m_fnE_PARSE_FIRST_SEG3
+};
+KSipFirstLine::KSipFirstLine(){m_eSt=E_PARSE_FIRST_NONE;m_bTrim = false;}
+KSipFirstLine::~KSipFirstLine(){}
+KSipFirstLine & KSipFirstLine::operator=(KSipFirstLine & _rclsSrc)
+{
+	m_clsSeg1 = _rclsSrc.m_clsSeg1;
+	m_clsSeg2 = _rclsSrc.m_clsSeg2;
+	m_clsSeg3 = _rclsSrc.m_clsSeg3;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipFirstLine::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipFirstLine::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"\r\n{\r\n  * First Line\r\n  [%s] [%s] [%s]\r\n}\r\n",
+											(KSTR)m_clsSeg1,(KSTR)m_clsSeg2,(KSTR)m_clsSeg3);
+}
+void KSipFirstLine::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	_rclsEncode<<(KSTR)m_clsSeg1<<" "<<(KSTR)m_clsSeg2<<" "<<(KSTR)m_clsSeg3<<"\r\n";
+}
+void KSipFirstLine::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsSeg1," ");
+		KString::m_fnTrimTailString((KSTR)m_clsSeg2," ");
+		KString::m_fnTrimTailString((KSTR)m_clsSeg3," ");
+	}
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_NONE(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ') return false;
+	_pclsObj->m_clsSeg1<<_cInput; _pclsObj->m_eSt= E_PARSE_FIRST_SEG1;
+	return true;
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_SEG1(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ') _pclsObj->m_eSt = E_PARSE_FIRST_SEG1_SP;
+	else _pclsObj->m_clsSeg1<<_cInput;
+	return true;
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_SEG1_SP(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ') return false;
+	else	
+	{
+		_pclsObj->m_clsSeg2<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_FIRST_SEG2;
+	}
+	return true;
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_SEG2(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ') _pclsObj->m_eSt = E_PARSE_FIRST_SEG2_SP;
+	else _pclsObj->m_clsSeg2<<_cInput;
+	return true;
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_SEG2_SP(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ') return false;
+	else	
+	{
+		_pclsObj->m_clsSeg3<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_FIRST_SEG3;
+	}
+	return true;
+}
+bool KSipFirstLine::m_fnE_PARSE_FIRST_SEG3(KSipFirstLine *_pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsSeg3<<_cInput;
+	return true;
+}
+/************************ Common Param **************************************************/
+KSipParam::PFuncParseState KSipParam::m_pfnParseHandle[KSipParam::E_PARSE_PARAM_VAL+1]=
+{
+	KSipParam::m_fnE_PARSE_PARAM_NONE,
+	KSipParam::m_fnE_PARSE_PARAM_KEY,
+	KSipParam::m_fnE_PARSE_PARAM_KEY_SP,
+	KSipParam::m_fnE_PARSE_PARAM_VAL
+};
+KSipParam::KSipParam(){m_eSt = E_PARSE_PARAM_NONE;m_bTrim = false;}
+KSipParam::~KSipParam(){}
+KSipParam & KSipParam::operator=(KSipParam & _rclsSrc)
+{
+	m_clsKey = _rclsSrc.m_clsKey;
+	m_fnSetKey((KSTR)_rclsSrc.m_clsKey);
+	m_clsVal = _rclsSrc.m_clsVal;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipParam::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipParam::m_fnDebug(char * _pszDebug, unsigned int _unLen)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unLen,"    [%s] [%s]\r\n",(KSTR)m_clsKey,(KSTR)m_clsVal);
+}
+void KSipParam::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	if(m_clsKey.m_unRealLen!=0)
+	{
+		if(m_clsVal.m_unRealLen!=0) _rclsEncode<<(KSTR)m_clsKey<<"="<<(KSTR)m_clsVal;
+		else _rclsEncode<<(KSTR)m_clsKey;
+	}
+}
+void KSipParam::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsKey," ");
+		KString::m_fnTrimTailString((KSTR)m_clsVal," ");
+	}
+}
+bool KSipParam::m_fnE_PARSE_PARAM_NONE(KSipParam *_pclsObj,const char _cInput)
+{
+	if(_cInput != ';' && _cInput != ' ')
+	{
+		_pclsObj->m_clsKey<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_PARAM_KEY;
+	}
+	return true;
+}
+bool KSipParam::m_fnE_PARSE_PARAM_KEY(KSipParam *_pclsObj,const char _cInput)
+{
+	if(_cInput == '=')
+	{
+		_pclsObj->m_eSt = E_PARSE_PARAM_KEY_SP;
+		KString::m_fnTrimTailString((KSTR)_pclsObj->m_clsKey," ");
+		_pclsObj->m_fnSetKey((KSTR)_pclsObj->m_clsKey);
+	}
+	else _pclsObj->m_clsKey<<_cInput;
+	return true;
+}
+bool KSipParam::m_fnE_PARSE_PARAM_KEY_SP(KSipParam *_pclsObj,const char _cInput)
+{
+	if(_cInput != '=' && _cInput != ' ')
+	{
+		_pclsObj->m_clsVal<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_PARAM_VAL;
+	}
+	return true;
+}
+bool KSipParam::m_fnE_PARSE_PARAM_VAL(KSipParam *_pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsVal<<_cInput;
+	return true;
+}
+/************************ Common Param List ***********************************************/
+KSipParams::PFuncParseState KSipParams::m_pfnParseHandle[KSipParams::E_PARSE_PARAMS+1]=
+{
+	KSipParams::m_fnE_PARSE_PARAMS_NONE,
+	KSipParams::m_fnE_PARSE_PARAMS_SP,
+	KSipParams::m_fnE_PARSE_PARAMS
+};
+KSipParams::KSipParams(){m_eSt = E_PARSE_PARAMS_NONE;m_pclsCurrentParam=NULL;m_bTrim = false;}
+KSipParams::~KSipParams(){}
+KSipParams & KSipParams::operator=(KSipParams &_rclsSrc)
+{
+	m_pclsCurrentParam = NULL;
+	m_listParams.m_fnClear();
+	ListItr_t stItor;
+	KSipParam * pclsTmp = _rclsSrc.m_fnBegin(stItor);
+	KSipParam * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new KSipParam; *pclsNew = *pclsTmp;
+		m_listParams.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(stItor);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipParams::m_fnParse(char _cInput)
+{
+	m_pfnParseHandle[m_eSt](this,_cInput);
+	return true;
+}
+void KSipParams::m_fnDebug(char * _pszDebug, unsigned int _unLen)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor;KSipParam * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_pszDebug,_unLen);
+		pclsTmp = m_fnNext(clsItor);
+	}
+}
+void KSipParams::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor;KSipParam * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnEncode(_rclsEncode);
+		pclsTmp = m_fnNext(clsItor);
+		if(pclsTmp) _rclsEncode<<";";
+	}
+}
+KSipParam * KSipParams::m_fnFindParam(const char * _pszParam)
+{
+	m_fnKeyReinit();
+	return (KSipParam*)m_listParams.m_fnFindNode(_pszParam);
+}
+KSipParam * KSipParams::m_fnAddParam(const char * _pszKey, const char * _pszVal)
+{
+	KSipParam * pclsNew = m_fnFindParam(_pszKey);
+	if(pclsNew)
+	{
+		pclsNew->m_clsVal = _pszVal;
+		return pclsNew;
+	}
+	pclsNew = new KSipParam; pclsNew->m_fnSetKey(_pszKey);
+	pclsNew->m_clsKey = _pszKey;pclsNew->m_clsVal = _pszVal;
+	m_listParams.m_fnPushBack(pclsNew);return pclsNew;
+}
+bool KSipParams::m_fnRemoveParam(const char * _pszKey)
+{
+	m_fnKeyReinit();
+	while(m_listParams.m_fnDelNode(_pszKey));
+	return true;
+}
+void KSipParams::m_fnAddParseParam()
+{
+	m_pclsCurrentParam = new KSipParam;
+	m_listParams.m_fnPushBack(m_pclsCurrentParam);
+}
+void KSipParams::m_fnKeyReinit()
+{
+	ListItr_t clsItor;KSipParam * pFind = m_fnBegin(clsItor);
+	while(pFind)
+	{
+		if(pFind->m_pszKey == NULL)
+		{
+			KString::m_fnTrimTailString((KSTR)pFind->m_clsKey," ");
+			KString::m_fnTrimTailString((KSTR)pFind->m_clsVal," ");
+			pFind->m_fnSetKey((KSTR)pFind->m_clsKey);
+		}
+		pFind = m_fnNext(clsItor);
+	}
+	m_bTrim = true;
+}
+bool KSipParams::m_fnE_PARSE_PARAMS_NONE(KSipParams *_pclsObj,const char _cInput)
+{
+	if(_cInput != ';' && _cInput != ' ')
+	{
+		_pclsObj->m_fnAddParseParam();
+		_pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+		_pclsObj->m_eSt =  E_PARSE_PARAMS;
+	}
+	return true;
+}
+bool KSipParams::m_fnE_PARSE_PARAMS_SP(KSipParams *_pclsObj,const char _cInput)
+{
+	if(_cInput != ';' && _cInput !=' ')
+	{
+		_pclsObj->m_fnAddParseParam();
+		_pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+		_pclsObj->m_eSt = E_PARSE_PARAMS;
+	}
+	return true;
+}
+bool KSipParams::m_fnE_PARSE_PARAMS(KSipParams *_pclsObj,const char _cInput)
+{
+	if(_cInput == ';') _pclsObj->m_eSt = E_PARSE_PARAMS_SP;
+	else _pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+	return true;
+}
+void KSipParams::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		ListItr_t clsItor;
+		KSipParam *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+/************************ Via ***********************************************************/
+KSipVia::PFuncParseState KSipVia::m_pfnParseHandle[KSipVia::E_PARSE_VIA_PARAMS+1]=
+{
+	KSipVia::m_fnE_PARSE_VIA_NONE,
+	KSipVia::m_fnE_PARSE_VIA_PROTO,
+	KSipVia::m_fnE_PARSE_VIA_PROTO_SP,
+	KSipVia::m_fnE_PARSE_VIA_VER,
+	KSipVia::m_fnE_PARSE_VIA_VER_SP,
+	KSipVia::m_fnE_PARSE_VIA_TRANSPORT,
+	KSipVia::m_fnE_PARSE_VIA_TRANSPORT_SP,
+	KSipVia::m_fnE_PARSE_VIA_ADDRESS,
+	KSipVia::m_fnE_PARSE_VIA_ADDRESS_SP,
+	KSipVia::m_fnE_PARSE_VIA_PARAMS
+};
+KSipVia::KSipVia(){m_eSt = E_PARSE_VIA_NONE;m_bTrim = false;}
+KSipVia::~KSipVia(){}
+KSipVia & KSipVia::operator=(KSipVia & _rclsSrc)
+{
+	m_clsName = _rclsSrc.m_clsName;
+	m_clsProto = _rclsSrc.m_clsProto;
+	m_clsVerNum = _rclsSrc.m_clsVerNum;
+	m_clsTransportType = _rclsSrc.m_clsTransportType;
+	m_clsAddress = _rclsSrc.m_clsAddress;
+	m_clsParams = _rclsSrc.m_clsParams;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+void KSipVia::m_fnClear()
+{
+	m_eSt = E_PARSE_VIA_NONE;
+	m_clsName=KNULL;m_clsProto=KNULL;m_clsVerNum=KNULL;m_clsTransportType=KNULL;
+	m_clsAddress=KNULL;
+	//m_clsParams=NULL;
+}
+bool KSipVia::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipVia::m_fnDebug(char * _pszDebug,unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,
+				"{\r\n  * Via\r\n  [Proto: %s]\r\n  [Ver: %s]\r\n  [Trans: %s]\r\n  [Addr: %s]\r\n",
+																		(KSTR)m_clsProto,
+																		(KSTR)m_clsVerNum,
+																		(KSTR)m_clsTransportType,
+																		(KSTR)m_clsAddress);
+	m_clsParams.m_fnDebug(_pszDebug,_unSize);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"}\r\n");
+}
+void KSipVia::m_fnEncode(KString &_rclsEncode,bool _bCrLf)
+{
+	m_fnTrimTailing();
+	if(_bCrLf)
+	{
+		_rclsEncode<<"Via: "<<(KSTR)m_clsProto<<"/"<<(KSTR)m_clsVerNum
+			<<"/"<<(KSTR)m_clsTransportType<<" "<<(KSTR)m_clsAddress<<";";
+		m_clsParams.m_fnEncode(_rclsEncode);
+		_rclsEncode<<"\r\n";
+	}
+	else
+	{
+		_rclsEncode<<(KSTR)m_clsProto<<"/"<<(KSTR)m_clsVerNum
+			<<"/"<<(KSTR)m_clsTransportType<<" "<<(KSTR)m_clsAddress<<";";
+		m_clsParams.m_fnEncode(_rclsEncode);
+	}
+}
+void KSipVia::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsName," ");
+		KString::m_fnTrimTailString((KSTR)m_clsProto," ");
+		KString::m_fnTrimTailString((KSTR)m_clsVerNum," ");
+		KString::m_fnTrimTailString((KSTR)m_clsTransportType," ");
+		KString::m_fnTrimTailString((KSTR)m_clsAddress," ");
+		m_clsParams.m_fnTrimTailing();
+	}
+}
+bool KSipVia::m_fnE_PARSE_VIA_NONE(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == ',') return false;
+	else
+	{
+		_pclsObj->m_clsProto<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_VIA_PROTO;
+	}
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_PROTO(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput == '/')  _pclsObj->m_eSt = E_PARSE_VIA_PROTO_SP;
+	else if(_cInput != ' ')_pclsObj->m_clsProto<<_cInput;
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_PROTO_SP(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput !=' ' && _cInput != '/')
+	{
+		_pclsObj->m_clsVerNum<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_VIA_VER;
+	}
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_VER(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput == '/') _pclsObj->m_eSt = E_PARSE_VIA_VER_SP;
+	else if(_cInput != ' ') _pclsObj->m_clsVerNum<<_cInput;
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_VER_SP(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput !=' ' && _cInput != '/')
+	{
+		_pclsObj->m_clsTransportType<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_VIA_TRANSPORT;
+	}
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_TRANSPORT(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput ==' ') _pclsObj->m_eSt = E_PARSE_VIA_TRANSPORT_SP;
+	else _pclsObj->m_clsTransportType<<_cInput;
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_TRANSPORT_SP(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput !=' ')
+	{
+		_pclsObj->m_clsAddress<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_VIA_ADDRESS;
+	}
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_ADDRESS(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput ==';')
+	{
+		_pclsObj->m_eSt = E_PARSE_VIA_ADDRESS_SP;
+	}
+	else if(_cInput != ' ') _pclsObj->m_clsAddress<<_cInput;
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_ADDRESS_SP(KSipVia *_pclsObj, const char _cInput)
+{
+	if(_cInput !=' ' && _cInput !=';')
+	{
+		_pclsObj->m_eSt = E_PARSE_VIA_PARAMS;
+		_pclsObj->m_clsParams.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipVia::m_fnE_PARSE_VIA_PARAMS(KSipVia *_pclsObj, const char _cInput)
+{
+	_pclsObj->m_clsParams.m_fnParse(_cInput);
+	return true;
+}
+/************************ Via List ********************************************************/
+KSipVias::PFuncParseState KSipVias::m_pfnParseHandle[KSipVias::E_PARSE_VIAS+1]=
+{
+	KSipVias::m_fnE_PARSE_VIAS_NONE,
+	KSipVias::m_fnE_PARSE_VIAS_SP,
+	KSipVias::m_fnE_PARSE_VIAS
+};
+KSipVias::KSipVias(){m_pclsCurrentVia = NULL;m_eSt=E_PARSE_VIAS_NONE;m_bTrim = false;}
+KSipVias::~KSipVias(){}
+KSipVias & KSipVias::operator=(KSipVias & _rclsSrc)
+{
+	m_pclsCurrentVia = NULL;m_listVia.m_fnClear();ListItr_t stItor;
+	KSipVia * pclsTmp = 	_rclsSrc.m_fnBegin(stItor);
+	KSipVia * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new KSipVia;
+		*pclsNew = *pclsTmp;
+		m_listVia.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(stItor);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipVias::m_fnParse(const char _cInput)  // first m_fnReInitForMultiLine()
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipVias::m_fnReInitForMultiLine()
+{
+	m_pclsCurrentVia=NULL;m_eSt= E_PARSE_VIAS_NONE;m_fnAddParseVia();
+}
+bool KSipVias::m_fnE_PARSE_VIAS_NONE(KSipVias *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_VIAS_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_VIAS;
+		if(_pclsObj->m_pclsCurrentVia==NULL) _pclsObj->m_fnAddParseVia();
+		return _pclsObj->m_pclsCurrentVia->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipVias::m_fnE_PARSE_VIAS_SP(KSipVias *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',' || _cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_VIAS;
+		_pclsObj->m_fnAddParseVia();
+		return _pclsObj->m_pclsCurrentVia->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipVias::m_fnE_PARSE_VIAS(KSipVias *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_VIAS_SP;
+	}
+	else
+	{
+		if(_pclsObj->m_pclsCurrentVia==NULL) _pclsObj->m_fnAddParseVia();
+		return _pclsObj->m_pclsCurrentVia->m_fnParse(_cInput);
+	}
+	return true;
+}
+void KSipVias::m_fnAddParseVia()
+{
+	m_pclsCurrentVia = new KSipVia;
+	m_listVia.m_fnPushBack(m_pclsCurrentVia);
+}
+void KSipVias::m_fnDebug(char * _pszDebug,unsigned int _unSize)
+{
+	if(m_listVia.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"* Vias\r\n");
+	ListItr_t clsItor;KSipVia * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_pszDebug,_unSize);
+		pclsTmp = m_fnNext(clsItor);
+	}
+}
+void KSipVias::m_fnEncode(KString &_rclsEncode,bool _bCrLf)
+{
+	if(m_listVia.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	ListItr_t clsItor;KSipVia * pclsTmp = m_fnBegin(clsItor);
+	if(_bCrLf==false) _rclsEncode<<"Via: ";
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnEncode(_rclsEncode,_bCrLf);
+		pclsTmp = m_fnNext(clsItor);
+		if(_bCrLf==false && pclsTmp) _rclsEncode<<",";
+	}
+	if(_bCrLf==false) _rclsEncode<<"\r\n";
+}
+void KSipVias::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		ListItr_t clsItor;
+		KSipVia *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+KSipVia * KSipVias::m_fnAddVia(bool _bFront)
+{
+	KSipVia * pclsNew = new KSipVia; 
+	if(_bFront) m_listVia.m_fnPushFront(pclsNew);
+	else m_listVia.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+bool KSipVias::m_fnDelTopVia()
+{
+	return m_listVia.m_fnDelHead();
+}
+/************************ Host **********************************************************/
+KSipHost::PFuncParseState KSipHost::m_pfnParseHandle[KSipHost::E_PARSE_HOST_PORT+1]=
+{
+	KSipHost::m_fnE_PARSE_HOST_NONE,
+	KSipHost::m_fnE_PARSE_HOST_ADDR,
+	KSipHost::m_fnE_PARSE_HOST_ADDR_SP,
+	KSipHost::m_fnE_PARSE_HOST_NONEV6_SP,
+	KSipHost::m_fnE_PARSE_HOST_ADDRV6,
+	KSipHost::m_fnE_PARSE_HOST_ADDRV6_SP,
+	KSipHost::m_fnE_PARSE_HOST_PORT				
+};
+KSipHost::KSipHost(){m_eSt = E_PARSE_HOST_NONE;m_bV6=false;m_bTrim = false;}
+KSipHost::~KSipHost(){}
+KSipHost & KSipHost::operator=(KSipHost & _rclsSrc)
+{
+	m_clsAddr = _rclsSrc.m_clsAddr;
+	m_clsPort = _rclsSrc.m_clsPort;
+	m_bV6 = _rclsSrc.m_bV6;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipHost::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+bool KSipHost::m_fnE_PARSE_HOST_NONE(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput == '[')
+	{
+		_pclsObj->m_bV6 = true;
+		_pclsObj->m_eSt = E_PARSE_HOST_NONEV6_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_ADDR;
+		_pclsObj->m_clsAddr<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_ADDR(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_ADDR_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		//skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_clsAddr<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_ADDR_SP(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':' || _cInput == ' ')
+	{
+		//skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_PORT;
+		_pclsObj->m_clsPort<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_NONEV6_SP(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput=='[' || _cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_ADDRV6;
+		_pclsObj->m_clsAddr<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_ADDRV6(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput == ']')
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_ADDRV6_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		//skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_clsAddr<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_ADDRV6_SP(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':' || _cInput == ' ' || _cInput == ']')
+	{
+		//skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_HOST_PORT;
+		_pclsObj->m_clsPort<<_cInput;
+	}
+	return true;
+}
+bool KSipHost::m_fnE_PARSE_HOST_PORT(KSipHost *_pclsObj, const char _cInput)
+{
+	if(_cInput != ' ') _pclsObj->m_clsPort<<_cInput;
+	return true;
+}
+void KSipHost::m_fnDebug(char * _pszDebug,unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"  * Host Info\r\n");
+	KString::m_fnStrnCat(_pszDebug,_unSize,"    Addr : %s\r\n",(KSTR)m_clsAddr);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"    Port : %s\r\n",(KSTR)m_clsPort);
+}
+void KSipHost::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	if(m_clsPort.m_unRealLen==0)
+	{
+		if(m_bV6) _rclsEncode<<"["<<(KSTR)m_clsAddr<<"]";
+		else _rclsEncode<<(KSTR)m_clsAddr;
+	}
+	else
+	{
+		if(m_bV6) _rclsEncode<<"["<<(KSTR)m_clsAddr<<"]:"<<(KSTR)m_clsPort;
+		else _rclsEncode<<(KSTR)m_clsAddr<<":"<<(KSTR)m_clsPort;
+	}
+}
+void KSipHost::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsAddr," ");
+		KString::m_fnTrimTailString((KSTR)m_clsPort," ");
+	}
+}
+/************************ URN **********************************************************/
+KSipParseUrn::PFuncParseState KSipParseUrn::m_pfnParseHandle[KSipParseUrn::E_PARSE_URN_NSS+1]=
+{
+	KSipParseUrn::m_fnE_PARSE_URN_NONE,
+	KSipParseUrn::m_fnE_PARSE_URN_NID,
+	KSipParseUrn::m_fnE_PARSE_URN_NID_SP,
+	KSipParseUrn::m_fnE_PARSE_URN_NSS
+};
+KSipParseUrn::KSipParseUrn()
+{
+	m_eSt = E_PARSE_URN_NONE;m_bTrim = false;
+}
+KSipParseUrn::~KSipParseUrn(){}
+KSipParseUrn & KSipParseUrn::operator=(KSipParseUrn & _rclsSrc)
+{
+	m_clsNID = _rclsSrc.m_clsNID;
+	m_clsNSS = _rclsSrc.m_clsNSS;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipParseUrn::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipParseUrn::m_fnDebug(char * _pszSrc,unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCatCpy(_pszSrc,"URN[NID -> ",_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,(KSTR)m_clsNID,_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,", NSS -> ",_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,(KSTR)m_clsNSS,_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,"]\r\n",_unSize);
+}
+void KSipParseUrn::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	_rclsEncode<<(KSTR)m_clsNID<<":"<<(KSTR)m_clsNSS;
+}
+void KSipParseUrn::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsNID," ");
+		KString::m_fnTrimTailString((KSTR)m_clsNSS," ");
+	}
+}
+bool KSipParseUrn::m_fnE_PARSE_URN_NONE(KSipParseUrn *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == ':')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_URN_NID;
+		_pclsObj->m_clsNID<<_cInput;
+		
+	}
+	return true;
+}
+bool KSipParseUrn::m_fnE_PARSE_URN_NID(KSipParseUrn *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_URN_NID_SP;
+	}
+	else
+	{
+		_pclsObj->m_clsNID<<_cInput;
+	}
+	return true;
+}
+bool KSipParseUrn::m_fnE_PARSE_URN_NID_SP(KSipParseUrn *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == ':')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_URN_NSS;
+		_pclsObj->m_clsNSS<<_cInput;
+		KString::m_fnTrimTailString((KSTR)_pclsObj->m_clsNID," ");
+	}
+	return true;
+}
+bool KSipParseUrn::m_fnE_PARSE_URN_NSS(KSipParseUrn *_pclsObj, const char _cInput)
+{
+	_pclsObj->m_clsNSS<<_cInput;
+	return true;
+}
+/************************ NameAddr Sub Header *********************************************/
+KSipParseSubHeader::PFuncParseState KSipParseSubHeader::m_pfnParseHandle[KSipParseSubHeader::E_PARSE_SUB_VALUE+1]=
+{
+	KSipParseSubHeader::m_fnE_PARSE_SUB_NONE,
+	KSipParseSubHeader::m_fnE_PARSE_SUB_KEY_SP,
+	KSipParseSubHeader::m_fnE_PARSE_SUB_KEY,
+	KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE_SP,
+	KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE
+};
+KSipParseSubHeader::KSipParseSubHeader(){m_eSt = E_PARSE_SUB_NONE;m_bTrim = false;}
+KSipParseSubHeader::~KSipParseSubHeader(){}
+KSipParseSubHeader & KSipParseSubHeader::operator=(KSipParseSubHeader & _rclsSrc)
+{
+	m_clsName = _rclsSrc.m_clsName;
+	m_clsParams = _rclsSrc.m_clsParams;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipParseSubHeader::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipParseSubHeader::m_fnDebug(char * _pszSrc,unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCatCpy(_pszSrc,"SubHeader[",_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,(KSTR)m_clsName,_unSize);
+	KString::m_fnStrnCatCpy(_pszSrc,"]\r\n",_unSize);
+	m_clsParams.m_fnDebug(_pszSrc,_unSize);
+}
+void KSipParseSubHeader::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	_rclsEncode<<(KSTR)m_clsName<<"=";
+	m_clsParams.m_fnEncode(_rclsEncode);
+}
+void KSipParseSubHeader::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsName," ");
+		m_clsParams.m_fnTrimTailing();
+	}
+}
+bool KSipParseSubHeader::m_fnE_PARSE_SUB_NONE(KSipParseSubHeader *_pclsObj, const char _cInput)
+{
+	if(_cInput == '&' || _cInput == ' ')
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_KEY_SP;
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_KEY;
+		_pclsObj->m_clsName<<_cInput;
+	}
+	return true;
+}
+bool KSipParseSubHeader::m_fnE_PARSE_SUB_KEY_SP(KSipParseSubHeader *_pclsObj, const char _cInput)
+{
+	if(_cInput == '&' || _cInput == ' ')
+	{
+		//skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_KEY;
+		_pclsObj->m_clsName<<_cInput;
+	}
+	return true;
+}
+bool KSipParseSubHeader::m_fnE_PARSE_SUB_KEY(KSipParseSubHeader *_pclsObj, const char _cInput)
+{
+	if(_cInput == '=')
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_VALUE_SP;
+		KString::m_fnTrimTailString((KSTR)_pclsObj->m_clsName," ");
+		_pclsObj->m_fnSetKey((KSTR)_pclsObj->m_clsName);
+	}
+	else _pclsObj->m_clsName<<_cInput;
+	return true;
+}
+bool KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE_SP(KSipParseSubHeader *_pclsObj, const char _cInput)
+{
+	if(_cInput == '=' || _cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_VALUE;
+		_pclsObj->m_clsParams.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE(KSipParseSubHeader *_pclsObj, const char _cInput)
+{
+	return _pclsObj->m_clsParams.m_fnParse(_cInput);
+	return true;
+}
+/************************ NameAddr Sub Headers ********************************************/
+KSipParseSubHeaders::PFuncParseState KSipParseSubHeaders::m_pfnParseHandle[KSipParseSubHeaders::E_PARSE_SUB_HDR_VALUE+1]=
+{
+	KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_NONE,
+	KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_SP,
+	KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_VALUE
+};
+KSipParseSubHeaders::KSipParseSubHeaders()
+{
+	m_pclsCurrentSub = NULL;m_eSt = E_PARSE_SUB_HDR_NONE;m_bTrim = false;
+}
+KSipParseSubHeaders::~KSipParseSubHeaders(){}
+KSipParseSubHeaders & KSipParseSubHeaders::operator=(KSipParseSubHeaders & _rclsSrc)
+{
+	ListItr_t clsIter;
+	KSipParseSubHeader * pclsFind = (KSipParseSubHeader*)_rclsSrc.m_clslist.m_fnBegin(clsIter);
+	KSipParseSubHeader * pclsSrc = NULL;
+	while(pclsFind)
+	{
+		pclsSrc = m_fnAddParseSubHeader();
+		*pclsSrc = *pclsFind;
+		pclsFind = (KSipParseSubHeader*)_rclsSrc.m_clslist.m_fnNext(clsIter);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipParseSubHeaders::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipParseSubHeaders::m_fnDebug(char * _pszSrc,unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	ListItr_t clsIter;
+	KSipParseSubHeader * pclsFind = (KSipParseSubHeader*)m_clslist.m_fnBegin(clsIter);
+	while(pclsFind)
+	{
+		pclsFind->m_fnDebug(_pszSrc,_unSize);
+		pclsFind = (KSipParseSubHeader*)m_clslist.m_fnNext(clsIter);
+	}
+}
+void KSipParseSubHeaders::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	ListItr_t clsIter;
+	KSipParseSubHeader * pclsFind = (KSipParseSubHeader*)m_clslist.m_fnBegin(clsIter);
+	if(pclsFind) _rclsEncode<<"?";
+	while(pclsFind)
+	{
+		pclsFind->m_fnEncode(_rclsEncode);
+		pclsFind = (KSipParseSubHeader*)m_clslist.m_fnNext(clsIter);
+		if(pclsFind) _rclsEncode<<"&";
+	}
+}
+void KSipParseSubHeaders::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		ListItr_t clsItor;
+		KSipParseSubHeader *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+KSipParseSubHeader * KSipParseSubHeaders::m_fnFindHeader(const char * _pszName)
+{
+	return (KSipParseSubHeader*)m_clslist.m_fnFindNode(_pszName);
+}
+bool KSipParseSubHeaders::m_fnRemoveHeader(const char * _pszName)
+{
+	while(m_clslist.m_fnDelNode(_pszName));
+	return true;
+}
+KSipParseSubHeader * KSipParseSubHeaders::m_fnAddParseSubHeader()
+{
+	m_pclsCurrentSub = new KSipParseSubHeader;
+	if(m_clslist.m_fnPushBack(m_pclsCurrentSub)) return m_pclsCurrentSub;
+	return NULL;	
+}
+bool KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_NONE(KSipParseSubHeaders *_pclsObj, const char _cInput)
+{
+	if(_cInput == '&')
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_HDR_SP;
+		_pclsObj->m_fnAddParseSubHeader();
+	}
+	else if(_cInput == ' ' || _cInput == '?')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_HDR_VALUE;
+		_pclsObj->m_fnAddParseSubHeader();
+		return _pclsObj->m_pclsCurrentSub->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_SP(KSipParseSubHeaders *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput =='&')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_HDR_VALUE;
+		return _pclsObj->m_pclsCurrentSub->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_VALUE(KSipParseSubHeaders *_pclsObj, const char _cInput)
+{
+	if(_cInput == '&')
+	{
+		_pclsObj->m_eSt = E_PARSE_SUB_HDR_SP;
+		_pclsObj->m_fnAddParseSubHeader();
+	}
+	else
+	{
+		if(_pclsObj->m_pclsCurrentSub==NULL) _pclsObj->m_fnAddParseSubHeader();
+		return _pclsObj->m_pclsCurrentSub->m_fnParse(_cInput);
+	}
+	return true;
+}
+
+/************************ NameAddr ******************************************************/
+KSipNameAddr::PFuncParseState KSipNameAddr::m_pfnParseHandle[KSipNameAddr::E_PARSE_NAME_ADDR_URN+1]=
+{
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_NONE,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_TYPE,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_USER,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_HOST,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY_SP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE_SP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER_SP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST_SP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_PARAMS,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_SP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PARAMS,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_QSP,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_SUBHEADERS,
+	KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URN,
+};
+KSipNameAddr::KSipNameAddr()
+{
+	m_eSt = E_PARSE_NAME_ADDR_NONE;m_eScheme = E_RU_URI_NONE;
+	m_bThanSign = false;m_bCheckParsed = false;m_bAllStar = false;
+	m_bTrim = false; m_bCommercialAt = false;m_bExistDisplay = false;
+}
+KSipNameAddr::~KSipNameAddr(){}
+KSipNameAddr & KSipNameAddr::operator=(KSipNameAddr & _rclsSrc)
+{
+	m_clsDisplay = _rclsSrc.m_clsDisplay;
+	m_clsType = _rclsSrc.m_clsType;
+	m_clsUser = _rclsSrc.m_clsUser;
+	m_clsHost = _rclsSrc.m_clsHost;
+	m_clsUriParams = _rclsSrc.m_clsUriParams;
+	m_clsParams = _rclsSrc.m_clsParams;
+	m_clsUriSubHeaders = _rclsSrc.m_clsUriSubHeaders;
+	m_clsRaw = _rclsSrc.m_clsRaw;
+	m_clsRawUri = _rclsSrc.m_clsRawUri;
+	m_clsRawParams = _rclsSrc.m_clsRawParams;
+	m_bCheckParsed = _rclsSrc.m_bCheckParsed;
+	m_bThanSign = _rclsSrc.m_bThanSign;
+	m_bAllStar = _rclsSrc.m_bAllStar;
+	m_bTrim = _rclsSrc.m_bTrim;
+	m_bCommercialAt= _rclsSrc.m_bCommercialAt;
+	m_bExistDisplay = _rclsSrc.m_bExistDisplay;
+	return *this;
+}
+bool KSipNameAddr::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipNameAddr::m_fnDebug(char * _pszDebug,unsigned int _unSize)
+{
+	m_fnTrimTailing();m_fnCheckParsed();
+	KString::m_fnStrnCat(_pszDebug,_unSize, "{\r\n  UriRaw[%s],ParamRaw[%s]\r\n",
+				(KSTR)m_clsRawUri,(KSTR)m_clsRawParams);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"  [Display: %s]\r\n  [Type: %s]\r\n  [User: %s]\r\n  [Host: %s]\r\n",
+								(KSTR)m_clsDisplay,(KSTR)m_clsType,(KSTR)m_clsUser,(KSTR)m_clsHost);	
+	KString::m_fnStrnCat(_pszDebug,_unSize,"  * Uri Params\r\n");
+	m_clsUriParams.m_fnDebug(_pszDebug, _unSize);
+	m_clsUriSubHeaders.m_fnDebug(_pszDebug,_unSize);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"  * Params\r\n");
+	m_clsParams.m_fnDebug(_pszDebug, _unSize);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"\r\n}\r\n");
+}
+void KSipNameAddr::m_fnEncode(KString &_rclsEncode, bool _bCrLf)
+{
+	m_fnTrimTailing();m_fnCheckParsed();
+	if(m_bAllStar == false)
+	{
+		if(m_clsDisplay.m_unRealLen > 0) m_bThanSign=true;
+		_rclsEncode<<KString::m_fnStr((KSTR)m_clsDisplay);
+		if(m_bThanSign) _rclsEncode<<"<";
+		_rclsEncode<<(KSTR)m_clsType<<":";
+		if(m_eScheme == E_RU_URI_URN)
+		{
+			m_clsUrn.m_fnEncode(_rclsEncode);
+		}
+		else
+		{
+			if(m_clsUser.m_unRealLen!=0)
+			{
+				_rclsEncode<<(KSTR)m_clsUser;
+				if(m_clsHost.m_unRealLen!=0)
+					_rclsEncode<<"@"<<(KSTR)m_clsHost;
+			}
+			else
+			{
+				if(m_clsHost.m_unRealLen!=0)
+					_rclsEncode<<(KSTR)m_clsHost;
+			}
+			if(m_clsUriParams.m_listParams.m_fnGetSize())
+			{
+				_rclsEncode<<";"; m_clsUriParams.m_fnEncode(_rclsEncode);
+			}
+			m_clsUriSubHeaders.m_fnEncode(_rclsEncode);
+		}
+		if(m_bThanSign)
+		{
+			_rclsEncode<<">";
+			if(m_clsParams.m_listParams.m_fnGetSize())
+			{
+				_rclsEncode<<";";
+				m_clsParams.m_fnEncode(_rclsEncode);
+			}
+		}
+	}
+	else
+	{
+		_rclsEncode<<"*";
+		if(m_clsParams.m_listParams.m_fnGetSize())
+		{
+			_rclsEncode<<";";
+			m_clsParams.m_fnEncode(_rclsEncode);
+		}
+	}
+	if(_bCrLf) _rclsEncode<<"\r\n";
+}
+void KSipNameAddr::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsDisplay," ");
+		KString::m_fnTrimTailString((KSTR)m_clsType," ");
+		KString::m_fnTrimTailString((KSTR)m_clsUser," ");
+		KString::m_fnTrimTailString((KSTR)m_clsHost," ");
+		m_clsUriParams.m_fnTrimTailing();
+		m_clsUriSubHeaders.m_fnTrimTailing();
+		m_clsParams.m_fnTrimTailing();
+	}
+}
+const char * KSipNameAddr::m_fnFindParam(const char * _pszName)
+{
+	KSipParam * pclsFind = m_clsParams.m_fnFindParam(_pszName);
+	if(pclsFind==NULL) return NULL;
+	return (KSTR)pclsFind->m_clsVal;
+}
+const char * KSipNameAddr::m_fnFindUriParam(const char * _pszName)
+{
+	KSipParam * pclsFind = m_clsUriParams.m_fnFindParam(_pszName);
+	if(pclsFind==NULL) return NULL;
+	return (KSTR)pclsFind->m_clsVal;
+}
+KSipParseSubHeader * KSipNameAddr::m_fnFindSubHeader(const char * _pszName)
+{
+	return m_clsUriSubHeaders.m_fnFindHeader(_pszName);
+}
+const char * KSipNameAddr::m_fnFindSubHeaderParam(const char * _pszSubHdr, const char * _pszParam)
+{
+	KSipParseSubHeader * pclsSubHdr = m_clsUriSubHeaders.m_fnFindHeader(_pszSubHdr);
+	if(pclsSubHdr==NULL) return NULL;
+	KSipParam * pclsParam = pclsSubHdr->m_clsParams.m_fnFindParam(_pszParam);
+	if(pclsParam==NULL) return NULL;
+	return (KSTR)pclsParam->m_clsVal;
+}
+void KSipNameAddr::m_fnAddUriParam(const char * _pszName, const char * _pszVal)
+{
+	m_clsUriParams.m_fnAddParam(_pszName,_pszVal);
+}
+void KSipNameAddr::m_fnAddParam(const char * _pszName, const char * _pszVal)
+{
+	m_clsParams.m_fnAddParam(_pszName,_pszVal);
+}
+bool KSipNameAddr::m_fnRemoveSubHeader(const char * _pszName)
+{
+	return m_clsUriSubHeaders.m_fnRemoveHeader(_pszName);
+}
+KSipParseSubHeader * KSipNameAddr::m_fnAddSubHeader(const char * _pszSubName)
+{
+	return m_fnAddParseSubHeader(_pszSubName);
+}
+KSipParseSubHeader * KSipNameAddr::m_fnAddParseSubHeader(const char * _pszSubName)
+{
+	KSipParseSubHeader * pclsAdd = m_fnFindSubHeader(_pszSubName);
+	if(pclsAdd) return pclsAdd;
+	pclsAdd = m_clsUriSubHeaders.m_fnAddSubHeader();
+	if(pclsAdd)
+	{
+		pclsAdd->m_clsName = _pszSubName;
+		pclsAdd->m_fnSetKey(_pszSubName);
+	}
+	return pclsAdd;
+}
+bool KSipNameAddr::m_fnCheckParsed()
+{
+	if(m_bCheckParsed) return true;
+	m_bCheckParsed = true;
+	if(m_bAllStar)
+	{
+		m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		for(unsigned int i=0;i<m_clsRaw.m_unRealLen;i++)
+			m_pfnParseHandle[m_eSt](this,m_clsRaw[i]);
+	}
+	else if(m_bThanSign)
+	{
+		if(m_bExistDisplay)
+		{
+			m_eSt = E_PARSE_NAME_ADDR_DISPLAY;
+			for(unsigned int i=0;i<m_clsRaw.m_unRealLen;i++)
+				m_pfnParseHandle[m_eSt](this,m_clsRaw[i]);
+		}
+		else
+		{
+			m_eSt = E_PARSE_NAME_ADDR_DISPLAY_SP;
+			for(unsigned int i=0;i<m_clsRaw.m_unRealLen;i++)
+				m_pfnParseHandle[m_eSt](this,m_clsRaw[i]);
+		}
+	}
+	else
+	{
+		m_eSt = E_PARSE_NAME_ADDR_TYPE;
+			for(unsigned int i=0;i<m_clsRaw.m_unRealLen;i++)
+				m_pfnParseHandle[m_eSt](this,m_clsRaw[i]);
+	}
+	return false;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_NONE(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == ' ') return false;
+	else if(_cInput == '<')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_TYPE;
+		_pclsObj->m_bThanSign = true;
+	}
+	else if(_cInput == '*')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_HOST;
+		_pclsObj->m_bAllStar = true;
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING;
+	}
+	_pclsObj->m_clsRaw<<_cInput;
+		return true;
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING(KSipNameAddr *_pclsObj, const char _cInput)
+{	
+	if(_cInput == '<')
+	{
+		_pclsObj->m_bThanSign = true;_pclsObj->m_bExistDisplay = true;
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_TYPE;
+	}
+	else if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_USER;
+	}
+	_pclsObj->m_clsRaw<<_cInput;
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_TYPE(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_USER;
+	}
+	_pclsObj->m_clsRaw<<_cInput;
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_USER(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	if(_cInput == '@')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PREPARSING_HOST;
+		_pclsObj->m_bCommercialAt = true;
+	}
+	_pclsObj->m_clsRaw<<_cInput;
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_HOST(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	_pclsObj->m_clsRaw<<_cInput;
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '<')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_DISPLAY_SP;
+	}
+	else
+	{
+		_pclsObj->m_clsDisplay<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY_SP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_TYPE_SP;
+		return false;
+	}
+	else if( _cInput == '>')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		return false;
+	}
+	else if(_cInput == '@')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_USER_SP;
+		_pclsObj->m_clsRawUri<<_cInput;
+		return false;
+	}
+	else if(_cInput == '<' || _cInput == ' ')
+	{
+		// Skipp Special Charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_TYPE;
+		_pclsObj->m_clsType<<_cInput;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_TYPE_SP;
+		if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"sips",4)==0) _pclsObj->m_eScheme = E_RU_URI_SIPS;
+		else if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"sip",3)==0) _pclsObj->m_eScheme = E_RU_URI_SIP;
+		else if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"tel",3)==0) _pclsObj->m_eScheme = E_RU_URI_TEL;
+		else if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"fax",3)==0) _pclsObj->m_eScheme = E_RU_URI_FAX;
+		else if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"modem",5)==0) _pclsObj->m_eScheme = E_RU_URI_MODEM;
+		else if(KString::m_fnStrnCaseCmp(_pclsObj->m_clsType,"urn",3)==0) _pclsObj->m_eScheme = E_RU_URI_URN;
+		else _pclsObj->m_eScheme = E_RU_URI_UNDEFINED;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_clsType<<_cInput;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE_SP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		return false;
+	}
+	else if(_cInput == ' ' || _cInput == ':')
+	{
+		// Skipp Special Charicter
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		if(_pclsObj->m_eScheme == E_RU_URI_URN)
+		{
+			_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URN;
+			_pclsObj->m_clsUrn.m_fnParse(_cInput);
+		}
+		else
+		{
+			if(_pclsObj->m_eScheme == E_RU_URI_SIP ||_pclsObj->m_eScheme == E_RU_URI_SIPS)
+			{
+				if(_pclsObj->m_bCommercialAt)
+				{
+					_pclsObj->m_eSt = E_PARSE_NAME_ADDR_USER;
+					_pclsObj->m_clsUser<<_cInput;
+				}
+				else
+				{
+					_pclsObj->m_eSt = E_PARSE_NAME_ADDR_HOST;
+					_pclsObj->m_clsHost<<_cInput;
+				}
+			}
+			else
+			{
+				_pclsObj->m_eSt = E_PARSE_NAME_ADDR_USER;
+				_pclsObj->m_clsUser<<_cInput;
+			}
+		}
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if((_cInput == '@') && 
+		(_pclsObj->m_eScheme == E_RU_URI_SIP ||_pclsObj->m_eScheme == E_RU_URI_SIPS))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_USER_SP;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else if(_cInput == ';')
+	{
+		if(_pclsObj->m_bThanSign == false)
+		{
+			_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		}
+		else
+		{
+			if(!(_pclsObj->m_eScheme == E_RU_URI_SIP ||_pclsObj->m_eScheme == E_RU_URI_SIPS))
+			{
+				_pclsObj->m_eSt = E_PARSE_NAME_ADDR_HOST_SP;	
+			}
+			_pclsObj->m_clsRawUri<<_cInput;
+		}
+	}
+	else if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsUser<<_cInput; 
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER_SP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	// only sip/sips scheme
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		return false;
+	}
+	else if(_cInput == '@' || _cInput == ' ')
+	{
+		// Skipp Special Charicter
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_HOST;
+		_pclsObj->m_clsHost<<_cInput;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == ';')
+	{
+		if(_pclsObj->m_bThanSign)
+		{
+			_pclsObj->m_eSt = E_PARSE_NAME_ADDR_HOST_SP;
+			_pclsObj->m_clsRawUri<<_cInput;
+		}
+		else
+		{
+			_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		}
+	}
+	else if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+	}
+	else if(_cInput == '?')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_QSP;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_clsHost<<_cInput;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST_SP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+	}
+	else if((_cInput == '?') && 
+		(_pclsObj->m_eScheme == E_RU_URI_SIP ||_pclsObj->m_eScheme == E_RU_URI_SIPS))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_QSP;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else if(_cInput == ' ' || _cInput == ';')
+	{
+		// Skipp Special Charicter
+		if(_pclsObj->m_bThanSign) _pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_PARAMS;
+		_pclsObj->m_clsUriParams.m_fnParse(_cInput);
+		if(_pclsObj->m_bThanSign) _pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_PARAMS(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+	}
+	else if((_cInput == '?') && 
+		(_pclsObj->m_eScheme == E_RU_URI_SIP ||_pclsObj->m_eScheme == E_RU_URI_SIPS))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_QSP;
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_clsUriParams.m_fnParse(_cInput);
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_SP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' || _cInput == ' ' || _cInput == ';')
+	{
+		// Skipp Special Charicter
+	}
+	else
+	{
+		_pclsObj->m_clsParams.m_fnParse(_cInput);
+		_pclsObj->m_clsRawParams<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_PARAMS;
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PARAMS(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	_pclsObj->m_clsRawParams<<_cInput;
+	_pclsObj->m_clsParams.m_fnParse(_cInput);
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_QSP(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+	}
+	else if(_cInput == ' ' || _cInput == '?')
+	{
+		// Skipp Special Charicter
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_SUBHEADERS;
+		_pclsObj->m_clsRawUri<<_cInput;
+		return _pclsObj->m_clsUriSubHeaders.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_SUBHEADERS(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+		return true;
+	}
+	else
+	{
+		_pclsObj->m_clsRawUri<<_cInput;
+		return _pclsObj->m_clsUriSubHeaders.m_fnParse(_cInput);
+	}
+}
+bool KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URN(KSipNameAddr *_pclsObj, const char _cInput)
+{
+	//RLOGvn("KSipNameAddr::%s==> Input : %c",__func__,_cInput);
+	if(_cInput == '>' && (_pclsObj->m_bThanSign == true))
+	{
+		_pclsObj->m_eSt = E_PARSE_NAME_ADDR_URI_SP;
+	}
+	else
+	{
+		_pclsObj->m_clsUrn.m_fnParse(_cInput);
+		_pclsObj->m_clsRawUri<<_cInput;
+	}
+	return true;
+}
+/************************ NameAddrs *****************************************************/
+KSipNameAddrs::PFuncParseState KSipNameAddrs::m_pfnParseHandle[KSipNameAddrs::E_PARSE_NAMEADDRS+1]=
+{
+	KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_NONE,
+	KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_SP,
+	KSipNameAddrs::m_fnE_PARSE_NAMEADDRS
+};
+KSipNameAddrs::KSipNameAddrs()
+{
+	m_pclsCurrentAddr=NULL;m_eSt= E_PARSE_NAMEADDRS_NONE;m_bTrim = false;
+}
+KSipNameAddrs::~KSipNameAddrs(){}
+KSipNameAddrs & KSipNameAddrs::operator=(KSipNameAddrs & _rclsSrc)
+{
+	m_pclsCurrentAddr = NULL;m_listNameAddr.m_fnClear();
+	m_clsName = _rclsSrc.m_clsName;ListItr_t stItor;
+	KSipNameAddr * pclsTmp = _rclsSrc.m_fnBegin(stItor);
+	KSipNameAddr * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new KSipNameAddr;
+		*pclsNew = *pclsTmp;
+		m_listNameAddr.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(stItor);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipNameAddrs::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipNameAddrs::m_fnReInitForMultiLine(const char * _pszName)
+{
+	m_pclsCurrentAddr=NULL;m_eSt= E_PARSE_NAMEADDRS_NONE;m_fnAddParseNameAddr(_pszName);
+}
+bool KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_NONE(KSipNameAddrs *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAMEADDRS_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAMEADDRS;
+		if(_pclsObj->m_pclsCurrentAddr==NULL) _pclsObj->m_fnAddParseNameAddr((KSTR)_pclsObj->m_clsName);
+		return _pclsObj->m_pclsCurrentAddr->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_SP(KSipNameAddrs *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',' || _cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_NAMEADDRS;
+		_pclsObj->m_fnAddParseNameAddr((KSTR)_pclsObj->m_clsName);
+		return _pclsObj->m_pclsCurrentAddr->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipNameAddrs::m_fnE_PARSE_NAMEADDRS(KSipNameAddrs *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_NAMEADDRS_SP;
+	}
+	else
+	{
+		if(_pclsObj->m_pclsCurrentAddr==NULL) _pclsObj->m_fnAddParseNameAddr((KSTR)_pclsObj->m_clsName);
+		return _pclsObj->m_pclsCurrentAddr->m_fnParse(_cInput);
+	}
+	return true;
+}
+void KSipNameAddrs::m_fnAddParseNameAddr(const char * _pszName)
+{
+	m_pclsCurrentAddr = new KSipNameAddr;
+	if(m_clsName.m_unRealLen == 0) m_clsName = _pszName;
+	m_listNameAddr.m_fnPushBack(m_pclsCurrentAddr);
+}
+void KSipNameAddrs::m_fnDebug(char * _pszDebug,unsigned int _unSize)
+{
+	if(m_listNameAddr.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"* %s\r\n",(KSTR)m_clsName);
+	ListItr_t clsItor;KSipNameAddr * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_pszDebug,_unSize);
+		pclsTmp = m_fnNext(clsItor);
+	}
+}
+void KSipNameAddrs::m_fnEncode(KString &_rclsEncode,bool _bCrLf)
+{
+	if(m_listNameAddr.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	if(_bCrLf==false) _rclsEncode<<(KSTR)m_clsName<<": ";
+	ListItr_t clsItor;KSipNameAddr * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		if(_bCrLf) _rclsEncode<<(KCSTR)m_clsName<<": ";
+		pclsTmp->m_fnEncode(_rclsEncode,_bCrLf); 
+		pclsTmp = m_fnNext(clsItor);
+		if(_bCrLf==false && pclsTmp) _rclsEncode<<",";
+	}
+	if(_bCrLf==false) _rclsEncode<<"\r\n";
+}
+KSipNameAddr * KSipNameAddrs::m_fnBegin(ListItr_t & _rclsItor)
+{
+	KSipNameAddr * pclsTmp = (KSipNameAddr*)m_listNameAddr.m_fnBegin(_rclsItor);
+	if(pclsTmp) pclsTmp->m_fnCheckParsed();
+	return pclsTmp;
+}
+KSipNameAddr * KSipNameAddrs::m_fnNext(ListItr_t & _rclsItor)
+{
+	KSipNameAddr * pclsTmp = (KSipNameAddr*)m_listNameAddr.m_fnNext(_rclsItor);
+	if(pclsTmp) pclsTmp->m_fnCheckParsed();
+	return pclsTmp;
+}
+KSipNameAddr * KSipNameAddrs::m_fnTopAddr()
+{
+	ListItr_t stItor;KSipNameAddr * pclsBegin = m_fnBegin(stItor);
+	if(pclsBegin==NULL) return NULL;
+	pclsBegin->m_fnCheckParsed(); return pclsBegin;
+}
+const char * KSipNameAddrs::m_fnGetTag()
+{
+	KSipNameAddr *pclsTop = m_fnTopAddr();
+	if(pclsTop==NULL) return NULL;
+	pclsTop->m_fnCheckParsed();
+	return pclsTop->m_fnFindParam("tag");
+}
+void KSipNameAddrs::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsName," ");
+		ListItr_t clsItor;
+		KSipNameAddr *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+KSipNameAddr * KSipNameAddrs::m_fnAddNameAddr(bool _bFront)
+{
+	KSipNameAddr * pclsNew = new  KSipNameAddr;
+	if(_bFront) m_listNameAddr.m_fnPushFront(pclsNew);
+	else m_listNameAddr.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+bool KSipNameAddrs::m_fnDelNameAddr(bool _bFront)
+{
+	if(_bFront) return m_listNameAddr.m_fnDelHead();
+	else return m_listNameAddr.m_fnDelTail();
+}
+void KSipNameAddrs::m_fnReverseNameAddr()
+{
+	ListItr_t clsItor;KSipNameAddr * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp = m_fnNext(clsItor);
+	}
+	m_listNameAddr.m_fnReverse();
+}
+/************************ Other Header ***************************************************/
+KSipOther::KSipOther(){m_bTrim = false;}
+KSipOther::~KSipOther(){}
+KSipOther & KSipOther::operator=(KSipOther & _rclsSrc)
+{
+	m_clsVal =  _rclsSrc.m_clsVal;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipOther::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSipOther::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"  [%s]\r\n",(KSTR)m_clsVal);
+}
+void KSipOther::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	_rclsEncode<<(KSTR)m_clsVal;
+}
+void KSipOther::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsVal," ");
+	}
+}
+/************************ Multi Line Other Header ********************************************/
+KSipOthers::PFuncParseState KSipOthers::m_pfnParseHandle[KSipOthers::E_PARSE_OTHERS+1]=
+{
+	KSipOthers::m_fnE_PARSE_OTHERS_NONE,
+	KSipOthers::m_fnE_PARSE_OTHERS_SP,
+	KSipOthers::m_fnE_PARSE_OTHERS
+};
+KSipOthers::KSipOthers()
+{
+	m_pclsCurrent=NULL;m_eSt= E_PARSE_OTHERS_NONE;m_bTrim = false;m_bCrLfEncode = true;
+}
+KSipOthers::~KSipOthers(){}
+KSipOthers & KSipOthers::operator=(KSipOthers & _rclsSrc)
+{
+	m_clsKey = _rclsSrc.m_clsKey;
+	m_pclsCurrent = NULL;m_listOther.m_fnClear(); ListItr_t stItor;
+	KSipOther * pclsTmp = _rclsSrc.m_fnBegin(stItor);
+	KSipOther * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new KSipOther; *pclsNew = *pclsTmp;
+		m_listOther.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(stItor);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipOthers::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipOthers::m_fnReInitForMultiLine()
+{
+	m_pclsCurrent=NULL;m_eSt= E_PARSE_OTHERS_NONE;m_fnAddParseHeader();
+}
+bool KSipOthers::m_fnE_PARSE_OTHERS_NONE(KSipOthers *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_OTHERS_SP;
+	}
+	else if(_cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_OTHERS;
+		if(_pclsObj->m_pclsCurrent==NULL) _pclsObj->m_fnAddParseHeader();
+		return _pclsObj->m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipOthers::m_fnE_PARSE_OTHERS_SP(KSipOthers *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',' || _cInput == ' ')
+	{
+		// skipp charicter
+	}
+	else
+	{
+		_pclsObj->m_eSt = E_PARSE_OTHERS;
+		_pclsObj->m_fnAddParseHeader();
+		return _pclsObj->m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipOthers::m_fnE_PARSE_OTHERS(KSipOthers *_pclsObj, const char _cInput)
+{
+	if(_cInput == ',')
+	{
+		_pclsObj->m_eSt = E_PARSE_OTHERS_SP;
+	}
+	else
+	{
+		if(_pclsObj->m_pclsCurrent==NULL) _pclsObj->m_fnAddParseHeader();
+		return _pclsObj->m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return true;
+}
+void KSipOthers::m_fnAddParseHeader()
+{
+	m_pclsCurrent = new KSipOther;
+	m_listOther.m_fnPushBack(m_pclsCurrent);
+}
+KSipOther * KSipOthers::m_fnTopHeader()
+{
+	ListItr_t stItor;return m_fnBegin(stItor);
+}
+void KSipOthers::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	if(m_listOther.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"{\r\n  %s\r\n",(KSTR)m_clsKey);
+	ListItr_t clsItor;KSipOther *pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_pszDebug,_unSize);
+		pclsTmp = m_fnNext(clsItor);
+	}
+	KString::m_fnStrnCat(_pszDebug,_unSize,"}\r\n");
+}
+void KSipOthers::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_listOther.m_fnGetSize() == 0) return;
+	m_fnTrimTailing();
+	if(m_bCrLfEncode==false ) _rclsEncode<<(KSTR)m_clsKey<<": ";
+	ListItr_t clsItor;KSipOther * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		if(m_bCrLfEncode) _rclsEncode<<(KSTR)m_clsKey<<": ";
+		pclsTmp->m_fnEncode(_rclsEncode);
+		if(m_bCrLfEncode) _rclsEncode<<"\r\n";
+		pclsTmp = m_fnNext(clsItor);
+		if(m_bCrLfEncode==false && pclsTmp) _rclsEncode<<",";
+	}
+	if(m_bCrLfEncode==false) _rclsEncode<<"\r\n";
+}
+void KSipOthers::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsKey," ");
+		ListItr_t clsItor;
+		KSipOther *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+KSipOther * KSipOthers::m_fnAddHeader(bool _bFront)
+{
+	KSipOther * pclsNew = new KSipOther;
+	if(_bFront) m_listOther.m_fnPushFront(pclsNew);
+	else m_listOther.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+/************************ Total Other Header ***********************************************/
+KSipOtherHeaders::KSipOtherHeaders(){m_bTrim = false;}
+KSipOtherHeaders::~KSipOtherHeaders(){}
+KSipOtherHeaders & KSipOtherHeaders::operator=(KSipOtherHeaders & _rclsSrc)
+{
+	m_listOther.m_fnClear();ListItr_t stItor;
+	KSipOthers * pclsTmp = _rclsSrc.m_fnBegin(stItor);
+	KSipOthers * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new KSipOthers; *pclsNew = *pclsTmp;
+		m_listOther.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(stItor);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+KSipOthers * KSipOtherHeaders::m_fnFind(const char * _pszHeader)
+{
+	return (KSipOthers*)m_listOther.m_fnFindNode(_pszHeader);
+}
+KSipOther * KSipOtherHeaders::m_fnAddHeader(const char * _pszHeader,KSipOthers ** _ppOthers,
+																					bool _bFront)
+{
+	KSipOthers * pclsFind = (KSipOthers*)m_listOther.m_fnFindNode(_pszHeader);
+	KSipOther * pclsHeader = NULL;
+	if(pclsFind)
+	{
+		if(_ppOthers) *_ppOthers = pclsFind;
+		return pclsFind->m_fnAddHeader(_bFront);
+	}
+	pclsFind = new KSipOthers; pclsFind->m_clsKey = _pszHeader; pclsFind->m_fnSetKey(_pszHeader);
+	pclsHeader = pclsFind->m_fnAddHeader(_bFront);m_listOther.m_fnPushBack(pclsFind);
+	if(_ppOthers) *_ppOthers = pclsFind;
+	return pclsHeader;
+}
+KSipOthers *KSipOtherHeaders::m_fnSet(const char * _pszHeader)
+{
+	KSipOthers * pclsNew = new KSipOthers; pclsNew->m_fnSetKey(_pszHeader);
+	pclsNew->m_clsKey<<_pszHeader; pclsNew->m_fnAddParseHeader();
+	m_listOther.m_fnPushBack(pclsNew,true);
+	return pclsNew;
+}
+void KSipOtherHeaders::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor;KSipOthers * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_pszDebug,_unSize);
+		pclsTmp = m_fnNext(clsItor);
+	}
+}
+void KSipOtherHeaders::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor;KSipOthers * pclsTmp = m_fnBegin(clsItor);
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnEncode(_rclsEncode);
+		pclsTmp = m_fnNext(clsItor);
+	}
+}
+void KSipOtherHeaders::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		ListItr_t clsItor;
+		KSipOthers *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+/************************ CSeq *********************************************************/
+KSipCSeq::PFuncParseState KSipCSeq::m_pfnParseHandle[KSipCSeq::E_PARSE_CSEQ_METHOD+1]=
+{
+	KSipCSeq::m_fnE_PARSE_CSEQ_NONE,
+	KSipCSeq::m_fnE_PARSE_CSEQ_NUM,
+	KSipCSeq::m_fnE_PARSE_CSEQ_NUM_SP,
+	KSipCSeq::m_fnE_PARSE_CSEQ_METHOD
+};
+KSipCSeq::KSipCSeq(){m_eSt = E_PARSE_CSEQ_NONE;m_nNum=-1;m_bTrim = false;}
+KSipCSeq::~KSipCSeq(){}
+KSipCSeq & KSipCSeq::operator=(KSipCSeq & _rclsSrc)
+{
+	m_nNum = _rclsSrc.m_nNum;
+	m_clsNum = _rclsSrc.m_clsNum;
+	m_clsMethod = _rclsSrc.m_clsMethod;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipCSeq::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipCSeq::m_fnDebug(char * _pszDebug, unsigned int _unLen)
+{
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unLen,"{\r\n  * CSeq\r\n  [Num: %d] [Method: %s]\r\n}\r\n",
+																	m_nNum,(KSTR)m_clsMethod);
+}
+void KSipCSeq::m_fnEncode(KString &_rclsEncode)
+{
+	m_fnTrimTailing();
+	_rclsEncode<<"CSeq: "<<(KSTR)m_clsNum<<" "<<(KSTR)m_clsMethod<<"\r\n";
+}
+void KSipCSeq::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsNum," ");
+		KString::m_fnTrimTailString((KSTR)m_clsMethod," ");
+	}
+}
+int KSipCSeq::m_fnGetSeqNum()
+{
+	if(m_nNum == -1)
+	{
+		m_nNum = KString::m_fnAtoi((KSTR)m_clsNum);
+	}
+	return m_nNum;
+}
+bool KSipCSeq::m_fnE_PARSE_CSEQ_NONE(KSipCSeq *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ')
+	{
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsNum<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_CSEQ_NUM;
+	}
+	return true;
+}
+bool KSipCSeq::m_fnE_PARSE_CSEQ_NUM(KSipCSeq *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ')
+	{
+		_pclsObj->m_eSt = E_PARSE_CSEQ_NUM_SP;
+	}
+	else
+	{
+		_pclsObj->m_clsNum<<_cInput;
+	}
+	return true;
+}
+bool KSipCSeq::m_fnE_PARSE_CSEQ_NUM_SP(KSipCSeq *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ')
+	{
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsMethod<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_CSEQ_METHOD;
+	}
+	return true;
+}
+bool KSipCSeq::m_fnE_PARSE_CSEQ_METHOD(KSipCSeq *_pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsMethod<<_cInput;
+	return true;
+}
+/************************ Contents-Type **************************************************/
+KSipContentsType::PFuncParseState KSipContentsType::m_pfnParseHandle[KSipContentsType::E_PARSE_CTYPE_SEG2+1]=
+{
+	KSipContentsType::m_fnE_PARSE_CTYPE_NONE,
+	KSipContentsType::m_fnE_PARSE_CTYPE_SEG1,
+	KSipContentsType::m_fnE_PARSE_CTYPE_SEG1_SP,
+	KSipContentsType::m_fnE_PARSE_CTYPE_SEG2
+};
+KSipContentsType::KSipContentsType(){m_eSt = E_PARSE_CTYPE_NONE;m_bTrim = false;}
+KSipContentsType::~KSipContentsType(){}
+KSipContentsType & KSipContentsType::operator=(KSipContentsType & _rclsSrc)
+{
+	m_clsSeg1 = _rclsSrc.m_clsSeg1;
+	m_clsSeg2 = _rclsSrc.m_clsSeg2;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipContentsType::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSipContentsType::m_fnDebug(char * _pszDebug, unsigned int _unLen)
+{
+	if(m_clsSeg1.m_unRealLen==0) return;
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unLen,"{\r\n  * Content-Type\r\n  [%s]\r\n  [%s]\r\n}\r\n",
+														(KSTR)m_clsSeg1,(KSTR)m_clsSeg2);
+}
+void KSipContentsType::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsSeg1.m_unRealLen==0) return;
+	m_fnTrimTailing();
+	_rclsEncode<<"Content-Type: "<<(KSTR)m_clsSeg1<<"/"<<(KSTR)m_clsSeg2<<"\r\n";
+}
+void KSipContentsType::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsSeg1," ");
+		KString::m_fnTrimTailString((KSTR)m_clsSeg2," ");
+	}
+}
+bool KSipContentsType::m_fnE_PARSE_CTYPE_NONE(KSipContentsType *_pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '/') return false;
+	else
+	{
+		_pclsObj->m_clsSeg1<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_CTYPE_SEG1;
+	}
+	return true;
+}
+bool KSipContentsType::m_fnE_PARSE_CTYPE_SEG1(KSipContentsType *_pclsObj,const char _cInput)
+{
+	if(_cInput == '/')
+	{
+		_pclsObj->m_eSt = E_PARSE_CTYPE_SEG1_SP;
+	}
+	else _pclsObj->m_clsSeg1<<_cInput;
+	return true;
+}
+bool KSipContentsType::m_fnE_PARSE_CTYPE_SEG1_SP(KSipContentsType *_pclsObj,const char _cInput)
+{
+	if(_cInput == '/' || _cInput == ' ')
+	{
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsSeg2<<_cInput;
+		_pclsObj->m_eSt = E_PARSE_CTYPE_SEG2;
+	}
+	return true;
+}
+bool KSipContentsType::m_fnE_PARSE_CTYPE_SEG2(KSipContentsType *_pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsSeg2<<_cInput;
+	return true;
+}
+/************************ Content-Length *************************************************/
+KSipContentLength::KSipContentLength(){m_nLen = -1;m_bTrim = false;}
+KSipContentLength::~KSipContentLength(){}
+KSipContentLength & KSipContentLength::operator=(KSipContentLength & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; m_nLen = _rclsSrc.m_nLen; m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool KSipContentLength::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return true;
+}
+int KSipContentLength::m_fnGetLen()
+{
+	if(m_nLen == -1)
+	{
+		m_nLen = KString::m_fnAtoi((KSTR)m_clsVal);
+	}
+	return m_nLen;
+}
+void KSipContentLength::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	m_fnTrimTailing();
+	KString::m_fnStrnCat(_pszDebug,_unSize,"{\r\n  [Content-Length : %d]\r\n}\r\n",m_nLen);
+}
+void KSipContentLength::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	m_fnTrimTailing();
+	_rclsEncode<<"Content-Length: "<<(KSTR)m_clsVal<<"\r\n";
+}
+void KSipContentLength::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsVal," ");
+	}
+}
+/************************ SIP Parse ******************************************************/
+KSipParse::PFuncParseState KSipParse::m_pfnParseHandle[KSipParse::E_SIP_PARSE_BODY+1]=
+{
+	KSipParse::m_fnE_SIP_PARSE_NONE,
+	KSipParse::m_fnE_SIP_PARSE_FIRSTLINE,
+	KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_CR,
+	KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_LF,
+	KSipParse::m_fnE_SIP_PARSE_H_NAME,
+	KSipParse::m_fnE_SIP_PARSE_H_NMAE_SP,
+	KSipParse::m_fnE_SIP_PARSE_H_VAL,
+	KSipParse::m_fnE_SIP_PARSE_H_FROM,
+	KSipParse::m_fnE_SIP_PARSE_H_TO,
+	KSipParse::m_fnE_SIP_PARSE_H_CALLID,
+	KSipParse::m_fnE_SIP_PARSE_H_CONTACT,
+	KSipParse::m_fnE_SIP_PARSE_H_R,
+	KSipParse::m_fnE_SIP_PARSE_H_RR,
+	KSipParse::m_fnE_SIP_PARSE_H_VIA,
+	KSipParse::m_fnE_SIP_PARSE_H_CTYPE,
+	KSipParse::m_fnE_SIP_PARSE_H_CLEN,
+	KSipParse::m_fnE_SIP_PARSE_H_CSEQ,
+	KSipParse::m_fnE_SIP_PARSE_H_CR,
+	KSipParse::m_fnE_SIP_PARSE_H_LF,
+	KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_CR,
+	KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_LF,
+	KSipParse::m_fnE_SIP_PARSE_BODY
+};
+KSipParse::KSipParse(){m_eSt = E_SIP_PARSE_NONE;}
+KSipParse::~KSipParse(){}
+bool KSipParse::m_fnParse(const char * _pszMsg, unsigned int _unLen)
+{
+	bool bRet = true;
+	for(unsigned int i=0;i<_unLen;i++)
+	{
+		if(!m_pfnParseHandle[m_eSt](this,_pszMsg[i]))
+		{
+			if(bRet == true) bRet = false;
+		}
+	}
+	return bRet;
+}
+void KSipParse::m_fnDebug(char * _pszDebug, unsigned int _unSize)
+{
+	m_clsFirstLine.m_fnDebug(_pszDebug,_unSize);
+	m_clsFrom.m_fnDebug(_pszDebug,_unSize);
+	m_clsTo.m_fnDebug(_pszDebug,_unSize);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"[Call-ID] [%s]\r\n",(KSTR)m_clsCallID);
+	m_clsContact.m_fnDebug(_pszDebug,_unSize);
+	m_clsR.m_fnDebug(_pszDebug,_unSize);
+	m_clsRR.m_fnDebug(_pszDebug,_unSize);
+	m_clsVias.m_fnDebug(_pszDebug,_unSize);
+	m_clsOthers.m_fnDebug(_pszDebug,_unSize);
+	m_clsCType.m_fnDebug(_pszDebug,_unSize);
+	m_clsLength.m_fnDebug(_pszDebug,_unSize);
+	m_clsSeq.m_fnDebug(_pszDebug,_unSize);
+	KString::m_fnStrnCat(_pszDebug,_unSize,"{\r\n  * Body\r\n  [\r\n    %s\r\n  ]\r\n}\r\n",(KSTR)m_clsBody);	
+}
+void KSipParse::m_fnEncode(KString &_rclsEncode)
+{
+	m_clsFirstLine.m_fnEncode(_rclsEncode);
+	m_clsFrom.m_clsName = "From";m_clsFrom.m_fnEncode(_rclsEncode);
+	m_clsTo.m_clsName = "To";m_clsTo.m_fnEncode(_rclsEncode);
+	_rclsEncode<<"Call-ID: "<<(KSTR)m_clsCallID<<"\r\n";
+	m_clsContact.m_clsName = "Contact";m_clsContact.m_fnEncode(_rclsEncode);
+	m_clsR.m_clsName = "Route";m_clsR.m_fnEncode(_rclsEncode);
+	m_clsRR.m_clsName = "Record-Route";m_clsRR.m_fnEncode(_rclsEncode);
+	m_clsVias.m_fnEncode(_rclsEncode);
+	m_clsSeq.m_fnEncode(_rclsEncode);
+	m_clsOthers.m_fnEncode(_rclsEncode);
+	m_clsCType.m_fnEncode(_rclsEncode);
+	m_clsLength.m_fnEncode(_rclsEncode);
+	_rclsEncode<<"\r\n";
+	if(m_clsLength.m_fnGetLen()) _rclsEncode<<(KSTR)m_clsBody;
+}
+bool KSipParse::m_fnE_SIP_PARSE_NONE(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\r' || _cInput == '\n') return false;
+	else
+	{
+		_pclsObj->m_clsFirstLine.m_fnParse(_cInput);
+		_pclsObj->m_eSt = E_SIP_PARSE_FIRSTLINE;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_FIRSTLINE(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') _pclsObj->m_eSt = E_SIP_PARSE_FIRSTLINE_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_FIRSTLINE_LF;
+		return false;
+	}
+	else _pclsObj->m_clsFirstLine.m_fnParse(_cInput); 
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_CR(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\n') _pclsObj->m_eSt = E_SIP_PARSE_FIRSTLINE_LF;
+	else if(_cInput == '\r') return false;
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName = KNULL;
+		_pclsObj->m_clsTmpHeaderName<<_cInput;
+		_pclsObj->m_eSt =E_SIP_PARSE_H_NAME;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_LF(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\n') return false;
+	else if(_cInput == '\r') return false;
+	else if(_cInput == ' ') return false;
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName = KNULL;
+		_pclsObj->m_clsTmpHeaderName<<_cInput;
+		_pclsObj->m_eSt = E_SIP_PARSE_H_NAME;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_NAME(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':')
+	{
+		_pclsObj->m_pclsCurrentOther = NULL;
+		_pclsObj->m_eSt = E_SIP_PARSE_H_NMAE_SP;
+	}
+	else _pclsObj->m_clsTmpHeaderName<<_cInput;
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_NMAE_SP(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == ':' || _cInput == ' ') return false;
+	else
+	{
+		if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"From",4) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"F")==0)
+		{
+			_pclsObj->m_clsFrom.m_fnReInitForMultiLine("From");
+			_pclsObj->m_clsFrom.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_FROM;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"To",2) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"T")==0)
+		{
+			_pclsObj->m_clsTo.m_fnReInitForMultiLine("To");
+			_pclsObj->m_clsTo.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_TO;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Contact",7) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"M")==0)
+		{
+			_pclsObj->m_clsContact.m_fnReInitForMultiLine("Contact");
+			_pclsObj->m_clsContact.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_CONTACT;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Via",3) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"V")==0)
+		{
+			_pclsObj->m_clsVias.m_fnReInitForMultiLine();
+			_pclsObj->m_clsVias.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_VIA;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Call-ID",7) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"I")==0)
+		{
+			_pclsObj->m_clsCallID<<_cInput;			
+			_pclsObj->m_eSt = E_SIP_PARSE_H_CALLID;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Record-Route",12) == 0)
+		{
+			_pclsObj->m_clsRR.m_fnReInitForMultiLine("Record-Route");
+			_pclsObj->m_clsRR.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_RR;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Route",5) == 0)
+		{
+			_pclsObj->m_clsR.m_fnReInitForMultiLine("Route");
+			_pclsObj->m_clsR.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_R;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Content-Type",12) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"C")==0)
+		{
+			_pclsObj->m_clsCType.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_CTYPE;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"Content-Length",14) == 0 ||
+			KString::m_fnStrCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"L")==0)
+		{
+			_pclsObj->m_clsLength.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_CLEN;
+		}
+		else if(KString::m_fnStrnCaseCmp((KSTR)_pclsObj->m_clsTmpHeaderName,"CSeq",4) == 0)
+		{
+			_pclsObj->m_clsSeq.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SIP_PARSE_H_CSEQ;
+		}
+		else
+		{
+			_pclsObj->m_pclsCurrentOther = _pclsObj->m_clsOthers.m_fnFind((KSTR)_pclsObj->m_clsTmpHeaderName);
+			if(_pclsObj->m_pclsCurrentOther==NULL)
+			{
+				_pclsObj->m_pclsCurrentOther = _pclsObj->m_clsOthers.m_fnSet((KSTR)_pclsObj->m_clsTmpHeaderName);
+				_pclsObj->m_pclsCurrentOther->m_fnParse(_cInput);
+			}
+			else
+			{
+				_pclsObj->m_pclsCurrentOther->m_fnReInitForMultiLine();
+				_pclsObj->m_pclsCurrentOther->m_fnParse(_cInput);
+			}
+			_pclsObj->m_eSt = E_SIP_PARSE_H_VAL;
+		}
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_VAL(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_pclsCurrentOther->m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_FROM(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsFrom.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_TO(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsTo.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CALLID(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsCallID<<_cInput;
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CONTACT(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsContact.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_R(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsR.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_RR(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsRR.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_VIA(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsVias.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CTYPE(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsCType.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CLEN(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r')
+	{
+		_pclsObj->m_clsLength.m_fnGetLen();
+		_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	}
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_clsLength.m_fnGetLen();
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsLength.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CSEQ(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r')
+	{
+		_pclsObj->m_clsSeq.m_fnGetSeqNum();
+		_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+	}
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_clsSeq.m_fnGetSeqNum();
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else _pclsObj->m_clsSeq.m_fnParse(_cInput);
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_CR(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') return false;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+	}
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName = KNULL;
+		_pclsObj->m_clsTmpHeaderName<<_cInput;
+		_pclsObj->m_eSt = E_SIP_PARSE_H_NAME;
+		return false;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_LF(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') _pclsObj->m_eSt = E_SIP_PARSE_H_DOUBLE_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName = KNULL;
+		_pclsObj->m_clsTmpHeaderName<<_cInput;
+		_pclsObj->m_eSt = E_SIP_PARSE_H_NAME;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_CR(KSipParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\n') _pclsObj->m_eSt = E_SIP_PARSE_H_DOUBLE_LF;
+	else if(_cInput == '\r')
+	{
+		_pclsObj->m_eSt = E_SIP_PARSE_H_CR;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName = KNULL;
+		_pclsObj->m_clsTmpHeaderName<<_cInput;
+		_pclsObj->m_eSt = E_SIP_PARSE_H_NAME;
+		return false;
+	}
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_LF(KSipParse *_pclsObj, const char _cInput)
+{
+	// content -type check
+	// content - length preload
+	_pclsObj->m_clsBody<<_cInput;
+	_pclsObj->m_eSt = E_SIP_PARSE_BODY;
+	return true;
+}
+bool KSipParse::m_fnE_SIP_PARSE_BODY(KSipParse *_pclsObj, const char _cInput)
+{
+	_pclsObj->m_clsBody<<_cInput;
+	return true;
+}
+}		

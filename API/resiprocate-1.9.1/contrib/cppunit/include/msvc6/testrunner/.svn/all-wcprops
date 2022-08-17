@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/msvc6/testrunner
+END
+TestRunner.h
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/msvc6/testrunner/TestRunner.h
+END
+TestPlugInInterface.h
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/msvc6/testrunner/TestPlugInInterface.h
+END

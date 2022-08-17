@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn
+END
+WinNtTimer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/WinNtTimer.cpp
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/Makefile.in
+END
+ClockerPlugIn.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerPlugIn.cpp
+END
+ClockerModel.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerModel.cpp
+END
+WinNtTimer.h
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/WinNtTimer.h
+END
+ClockerPlugIn.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerPlugIn.dsp
+END
+ClockerModel.h
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerModel.h
+END
+Timer.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/Timer.cpp
+END
+ClockerXmlHook.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerXmlHook.cpp
+END
+Timer.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/Timer.h
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/Makefile.am
+END
+ClockerListener.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerListener.cpp
+END
+ClockerXmlHook.h
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerXmlHook.h
+END
+ReadMe.txt
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ReadMe.txt
+END
+ClockerListener.h
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/ClockerPlugIn/ClockerListener.h
+END

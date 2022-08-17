@@ -1,0 +1,2902 @@
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sstream>
+#include <unistd.h>
+#include <map>
+
+#include "ruleMgr.hxx"
+#include "bufferControl.hxx"
+#include "string.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+static const char * s_pszRuleMixAnd = "and";
+static const char * s_pszRuleMixOr = "or";
+static const unsigned int s_unReserveWriteBufferSize = 10000;
+
+static const char * s_arrRuleResultStr[E_RULE_RESULT_NUM] =
+{
+	"RULE_RESULT_SUCC",
+	"RULE_RESULT_FAIL_invalidArgument",
+	"RULE_RESULT_FAIL_allocMemory",
+	"RULE_RESULT_FAIL_internalInvalidValue",
+	"RULE_RESULT_FAIL_existRuleId",
+	"RULE_RESULT_FAIL_notExistRuleId",
+	"RULE_RESULT_FAIL_existRuleOpId",
+	"RULE_RESULT_FAIL_notExistRuleOpId",
+	"RULE_RESULT_FAIL_overMaxColumnNum",
+	"RULE_RESULT_FAIL_referenceRule",
+	"RULE_RESULT_FAIL_notFindMatchRule",
+	"RULE_RESULT_FAIL_internalErr",
+};
+
+const char * g_fnGetRuleResultStr(ERuleResult_t eRuleResult)
+{
+	if( eRuleResult >=0 && eRuleResult < E_RULE_RESULT_NUM )
+		return s_arrRuleResultStr[eRuleResult];
+	else
+		return "Unknown";
+}
+
+const char * g_fnGetRuleDataStr(const list_RuleData & _rlistRuleData, char * _pszPrint, unsigned int _unMaxLen)
+{
+	if( !_pszPrint || _unMaxLen == 0 )
+		return _pszPrint;
+
+	_pszPrint[0] = 0x00;
+
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( itrRuleData != _rlistRuleData.begin() )
+			eSipUtil::strncat(_pszPrint, _unMaxLen, ", ");
+		eSipUtil::strncat(_pszPrint, _unMaxLen, "%s[%s]", itrRuleData->first.c_str(), itrRuleData->second.c_str());		
+	}
+
+	return _pszPrint;
+}
+
+class Rule
+{
+	public :
+		enum
+		{
+			E_CONST_BASE_DATA_NUM = 2,
+		};
+		
+		Rule();
+		~Rule();		
+
+		void m_fnGetRuleData(list_RuleData & _rlistRuleData) const;
+		
+	private :
+		int m_nId;		//value range (0 ~ )
+		std::string m_clsName;
+
+		RuleUserData * m_pclsUserData;
+
+	friend class RuleSet;
+};
+
+class RuleOp
+{
+	public :
+		enum
+		{
+			E_CONST_BASE_DATA_NUM = 4,
+		};
+		
+		RuleOp();
+		~RuleOp();
+
+		void m_fnGetRuleData(list_RuleData & _rlistRuleData) const;
+
+	private :
+		int m_nId;	//value range (0 ~ )
+		std::string m_clsName;
+		unsigned int m_unPriority;	//value range (1 ~ )
+		RuleMix m_stRuleMix;
+
+		RuleOpUserData * m_pclsUserData;
+
+	friend class RuleOpSet;
+};
+
+struct BaseKeyInfo
+{
+	const char * m_pszKey;
+
+	/*==== only use for Column File ====*/
+	unsigned int m_unColumnMaxLen;
+};
+static const BaseKeyInfo s_arrRuleBaseInfo[Rule::E_CONST_BASE_DATA_NUM] =
+{
+	{"ID",				10 },
+	{"NAME",			15 },
+};
+
+static const BaseKeyInfo s_arrRuleOpBaseInfo[RuleOp::E_CONST_BASE_DATA_NUM] =
+{
+	{"ID",				10 },
+	{"NAME",			15 },
+	{"PRIORITY",	10 },
+	{"RULE",			25 },
+};
+
+typedef std::map< int, Rule * > Map_Rule;		//key : id of rule
+class RuleSet
+{
+	public :
+		RuleSet();
+		~RuleSet();
+
+		static bool m_fnGetRuleIdFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId);
+		static void m_fnGetOptionalRuleBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId, std::string & _rclsRuleName);
+		static bool m_fnGetAllRuleBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId, std::string & _rclsRuleName);
+
+		inline const char * m_fnGetName() const{ return m_clsName.c_str(); }
+
+		ERuleResult_t m_fnInit(const std::string & _rclsName, PfuncIsMatchRule _pfnCbIsMatchRule, PfuncCreateUserData _pfnCbCreateUserData);
+		ERuleResult_t m_fnAddRule(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnAddRule(int _nRuleId, const char * _pszName, const RuleUserData & _rclsUserData);
+		ERuleResult_t m_fnDelRule(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnDelRule(int _nRuleId);
+		ERuleResult_t m_fnChangeRule(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnChangeRule(int _nRuleId, const char * _pszName, const RuleUserData * _pclsUserData);
+		ERuleResult_t m_fnFindRule(list_RuleData & _rlistRuleData) const;
+		ERuleResult_t m_fnFindRule(int _nRuleId, std::string & _rclsName, RuleUserData & _rclsUserData) const;
+		ERuleResult_t m_fnFindRuleAll(list_RuleAllInfo & _rlistRuleAllInfo) const;
+		bool m_fnIsRule(int _nRuleId) const;
+		void m_fnClearAll();
+		bool m_fnIsMatchRule(int _nRuleId, const void * _pEvent) const;
+		bool m_fnIsExistRule(int _nRuleId) const;
+
+		void m_fnGetRuleDataAll(list_RuleDataAll & _rlistRuleDataAll) const;
+		void m_fnSetRuleDataAll(const list_RuleDataAll & _rlistRuleDataAll);
+
+	private :
+		ERuleResult_t m_fnAddRule(int _nRuleId, const char * _pszName, RuleUserData * _pclsUserData);
+		ERuleResult_t m_fnChangeRule(int _nRuleId, const char * _pszName, const list_RuleData & _rlistRuleData);
+		
+		std::string m_clsName;
+		PfuncIsMatchRule m_pfnCbIsMatchRule;
+		PfuncCreateUserData m_pfnCbCreateUserData;
+		
+		Map_Rule m_mapRule;
+};
+
+typedef std::map< int, RuleOp * > Map_RuleOp;																		//key : id of ruleOp
+typedef std::multimap< unsigned int, int, std::greater<unsigned int> > MultiMap_RuleOp4Priority;		//key : priority of ruleOp, value : id of ruleOp
+typedef std::map< int, unsigned int > Map_RuleRef;																	//key : id of rule, value : count of rule used by ruleOp
+class RuleOpSet
+{
+	public :
+		RuleOpSet();
+		~RuleOpSet();
+
+		static bool m_fnGetRuleOpIdFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId);
+		static bool m_fnGetRuleMixFromData(const list_RuleData & _rlistRuleData, RuleMix & _rstRuleMix);
+		static bool m_fnGetOptionalRuleOpBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId, std::string & _rclsRuleOpName, unsigned int & _runPriority, RuleMix & _rstRuleMix);
+		static bool m_fnGetAllRuleOpBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId, std::string & _rclsRuleOpName, unsigned int & _runPriority, RuleMix & _rstRuleMix);
+
+		inline const char * m_fnGetName() const{ return m_clsName.c_str(); }
+		inline int m_fnGetRuleOpSetId() const{ return m_nRuleOpSetId; }
+
+		ERuleResult_t m_fnInit(int _nRuleOpSetId, const std::string & _rclsName, PfuncCreateUserData _pfnCbCreateUserData, RuleSet * _pclsRuleSet);
+		bool m_fnIsUsingRule(int _nRuleId) const;
+		ERuleResult_t m_fnAddRuleOp(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnAddRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const RuleOpUserData & _rclsUserData);
+		ERuleResult_t m_fnDelRuleOp(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnDelRuleOp(int _nRuleOpId);
+		ERuleResult_t m_fnChangeRuleOp(const list_RuleData & _rlistRuleData);
+		ERuleResult_t m_fnChangeRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const RuleOpUserData * _pclsUserData);
+		ERuleResult_t m_fnFindRuleOp(list_RuleData & _rlistRuleData) const;
+		ERuleResult_t m_fnFindRuleOp(int _nRuleOpId, std::string & _rclsName, unsigned int & _unPriority, std::string & _rclsRuleMix, RuleOpUserData & _rclsUserData) const;
+		ERuleResult_t m_fnFindRuleOpAll(list_RuleOpAllInfo & _rlistRuleOpAllInfo) const;
+		bool m_fnIsRuleOp(int _nRuleOpId) const;
+		ERuleResult_t m_fnDecideRuleOpByPriority(const void * _pEvent, int & _nRuleOpId, RuleOpUserData & _rstDecideUserData) const;
+		ERuleResult_t m_fnDecideRuleOpById(const void * _pEvent, int _nRuleOpId, RuleOpUserData & _rstDecideUserData) const;
+		ERuleResult_t m_fnDecideRuleOpByMultipleId(const void * _pEvent, const std::list< int > & _rlistRuleOpId, list_ruleOpUsrData & _rlistRuleOpUsrData) const;
+		void m_fnClearAll();
+		void m_fnGetRuleDataAll(list_RuleDataAll & _rlistRuleDataAll) const;
+		void m_fnSetRuleDataAll(const list_RuleDataAll & _rlistRuleDataAll);
+
+	private :
+		ERuleResult_t m_fnAddRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, RuleOpUserData * _pclsUserData);
+		ERuleResult_t m_fnChangeRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const list_RuleData & _rlistRuleData);
+		bool m_fnIsMatchRuleMix(const RuleOp & _rclsRuleOp, const void * _pEvent) const;
+		bool m_fnIsMatchRuleMix(const RuleOp & _rclsRuleOp, const void * _pEvent, std::map< int, bool > & _rmapRuleResult) const;
+
+		int m_nRuleOpSetId;
+		std::string m_clsName;
+		PfuncCreateUserData m_pfnCbCreateUserData;
+		RuleSet * m_pclsRuleSet;
+		
+		Map_RuleOp m_mapRuleOp;												
+		MultiMap_RuleOp4Priority m_mapRuleOp4Priority;
+		Map_RuleRef m_mapRuleRef;			
+
+};
+
+
+/*======================= RuleUserData =======================*/
+RuleUserData::RuleUserData()
+{
+}
+
+RuleUserData::~RuleUserData()
+{
+}
+
+
+/*======================= Rule =======================*/
+Rule::Rule()
+{
+	m_nId = -1;
+	m_pclsUserData = NULL;
+}
+
+Rule::~Rule()
+{
+	delete m_pclsUserData;
+}
+
+void Rule::m_fnGetRuleData(list_RuleData & _rlistRuleData) const
+{
+	//user data
+	if( m_pclsUserData )
+		m_pclsUserData->m_fnGetRuleData(_rlistRuleData);
+
+	//name
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleBaseInfo[1].m_pszKey, m_clsName));
+
+	//ruleId
+	std::stringstream clsStrStream;
+	clsStrStream<<m_nId;
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleBaseInfo[0].m_pszKey, clsStrStream.str()));
+}
+
+
+/*======================= RuleOp =======================*/
+RuleOp::RuleOp()
+{
+	m_nId = -1;
+	m_unPriority = 0;
+	m_pclsUserData = NULL;
+}
+
+RuleOp::~RuleOp()
+{
+	delete m_pclsUserData;
+}
+
+void RuleOp::m_fnGetRuleData(list_RuleData & _rlistRuleData) const
+{
+	std::stringstream clsStrStream;
+
+	//user data
+	if( m_pclsUserData )
+		m_pclsUserData->m_fnGetRuleData(_rlistRuleData);
+
+	//ruleMix
+	std::string clsRuleMixStr;
+	m_stRuleMix.m_fnGetStr(clsRuleMixStr);
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleOpBaseInfo[3].m_pszKey, clsRuleMixStr));
+
+	//priority
+	clsStrStream<<m_unPriority;
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleOpBaseInfo[2].m_pszKey, clsStrStream.str()));
+	clsStrStream.str("");
+	clsStrStream.clear();
+
+	//name
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleOpBaseInfo[1].m_pszKey, m_clsName));
+
+	//ruleId
+	clsStrStream<<m_nId;
+	_rlistRuleData.push_front(std::make_pair(s_arrRuleOpBaseInfo[0].m_pszKey, clsStrStream.str()));
+	clsStrStream.str("");
+	clsStrStream.clear();
+}
+
+
+/*======================= RuleSet =======================*/
+RuleSet::RuleSet()
+	: m_pfnCbIsMatchRule(NULL), m_pfnCbCreateUserData(NULL)
+{
+}
+
+RuleSet::~RuleSet()
+{
+	Map_Rule::iterator itrRuleMap;
+	for( itrRuleMap = m_mapRule.begin(); itrRuleMap != m_mapRule.end(); ++itrRuleMap )
+	{
+		delete itrRuleMap->second;
+	}
+}
+
+bool RuleSet::m_fnGetRuleIdFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId)
+{
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				_rnRuleId = atoi(itrRuleData->second.c_str());
+				return true;
+			}
+			else
+				return false;
+		}
+	}
+
+	return false;
+}
+
+void RuleSet::m_fnGetOptionalRuleBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId, std::string & _rclsRuleName)
+{
+	unsigned int unParsingBaseNum = 0;
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( unParsingBaseNum >= Rule::E_CONST_BASE_DATA_NUM )
+			break;
+
+		//ruleId
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+				_rnRuleId = atoi(itrRuleData->second.c_str());
+			++unParsingBaseNum;
+		}
+		//name
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleBaseInfo[1].m_pszKey) == 0 )
+		{
+			_rclsRuleName = itrRuleData->second;
+			++unParsingBaseNum;
+		}
+	}
+}
+
+bool RuleSet::m_fnGetAllRuleBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleId, std::string & _rclsRuleName)
+{
+	int nRuleOpId;
+	std::string clsRuleName;
+
+	unsigned int unParsingBaseNum = 0;
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( unParsingBaseNum >= Rule::E_CONST_BASE_DATA_NUM )
+			break;
+
+		//ruleId
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				nRuleOpId = atoi(itrRuleData->second.c_str());
+				++unParsingBaseNum;
+			}
+			else
+				break;
+		}
+		//name
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleBaseInfo[1].m_pszKey) == 0 )
+		{
+			clsRuleName = itrRuleData->second;
+			++unParsingBaseNum;
+		}
+	}
+
+	if( unParsingBaseNum == Rule::E_CONST_BASE_DATA_NUM )
+	{
+		_rnRuleId = nRuleOpId;
+		_rclsRuleName = clsRuleName;
+		return true;
+	}
+	else
+		return false;
+}
+
+ERuleResult_t RuleSet::m_fnInit(const std::string & _rclsName, PfuncIsMatchRule _pfnCbIsMatchRule, PfuncCreateUserData _pfnCbCreateUserData)
+{
+	if( _rclsName.size() == 0 || !_pfnCbIsMatchRule || !_pfnCbCreateUserData )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	m_clsName = _rclsName;
+	m_pfnCbIsMatchRule = _pfnCbIsMatchRule;
+	m_pfnCbCreateUserData = _pfnCbCreateUserData;
+
+	return E_RULE_RESULT_SUCC;	
+}
+
+ERuleResult_t RuleSet::m_fnAddRule(const list_RuleData & _rlistRuleData)
+{
+	int nRuleId = -1;
+	std::string clsName;
+	RuleUserData * pclsRuleUserData = NULL;
+
+	if( !m_fnGetAllRuleBaseFromData(_rlistRuleData, nRuleId, clsName) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	if( nRuleId < 0 || clsName.size() == 0 )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	pclsRuleUserData = m_pfnCbCreateUserData(_rlistRuleData);
+	if( !pclsRuleUserData )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	if( !pclsRuleUserData->m_fnIsValid() )
+	{
+		delete pclsRuleUserData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	return m_fnAddRule(nRuleId, clsName.c_str(), pclsRuleUserData);
+}
+
+ERuleResult_t RuleSet::m_fnAddRule(int _nRuleId, const char * _pszName, const RuleUserData & _rclsUserData)
+{
+	if( _nRuleId < 0 || !_pszName || strlen(_pszName) == 0 )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	RuleUserData * pclsRuleUserData = _rclsUserData.m_fnClone();
+	if( !pclsRuleUserData)
+		return E_RULE_RESULT_FAIL_allocMemory;
+	
+	if( !pclsRuleUserData->m_fnIsValid() )
+	{
+		delete pclsRuleUserData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	return m_fnAddRule(_nRuleId, _pszName, pclsRuleUserData);
+}
+
+ERuleResult_t RuleSet::m_fnAddRule(int _nRuleId, const char * _pszName, RuleUserData * _pclsUserData)
+{
+	Map_Rule::iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap != m_mapRule.end() )
+	{
+		delete _pclsUserData;
+		return E_RULE_RESULT_FAIL_existRuleId;
+	}
+
+	Rule * pclsRule = new Rule();
+	if( !pclsRule )
+	{
+		delete _pclsUserData;
+		return E_RULE_RESULT_FAIL_allocMemory;
+	}
+	
+	pclsRule->m_nId = _nRuleId;
+	pclsRule->m_clsName = _pszName;
+	pclsRule->m_pclsUserData = _pclsUserData;
+	
+	m_mapRule[_nRuleId] = pclsRule;
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnDelRule(const list_RuleData & _rlistRuleData)
+{
+	int nRuleId = -1;
+
+	if( !m_fnGetRuleIdFromData(_rlistRuleData, nRuleId) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	return m_fnDelRule(nRuleId);
+}
+
+ERuleResult_t RuleSet::m_fnDelRule(int _nRuleId)
+{
+	Map_Rule::iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	delete itrRuleMap->second;
+	m_mapRule.erase(itrRuleMap);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnChangeRule(const list_RuleData & _rlistRuleData)
+{
+	int nRuleId = -1;
+	std::string clsName;
+
+	m_fnGetOptionalRuleBaseFromData(_rlistRuleData, nRuleId, clsName);
+
+	return m_fnChangeRule(nRuleId, clsName.c_str(), _rlistRuleData);	
+}
+
+ERuleResult_t RuleSet::m_fnChangeRule(int _nRuleId, const char * _pszName, const list_RuleData & _rlistRuleData)
+{
+	Map_Rule::iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	Rule * pclsRule = itrRuleMap->second;
+	if( !pclsRule || !pclsRule->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	RuleUserData * pclsCpRuleUsrData = pclsRule->m_pclsUserData->m_fnClone();
+	if( !pclsCpRuleUsrData )
+		return E_RULE_RESULT_FAIL_allocMemory;
+	bool bChgResult = pclsCpRuleUsrData->m_fnChange(_rlistRuleData);
+	if( !bChgResult || !pclsCpRuleUsrData->m_fnIsValid() )
+	{
+		delete pclsCpRuleUsrData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+	*(pclsRule->m_pclsUserData) = *pclsCpRuleUsrData;
+
+	//change name
+	if( _pszName && strlen(_pszName) > 0 )
+		pclsRule->m_clsName = _pszName;
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnChangeRule(int _nRuleId, const char * _pszName, const RuleUserData * _pclsUserData)
+{
+	Map_Rule::iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	Rule * pclsRule = itrRuleMap->second;
+	if( !pclsRule || !pclsRule->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	if( _pclsUserData )
+	{
+		RuleUserData * pclsCpRuleUsrData = pclsRule->m_pclsUserData->m_fnClone();
+		if( !pclsCpRuleUsrData )
+			return E_RULE_RESULT_FAIL_allocMemory;
+		bool bChgResult = pclsCpRuleUsrData->m_fnChange(*_pclsUserData);
+		if( !bChgResult || !pclsCpRuleUsrData->m_fnIsValid() )
+		{
+			delete pclsCpRuleUsrData;
+			return E_RULE_RESULT_FAIL_invalidArgument;
+		}
+		*(pclsRule->m_pclsUserData) = *pclsCpRuleUsrData;
+	}
+
+	if( _pszName && strlen(_pszName) > 0 )
+		pclsRule->m_clsName = _pszName;
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnFindRule(list_RuleData & _rlistRuleData) const
+{
+	int nRuleId = -1;
+
+	if( !m_fnGetRuleIdFromData(_rlistRuleData, nRuleId) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	Map_Rule::const_iterator itrRuleMap = m_mapRule.find(nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	Rule * pclsRule = itrRuleMap->second;
+	if( !pclsRule || !pclsRule->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	_rlistRuleData.clear();
+	pclsRule->m_fnGetRuleData(_rlistRuleData);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnFindRule(int _nRuleId, std::string & _rclsName, RuleUserData & _rclsUserData) const
+{
+	Map_Rule::const_iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	Rule * pclsRule = itrRuleMap->second;
+	if( !pclsRule || !pclsRule->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	_rclsName = pclsRule->m_clsName;
+	_rclsUserData = *(pclsRule->m_pclsUserData);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleSet::m_fnFindRuleAll(list_RuleAllInfo & _rlistRuleAllInfo) const
+{
+	Map_Rule::const_iterator itrRuleMap;
+	for( itrRuleMap = m_mapRule.begin(); itrRuleMap != m_mapRule.end(); ++itrRuleMap )
+	{
+		const Rule * pclsRule = itrRuleMap->second;
+		if( pclsRule )
+		{
+			RuleAllInfo stRuleAllInfo;
+			stRuleAllInfo.m_nId = pclsRule->m_nId;
+			stRuleAllInfo.m_clsName = pclsRule->m_clsName;
+			stRuleAllInfo.m_pclsUserData = pclsRule->m_pclsUserData->m_fnClone();
+			if( stRuleAllInfo.m_pclsUserData )
+			{
+				_rlistRuleAllInfo.push_back(stRuleAllInfo);
+				stRuleAllInfo.m_pclsUserData = NULL;
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : FindRuleAll : fail : clone for UserData : Id[%d]", 
+																	m_clsName.c_str(), stRuleAllInfo.m_nId);
+			}
+		}
+	}
+
+	return E_RULE_RESULT_SUCC;
+}
+
+bool RuleSet::m_fnIsRule(int _nRuleId) const
+{
+	Map_Rule::const_iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return false;
+	else
+		return true;
+}
+
+void RuleSet::m_fnClearAll()
+{
+	Map_Rule::iterator itrRuleMap;
+	for( itrRuleMap = m_mapRule.begin(); itrRuleMap != m_mapRule.end(); ++itrRuleMap )
+	{
+		delete itrRuleMap->second;
+	}
+	m_mapRule.clear();
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleSet[%s] : ClearAll", m_clsName.c_str());
+}
+
+bool RuleSet::m_fnIsMatchRule(int _nRuleId, const void * _pEvent) const
+{
+	if( !m_pfnCbIsMatchRule )
+ 	{
+ 		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : IsMatchRule : fail : invalid IsMatchRule callback : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+ 		return false;
+ 	}
+
+	if( !_pEvent )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : IsMatchRule : fail : invalid argument : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+		return false;
+	}
+
+	Map_Rule::const_iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : IsMatchRule : fail : not found Rule : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+		return false;
+	}
+
+	Rule * pclsRule = itrRuleMap->second;
+	if( !pclsRule || !pclsRule->m_pclsUserData )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : IsMatchRule : fail : invalid internal data : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+		return false;
+	}
+
+	if( m_pfnCbIsMatchRule(pclsRule->m_pclsUserData, _pEvent) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleSet[%s] : IsMatchRule : succ : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+		return true;
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleSet[%s] : IsMatchRule : fail : unmatch : RuleId[%d]", m_clsName.c_str(), _nRuleId);
+		return false;
+	}
+}
+
+bool RuleSet::m_fnIsExistRule(int _nRuleId) const
+{
+	Map_Rule::const_iterator itrRuleMap = m_mapRule.find(_nRuleId);
+	if( itrRuleMap == m_mapRule.end() )
+		return false;
+	else
+		return true;
+}
+
+void RuleSet::m_fnGetRuleDataAll(list_RuleDataAll & _rlistRuleDataAll) const
+{
+	unsigned int unCurrentLine = 0;
+	Map_Rule::const_iterator itrRuleMap;
+	for( itrRuleMap = m_mapRule.begin(); itrRuleMap != m_mapRule.end(); ++itrRuleMap )
+	{
+		list_RuleData listRuleData;
+		if( itrRuleMap->second )
+		{
+			itrRuleMap->second->m_fnGetRuleData(listRuleData);
+			_rlistRuleDataAll.push_back(listRuleData);
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : GetRuleDataAll : fail : invalid Rule : Line[%u] : %s[%d]", 
+														m_clsName.c_str(), unCurrentLine,
+														s_arrRuleBaseInfo[0].m_pszKey, itrRuleMap->first);
+		}
+		++unCurrentLine;
+	}
+}
+
+void RuleSet::m_fnSetRuleDataAll(const list_RuleDataAll & _rlistRuleDataAll)
+{
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	list_RuleDataAll::const_iterator itrRuleDataAll;	
+	ERuleResult_t eResult;
+	unsigned int unCurrentLine = 0;
+
+	for( itrRuleDataAll = _rlistRuleDataAll.begin(); itrRuleDataAll != _rlistRuleDataAll.end(); ++itrRuleDataAll )
+	{
+		const list_RuleData & rlistRuleData = *itrRuleDataAll;
+	
+		if( (eResult = m_fnAddRule(rlistRuleData)) == E_RULE_RESULT_SUCC )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleSet[%s] : SetRuleDataAll : Line[%u] : %s", 
+															m_clsName.c_str(),
+															unCurrentLine, g_fnGetRuleDataStr(rlistRuleData, szRuleData, sizeof(szRuleData)));
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleSet[%s] : SetRuleDataAll : fail : %s : Line[%u] : %s", 
+														m_clsName.c_str(), g_fnGetRuleResultStr(eResult),
+														unCurrentLine, g_fnGetRuleDataStr(rlistRuleData, szRuleData, sizeof(szRuleData)));
+		}
+
+		++unCurrentLine;
+	}
+}
+
+/*======================= RuleOpSet =======================*/
+RuleOpSet::RuleOpSet()
+	: m_nRuleOpSetId(-1), m_pfnCbCreateUserData(NULL), m_pclsRuleSet(NULL)
+{
+}
+
+RuleOpSet::~RuleOpSet()
+{
+	Map_RuleOp::iterator itrRuleOpMap;
+	for( itrRuleOpMap = m_mapRuleOp.begin(); itrRuleOpMap != m_mapRuleOp.end(); ++itrRuleOpMap )
+	{
+		delete itrRuleOpMap->second;
+	}
+}
+
+bool RuleOpSet::m_fnGetRuleOpIdFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId)
+{
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{		
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				_rnRuleOpId = atoi(itrRuleData->second.c_str());
+				return true;
+			}
+			else
+				return false;
+		}
+	}
+
+	return false;
+}
+
+bool RuleOpSet::m_fnGetRuleMixFromData(const list_RuleData & _rlistRuleData, RuleMix & _rstRuleMix)
+{
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{		
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[3].m_pszKey) == 0 )
+			return _rstRuleMix.m_fnSetRule(itrRuleData->second.c_str());
+	}
+
+	return true;
+}
+
+bool RuleOpSet::m_fnGetOptionalRuleOpBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId, std::string & _rclsRuleOpName, unsigned int & _runPriority, RuleMix & _rstRuleMix)
+{
+	unsigned int unParsingBaseNum = 0;
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( unParsingBaseNum >= RuleOp::E_CONST_BASE_DATA_NUM )
+			break;
+
+		//ruleOpId
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+				_rnRuleOpId = atoi(itrRuleData->second.c_str());
+			++unParsingBaseNum;
+		}
+		//name
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[1].m_pszKey) == 0 )
+		{
+			_rclsRuleOpName = itrRuleData->second;
+			++unParsingBaseNum;
+		}
+		//priority
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[2].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				unsigned int unPriority = atoi(itrRuleData->second.c_str());
+				if( unPriority > 0 )
+					_runPriority = unPriority;
+			}
+			++unParsingBaseNum;
+		}
+		//ruleMix
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[3].m_pszKey) == 0 )
+		{
+			if( !_rstRuleMix.m_fnSetRule(itrRuleData->second.c_str()) )
+				return false;
+			++unParsingBaseNum;
+		}
+	}
+
+	return true;
+}
+
+bool RuleOpSet::m_fnGetAllRuleOpBaseFromData(const list_RuleData & _rlistRuleData, int & _rnRuleOpId, std::string & _rclsRuleOpName, unsigned int & _runPriority, RuleMix & _rstRuleMix)
+{
+	int nRuleOpId;
+	std::string clsRuleOpName;
+	unsigned int unPriority;
+	RuleMix stRuleMix;
+
+	unsigned int unParsingBaseNum = 0;
+	list_RuleData::const_iterator itrRuleData;
+	for( itrRuleData = _rlistRuleData.begin(); itrRuleData != _rlistRuleData.end(); ++itrRuleData )
+	{
+		if( unParsingBaseNum >= RuleOp::E_CONST_BASE_DATA_NUM )
+			break;
+
+		//ruleOpId
+		if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				nRuleOpId = atoi(itrRuleData->second.c_str());
+				++unParsingBaseNum;
+			}
+			else
+				break;
+		}
+		//name
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[1].m_pszKey) == 0 )
+		{
+			clsRuleOpName = itrRuleData->second;
+			++unParsingBaseNum;
+		}
+		//priority
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[2].m_pszKey) == 0 )
+		{
+			if( itrRuleData->second.size() > 0 )
+			{
+				unPriority = atoi(itrRuleData->second.c_str());
+				if( unPriority > 0 )
+					++unParsingBaseNum;
+				else
+					break;
+			}
+			else
+				break;
+		}
+		//ruleMix
+		else if( strcmp(itrRuleData->first.c_str(), s_arrRuleOpBaseInfo[3].m_pszKey) == 0 )
+		{
+			if( stRuleMix.m_fnSetRule(itrRuleData->second.c_str()) )
+				++unParsingBaseNum;
+			else
+				break;
+		}
+	}
+
+	if( unParsingBaseNum == RuleOp::E_CONST_BASE_DATA_NUM )
+	{
+		_rnRuleOpId = nRuleOpId;
+		_rclsRuleOpName = clsRuleOpName;
+		_runPriority = unPriority;
+		_rstRuleMix = stRuleMix;
+		return true;
+	}
+	else
+		return false;
+}
+
+ERuleResult_t RuleOpSet::m_fnInit(int _nRuleOpSetId, const std::string & _rclsName, PfuncCreateUserData _pfnCbCreateUserData, RuleSet * _pclsRuleSet)
+{
+	if( _rclsName.size() == 0 || !_pfnCbCreateUserData || !_pclsRuleSet )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	m_nRuleOpSetId = _nRuleOpSetId;
+	m_clsName = _rclsName;
+	m_pfnCbCreateUserData = _pfnCbCreateUserData;
+	m_pclsRuleSet = _pclsRuleSet;
+
+	return E_RULE_RESULT_SUCC;	
+}
+
+bool RuleOpSet::m_fnIsUsingRule(int _nRuleId) const
+{
+	Map_RuleRef::const_iterator itrRuleRefMap = m_mapRuleRef.find(_nRuleId);
+	if( itrRuleRefMap == m_mapRuleRef.end() )
+		return false;
+	else
+	{
+		if( itrRuleRefMap->second <= 0 )
+			return false;
+		else
+			return true;
+	}
+}
+
+ERuleResult_t RuleOpSet::m_fnAddRuleOp(const list_RuleData & _rlistRuleData)
+{
+	int nRuleOpId = -1;
+	std::string clsName;
+	unsigned int unPriority = 0;
+	RuleMix stRuleMix;
+	RuleUserData * pclsRuleUserData = NULL;
+
+	if( !m_fnGetAllRuleOpBaseFromData(_rlistRuleData, nRuleOpId, clsName, unPriority, stRuleMix) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	if( nRuleOpId < 0 || clsName.size() == 0 || unPriority == 0 || stRuleMix.m_fnGetSize() == 0 )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	pclsRuleUserData = m_pfnCbCreateUserData(_rlistRuleData);
+	if( !pclsRuleUserData )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	
+	if( !pclsRuleUserData->m_fnIsValid() )
+	{
+		delete pclsRuleUserData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	return m_fnAddRuleOp(nRuleOpId, clsName.c_str(), unPriority, stRuleMix, pclsRuleUserData);
+}
+
+ERuleResult_t RuleOpSet::m_fnAddRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const RuleOpUserData & _rclsUserData)
+{
+	if( _nRuleOpId < 0 || !_pszName || strlen(_pszName) == 0 || _unPriority == 0 || _rstRuleMix.m_fnGetSize() == 0 )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	RuleUserData * pclsRuleOpUserData = _rclsUserData.m_fnClone();
+	if( !pclsRuleOpUserData)
+		return E_RULE_RESULT_FAIL_allocMemory;
+	
+	if( !pclsRuleOpUserData->m_fnIsValid() )
+	{
+		delete pclsRuleOpUserData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	return m_fnAddRuleOp(_nRuleOpId, _pszName, _unPriority, _rstRuleMix, pclsRuleOpUserData);
+}
+
+ERuleResult_t RuleOpSet::m_fnAddRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, RuleOpUserData * _pclsUserData)
+{
+	Map_RuleOp::iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap != m_mapRuleOp.end() )
+	{
+		delete _pclsUserData;
+		return E_RULE_RESULT_FAIL_existRuleOpId;
+	}
+
+	RuleOp * pclsRuleOp = new RuleOp();
+	if( !pclsRuleOp )
+	{
+		delete _pclsUserData;
+		return E_RULE_RESULT_FAIL_allocMemory;
+	}
+	pclsRuleOp->m_nId = _nRuleOpId;
+	pclsRuleOp->m_clsName = _pszName;
+	pclsRuleOp->m_unPriority = _unPriority;
+	pclsRuleOp->m_stRuleMix = _rstRuleMix;
+	pclsRuleOp->m_pclsUserData = _pclsUserData;
+
+	m_mapRuleOp4Priority.insert(std::pair<unsigned int, int>(_unPriority, _nRuleOpId));
+
+	Map_RuleRef::iterator itrRuleRefMap;
+	for( list_RuleMix::const_iterator itrRuleMix = _rstRuleMix.m_listRuleMix.begin(); itrRuleMix != _rstRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		itrRuleRefMap = m_mapRuleRef.find(itrRuleMix->second);
+		if( itrRuleRefMap == m_mapRuleRef.end() )
+			m_mapRuleRef[itrRuleMix->second] = 1;
+		else
+			++(itrRuleRefMap->second);
+	}
+	
+	m_mapRuleOp[_nRuleOpId] = pclsRuleOp;
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnDelRuleOp(const list_RuleData & _rlistRuleData)
+{
+	int nRuleOpId = -1;
+
+	if( !m_fnGetRuleOpIdFromData(_rlistRuleData, nRuleOpId) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	return m_fnDelRuleOp(nRuleOpId);
+}
+
+ERuleResult_t RuleOpSet::m_fnDelRuleOp(int _nRuleOpId)
+{
+	Map_RuleOp::iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleOpId;
+
+	delete itrRuleOpMap->second;
+	m_mapRuleOp.erase(itrRuleOpMap);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnChangeRuleOp(const list_RuleData & _rlistRuleData)
+{
+	int nRuleOpId = -1;
+	std::string clsName;
+	unsigned int unPriority = 0;
+	RuleMix stRuleMix;
+
+	if( !m_fnGetOptionalRuleOpBaseFromData(_rlistRuleData, nRuleOpId, clsName, unPriority, stRuleMix) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	return m_fnChangeRuleOp(nRuleOpId, clsName.c_str(), unPriority, stRuleMix, _rlistRuleData);	
+}
+
+ERuleResult_t RuleOpSet::m_fnChangeRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const list_RuleData & _rlistRuleData)
+{
+	Map_RuleOp::iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleOpId;
+
+	RuleOp * pclsRuleOp = itrRuleOpMap->second;
+	if( !pclsRuleOp || !pclsRuleOp->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	//change user data
+	RuleUserData * pclsCpRuleOpUsrData = pclsRuleOp->m_pclsUserData->m_fnClone();
+	if( !pclsCpRuleOpUsrData )
+		return E_RULE_RESULT_FAIL_allocMemory;
+	bool bChgResult = pclsCpRuleOpUsrData->m_fnChange(_rlistRuleData);
+	if( !bChgResult || !pclsCpRuleOpUsrData->m_fnIsValid() )
+	{
+		delete pclsCpRuleOpUsrData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+	*(pclsRuleOp->m_pclsUserData) = *pclsCpRuleOpUsrData;
+	
+	//change name
+	if( _pszName && strlen(_pszName) > 0 )
+		pclsRuleOp->m_clsName = _pszName;
+
+	//change priority
+	if( _unPriority > 0 && _unPriority != pclsRuleOp->m_unPriority )
+	{
+		MultiMap_RuleOp4Priority::iterator itrRuleOp4PriorityMap;
+		std::pair< MultiMap_RuleOp4Priority::iterator, MultiMap_RuleOp4Priority::iterator > itrEqualRangeMap = m_mapRuleOp4Priority.equal_range(pclsRuleOp->m_unPriority);		
+		for( itrRuleOp4PriorityMap = itrEqualRangeMap.first; itrRuleOp4PriorityMap != itrEqualRangeMap.second; )
+		{
+			if( itrRuleOp4PriorityMap->second == _nRuleOpId )
+				m_mapRuleOp4Priority.erase(itrRuleOp4PriorityMap++);
+			else
+				++itrRuleOp4PriorityMap;
+		}
+		m_mapRuleOp4Priority.insert(std::pair<unsigned int, int>(_unPriority, _nRuleOpId));		
+		pclsRuleOp->m_unPriority = _unPriority;
+	}
+
+	//change ruleMix
+	if( _rstRuleMix.m_fnGetSize() > 0 )
+	{
+		Map_RuleRef::iterator itrRuleRefMap;
+		for( list_RuleMix::const_iterator itrRuleMix = pclsRuleOp->m_stRuleMix.m_listRuleMix.begin(); itrRuleMix != pclsRuleOp->m_stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+		{
+			itrRuleRefMap = m_mapRuleRef.find(itrRuleMix->second);
+			if( itrRuleRefMap != m_mapRuleRef.end() )
+			{
+				if( itrRuleRefMap->second > 0 )
+					--(itrRuleRefMap->second);
+				if( itrRuleRefMap->second == 0 )
+					m_mapRuleRef.erase(itrRuleRefMap);
+			}
+		}
+
+		for( list_RuleMix::const_iterator itrRuleMix = _rstRuleMix.m_listRuleMix.begin(); itrRuleMix != _rstRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+		{
+			itrRuleRefMap = m_mapRuleRef.find(itrRuleMix->second);
+			if( itrRuleRefMap == m_mapRuleRef.end() )
+				m_mapRuleRef[itrRuleMix->second] = 1;
+			else
+				++(itrRuleRefMap->second);
+		}
+
+		pclsRuleOp->m_stRuleMix = _rstRuleMix;
+	}
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnChangeRuleOp(int _nRuleOpId, const char * _pszName, unsigned int _unPriority, const RuleMix & _rstRuleMix, const RuleOpUserData * _pclsUserData)
+{
+	Map_RuleOp::iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleOpId;
+
+	RuleOp * pclsRuleOp = itrRuleOpMap->second;
+	if( !pclsRuleOp || !pclsRuleOp->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	//change user data
+	RuleUserData * pclsCpRuleOpUsrData = pclsRuleOp->m_pclsUserData->m_fnClone();
+	if( !pclsCpRuleOpUsrData )
+		return E_RULE_RESULT_FAIL_allocMemory;
+	bool bChgResult = pclsCpRuleOpUsrData->m_fnChange(*_pclsUserData);
+	if( !bChgResult || !pclsCpRuleOpUsrData->m_fnIsValid() )
+	{
+		delete pclsCpRuleOpUsrData;
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+	*(pclsRuleOp->m_pclsUserData) = *pclsCpRuleOpUsrData;
+
+	//change name
+	if( _pszName && strlen(_pszName) > 0 )
+		pclsRuleOp->m_clsName = _pszName;
+
+	//change priority
+	if( _unPriority > 0 && _unPriority != pclsRuleOp->m_unPriority )
+	{
+		MultiMap_RuleOp4Priority::iterator itrRuleOp4PriorityMap;
+		std::pair< MultiMap_RuleOp4Priority::iterator, MultiMap_RuleOp4Priority::iterator > itrEqualRangeMap = m_mapRuleOp4Priority.equal_range(pclsRuleOp->m_unPriority);		
+		for( itrRuleOp4PriorityMap = itrEqualRangeMap.first; itrRuleOp4PriorityMap != itrEqualRangeMap.second; )
+		{
+			if( itrRuleOp4PriorityMap->second == _nRuleOpId )
+				m_mapRuleOp4Priority.erase(itrRuleOp4PriorityMap++);
+			else
+				++itrRuleOp4PriorityMap;
+		}
+		m_mapRuleOp4Priority.insert(std::pair<unsigned int, int>(_unPriority, _nRuleOpId));		
+		pclsRuleOp->m_unPriority = _unPriority;
+	}
+
+	//change ruleMix
+	if( _rstRuleMix.m_fnGetSize() > 0 )
+	{
+		Map_RuleRef::iterator itrRuleRefMap;
+		for( list_RuleMix::const_iterator itrRuleMix = pclsRuleOp->m_stRuleMix.m_listRuleMix.begin(); itrRuleMix != pclsRuleOp->m_stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+		{
+			itrRuleRefMap = m_mapRuleRef.find(itrRuleMix->second);
+			if( itrRuleRefMap != m_mapRuleRef.end() )
+			{
+				if( itrRuleRefMap->second > 0 )
+					--(itrRuleRefMap->second);
+				if( itrRuleRefMap->second == 0 )
+					m_mapRuleRef.erase(itrRuleRefMap);
+			}
+		}
+
+		for( list_RuleMix::const_iterator itrRuleMix = _rstRuleMix.m_listRuleMix.begin(); itrRuleMix != _rstRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+		{
+			itrRuleRefMap = m_mapRuleRef.find(itrRuleMix->second);
+			if( itrRuleRefMap == m_mapRuleRef.end() )
+				m_mapRuleRef[itrRuleMix->second] = 1;
+			else
+				++(itrRuleRefMap->second);
+		}
+
+		pclsRuleOp->m_stRuleMix = _rstRuleMix;
+	}	
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnFindRuleOp(list_RuleData & _rlistRuleData) const
+{
+	int nRuleOpId = -1;
+
+	if( !m_fnGetRuleOpIdFromData(_rlistRuleData, nRuleOpId) )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	Map_RuleOp::const_iterator itrRuleOpMap = m_mapRuleOp.find(nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleId;
+
+	RuleOp * pclsRuleOp = itrRuleOpMap->second;
+	if( !pclsRuleOp || !pclsRuleOp->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	_rlistRuleData.clear();
+	pclsRuleOp->m_fnGetRuleData(_rlistRuleData);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnFindRuleOp(int _nRuleOpId, std::string & _rclsName, unsigned int & _unPriority, std::string & _rclsRuleMix, RuleOpUserData & _rclsUserData) const
+{
+	Map_RuleOp::const_iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return E_RULE_RESULT_FAIL_notExistRuleOpId;
+
+	RuleOp * pclsRuleOp = itrRuleOpMap->second;
+	if( !pclsRuleOp || !pclsRuleOp->m_pclsUserData )
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+
+	_rclsName = pclsRuleOp->m_clsName;
+	_unPriority = pclsRuleOp->m_unPriority;
+	pclsRuleOp->m_stRuleMix.m_fnGetStr(_rclsRuleMix);
+	_rclsUserData = *(pclsRuleOp->m_pclsUserData);
+
+	return E_RULE_RESULT_SUCC;
+}
+
+ERuleResult_t RuleOpSet::m_fnFindRuleOpAll(list_RuleOpAllInfo & _rlistRuleOpAllInfo) const
+{
+	Map_RuleOp::const_iterator itrRuleOpMap;
+	for( itrRuleOpMap = m_mapRuleOp.begin(); itrRuleOpMap != m_mapRuleOp.end(); ++itrRuleOpMap )
+	{
+		const RuleOp * pclsRuleOp = itrRuleOpMap->second;
+		if( pclsRuleOp )
+		{
+			RuleOpAllInfo stRuleOpAllInfo;
+			stRuleOpAllInfo.m_nId = pclsRuleOp->m_nId;
+			stRuleOpAllInfo.m_clsName = pclsRuleOp->m_clsName;
+			stRuleOpAllInfo.m_unPriority = pclsRuleOp->m_unPriority;
+			pclsRuleOp->m_stRuleMix.m_fnGetStr(stRuleOpAllInfo.m_clsRuleMix);
+			stRuleOpAllInfo.m_pclsUserData = pclsRuleOp->m_pclsUserData->m_fnClone();
+			if( stRuleOpAllInfo.m_pclsUserData )
+			{
+				_rlistRuleOpAllInfo.push_back(stRuleOpAllInfo);
+				stRuleOpAllInfo.m_pclsUserData = NULL;
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : FindRuleAll : fail : clone for UserData : Id[%d]", 
+																	m_clsName.c_str(), stRuleOpAllInfo.m_nId);
+			}
+		}
+	}
+
+	return E_RULE_RESULT_SUCC;
+}
+
+bool RuleOpSet::m_fnIsRuleOp(int _nRuleOpId) const
+{
+	Map_RuleOp::const_iterator itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap == m_mapRuleOp.end() )
+		return false;
+	else
+		return true;
+}
+
+ERuleResult_t RuleOpSet::m_fnDecideRuleOpByPriority(const void * _pEvent, int & _nRuleOpId, RuleOpUserData & _rstDecideUserData) const
+{
+	if( !_pEvent )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	Map_RuleOp::const_iterator itrRuleOpMap;
+	MultiMap_RuleOp4Priority::const_iterator itrRuleOp4PriorityMap;
+
+	for( itrRuleOp4PriorityMap = m_mapRuleOp4Priority.begin(); itrRuleOp4PriorityMap != m_mapRuleOp4Priority.end(); ++itrRuleOp4PriorityMap )
+	{
+		itrRuleOpMap = m_mapRuleOp.find(itrRuleOp4PriorityMap->second);
+		if( itrRuleOpMap != m_mapRuleOp.end() )
+		{
+			if( itrRuleOpMap->second && itrRuleOpMap->second->m_pclsUserData )
+			{
+				if( m_fnIsMatchRuleMix(*(itrRuleOpMap->second), _pEvent) )
+				{
+					std::string clsRuleMix;
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpByPriority : match Rule : %s[%d] : Rule[%s]", 
+																	m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOpMap->second->m_nId,
+																	itrRuleOpMap->second->m_stRuleMix.m_fnGetStr(clsRuleMix));
+					_nRuleOpId = itrRuleOpMap->second->m_nId;
+					_rstDecideUserData = *(itrRuleOpMap->second->m_pclsUserData);
+					return E_RULE_RESULT_SUCC;					
+				}
+				else
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpByPriority : unmatch RuleOp : %s[%u], %s[%d]", 
+																	m_clsName.c_str(), 
+																	s_arrRuleOpBaseInfo[2].m_pszKey, itrRuleOp4PriorityMap->first,
+																	s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOp4PriorityMap->second);
+				}
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpByPriority : invalid RuleOp : %s[%u], %s[%d]", 
+															m_clsName.c_str(), 
+															s_arrRuleOpBaseInfo[2].m_pszKey, itrRuleOp4PriorityMap->first,
+															s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOp4PriorityMap->second);
+			}
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpByPriority : not found RuleOp from Priority : %s[%u], %s[%d]", 
+															m_clsName.c_str(), 
+															s_arrRuleOpBaseInfo[2].m_pszKey, itrRuleOp4PriorityMap->first,
+															s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOp4PriorityMap->second);
+		}
+	}
+
+	return E_RULE_RESULT_FAIL_notFindMatchRule;
+}
+
+ERuleResult_t RuleOpSet::m_fnDecideRuleOpById(const void * _pEvent, int _nRuleOpId, RuleOpUserData & _rstDecideUserData) const
+{
+	if( !_pEvent )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	Map_RuleOp::const_iterator itrRuleOpMap;
+	itrRuleOpMap = m_mapRuleOp.find(_nRuleOpId);
+	if( itrRuleOpMap != m_mapRuleOp.end() )
+	{
+		if( itrRuleOpMap->second && itrRuleOpMap->second->m_pclsUserData )
+		{
+			if( m_fnIsMatchRuleMix(*(itrRuleOpMap->second), _pEvent) )
+			{
+				std::string clsRuleMix;
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpById : match Rule : %s[%d] : Rule[%s]", 
+																m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId,
+																itrRuleOpMap->second->m_stRuleMix.m_fnGetStr(clsRuleMix));
+				_rstDecideUserData = *(itrRuleOpMap->second->m_pclsUserData);
+				return E_RULE_RESULT_SUCC;					
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpById : unmatch Rule : %s[%d]", 
+																m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId);
+			}
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpById : invalid RuleOp : %s[%d]", 
+														m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId);
+		}
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpById : not found RuleOp : %s[%d]", 
+													m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId);
+	}
+
+	return E_RULE_RESULT_FAIL_notFindMatchRule;
+}
+
+ERuleResult_t RuleOpSet::m_fnDecideRuleOpByMultipleId(const void * _pEvent, const std::list< int > & _rlistRuleOpId, list_ruleOpUsrData & _rlistRuleOpUsrData) const
+{
+	if( !_pEvent )
+		return E_RULE_RESULT_FAIL_invalidArgument;
+
+	Map_RuleOp::const_iterator itrRuleOpMap;
+	std::list< int >::const_iterator itrRuleOpIdList;
+	std::map< int, bool > mapRuleResult;
+	int nRuleOpId;
+	_rlistRuleOpUsrData.clear();
+	
+	for( itrRuleOpIdList = _rlistRuleOpId.begin(); itrRuleOpIdList != _rlistRuleOpId.end(); ++itrRuleOpIdList )
+	{
+		nRuleOpId = *itrRuleOpIdList;
+		itrRuleOpMap = m_mapRuleOp.find(nRuleOpId);
+		if( itrRuleOpMap != m_mapRuleOp.end() )
+		{
+			if( itrRuleOpMap->second && itrRuleOpMap->second->m_pclsUserData )
+			{
+				if( m_fnIsMatchRuleMix(*(itrRuleOpMap->second), _pEvent, mapRuleResult) )
+				{
+					RuleOpUsrData4List stRuleOpUsrData4List;
+					stRuleOpUsrData4List.m_nRuleOpId = nRuleOpId;
+					stRuleOpUsrData4List.m_pclsRuleOpUserData = itrRuleOpMap->second->m_pclsUserData->m_fnClone();
+					if( stRuleOpUsrData4List.m_pclsRuleOpUserData )
+					{
+						std::string clsRuleMix;
+						Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpByMultipleId : match Rule : %s[%d] : Rule[%s]", 
+																		m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, nRuleOpId,
+																		itrRuleOpMap->second->m_stRuleMix.m_fnGetStr(clsRuleMix));
+						_rlistRuleOpUsrData.push_back(stRuleOpUsrData4List);
+						stRuleOpUsrData4List.m_pclsRuleOpUserData = NULL;
+					}
+					else
+					{
+						Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpByMultipleId : fail : can't create RuleOpUsrData4Excute : %s[%d]", 
+																	m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, nRuleOpId);
+					}
+				}
+				else
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : DecideRuleOpByMultipleId : unmatch Rule : %s[%d]", 
+																	m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, nRuleOpId);
+				}
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpByMultipleId : fail : invalid RuleOp : %s[%d]", 
+															m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, nRuleOpId);
+			}
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : DecideRuleOpByMultipleId : fail : not found RuleOp : %s[%d]", 
+														m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, nRuleOpId);
+		}
+	}
+
+	if( _rlistRuleOpUsrData.size() > 0 )
+		return E_RULE_RESULT_SUCC;
+	else
+		return E_RULE_RESULT_FAIL_notFindMatchRule;
+}
+
+bool RuleOpSet::m_fnIsMatchRuleMix(const RuleOp & _rclsRuleOp, const void * _pEvent) const
+{
+	bool bMatchLeft = false, bMatchRight = false;
+	int nPrevRuleId;
+	std::string clsRuleMixStr;
+	
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 1 : %s[%d] : %s", 
+														m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _rclsRuleOp.m_nId, 	_rclsRuleOp.m_stRuleMix.m_fnGetStr(clsRuleMixStr));
+
+	for( list_RuleMix::const_iterator itrRuleMix = _rclsRuleOp.m_stRuleMix.m_listRuleMix.begin(); itrRuleMix != _rclsRuleOp.m_stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		bMatchRight= m_pclsRuleSet->m_fnIsMatchRule(itrRuleMix->second, _pEvent);
+		if( itrRuleMix == _rclsRuleOp.m_stRuleMix.m_listRuleMix.begin() )
+		{
+			bMatchLeft = bMatchRight;
+			nPrevRuleId = itrRuleMix->second;
+		}
+		else
+		{
+			if( itrRuleMix->first )
+			{
+				if( !bMatchLeft || !bMatchRight )
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 1 : false : LeftRuleId[%d:%d] && RightRuleId[%d:%d]", 
+																		m_clsName.c_str(), nPrevRuleId, bMatchLeft, itrRuleMix->second, bMatchRight);
+					bMatchLeft = false;
+					break;
+				}
+				else
+					bMatchLeft = true;
+			}
+			else
+			{
+				if( !bMatchLeft && !bMatchRight )
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 1 : false : LeftRuleId[%d:%d] || RightRuleId[%d:%d]", 
+																		m_clsName.c_str(), nPrevRuleId, bMatchLeft, itrRuleMix->second, bMatchRight);
+					bMatchLeft = false;
+					break;
+				}
+				else
+					bMatchLeft = true;
+			}
+			nPrevRuleId = itrRuleMix->second;
+		}
+	}
+
+	return bMatchLeft;
+}
+
+bool RuleOpSet::m_fnIsMatchRuleMix(const RuleOp & _rclsRuleOp, const void * _pEvent, std::map< int, bool > & _rmapRuleResult) const
+{
+	bool bMatchLeft = false, bMatchRight = false;
+	int nPrevRuleId;
+	std::string clsRuleMixStr;
+	std::map< int, bool >::iterator itrRuleResultMap;
+	
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 2 : %s[%d] : %s", 
+														m_clsName.c_str(), s_arrRuleOpBaseInfo[0].m_pszKey, _rclsRuleOp.m_nId, 	_rclsRuleOp.m_stRuleMix.m_fnGetStr(clsRuleMixStr));
+
+	for( list_RuleMix::const_iterator itrRuleMix = _rclsRuleOp.m_stRuleMix.m_listRuleMix.begin(); itrRuleMix != _rclsRuleOp.m_stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		itrRuleResultMap = _rmapRuleResult.find(itrRuleMix->second);
+		if( itrRuleResultMap != _rmapRuleResult.end() )
+		{
+			bMatchRight = itrRuleResultMap->second;
+		}
+		else
+		{
+			bMatchRight= m_pclsRuleSet->m_fnIsMatchRule(itrRuleMix->second, _pEvent);
+			_rmapRuleResult[itrRuleMix->second] = bMatchRight;
+		}
+		
+		if( itrRuleMix == _rclsRuleOp.m_stRuleMix.m_listRuleMix.begin() )
+		{
+			bMatchLeft = bMatchRight;
+			nPrevRuleId = itrRuleMix->second;
+		}
+		else
+		{
+			if( itrRuleMix->first )
+			{
+				if( !bMatchLeft || !bMatchRight )
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 2 : false : LeftRuleId[%d:%d] && RightRuleId[%d:%d]", 
+																		m_clsName.c_str(), nPrevRuleId, bMatchLeft, itrRuleMix->second, bMatchRight);
+					bMatchLeft = false;
+					break;
+				}
+				else
+					bMatchLeft = true;
+			}
+			else
+			{
+				if( !bMatchLeft && !bMatchRight )
+				{
+					Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : IsMatchRuleMix 2 : false : LeftRuleId[%d:%d] || RightRuleId[%d:%d]", 
+																		m_clsName.c_str(), nPrevRuleId, bMatchLeft, itrRuleMix->second, bMatchRight);
+					bMatchLeft = false;
+					break;
+				}
+				else
+					bMatchLeft = true;
+			}
+			nPrevRuleId = itrRuleMix->second;
+		}
+	}
+
+	return bMatchLeft;
+}
+
+void RuleOpSet::m_fnClearAll()
+{
+	Map_RuleOp::iterator itrRuleOpMap;
+	for( itrRuleOpMap = m_mapRuleOp.begin(); itrRuleOpMap != m_mapRuleOp.end(); ++itrRuleOpMap )
+	{
+		delete itrRuleOpMap->second;
+	}
+	m_mapRuleOp.clear();
+	m_mapRuleOp4Priority.clear();
+	m_mapRuleRef.clear();
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleOpSet[%s] : ClearAll", m_clsName.c_str());
+}
+
+void RuleOpSet::m_fnGetRuleDataAll(list_RuleDataAll & _rlistRuleDataAll) const
+{
+	int nRuleOpId;
+	const RuleOp * pclsRuleOp = NULL;
+	MultiMap_RuleOp4Priority::const_iterator itrRuleOpPriorityMap = m_mapRuleOp4Priority.begin();
+	Map_RuleOp::const_iterator itrRuleOpMap;
+	unsigned int unCurrentLine = 0;
+	
+	while( itrRuleOpPriorityMap != m_mapRuleOp4Priority.end() )
+	{
+		nRuleOpId = itrRuleOpPriorityMap->second;
+		itrRuleOpMap = m_mapRuleOp.find(nRuleOpId);
+		if( itrRuleOpMap != m_mapRuleOp.end() )
+		{
+			pclsRuleOp = itrRuleOpMap->second;
+			if( pclsRuleOp )
+			{
+				list_RuleData listRuleData;
+				pclsRuleOp->m_fnGetRuleData(listRuleData);
+				_rlistRuleDataAll.push_back(listRuleData);
+			}
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : GetRuleDataAll : fail : invalid RuleOp : Line[%u] : %s[%u], %s[%d]", 
+																m_clsName.c_str(), unCurrentLine,
+																s_arrRuleOpBaseInfo[2].m_pszKey, itrRuleOpPriorityMap->first,
+																s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOpPriorityMap->second);
+			}
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : GetRuleDataAll : fail : not found RuleOp from Priority : Line[%u] : %s[%u], %s[%d]", 
+															m_clsName.c_str(), unCurrentLine,
+															s_arrRuleOpBaseInfo[2].m_pszKey, itrRuleOpPriorityMap->first,
+															s_arrRuleOpBaseInfo[0].m_pszKey, itrRuleOpPriorityMap->second);
+		}
+
+		++unCurrentLine;
+		++itrRuleOpPriorityMap;
+	}
+}
+
+void RuleOpSet::m_fnSetRuleDataAll(const list_RuleDataAll & _rlistRuleDataAll)
+{
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	list_RuleDataAll::const_iterator itrRuleDataAll;
+	ERuleResult_t eResult;
+	unsigned int unCurrentLine = 0;
+
+	for( itrRuleDataAll = _rlistRuleDataAll.begin(); itrRuleDataAll != _rlistRuleDataAll.end(); ++itrRuleDataAll )
+	{
+		const list_RuleData & rlistRuleData = *itrRuleDataAll;
+	
+		if( (eResult = m_fnAddRuleOp(rlistRuleData)) == E_RULE_RESULT_SUCC )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleOpSet[%s] : SetRuleDataAll : Line[%u] : %s", 
+															m_clsName.c_str(),
+															unCurrentLine, g_fnGetRuleDataStr(rlistRuleData, szRuleData, sizeof(szRuleData)));
+		}
+		else
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleOpSet[%s] : SetRuleDataAll : fail : %s : Line[%u] : %s", 
+														m_clsName.c_str(), g_fnGetRuleResultStr(eResult),
+														unCurrentLine, g_fnGetRuleDataStr(rlistRuleData, szRuleData, sizeof(szRuleData)));
+		}
+
+		++unCurrentLine;
+	}
+}
+
+
+/*======================= RuleMix =======================*/
+const char * RuleMix::m_fnGetStr(std::string & _rclsStr) const
+{
+	_rclsStr = "";
+
+	std::stringstream clsStrStream;
+
+	for( list_RuleMix::const_iterator itrRuleMix = m_listRuleMix.begin(); itrRuleMix != m_listRuleMix.end(); ++itrRuleMix )
+	{
+		clsStrStream.str("");
+		clsStrStream.clear();
+	
+		if( itrRuleMix == m_listRuleMix.begin() )
+		{
+			clsStrStream<<itrRuleMix->second;
+			_rclsStr += clsStrStream.str();
+		}
+		else
+		{
+			_rclsStr += " ";
+		
+			if( itrRuleMix->first )
+				_rclsStr += s_pszRuleMixAnd;
+			else
+				_rclsStr += s_pszRuleMixOr;
+
+			_rclsStr += " ";
+
+			clsStrStream<<itrRuleMix->second;
+			_rclsStr += clsStrStream.str();
+		}
+	}
+
+	return _rclsStr.c_str();
+}
+
+void RuleMix::m_fnAddRule(bool _bAnd, int _nRuleId)
+{
+	m_listRuleMix.push_back(std::make_pair(_bAnd, _nRuleId));	
+}
+
+bool RuleMix::m_fnSetRule(const char * _pszRuleMix)
+{
+	if( !_pszRuleMix || strlen(_pszRuleMix) == 0 )
+		return true;
+
+	list_RuleMix listRuleMix;
+
+	BufferControl clsRuleMixBufferControl(_pszRuleMix, strlen(_pszRuleMix));
+	clsRuleMixBufferControl.skipWhitespace();
+	while( !clsRuleMixBufferControl.eof() )
+	{
+		const char * pTmp = clsRuleMixBufferControl.findWhitespace();
+	
+		if( listRuleMix.size() == 0 )
+		{
+			if( !pTmp )
+				pTmp = clsRuleMixBufferControl.getEndPos();
+			listRuleMix.push_back(std::make_pair(true, atoi(clsRuleMixBufferControl.getStartPos())));
+			clsRuleMixBufferControl.setStartPos(pTmp);
+			clsRuleMixBufferControl.skipWhitespace();
+		}
+		else
+		{
+			if( !pTmp )
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMix : SetRule : fail : not found next RuleId : %s", _pszRuleMix);
+				return false;
+			}
+
+			bool bMix = true;
+			
+			if( clsRuleMixBufferControl.isStr(s_pszRuleMixAnd) )
+				bMix = true;
+			else if( clsRuleMixBufferControl.isStr(s_pszRuleMixOr) )
+				bMix = false;
+			else
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMix : SetRule : fail : unknown RuleMix : %s", _pszRuleMix);
+				return false;
+			}
+
+			clsRuleMixBufferControl.setStartPos(pTmp);
+			clsRuleMixBufferControl.skipWhitespace();
+			
+			pTmp = clsRuleMixBufferControl.findWhitespace();
+			if( !pTmp )
+				pTmp = clsRuleMixBufferControl.getEndPos();
+			listRuleMix.push_back(std::make_pair(bMix, atoi(clsRuleMixBufferControl.getStartPos())));
+			clsRuleMixBufferControl.setStartPos(pTmp);
+			clsRuleMixBufferControl.skipWhitespace();
+		}
+	}
+
+	m_listRuleMix = listRuleMix;
+
+	return true;
+}
+
+
+/*======================= RuleMgr =======================*/
+int RuleMgr::m_nLogInstance = 0;
+int RuleMgr::m_nLogCategory = 0;
+
+RuleMgr::RuleMgr(const char * _pszRuleMgrName)
+	: m_bInit(false), m_pclsRuleSet(NULL), m_unRuleOpSetNum(0), m_arrRuleOpSet(NULL), m_arrRuleOpSetDataFile(NULL)		
+{
+	if( _pszRuleMgrName && strlen(_pszRuleMgrName) > 0 )
+		m_clsRuleMgrName = _pszRuleMgrName;
+}
+
+RuleMgr::~RuleMgr()
+{
+	delete m_pclsRuleSet;
+	delete[] m_arrRuleOpSet;
+	delete[] m_arrRuleOpSetDataFile;
+}
+
+ERuleResult_t RuleMgr::m_fnInit(RuleMgrConfig & _rstRuleMgrConfig)
+{
+	if( m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : already init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_SUCC;
+	}
+
+	ERuleResult_t eRuleResult = E_RULE_RESULT_SUCC;
+	m_bInit = true;
+	m_unRuleOpSetNum = _rstRuleMgrConfig.m_listRuleOpConfig.size();
+	m_stRuleMgrConfig = _rstRuleMgrConfig;
+
+	/*==== init ruleSet ====*/
+	m_pclsRuleSet = new RuleSet();
+	if( !m_pclsRuleSet )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : can't create RuleSet", m_clsRuleMgrName.c_str());
+		eRuleResult = E_RULE_RESULT_FAIL_allocMemory;
+		goto FAIL_INIT;
+	}
+	if( (eRuleResult = m_pclsRuleSet->m_fnInit(_rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_clsMgrName, _rstRuleMgrConfig.m_pfnCbIsMatchRule, _rstRuleMgrConfig.m_stRuleConfig.m_pfnCbCreateUserData)) != E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : init of RuleSet[%s] : %s", m_clsRuleMgrName.c_str(), _rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_clsMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult));
+		goto FAIL_INIT;		
+	}
+	if( _rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_column )
+	{
+		vec_ColumnInfo & rvecColumnInfo = _rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_stColumnStrCfg.m_vecColumnInfo;
+		ColumnInfo clsBaseColumnInfo;
+		clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleBaseInfo[1].m_pszKey;
+		clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleBaseInfo[1].m_unColumnMaxLen;
+		rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+		clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleBaseInfo[0].m_pszKey;
+		clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleBaseInfo[0].m_unColumnMaxLen;
+		rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+	}
+	_rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_pfnCbApplyData = m_fnCbApplyRuleSetData;
+	if( !m_stRuleSetDataFile.m_fnInit(_rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg, this, m_pclsRuleSet) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : init of RuleSetDataFile[%s]", m_clsRuleMgrName.c_str(), _rstRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_clsMgrName.c_str());
+		eRuleResult = E_RULE_RESULT_FAIL_internalErr;
+		goto FAIL_INIT;		
+	}
+	
+	/*==== init ruleOpSet ====*/
+	if( _rstRuleMgrConfig.m_listRuleOpConfig.size() > 0 )
+	{
+		m_arrRuleOpSet = new RuleOpSet[_rstRuleMgrConfig.m_listRuleOpConfig.size()];
+		if( !m_arrRuleOpSet )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : can't create RuleOpSet : RuleOpSetNum[%lu]", m_clsRuleMgrName.c_str(), _rstRuleMgrConfig.m_listRuleOpConfig.size());
+			eRuleResult = E_RULE_RESULT_FAIL_allocMemory;
+			goto FAIL_INIT;
+		}
+
+		m_arrRuleOpSetDataFile = new DataFileMgr[_rstRuleMgrConfig.m_listRuleOpConfig.size()];
+		if( !m_arrRuleOpSetDataFile )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : can't create array of RuleOpSetDataFile : RuleOpSetNum[%lu]", m_clsRuleMgrName.c_str(), _rstRuleMgrConfig.m_listRuleOpConfig.size());
+			eRuleResult = E_RULE_RESULT_FAIL_allocMemory;
+			goto FAIL_INIT;
+		}
+
+		int nRuleOpSetId = 0;
+		for( list_RuleOpConfig::iterator itrRuleOpCfg = _rstRuleMgrConfig.m_listRuleOpConfig.begin(); itrRuleOpCfg != _rstRuleMgrConfig.m_listRuleOpConfig.end(); ++itrRuleOpCfg )
+		{
+			if( (eRuleResult = m_arrRuleOpSet[nRuleOpSetId].m_fnInit(nRuleOpSetId, itrRuleOpCfg->m_stDataFileCfg.m_clsMgrName, itrRuleOpCfg->m_pfnCbCreateUserData, m_pclsRuleSet)) != E_RULE_RESULT_SUCC )
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : init of RuleOpSet[%s] : %s", m_clsRuleMgrName.c_str(), itrRuleOpCfg->m_stDataFileCfg.m_clsMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult));
+				goto FAIL_INIT;
+			}
+			if( itrRuleOpCfg->m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_column )
+			{
+				vec_ColumnInfo & rvecColumnInfo = itrRuleOpCfg->m_stDataFileCfg.m_stColumnStrCfg.m_vecColumnInfo;
+				ColumnInfo clsBaseColumnInfo;
+				clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleOpBaseInfo[3].m_pszKey;
+				clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleOpBaseInfo[3].m_unColumnMaxLen;
+				rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+				clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleOpBaseInfo[2].m_pszKey;
+				clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleOpBaseInfo[2].m_unColumnMaxLen;
+				rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+				clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleOpBaseInfo[1].m_pszKey;
+				clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleOpBaseInfo[1].m_unColumnMaxLen;
+				rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+				clsBaseColumnInfo.m_clsColumnTitleName = s_arrRuleOpBaseInfo[0].m_pszKey;
+				clsBaseColumnInfo.m_unMaxColumnLen = s_arrRuleOpBaseInfo[0].m_unColumnMaxLen;
+				rvecColumnInfo.insert(rvecColumnInfo.begin(), clsBaseColumnInfo);
+			}
+			itrRuleOpCfg->m_stDataFileCfg.m_pfnCbApplyData = m_fnCbApplyRuleOpSetData;
+			if( !m_arrRuleOpSetDataFile[nRuleOpSetId].m_fnInit(itrRuleOpCfg->m_stDataFileCfg, this, &(m_arrRuleOpSet[nRuleOpSetId])) )
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : init of RuleOpSetDataFile[%s]", m_clsRuleMgrName.c_str(), itrRuleOpCfg->m_stDataFileCfg.m_clsMgrName.c_str());
+				eRuleResult = E_RULE_RESULT_FAIL_internalErr;
+				goto FAIL_INIT;		
+			}
+			++nRuleOpSetId;
+		}
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : Init : fail : invalid number of RuleOpSet", m_clsRuleMgrName.c_str());
+		eRuleResult = E_RULE_RESULT_FAIL_invalidArgument;
+		goto FAIL_INIT;
+	}	
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : Init", m_clsRuleMgrName.c_str());
+
+	return E_RULE_RESULT_SUCC;
+
+FAIL_INIT :
+	m_bInit = false;
+	m_unRuleOpSetNum = 0;
+	delete m_pclsRuleSet;
+	m_pclsRuleSet = NULL;
+	delete[] m_arrRuleOpSet;
+	m_arrRuleOpSet = NULL;
+	delete[] m_arrRuleOpSetDataFile;
+	m_arrRuleOpSetDataFile = NULL;
+
+	return eRuleResult;	
+}
+
+ERuleResult_t RuleMgr::m_fnAddRule(const list_RuleData & _rlistRuleData, bool _bUseLock, bool _bFileWrite)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnWriteLock();
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnAddRule(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : AddRule : %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+		if( _bFileWrite )
+			m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRule : fail : %s : %s", 
+													m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnUnlock();
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnAddRule(int _nRuleId, const char * _pszRuleName, const RuleUserData & _rclsUserData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( !_pszRuleName || strlen(_pszRuleName) == 0 )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRule : fail : invalid argument : RuleName[%s]", m_clsRuleMgrName.c_str(), _pszRuleName);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;	
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnAddRule(_nRuleId, _pszRuleName, _rclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : AddRule : %s[%d], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), 
+														s_arrRuleBaseInfo[0].m_pszKey, _nRuleId, s_arrRuleBaseInfo[1].m_pszKey, _pszRuleName, 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+		m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRule : fail : %s : %s[%d], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult),
+														s_arrRuleBaseInfo[0].m_pszKey, _nRuleId, s_arrRuleBaseInfo[1].m_pszKey, _pszRuleName, 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDelRule(const list_RuleData & _rlistRuleData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}	
+
+	int nRuleId = -1;	
+	if( !RuleSet::m_fnGetRuleIdFromData(_rlistRuleData, nRuleId) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : not found key of %s", m_clsRuleMgrName.c_str(), s_arrRuleBaseInfo[0].m_pszKey);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+
+	for( unsigned int i = 0; i < m_unRuleOpSetNum; ++i )
+	{
+		if( m_arrRuleOpSet[i].m_fnIsUsingRule(nRuleId) )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : reference by RuleOpSet[%s] : %s[%d]", 
+															m_clsRuleMgrName.c_str(), m_arrRuleOpSet[i].m_fnGetName(), s_arrRuleBaseInfo[0].m_pszKey, nRuleId);
+			return E_RULE_RESULT_FAIL_referenceRule;
+		}
+	}
+
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnDelRule(nRuleId);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : DelRule : %s[%d]", m_clsRuleMgrName.c_str(), s_arrRuleBaseInfo[0].m_pszKey, nRuleId);
+		m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : %s : %s[%d]", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), s_arrRuleBaseInfo[0].m_pszKey, nRuleId);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDelRule(int _nRuleId)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}	
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+
+	if( m_arrRuleOpSet )
+	{
+		for( unsigned int i = 0; i < m_unRuleOpSetNum; ++i )
+		{
+			if( m_arrRuleOpSet[i].m_fnIsUsingRule(_nRuleId) )
+			{
+				Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : reference by RuleOpSet[%s] : %s[%d]", 
+															m_clsRuleMgrName.c_str(), m_arrRuleOpSet[i].m_fnGetName(), s_arrRuleBaseInfo[0].m_pszKey, _nRuleId);
+				return E_RULE_RESULT_FAIL_referenceRule;
+			}
+		}
+	}
+
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnDelRule(_nRuleId);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : DelRule : %s[%d]", m_clsRuleMgrName.c_str(), s_arrRuleBaseInfo[0].m_pszKey, _nRuleId);
+		m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRule : fail : %s : %s[%d]", m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), s_arrRuleBaseInfo[0].m_pszKey, _nRuleId);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnChangeRule(const list_RuleData & _rlistRuleData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;	
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnChangeRule(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : ChangeRule : %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+		m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRule : fail : %s : %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnChangeRule(int _nRuleId, const char * _pszRuleName, const RuleUserData * _pclsUserData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+	if( _pclsUserData )
+		_pclsUserData->m_fnGetStr(szRuleData, sizeof(szRuleData));
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnChangeRule(_nRuleId, _pszRuleName,  _pclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : ChangeRule : %s[%d], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), s_arrRuleBaseInfo[0].m_pszKey, _nRuleId, s_arrRuleBaseInfo[1].m_pszKey, _pszRuleName, szRuleData);
+		m_fnWriteFileRuleSetFromMem();
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRule : fail : %s : %s[%d], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), 
+														s_arrRuleBaseInfo[0].m_pszKey, _nRuleId, s_arrRuleBaseInfo[1].m_pszKey, _pszRuleName, szRuleData);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRule(list_RuleData & _rlistRuleData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnFindRule(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRule : %s", 
+														m_clsRuleMgrName.c_str(), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRule : fail : %s : %s", 
+													m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRule(int _nRuleId, std::string & _rclsName, RuleUserData & _rclsUserData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnFindRule(_nRuleId, _rclsName, _rclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRule : %s[%d], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(),s_arrRuleBaseInfo[0].m_pszKey, _nRuleId, s_arrRuleBaseInfo[1].m_pszKey, _rclsName.c_str(), _rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRule : fail : %s : %s[%d]", m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult), s_arrRuleBaseInfo[0].m_pszKey, _nRuleId);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRuleAll(list_RuleAllInfo & _rlistRuleAllInfo) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleAll : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+	
+	ERuleResult_t eRuleResult = m_pclsRuleSet->m_fnFindRuleAll(_rlistRuleAllInfo);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRuleAll : Num[%lu]", 
+														m_clsRuleMgrName.c_str(), _rlistRuleAllInfo.size());
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleAll : fail : %s ", m_clsRuleMgrName.c_str(), g_fnGetRuleResultStr(eRuleResult));
+	}
+
+	return eRuleResult;
+}
+
+bool RuleMgr::m_fnIsRule(int _nRuleId, bool _bUseLock) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : IsRule : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	bool bResult = false;
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnReadLock();
+	
+	bResult = m_pclsRuleSet->m_fnIsRule(_nRuleId);
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnUnlock();
+
+	return bResult;
+}
+
+void RuleMgr::m_fnClearAllRule()
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ClearAllRule : fail : not init", m_clsRuleMgrName.c_str());
+		return;
+	}
+
+	m_clsRuleMgrRwMutex.m_fnWriteLock();
+
+	m_pclsRuleSet->m_fnClearAll();
+
+	m_clsRuleMgrRwMutex.m_fnUnlock();
+}
+
+ERuleResult_t RuleMgr::m_fnAddRuleOp(int _nRuleOpSetId, const list_RuleData & _rlistRuleData, bool _bUseLock, bool _bFileWrite)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+	
+	RuleMix stRuleMix;
+	if( !RuleOpSet::m_fnGetRuleMixFromData(_rlistRuleData, stRuleMix) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : invalid RuleMix", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnWriteLock();
+
+	for( list_RuleMix::const_iterator itrRuleMix = stRuleMix.m_listRuleMix.begin(); itrRuleMix != stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		if( !m_pclsRuleSet->m_fnIsExistRule(itrRuleMix->second) )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : not found RuleId : %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+			if( _bUseLock )
+				m_clsRuleMgrRwMutex.m_fnUnlock();
+			return E_RULE_RESULT_FAIL_notExistRuleId;
+		}
+	}
+
+	RuleOpSet * pclsRuleOpSet = &(m_arrRuleOpSet[_nRuleOpSetId]);
+	ERuleResult_t eRuleResult = pclsRuleOpSet->m_fnAddRuleOp(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : AddRuleOp[%d] : %s", m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+		if( _bFileWrite )
+			m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : %s : %s", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnUnlock();
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnAddRuleOp(int _nRuleOpSetId, int _nRuleOpId, const char * _pszRuleOpName, unsigned int _unPriority, const char * _pszRuleMix, const RuleOpUserData & _rclsUserData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	RuleMix stRuleMix;
+	if( !stRuleMix.m_fnSetRule(_pszRuleMix) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : invalid RuleMix : Id[%d], Name[%s], RuleMix[%s]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, _nRuleOpId, _pszRuleOpName, _pszRuleMix);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);	
+
+	for( list_RuleMix::const_iterator itrRuleMix = stRuleMix.m_listRuleMix.begin(); itrRuleMix != stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		if( !m_pclsRuleSet->m_fnIsExistRule(itrRuleMix->second) )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : not found RuleId : %s[%d], %s[%s], %s[%u], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, 
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+			return E_RULE_RESULT_FAIL_notExistRuleId;
+		}
+	}
+	
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnAddRuleOp(_nRuleOpId, _pszRuleOpName, _unPriority, stRuleMix, _rclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : AddRuleOp[%d] : %s[%d], %s[%s], %s[%u], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, 
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+		m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : %s : %s[%d], %s[%s], %s[%u], %s[%s], %s",
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult),
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDelRuleOp(int _nRuleOpSetId, const list_RuleData & _rlistRuleData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+
+	RuleOpSet * pclsRuleOpSet = &(m_arrRuleOpSet[_nRuleOpSetId]);
+	ERuleResult_t eRuleResult = pclsRuleOpSet->m_fnDelRuleOp(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : DelRuleOp[%d] : %s", m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+		m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : %s : %s", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDelRuleOp(int _nRuleOpSetId, int _nRuleOpId)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnDelRuleOp(_nRuleOpId);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : DelRuleOp[%d] : %s[%d]", m_clsRuleMgrName.c_str(), _nRuleOpSetId, s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId);
+		m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DelRuleOp[%d] : fail : %s : %s[%d]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult), s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnChangeRuleOp(int _nRuleOpSetId, const list_RuleData & _rlistRuleData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	RuleOpSet * pclsRuleOpSet = &(m_arrRuleOpSet[_nRuleOpSetId]);
+
+	RuleMix stRuleMix;
+	if( !RuleOpSet::m_fnGetRuleMixFromData(_rlistRuleData, stRuleMix) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : invalid RuleMix", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;	
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);
+
+	for( list_RuleMix::const_iterator itrRuleMix = stRuleMix.m_listRuleMix.begin(); itrRuleMix != stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		if( !m_pclsRuleSet->m_fnIsExistRule(itrRuleMix->second) )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : not found RuleId : %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+			return E_RULE_RESULT_FAIL_notExistRuleId;
+		}
+	}
+	
+	ERuleResult_t eRuleResult = pclsRuleOpSet->m_fnChangeRuleOp(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : ChangeRuleOp[%d] : %s", m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+		m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : %s : %s", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnChangeRuleOp(int _nRuleOpSetId, int _nRuleOpId, const char * _pszRuleOpName, unsigned int _unPriority, const char * _pszRuleMix, const RuleOpUserData * _pclsUserData)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum)
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	RuleMix stRuleMix;
+	if( !stRuleMix.m_fnSetRule(_pszRuleMix) )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : AddRuleOp[%d] : fail : invalid RuleMix : Id[%d], Name[%s], RuleMix[%s]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, _nRuleOpId, _pszRuleOpName, _pszRuleMix);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+	if( _pclsUserData )
+		_pclsUserData->m_fnGetStr(szRuleData, sizeof(szRuleData));
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_WRITE);	
+
+	for( list_RuleMix::const_iterator itrRuleMix = stRuleMix.m_listRuleMix.begin(); itrRuleMix != stRuleMix.m_listRuleMix.end(); ++itrRuleMix )
+	{
+		if( !m_pclsRuleSet->m_fnIsExistRule(itrRuleMix->second) )
+		{
+			Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : not found RuleId : %s[%d], %s[%s], %s[%u], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, 
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														szRuleData);
+			return E_RULE_RESULT_FAIL_notExistRuleId;
+		}
+	}
+	
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnChangeRuleOp(_nRuleOpId, _pszRuleOpName, _unPriority, stRuleMix, _pclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : ChangeRuleOp[%d] : %s[%d], %s[%s], %s[%u], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, 
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														szRuleData);
+		m_fnWriteFileRuleOpSetFromMem(_nRuleOpSetId);
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ChangeRuleOp[%d] : fail : %s : %s[%d], %s[%s], %s[%u], %s[%s], %s",
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult),
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _pszRuleOpName, 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _unPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _pszRuleMix, 
+														szRuleData);
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRuleOp(int _nRuleOpSetId, list_RuleData & _rlistRuleData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+
+	RuleOpSet * pclsRuleOpSet = &(m_arrRuleOpSet[_nRuleOpSetId]);
+	ERuleResult_t eRuleResult = pclsRuleOpSet->m_fnFindRuleOp(_rlistRuleData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRuleOp[%d] : %s", m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : %s : %s", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult), g_fnGetRuleDataStr(_rlistRuleData, szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRuleOp(int _nRuleOpSetId, int _nRuleOpId, std::string & _rclsName, unsigned int & _runPriority, std::string & _rclsRuleMix, RuleOpUserData & _rclsUserData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+	
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnFindRuleOp(_nRuleOpId, _rclsName, _runPriority, _rclsRuleMix, _rclsUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRuleOp[%d] : %s[%d], %s[%s], %s[%u], %s[%s], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, 
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _rclsName.c_str(), 
+														s_arrRuleOpBaseInfo[2].m_pszKey, _runPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _rclsRuleMix.c_str(), 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : %s : %s[%d], %s[%s], %s[%u], %s[%s], %s",
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult),
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId, 
+														s_arrRuleOpBaseInfo[1].m_pszKey, _rclsName.c_str(),
+														s_arrRuleOpBaseInfo[2].m_pszKey, _runPriority, 
+														s_arrRuleOpBaseInfo[3].m_pszKey, _rclsRuleMix.c_str(), 
+														_rclsUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnFindRuleOpAll(int _nRuleOpSetId, list_RuleOpAllInfo & _rlistRuleOpAllInfo) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOpAll[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOpAll[%d] : fail : invalid RuleOpSetId", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+	
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnFindRuleOpAll(_rlistRuleOpAllInfo);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : FindRuleOp[%d] : Num[%lu]", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, _rlistRuleOpAllInfo.size());
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : %s",
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult));
+	}
+
+	return eRuleResult;
+}
+
+bool RuleMgr::m_fnIsRuleOp(int _nRuleOpSetId, int _nRuleOpId, bool _bUseLock) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : FindRuleOp[%d] : fail : not init", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	bool bResult = false;
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnReadLock();
+	
+	bResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnIsRuleOp(_nRuleOpId);
+
+	if( _bUseLock )
+		m_clsRuleMgrRwMutex.m_fnUnlock();
+
+	return bResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDecideRuleOpByPriority(int _nRuleOpSetId, const void * _pEvent, int & _nRuleOpId, RuleOpUserData & _rstDecideUserData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DecideRuleOpByPriority : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum || !_pEvent )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DecideRuleOpByPriority : fail : invalid argument : RuleOpSetId[%d], Event[%p]", m_clsRuleMgrName.c_str(), _nRuleOpSetId, _pEvent);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnDecideRuleOpByPriority(_pEvent, _nRuleOpId, _rstDecideUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : DecideRuleOpByPriority : RuleOpSet[%d] : %s[%d], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId,
+														_rstDecideUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : DecideRuleOpByPriority : RuleOpSet[%d] : fail : %s : %s", 
+															m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult),
+															_rstDecideUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDecideRuleOpById(int _nRuleOpSetId, const void * _pEvent, int _nRuleOpId, RuleOpUserData & _rstDecideUserData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DecideRuleOpById : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum || !_pEvent )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : DecideRuleOpById : fail : invalid argument : RuleOpSetId[%d], Event[%p], RuleOpId[%d]", m_clsRuleMgrName.c_str(), _nRuleOpSetId, _pEvent, _nRuleOpId);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnDecideRuleOpById(_pEvent, _nRuleOpId, _rstDecideUserData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : DecideRuleOpById : RuleOpSet[%d] : %s[%d], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId,
+														_rstDecideUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+	else
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : DecideRuleOpById : RuleOpSet[%d] : fail : %s : %s[%d], %s", 
+														m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult),
+														s_arrRuleOpBaseInfo[0].m_pszKey, _nRuleOpId,
+														_rstDecideUserData.m_fnGetStr(szRuleData, sizeof(szRuleData)));
+	}
+
+	return eRuleResult;
+}
+
+ERuleResult_t RuleMgr::m_fnDecideRuleOpByMultipleId(int _nRuleOpSetId, const void * _pEvent, const std::list< int > & _rlistRuleOpId, list_ruleOpUsrData & _rlistRuleOpUsrData) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : m_fnDecideRuleOpByMultipleId : fail : not init", m_clsRuleMgrName.c_str());
+		return E_RULE_RESULT_FAIL_internalInvalidValue;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum || !_pEvent )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : m_fnDecideRuleOpByMultipleId : fail : invalid argument : RuleOpSetId[%d], Event[%p]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, _pEvent);
+		return E_RULE_RESULT_FAIL_invalidArgument;
+	}
+
+	char szRuleData[RuleUserData::E_CONST_MAX_STR_LEN]; szRuleData[0] = 0x00;
+
+	Lock clsLock(m_clsRuleMgrRwMutex, Lock::E_LOCK_TYPE_READ);
+
+	ERuleResult_t eRuleResult = m_arrRuleOpSet[_nRuleOpSetId].m_fnDecideRuleOpByMultipleId(_pEvent, _rlistRuleOpId, _rlistRuleOpUsrData);
+	if( eRuleResult == E_RULE_RESULT_SUCC )
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : m_fnDecideRuleOpByMultipleId : RuleOpSet[%d]", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+	else
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : m_fnDecideRuleOpByMultipleId : RuleOpSet[%d] : fail : %s", m_clsRuleMgrName.c_str(), _nRuleOpSetId, g_fnGetRuleResultStr(eRuleResult));
+
+	return eRuleResult;
+}
+
+void RuleMgr::m_fnClearRuleOp(int _nRuleOpSetId)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ClearRuleOp : fail : not init", m_clsRuleMgrName.c_str());
+		return;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ClearRuleOp : fail : invalid argument : RuleOpSetId[%d]", m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return;
+	}
+
+	m_clsRuleMgrRwMutex.m_fnWriteLock();
+
+	m_arrRuleOpSet[_nRuleOpSetId].m_fnClearAll();
+	m_fnWriteFileRuleSetFromMem();
+
+	m_clsRuleMgrRwMutex.m_fnUnlock();
+}
+
+void RuleMgr::m_fnClearAllRuleOp()
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : ClearAllRuleOp : fail : not init", m_clsRuleMgrName.c_str());
+		return;
+	}
+
+	m_clsRuleMgrRwMutex.m_fnWriteLock();
+
+	for( unsigned int i = 0; i < m_unRuleOpSetNum; ++i )
+	{
+		m_arrRuleOpSet[i].m_fnClearAll();
+		m_fnWriteFileRuleOpSetFromMem(i);
+	}
+
+	m_clsRuleMgrRwMutex.m_fnUnlock();
+}
+
+void RuleMgr::m_fnCbApplyRuleSetData(const list_RuleDataAll & _rlistRuleDataAll, void * _pObject1, void * _pObject2)
+{
+	if( !_pObject1 || !_pObject2 )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr : CbApplyRuleSetData : fail : invalid object");
+		return;
+	}
+
+	RuleMgr * pclsRuleMgr = (RuleMgr *)_pObject1;
+	RuleSet * pclsRuleSet = (RuleSet *)_pObject2;
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : CbApplyRuleSetData", pclsRuleMgr->m_clsRuleMgrName.c_str());
+
+	pclsRuleMgr->m_clsRuleMgrRwMutex.m_fnWriteLock();
+	pclsRuleSet->m_fnClearAll();
+	list_RuleDataAll::const_iterator itrRuleDataAll;	
+	for( itrRuleDataAll = _rlistRuleDataAll.begin(); itrRuleDataAll != _rlistRuleDataAll.end(); ++itrRuleDataAll )
+	{
+		pclsRuleMgr->m_fnAddRule(*itrRuleDataAll, false, false);
+	}
+	pclsRuleMgr->m_clsRuleMgrRwMutex.m_fnUnlock();
+}
+
+void RuleMgr::m_fnCbApplyRuleOpSetData(const list_RuleDataAll & _rlistRuleDataAll, void * _pObject1, void * _pObject2)
+{
+	if( !_pObject1 || !_pObject2 )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr : CbApplyRuleOpSetData : fail : invalid object");
+		return;
+	}
+
+	RuleMgr * pclsRuleMgr = (RuleMgr *)_pObject1;
+	RuleOpSet * pclsRuleOpSet = (RuleOpSet *)_pObject2;
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_INFO, "RuleMgr[%s] : CbApplyRuleOpSetData[%s]", pclsRuleMgr->m_clsRuleMgrName.c_str(), pclsRuleOpSet->m_fnGetName());
+
+	pclsRuleMgr->m_clsRuleMgrRwMutex.m_fnWriteLock();
+	pclsRuleOpSet->m_fnClearAll();
+	list_RuleDataAll::const_iterator itrRuleDataAll;
+	for( itrRuleDataAll = _rlistRuleDataAll.begin(); itrRuleDataAll != _rlistRuleDataAll.end(); ++itrRuleDataAll )
+	{
+		pclsRuleMgr->m_fnAddRuleOp(pclsRuleOpSet->m_fnGetRuleOpSetId(), *itrRuleDataAll, false, false);
+	}
+	pclsRuleMgr->m_clsRuleMgrRwMutex.m_fnUnlock();
+}
+
+
+void RuleMgr::m_fnWriteFileRuleSetFromMem()
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : WriteFileRuleSetFromMem : fail : not init", m_clsRuleMgrName.c_str());
+		return;
+	}
+
+	list_RuleDataAll listRuleDataAll;
+	m_pclsRuleSet->m_fnGetRuleDataAll(listRuleDataAll);
+	m_stRuleSetDataFile.m_fnWriteFile(listRuleDataAll, false);
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : WriteFileRuleSetFromMem : File[%s]", 
+													m_clsRuleMgrName.c_str(), m_stRuleMgrConfig.m_stRuleConfig.m_stDataFileCfg.m_clsFileName.c_str());
+}
+
+void RuleMgr::m_fnWriteFileRuleOpSetFromMem(int _nRuleOpSetId)
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : WriteFileRuleOpSetFromMem : fail : not init", m_clsRuleMgrName.c_str());
+		return;
+	}
+
+	if( _nRuleOpSetId < 0 || (unsigned int)_nRuleOpSetId >= m_unRuleOpSetNum )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : WriteFileRuleOpSetFromMem : fail : invalid argument : RuleOpSetId[%d]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId);
+		return;
+	}
+
+	list_RuleDataAll listRuleDataAll;
+	m_arrRuleOpSet[_nRuleOpSetId].m_fnGetRuleDataAll(listRuleDataAll);
+	m_arrRuleOpSetDataFile[_nRuleOpSetId].m_fnWriteFile(listRuleDataAll, false);
+
+	Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_DEBUG, "RuleMgr[%s] : WriteFileRuleOpSetFromMem : RuleOpSet[%d] : File[%s]", 
+													m_clsRuleMgrName.c_str(), _nRuleOpSetId, m_arrRuleOpSetDataFile[_nRuleOpSetId].m_fnGetDataFileCfg().m_clsFileName.c_str());
+}
+
+const RuleOpConfig * RuleMgr::m_fnGetRuleOpSetConfig(int _nRuleOpSetId) const
+{
+	if( !m_bInit )
+	{
+		Log(RuleMgr::m_nLogInstance, RuleMgr::m_nLogCategory, E_LOG_ERR, "RuleMgr[%s] : GetRuleOpSetConfig : fail : not init", m_clsRuleMgrName.c_str());
+		return NULL;
+	}
+
+	int nRuleOpSetIdx = 0;
+	list_RuleOpConfig::const_iterator itrRuleOpConfig;
+	for( itrRuleOpConfig = m_stRuleMgrConfig.m_listRuleOpConfig.begin(); itrRuleOpConfig != m_stRuleMgrConfig.m_listRuleOpConfig.end(); ++itrRuleOpConfig )
+	{
+		if( nRuleOpSetIdx == _nRuleOpSetId )
+		{
+			const RuleOpConfig * pstRuleOpConfig = &(*itrRuleOpConfig);
+			return pstRuleOpConfig;
+		}
+	}
+
+	return NULL;
+}
+
+}
+

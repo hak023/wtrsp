@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag
+END
+gag.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/gag.cxx
+END
+gag.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/gag.vcproj
+END
+GagMessage.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/GagMessage.cxx
+END
+GagConduit.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/GagConduit.cxx
+END
+GagMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/GagMessage.hxx
+END
+GagConduit.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/GagConduit.hxx
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/.cvsignore
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gag/Makefile
+END

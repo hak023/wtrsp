@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix
+END
+stream_descriptor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix/stream_descriptor.hpp
+END
+stream_descriptor_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix/stream_descriptor_service.hpp
+END
+basic_stream_descriptor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix/basic_stream_descriptor.hpp
+END
+basic_descriptor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix/basic_descriptor.hpp
+END
+descriptor_base.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/posix/descriptor_base.hpp
+END

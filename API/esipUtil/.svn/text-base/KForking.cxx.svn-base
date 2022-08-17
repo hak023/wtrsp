@@ -1,0 +1,167 @@
+#include "KForking.hxx"
+#include "timeUtil.hxx"
+
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <sys/wait.h>
+#include <stdarg.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/types.h>
+
+namespace eSipUtil
+{
+KForking::KForking()
+{
+	
+	LogInternal(eSipUtil::E_LOG_INFO, "========== Froking init ==========");
+	m_nStatus = 0;
+	m_Pid = 0;
+	m_Pidck = 0;
+	m_bChildStarted = false;
+	m_nChildRet = 0;
+	m_argv = NULL;
+	m_pfnTerminated = NULL;
+	m_eMod = E_FORKING_NONE;
+	m_clsThread.setName(__func__);
+	m_clsThread.setObject(this);
+	m_clsThread.setProcessCb(m_fnCbkProc);
+	m_clsThread.run();
+}
+
+KForking::~KForking()
+{
+	if(m_argv) delete [] m_argv;
+	m_clsThread.shutdown();
+	m_clsThread.join();
+}
+void KForking::m_fnInit(EForkingMode_t _eT, PFuncNotifyChildTerminated_t _pfnTerm, const char * _pszArgs)
+{
+	if(_eT == E_FORKING_NONE || _eT >= E_FORKING_MAX) return;
+	if(_pfnTerm == NULL || _pszArgs == NULL ) return;
+	m_clsBuff = _pszArgs; m_eMod = _eT;m_pfnTerminated = _pfnTerm;
+	KString::m_fnTokenizeC((KSTR)m_clsBuff," ",m_clsArgs);
+	if(m_clsArgs.m_fnGetNum())
+	{
+		if(m_argv) delete [] m_argv;
+		m_argv = (char**)new char[sizeof(char*)*m_clsArgs.m_fnGetNum()];
+		for(unsigned int i = 0;i<m_clsArgs.m_fnGetNum();i++)
+			m_argv[i] = (KSTR)m_clsArgs[i];
+		LogInternal(E_LOG_INFO,"%s Child Process Initialize",m_argv[0]);
+	}
+}
+void KForking::m_fnStart()
+{
+	if(m_clsArgs.m_fnGetNum())
+	{
+		m_bChildStarted = true;
+		LogInternal(E_LOG_INFO,"%s Child Process Starting",m_argv[0]);
+	}
+}
+void KForking::m_fnStop()
+{
+	m_bChildStarted = false;
+	kill(m_Pid, SIGTERM); // SIGKILL);
+	LogInternal(E_LOG_INFO,"%s Child Process External Stop.",m_argv[0]);
+}
+const char * KForking::m_fnGetChildName()
+{
+	return (KCSTR)m_clsArgs[0];
+}
+void KForking::m_fnCbkProc(KForking * _pObject)
+{
+		if(_pObject->m_bChildStarted == false)
+		{
+			g_fnMilliSleep(10);
+			return;
+		}
+		Reforking:
+		if(_pObject->m_clsThread.isShutdown()) return;
+		_pObject->m_Pid = fork();
+		if (_pObject->m_Pid == 0)   // to child process
+		{ 
+			LogInternal(E_LOG_INFO,"%s Process Starting",_pObject->m_argv[0]);
+			int nRet = execv(_pObject->m_argv[0], _pObject->m_argv);
+			LogInternal(E_LOG_INFO,"Child Exit Code = %d",nRet);
+			_pObject->m_nChildRet = nRet;
+			exit(nRet);
+		} 
+		else if (_pObject->m_Pid > 0) // to parent process
+		{ 
+			LogInternal(E_LOG_INFO,"%s Process forking Success",_pObject->m_argv[0]);
+		} 
+		else 
+		{
+			LogInternal(E_LOG_INFO,"Forking Error....");
+			_pObject->m_bChildStarted = false; return;
+		}
+		while(!_pObject->m_clsThread.isShutdown())
+		{
+			_pObject->m_Pidck = waitpid(_pObject->m_Pid, &_pObject->m_nStatus, WNOHANG);
+			if(_pObject->m_Pidck == _pObject->m_Pid)
+			{
+				int nExitCode = _pObject->m_nStatus>>8;
+				LogInternal(E_LOG_INFO,"%s Sigterm : Pid : %u, Status : %u, Ret : %u",
+														_pObject->m_argv[0],
+														(int)_pObject->m_Pidck,
+														_pObject->m_nStatus >> 8,
+														_pObject->m_nChildRet);
+				kill(_pObject->m_Pidck, SIGTERM); // SIGKILL);
+				if(_pObject->m_pfnTerminated) _pObject->m_pfnTerminated(_pObject,(char)nExitCode);
+				if(_pObject->m_eMod == E_FORKING_ONCE)
+				{
+					LogInternal(E_LOG_INFO,"%s Child Process Internal Stop.",_pObject->m_argv[0]);
+					_pObject->m_bChildStarted = false;
+					return;
+				}
+				if(_pObject->m_bChildStarted)
+				{
+					LogInternal(E_LOG_INFO,"%s Re forking",_pObject->m_argv[0]);
+					goto Reforking;
+				}
+				else
+				{
+					LogInternal(E_LOG_INFO,"%s Child Process Internal Stop.",_pObject->m_argv[0]);
+					return;
+				}
+			}
+			sleep(1);
+		}
+		g_fnMilliSleep(10);
+}
+ void KForking::m_fnBackGroundMode( PFuncKillBackGround_t _pfn)
+{
+	struct sigaction action_usr1;
+	memset(&action_usr1, 0, sizeof(action_usr1));
+	action_usr1.sa_handler = _pfn;
+	sigaction(SIGUSR1, &action_usr1, NULL);
+	pid_t l_pid;
+	switch(l_pid = fork())
+	{
+		case -1:
+		{
+			printf("Forking error\n");
+			exit(0);
+		}
+		case 0:
+		{
+			int nullfd = open("/dev/null", O_RDWR);
+			dup2(nullfd, fileno(stdin));
+			dup2(nullfd, fileno(stdout));
+			dup2(nullfd, fileno(stderr));
+			close(nullfd);
+		}
+		break;
+		default:
+		{
+			printf("Background mode - PID=[%d]\n", l_pid);
+			exit(0);
+		}
+	}
+}
+}

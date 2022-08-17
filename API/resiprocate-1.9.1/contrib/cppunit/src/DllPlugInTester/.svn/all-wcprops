@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester
+END
+DllPlugInTester.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/DllPlugInTester.cpp
+END
+DllPlugInTesterTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/DllPlugInTesterTest.cpp
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/Makefile.in
+END
+CommandLineParser.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/CommandLineParser.cpp
+END
+CommandLineParserTest.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/CommandLineParserTest.cpp
+END
+DllPlugInTester.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/DllPlugInTester.dsp
+END
+DllPlugInTesterTest.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/DllPlugInTesterTest.dsp
+END
+CommandLineParser.h
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/CommandLineParser.h
+END
+CommandLineParserTest.h
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/CommandLineParserTest.h
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/DllPlugInTester/Makefile.am
+END

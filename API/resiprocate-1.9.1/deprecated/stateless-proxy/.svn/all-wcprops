@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/stateless-proxy
+END
+StatelessProxy.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/stateless-proxy/StatelessProxy.hxx
+END
+stateless-proxy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/stateless-proxy/stateless-proxy.cxx
+END
+StatelessProxy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/stateless-proxy/StatelessProxy.cxx
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/stateless-proxy/Makefile
+END

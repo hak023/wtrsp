@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/TLS
+END
+Stream.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/TLS/Stream.h
+END
+Certificate.h
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/TLS/Certificate.h
+END
+Context.h
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/TLS/Context.h
+END

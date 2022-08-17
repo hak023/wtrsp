@@ -1,0 +1,149 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro
+END
+user_key_cullen@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_key_cullen@localhost.pem
+END
+user_cert_cullen@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_cert_cullen@localhost.pem
+END
+user_key_david@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_key_david@localhost.pem
+END
+TestReproUser.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/TestReproUser.cxx
+END
+user_key_enlai@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_key_enlai@localhost.pem
+END
+TestRepro.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/TestRepro.cxx
+END
+user_key_derek@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_key_derek@localhost.pem
+END
+user_cert_david@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_cert_david@localhost.pem
+END
+sanityTests.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/sanityTests.cxx
+END
+sanityTests.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/sanityTests.vcproj
+END
+TestReproUser.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/TestReproUser.hxx
+END
+user_cert_enlai@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_cert_enlai@localhost.pem
+END
+TestRepro.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/TestRepro.hxx
+END
+user_cert_derek@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_cert_derek@localhost.pem
+END
+root_cert_fluffyCA.pem
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/root_cert_fluffyCA.pem
+END
+ReproFixture.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/ReproFixture.cxx
+END
+ReproFixture.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/ReproFixture.hxx
+END
+CommandLineParser.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/CommandLineParser.cxx
+END
+domain_key_localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/domain_key_localhost.pem
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/Makefile.am
+END
+CommandLineParser.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/CommandLineParser.hxx
+END
+user_key_jason@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_key_jason@localhost.pem
+END
+domain_cert_localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/domain_cert_localhost.pem
+END
+user_cert_jason@localhost.pem
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/repro/user_cert_jason@localhost.pem
+END

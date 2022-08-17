@@ -1,0 +1,104 @@
+
+#include <stdlib.h>
+
+#include "ePoll.hxx"
+#include "socket.hxx"
+
+namespace eSipUtil
+{
+
+Epoll::Epoll(int _nEpollMaxSize)
+	:m_nEpollMaxSize(_nEpollMaxSize), m_nEpollFD(-1), m_pEpollEvents(NULL)
+{
+	m_pEpollEvents = (struct epoll_event *)malloc(sizeof(struct epoll_event) * m_nEpollMaxSize);
+	if( !m_pEpollEvents )
+		return;
+
+	if( (m_nEpollFD = epoll_create(m_nEpollMaxSize)) < 0)
+	{
+		free(m_pEpollEvents);
+		m_pEpollEvents = NULL;
+		m_nEpollFD = -1;
+		return;
+	}
+}
+
+Epoll::~Epoll()
+{
+	free(m_pEpollEvents);
+	Socket::closeSocket(m_nEpollFD);
+}
+
+bool Epoll::reset()
+{
+	Socket::closeSocket(m_nEpollFD);
+	if( (m_nEpollFD = epoll_create(m_nEpollMaxSize)) < 0)
+		return false;
+	else
+		return true;
+}
+
+bool Epoll::addFD(int _nFd, int _nFlag)
+{
+	if( m_nEpollFD < 0 || _nFd < 0 )
+		return false;
+
+	struct epoll_event ev;
+	ev.events = _nFlag;
+	ev.data.fd = _nFd;
+	epoll_ctl(m_nEpollFD, EPOLL_CTL_ADD, _nFd, &ev);
+
+	return true;
+}
+
+bool Epoll::modFD(int _nFd, int _nFlag)
+{
+	if( m_nEpollFD < 0 || _nFd < 0 )
+		return false;
+
+	struct epoll_event ev;
+	ev.events = _nFlag;
+	ev.data.fd = _nFd;
+	epoll_ctl(m_nEpollFD, EPOLL_CTL_MOD, _nFd, &ev);
+
+	return true;
+}
+
+bool Epoll::delFD(int _nFd)
+{
+	if( m_nEpollFD < 0 || _nFd < 0 )
+		return false;
+
+	epoll_ctl(m_nEpollFD, EPOLL_CTL_DEL, _nFd, NULL);
+
+	return true;
+}
+
+/*====================================
+1. return :-2(internal error), -1(epoll err), 0(the none of event fd), 0<(the number of event fd)
+=====================================*/
+int Epoll::wait(Epoll_event_t & _rstEpollEvent, int _nMiliTimeout)
+{
+	if( m_nEpollFD < 0 || !m_pEpollEvents )
+	{
+		return -2;
+	}
+	else
+	{
+		_rstEpollEvent.m_nEventNumber = epoll_wait(m_nEpollFD, m_pEpollEvents, m_nEpollMaxSize, _nMiliTimeout);
+		if( _rstEpollEvent.m_nEventNumber > 0 )
+		{
+			_rstEpollEvent.m_pEpollEvents = m_pEpollEvents;
+		}
+
+		return _rstEpollEvent.m_nEventNumber;
+	}
+}
+
+int Epoll::getEpollFD() const
+{
+	return m_nEpollFD;
+}
+
+}
+

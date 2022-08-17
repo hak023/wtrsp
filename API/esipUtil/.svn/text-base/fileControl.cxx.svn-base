@@ -1,0 +1,315 @@
+
+#include <string.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include "fileControl.hxx"
+#include "dataFile.hxx"
+#include "log.hxx"
+#include "ConfigFile.hxx"
+
+namespace eSipUtil
+{
+FileControl * g_pclsFileControl = NULL;
+FileControlCfg * g_pclsFileControlInfo = NULL;
+FileControl::FileControl()
+	: m_bInit(false), m_pclsFileWriteThread(NULL), m_pclsDataFileMgr(NULL)
+{	
+}
+FileControl::~FileControl()
+{
+	delete m_pclsFileWriteThread;
+}
+bool FileControl::m_fnInit(const FileControlCfg & _rstFileControlCfg, DataFileMgr * _pclsDataFileMgr)
+{
+	if( m_bInit )
+		return true;
+
+	m_stFileControlCfg = _rstFileControlCfg;
+	m_pclsDataFileMgr = _pclsDataFileMgr;
+
+	if( m_stFileControlCfg.m_bAsyncWrite )
+	{
+		m_pclsFileWriteThread = new QueueThread< FileWriteInfo >(m_stFileControlCfg.m_unMaxQueueSize, m_fnCbFileWrite, -1, m_stFileControlCfg.m_clsName.c_str());
+		if( !m_pclsFileWriteThread )
+		{
+			LogInternal(E_LOG_ERR, "FileControl[%s] : Construct : fail : can't create FileWriteThread", m_stFileControlCfg.m_clsName.c_str());
+			return false;
+		}
+		m_pclsFileWriteThread->setObject(this);
+		m_pclsFileWriteThread->run();
+	}
+
+	m_bInit = true;
+	return true;
+}
+bool FileControl::m_fnWrite(const char * _pszFileName, const char * _pszData,unsigned int _unLen)
+{
+	if(g_pclsFileControl==NULL)
+	{
+		g_pclsFileControlInfo=  new FileControlCfg;
+		g_pclsFileControl = new FileControl;
+		g_pclsFileControl->m_fnInit(*g_pclsFileControlInfo);
+	}
+	return g_pclsFileControl->m_fnWriteFile_(_pszFileName,_pszData,_unLen);
+}
+bool FileControl::m_fnWriteFile(const char * _pszFileName, std::string * _pclsWriteStr, bool _bUseReload4DataFile)
+{
+	if( !_pszFileName || strlen(_pszFileName) == 0 || !_pclsWriteStr )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile(str) : fail : invalid argument : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return false;
+	}
+
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile(str) : fail : not Init : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return false;
+	}
+
+	FileWriteInfo * pstFileWriteInfo = new FileWriteInfo();
+	if( !pstFileWriteInfo )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile(str) : fail : can't create FileWriteInfo : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return false;
+	}
+
+	pstFileWriteInfo->m_bUseReload4DataFile = _bUseReload4DataFile;
+	pstFileWriteInfo->m_clsFileName = _pszFileName;
+	pstFileWriteInfo->m_pclsWriteStr = _pclsWriteStr;
+
+	if( m_stFileControlCfg.m_bAsyncWrite )
+	{
+		if( m_pclsFileWriteThread->put(pstFileWriteInfo) )
+		{
+			LogInternal(E_LOG_DEBUG, "FileControl[%s] : WriteFile(str) : Push to Thread : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+			return true;
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile(str) : fail : Push to Thread : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+			pstFileWriteInfo->m_pclsWriteStr = NULL;
+			delete pstFileWriteInfo;
+			return false;
+		}
+	}
+	else
+	{
+		m_fnCbFileWrite(pstFileWriteInfo, this);
+		return true;
+	}
+}
+
+bool FileControl::m_fnWriteFile(const char * _pszFileName, char * _pWriteData, unsigned int _unWriteLen, bool _bUseReload4DataFile)
+{
+	if( !_pszFileName || strlen(_pszFileName) == 0|| !_pWriteData )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile : fail : invalid argument : File[%s], Data[%p], WriteLen[%u]", 
+													m_stFileControlCfg.m_clsName.c_str(), _pszFileName, _pWriteData, _unWriteLen);
+		return false;
+	}
+
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile : fail : not Init : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return false;
+	}
+
+	FileWriteInfo * pstFileWriteInfo = new FileWriteInfo();
+	if( !pstFileWriteInfo )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile : fail : can't create FileWriteInfo : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return false;
+	}
+
+	pstFileWriteInfo->m_bUseReload4DataFile = _bUseReload4DataFile;
+	pstFileWriteInfo->m_clsFileName = _pszFileName;
+	pstFileWriteInfo->m_pWriteData = _pWriteData;
+	pstFileWriteInfo->m_unWriteLen = _unWriteLen;
+
+	if( m_stFileControlCfg.m_bAsyncWrite )
+	{
+		if( m_pclsFileWriteThread->put(pstFileWriteInfo) )
+		{
+			LogInternal(E_LOG_DEBUG, "FileControl[%s] : WriteFile : Push to Thread : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+			return true;
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "FileControl[%s] : WriteFile : fail : Push to Thread : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+			pstFileWriteInfo->m_pWriteData = NULL;
+			delete pstFileWriteInfo;
+			return false;
+		}
+	}
+	else
+	{
+		m_fnCbFileWrite(pstFileWriteInfo, this);
+		return true;
+	}
+}
+bool FileControl::m_fnWriteFile_(const char * _pszFileName, const char * _pszData,unsigned int _unLen)
+{
+	char * pszTmp = new char [_unLen+1]; memcpy(pszTmp,_pszData,_unLen); pszTmp[_unLen]=0x00;
+	return m_fnWriteFile(_pszFileName,pszTmp,_unLen);
+}
+void FileControl::m_fnCbFileWrite(FileWriteInfo * _pstFileWriteInfo, void * _pObject)
+{
+	const char * pWriteData = NULL;
+	unsigned int unWriteDataLen = 0;	
+	ssize_t lWriteLen = 0;
+	FileControl * pclsFileControl = NULL;
+	int nFd = -1;
+	//std::string clsBackupFileName;
+
+	if( !_pstFileWriteInfo || !_pObject )
+	{
+		LogInternal(E_LOG_ERR, "FileControl : CbFileWrite : fail : invalid argument : FileWriteInfo[%p], Object[%p]", _pstFileWriteInfo, _pObject);
+		goto FAIL_WRITE;
+	}
+	
+	if( _pstFileWriteInfo->m_pclsWriteStr )
+	{
+		pWriteData = _pstFileWriteInfo->m_pclsWriteStr->c_str();
+		unWriteDataLen = _pstFileWriteInfo->m_pclsWriteStr->size();
+	}
+	else if( _pstFileWriteInfo->m_pWriteData )
+	{
+		pWriteData = _pstFileWriteInfo->m_pWriteData;
+		unWriteDataLen= _pstFileWriteInfo->m_unWriteLen;
+	}
+
+	pclsFileControl = (FileControl *)_pObject;
+
+	if( _pstFileWriteInfo->m_clsFileName.size() == 0 || !pWriteData )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : CbFileWrite : fail : invalid FileWriteInfo : File[%s], WriteData[%p], WriteDataLen[%u]", 
+													pclsFileControl->m_stFileControlCfg.m_clsName.c_str(), _pstFileWriteInfo->m_clsFileName.c_str(), pWriteData, unWriteDataLen);
+		goto FAIL_WRITE;
+	}	
+
+	#if 1 // cwkim Default Create Dir
+	CfgFile::m_fnCreateDirExeptFile(_pstFileWriteInfo->m_clsFileName.c_str());
+	chmod(_pstFileWriteInfo->m_clsFileName.c_str(),0755);
+	#endif
+
+/*
+	clsBackupFileName = _pstFileWriteInfo->m_clsFileName;
+	clsBackupFileName+= ".bak";
+	rename(_pstFileWriteInfo->m_clsFileName.c_str(), clsBackupFileName.c_str());
+*/
+
+	nFd = open(_pstFileWriteInfo->m_clsFileName.c_str(), O_CREAT|O_WRONLY|O_TRUNC, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+	if( nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : CbFileWrite : fail : can't open file : File[%s]", 
+													pclsFileControl->m_stFileControlCfg.m_clsName.c_str(), _pstFileWriteInfo->m_clsFileName.c_str());
+		goto FAIL_WRITE;
+	}
+
+	if( unWriteDataLen == 0 )
+		goto FAIL_WRITE;
+
+	if( pclsFileControl->m_pclsDataFileMgr && !_pstFileWriteInfo->m_bUseReload4DataFile )
+		pclsFileControl->m_pclsDataFileMgr->m_fnReloadLock();
+
+	lWriteLen = write(nFd, pWriteData, unWriteDataLen);
+
+	if( pclsFileControl->m_pclsDataFileMgr && !_pstFileWriteInfo->m_bUseReload4DataFile )
+	{
+		pclsFileControl->m_pclsDataFileMgr->m_fnSetFileLastModiTime();
+		pclsFileControl->m_pclsDataFileMgr->m_fnReloadUnLock();
+	}
+	
+	if( lWriteLen != unWriteDataLen )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : CbFileWrite : fail : writeLen is unmatch : File[%s] : WriteDataLen[%u] != WriteLen[%ld]", 
+													pclsFileControl->m_stFileControlCfg.m_clsName.c_str(), _pstFileWriteInfo->m_clsFileName.c_str(), unWriteDataLen, lWriteLen);
+		goto FAIL_WRITE;
+	}
+#if 0		//syncfs first appeared in Linux 2.6.39; library support was added to glibc in version 2.14
+	if( pclsFileControl->m_stFileControlCfg.m_bDiskWrite )
+		syncfs(nFd);
+#endif
+
+	LogInternal(E_LOG_INFO, "FileControl[%s] : CbFileWrite : succ : File[%s] : WriteLen[%ld]", 
+												pclsFileControl->m_stFileControlCfg.m_clsName.c_str(), _pstFileWriteInfo->m_clsFileName.c_str(), lWriteLen);
+	if( _pstFileWriteInfo->m_pclsWriteStr )
+		LogInternal(E_LOG_DEBUG, "\n%s", _pstFileWriteInfo->m_pclsWriteStr->c_str());
+	
+	delete _pstFileWriteInfo;
+	close(nFd);
+
+	return;
+
+FAIL_WRITE :
+	delete _pstFileWriteInfo;
+	if( nFd >= 0 )
+		close(nFd);
+
+	return;	
+}
+
+char * FileControl::m_fnReadFile(const char * _pszFileName)
+{
+	if( !_pszFileName )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : ReadFile : fail : invalid argument : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		return NULL;		
+	}
+
+	int nFd = -1;
+	ssize_t  lReadLen = 0;
+	off_t lFileSize = 0;
+	char * pszFileData = NULL;
+	
+	nFd = open(_pszFileName, O_RDONLY);
+	if( nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "FileContro[%s] : ReadFile : fail : can't open file : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		goto FAIL_READ;		
+	}
+	lFileSize = lseek(nFd, 0, SEEK_END);
+	lseek(nFd, 0, SEEK_SET);
+	if( lFileSize == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : ReadFile : fail : empty file : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		goto FAIL_READ;
+	}
+
+	//read file
+	pszFileData = (char *)malloc(lFileSize+1);
+	if( !pszFileData )
+	{
+		LogInternal(E_LOG_ERR,  "FileControl[%s] : ReadFile : fail : can't create Buffer : File[%s]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName);
+		goto  FAIL_READ;
+	}
+	memset(pszFileData, 0x00, lFileSize+1);
+	lReadLen = read(nFd, pszFileData, lFileSize);
+	if( lReadLen != lFileSize )
+	{
+		LogInternal(E_LOG_ERR, "FileControl[%s] : ReadFile : fail : readLen is unmatch : File[%s] : FileLen[%ld] != ReadLen[%ld]", 
+												m_stFileControlCfg.m_clsName.c_str(), _pszFileName, lFileSize, lReadLen);
+		goto  FAIL_READ;
+	}
+
+	close(nFd);
+
+	LogInternal(E_LOG_INFO, "FileControl[%s] : ReadFile : succ : File[%s] : ReadLen[%ld]", m_stFileControlCfg.m_clsName.c_str(), _pszFileName, lReadLen);
+	LogInternal(E_LOG_DEBUG, "\n%s", pszFileData);
+	
+	return pszFileData;
+
+FAIL_READ :
+	if( nFd >= 0 )
+		close(nFd);
+	free(pszFileData);
+
+	return NULL;
+}
+
+
+}
+

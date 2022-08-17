@@ -1,0 +1,827 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows
+END
+libdb.rc
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/libdb.rc
+END
+db_upgrade.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_upgrade.dsp
+END
+db_repsite.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_repsite.vcproj
+END
+ex_lock.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_lock.vcproj
+END
+db_test.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_test.vcproj
+END
+ex_btrec.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_btrec.vcproj
+END
+dbstl_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/dbstl_common.h
+END
+exstl_txnguide.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/exstl_txnguide.vcproj
+END
+libdb.def
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/libdb.def
+END
+db.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db.h
+END
+ex_stream.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_stream.dsp
+END
+db_recover.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_recover.vcproj
+END
+excxx_example_database_read.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_example_database_read.dsp
+END
+db_java.dsp.postbuild
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_java.dsp.postbuild
+END
+example_database_load.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/example_database_load.vcproj
+END
+excxx_access.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_access.vcproj
+END
+db_load.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_load.vcproj
+END
+db_archive.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_archive.vcproj
+END
+ex_rep_mgr.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_rep_mgr.vcproj
+END
+excxx_txnguide.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_txnguide.dsp
+END
+test_micro.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/test_micro.dsp
+END
+db_recover.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_recover.dsp
+END
+db_deadlock.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_deadlock.dsp
+END
+Berkeley_DB.sln
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/Berkeley_DB.sln
+END
+include.tcl
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/include.tcl
+END
+exstl_tpcb.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/exstl_tpcb.vcproj
+END
+db_hotbackup.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_hotbackup.dsp
+END
+libdb_tcl.def
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/libdb_tcl.def
+END
+ex_csvcode.dsp.postbuild
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvcode.dsp.postbuild
+END
+dbkill.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/dbkill.cpp
+END
+php_db4.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/php_db4.vcproj
+END
+srcfile_dsp.src
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/srcfile_dsp.src
+END
+static_dsp.src
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/static_dsp.src
+END
+exstl_repquote.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/exstl_repquote.vcproj
+END
+ex_tpcb.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_tpcb.vcproj
+END
+db_hotbackup.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_hotbackup.vcproj
+END
+db_java.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_java.vcproj
+END
+excxx_sequence.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_sequence.vcproj
+END
+ex_csvload.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvload.vcproj
+END
+stl_test_stlport.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/stl_test_stlport.vcproj
+END
+ex_txnguide_inmem.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_txnguide_inmem.dsp
+END
+Berkeley_DB.dsw
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/Berkeley_DB.dsw
+END
+ex_sequence.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_sequence.vcproj
+END
+ex_txnguide.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_txnguide.dsp
+END
+ex_lock.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_lock.dsp
+END
+db_test.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_test.dsp
+END
+test_micro.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/test_micro.vcproj
+END
+db_verify.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_verify.vcproj
+END
+example_database_read.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/example_database_read.vcproj
+END
+ex_rep_mgr.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_rep_mgr.dsp
+END
+ex_rep_base.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_rep_base.vcproj
+END
+excxx_txnguide_inmem.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_txnguide_inmem.dsp
+END
+db_stl_static.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_stl_static.vcproj
+END
+excxx_example_database_load.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_example_database_load.dsp
+END
+libdbrc.src
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/libdbrc.src
+END
+db.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db.vcproj
+END
+db_printlog.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_printlog.dsp
+END
+excxx_example_database_load.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_example_database_load.vcproj
+END
+example_database_read.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/example_database_read.dsp
+END
+excxx_btrec.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_btrec.dsp
+END
+db_java_xa.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_java_xa.dsp
+END
+test_mutex.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/test_mutex.vcproj
+END
+db_static_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_static_10_0.vcxproj
+END
+db_stat.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_stat.dsp
+END
+excxx_repquote.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_repquote.dsp
+END
+excxx_lock.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_lock.vcproj
+END
+db_load.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_load.dsp
+END
+ex_txnguide_inmem.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_txnguide_inmem.vcproj
+END
+excxx_sequence.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_sequence.dsp
+END
+ex_csvload.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvload.dsp
+END
+db_dump.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_dump.vcproj
+END
+db_deadlock.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_deadlock.vcproj
+END
+ex_env.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_env.vcproj
+END
+excxx_mpool.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_mpool.dsp
+END
+db_checkpoint.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_checkpoint.vcproj
+END
+db_dump.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_dump.dsp
+END
+ex_csvquery.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvquery.dsp
+END
+clib_port.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/clib_port.h
+END
+db_dll.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_dll.dsp
+END
+excxx_mpool.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_mpool.vcproj
+END
+excxx_txnguide.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_txnguide.vcproj
+END
+excxx_env.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_env.vcproj
+END
+ex_tpcb.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_tpcb.dsp
+END
+ex_csvquery.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvquery.vcproj
+END
+dynamic_dsp.src
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/dynamic_dsp.src
+END
+db_static.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_static.dsp
+END
+exstl_access.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/exstl_access.vcproj
+END
+db_stat.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_stat.vcproj
+END
+ex_txnguide.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_txnguide.vcproj
+END
+db_csharp.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_csharp.vcproj
+END
+ex_sequence.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_sequence.dsp
+END
+excxx_example_database_read.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_example_database_read.vcproj
+END
+excxx_lock.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_lock.dsp
+END
+excxx_txnguide_inmem.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_txnguide_inmem.vcproj
+END
+db_cxx.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_cxx.h
+END
+db_upgrade.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_upgrade.vcproj
+END
+db_java_xaj.mak
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_java_xaj.mak
+END
+ex_rep_base.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_rep_base.dsp
+END
+example_database_load.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/example_database_load.dsp
+END
+db_perf.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_perf.vcproj
+END
+db_static_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_static_8_0.vcproj
+END
+db_printlog.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_printlog.vcproj
+END
+db_sql.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_sql.vcproj
+END
+excxx_tpcb.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_tpcb.vcproj
+END
+db_stl.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_stl.vcproj
+END
+db_archive.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_archive.dsp
+END
+build_all.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/build_all.dsp
+END
+ex_btrec.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_btrec.dsp
+END
+ex_mpool.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_mpool.vcproj
+END
+excxx_repquote.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_repquote.vcproj
+END
+db_small_static.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_small_static.vcproj
+END
+db_tcl.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_tcl.vcproj
+END
+excxx_env.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_env.dsp
+END
+db_verify.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_verify.dsp
+END
+db_small.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_small.dsp
+END
+stl_test.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/stl_test.vcproj
+END
+db_repsite.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_repsite.dsp
+END
+db_static_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_static_9_0.vcproj
+END
+ex_mpool.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_mpool.dsp
+END
+ex_env.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_env.dsp
+END
+db_java.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_java.dsp
+END
+app_dsp.src
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/app_dsp.src
+END
+excxx_btrec.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_btrec.vcproj
+END
+db_checkpoint.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_checkpoint.dsp
+END
+ex_access.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_access.dsp
+END
+ex_csvcode.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvcode.vcproj
+END
+db_int.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_int.h
+END
+test_mutex.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/test_mutex.dsp
+END
+ex_stream.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_stream.vcproj
+END
+excxx_tpcb.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_tpcb.dsp
+END
+BDB_dotNet.sln
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/BDB_dotNet.sln
+END
+ex_access.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_access.vcproj
+END
+db_config.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_config.h
+END
+stl_test_msexamples.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/stl_test_msexamples.vcproj
+END
+excxx_access.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/excxx_access.dsp
+END
+ex_csvcode.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/ex_csvcode.dsp
+END
+db_tcl.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/build_windows/db_tcl.dsp
+END

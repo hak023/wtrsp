@@ -1,0 +1,1082 @@
+#include "eSipRteUtil.hxx"
+#include "eSipRte.hxx"
+
+#ifndef LINUX
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
+#define	AL_FTOK_ID		'x'
+#define	AL_SHM_MODE	0666
+#define	AL_SEM_MODE	0666
+
+namespace eSIP
+{
+
+CSipRteUtil::CSipRteUtil()
+{
+
+}
+
+CSipRteUtil::~CSipRteUtil()
+{
+
+}
+
+bool CSipRteUtil::IsDir(const char *pname)
+{
+  struct stat buf; 
+  if (stat(pname, &buf) != 0)
+     return false;
+  if ((buf.st_mode & S_IFDIR) == S_IFDIR)
+     return true;
+  else
+     return false;
+
+}
+
+void CSipRteUtil::MakeDir(char* _pszPath)
+{
+   //dir check
+   if( IsDir(_pszPath)){
+     return;
+   }
+
+   int nLen=0;
+   char szBuf[256];szBuf[255]=0x00;
+   strncpy(szBuf,_pszPath,sizeof(szBuf)-1);
+   nLen=strlen(szBuf);
+   char szDir[8][128];
+   int nRet=0;
+   int nCnt=0;
+   nRet=CSipRteUtil::StrToken(szBuf,(char*)"/",szDir,nCnt,8);
+   if( nCnt == 0 )  return;
+   //make dir
+   mode_t curMode= umask(0);
+   for(int i=0; i < nCnt && i < 8 ;i++){
+      if( szDir[i][0] == 0x00 ) break;
+      szBuf[0]=0x00;
+      for( int j = 0 ; j <= i && j < nCnt && j < 8 ; j++){
+         snprintf(szBuf+strlen(szBuf),sizeof(szBuf)-1,"%s/",szDir[j]);
+      }
+      if( IsDir(szBuf) ){
+         continue;
+      }
+      //make dir
+      nRet=mkdir(szBuf,0777);
+      if(nRet!=0) break;
+   }
+   umask(curMode);
+}
+
+void CSipRteUtil::MicroSleep(int usec)
+{
+  timespec req;
+  req.tv_sec = 0;
+  req.tv_nsec = usec * 1000;
+  nanosleep(&req, NULL);
+}
+
+void CSipRteUtil::MilliSleep(int msec)
+{
+  int nSec=0;
+  if(msec >= 1000)
+  {
+    nSec = msec/1000;
+    msec = msec%1000;
+  }
+  timespec req;
+
+  req.tv_sec  = nSec;
+  req.tv_nsec = msec * 1000000;
+  nanosleep(&req, NULL);
+}
+
+unsigned int CSipRteUtil::GetTimeDiff(CTimeDiff* time_diff,bool bIsFirst)
+{
+  unsigned int tt = 0;
+
+  unsigned int lSec=0L;
+  unsigned int lUsec=0L;
+
+  if (bIsFirst)
+  {
+      gettimeofday(&(time_diff->timev_s), NULL);
+      return 0;
+  }
+  gettimeofday(&(time_diff->timev), NULL);
+
+  lSec=time_diff->timev.tv_sec - time_diff->timev_s.tv_sec;
+  if ( time_diff->timev.tv_usec >  time_diff->timev_s.tv_usec )
+  {
+      lUsec=time_diff->timev.tv_usec - time_diff->timev_s.tv_usec;
+  }
+  else
+  {
+      lUsec=(time_diff->timev.tv_usec+1000000) - time_diff->timev_s.tv_usec;
+      lSec--;
+  }
+  tt = (lSec*1000) + lUsec/1000;
+
+  return tt; 
+}
+
+unsigned int CSipRteUtil::GetTimeDiff(CTimeDiff* time_diff)
+{
+  unsigned int tt = 0;
+
+  unsigned int lSec=0L;
+  unsigned int lUsec=0L;
+
+	if ( time_diff->timev.tv_sec == 0 ||
+			time_diff->timev_s.tv_sec == 0 ){
+		return 0;
+	}
+
+  lSec=time_diff->timev.tv_sec - time_diff->timev_s.tv_sec;
+  if ( time_diff->timev.tv_usec >  time_diff->timev_s.tv_usec )
+  {
+      lUsec=time_diff->timev.tv_usec - time_diff->timev_s.tv_usec;
+  }
+  else
+  {
+      lUsec=(time_diff->timev.tv_usec+1000000) - time_diff->timev_s.tv_usec;
+      lSec--;
+  }
+  tt = (lSec*1000) + lUsec/1000;
+
+  return tt; 
+}
+
+char* CSipRteUtil::RTrim(char *str) 
+{
+	for (int i = strlen(str) - 1; i >= 0; i--)
+	{
+		if (str[i] == ' ' || str[i] == '\t' ||str[i] == '\r'|| str[i] == '\n')
+		{
+			str[i] = 0;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return (str);
+}
+
+char* CSipRteUtil::LTrim(char *str) 
+{
+	char tmpBuf[1024*2];
+	int trimCnt=0;
+   memset(tmpBuf,0x00,sizeof(tmpBuf));
+	strncpy(tmpBuf,str,sizeof(tmpBuf)-1);
+
+	for (unsigned int i = 0; i < strlen(str); i++)
+	{
+		if (tmpBuf[i] == ' ' || tmpBuf[i] == '\t' ||tmpBuf[i] == '\r'|| str[i] == '\n' )
+		{
+			trimCnt++;
+		}
+		else
+		{
+			break;
+		}
+	}
+  memcpy(str,tmpBuf+trimCnt,strlen(tmpBuf+trimCnt));
+	str[strlen(tmpBuf+trimCnt)]=0x00;
+	return str;
+}
+
+char* CSipRteUtil::LRTrim(char *str) 
+{
+  LTrim(str);
+	return RTrim(str);
+}
+int CSipRteUtil::StrTokenFix(char *str,char* cDelemeter,char (*pOut)[128],int outFixCnt)
+{
+   char tmpStr[1024*2];
+   char* tmpPtr=NULL;
+    
+   memset(tmpStr,0x00,sizeof(tmpStr));
+   strncpy(tmpStr,str,sizeof(tmpStr));
+   int outCnt=0;
+   char* miscPtr[2];
+   LRTrim(tmpStr);
+
+   if( outFixCnt <= 0 ) return -1;
+
+   if( (tmpPtr=strtok_r(tmpStr,cDelemeter,&miscPtr[0]) )==NULL ){
+    outCnt=0;
+    return -1;
+   }
+   strncpy(pOut[outCnt],tmpPtr,sizeof(pOut[outCnt])-1);
+   LRTrim(pOut[outCnt]);
+   outCnt=1;
+  
+   if ( outCnt >= outFixCnt ) return 0;       
+   while(tmpPtr)
+   {    
+      if ( outCnt+1 >= outFixCnt )
+      {
+         if ( miscPtr[0] != NULL ){
+            strncpy(pOut[outCnt],miscPtr[0],sizeof(pOut[outCnt])-1);
+            LRTrim(pOut[outCnt]);
+         }else{
+            return -1;
+         }
+         break;
+      }
+      tmpPtr=NULL;
+      tmpPtr=strtok_r(NULL,cDelemeter,&miscPtr[0]);
+      if (tmpPtr)
+      {
+         strncpy(pOut[outCnt],tmpPtr,sizeof(pOut[outCnt])-1);
+         LRTrim(pOut[outCnt]);
+         outCnt+=1;
+      }
+   }
+
+   return 0;
+}
+int CSipRteUtil::StrToken(char *str,char* cDelemeter,char (*pOut)[128],int& outCnt,int nMaxCnt)
+{
+ char tmpStr[1024*2];
+ char* tmpPtr=NULL;
+
+ memset(tmpStr,0x00,sizeof(tmpStr));
+ strncpy(tmpStr,str,sizeof(tmpStr));
+ char* miscPtr[2];
+ outCnt=0;
+ LRTrim(tmpStr);
+
+ if( (tmpPtr=strtok_r(tmpStr,cDelemeter,&miscPtr[0]) )==NULL ){
+	 outCnt=0;
+	 return -1;
+ }
+ strncpy(pOut[outCnt],tmpPtr,sizeof(pOut[outCnt])-1);
+ LRTrim(pOut[outCnt]);
+ outCnt=1;
+
+ while(tmpPtr)
+ {
+	  tmpPtr=NULL;
+		tmpPtr=strtok_r(NULL,cDelemeter,&miscPtr[0]);
+		if (tmpPtr)
+		{
+			strncpy(pOut[outCnt],tmpPtr,sizeof(pOut[outCnt])-1);
+			LRTrim(pOut[outCnt]);
+			outCnt+=1;
+		}
+		if ( outCnt == nMaxCnt )
+		{
+			break;
+		}
+ }
+ 
+ return 0;
+}
+
+
+void CSipRteUtil::GetStrCurrentTime(char* buf)
+{
+
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+
+	//sprintf( buf, "%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, int(tp.tv_usec / 1000) );
+	sprintf( buf, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+}
+void CSipRteUtil::GetStrCurrentTimeMs(char* buf)
+{
+
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+
+	sprintf( buf, "%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, int(tp.tv_usec / 1000) );
+}
+void CSipRteUtil::GetStrCurrentDateTime(char* buf)
+{
+
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+
+	//sprintf(buf, "%04d/%02d/%02d %02d:%02d:%02d.%03d",
+  //       (1900 + t->tm_year),(t->tm_mon + 1), t->tm_mday,t->tm_hour, t->tm_min, t->tm_sec, int(tp.tv_usec / 1000) );
+	sprintf(buf, "%04d/%02d/%02d %02d:%02d:%02d",
+         (1900 + t->tm_year),(t->tm_mon + 1), t->tm_mday,t->tm_hour, t->tm_min, t->tm_sec);
+}
+
+void CSipRteUtil::GetStrDateTime(struct timeval* tp, char* buf){
+
+	struct tm *t;
+	struct tm   strtm;
+	t = localtime_r(&(tp->tv_sec),&strtm);
+
+	//sprintf(buf, "%04d/%02d/%02d %02d:%02d:%02d.%03d",
+  //       (1900 + t->tm_year),(t->tm_mon + 1), t->tm_mday,t->tm_hour, t->tm_min, t->tm_sec, int(tp->tv_usec / 1000) );
+	sprintf(buf, "%04d/%02d/%02d %02d:%02d:%02d",
+         (1900 + t->tm_year),(t->tm_mon + 1), t->tm_mday,t->tm_hour, t->tm_min, t->tm_sec);
+
+}
+void CSipRteUtil::GetStrTime(struct timeval* tp, char* buf){
+
+	struct tm *t;
+	struct tm   strtm;
+	t = localtime_r(&(tp->tv_sec),&strtm);
+
+	//sprintf(buf, "%02d:%02d:%02d.%03d", t->tm_hour, t->tm_min, t->tm_sec, int(tp->tv_usec / 1000) );
+	sprintf(buf, "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+
+}
+time_t CSipRteUtil::GetTimeFromStr(char* timeBuff)
+{
+   int yy, mm, dd, hour, min, sec;
+   struct tm* t;
+   struct timeval tp;
+   sscanf(timeBuff, "%d/%d/%d %d:%d:%d", &yy, &mm, &dd, &hour, &min, &sec);
+
+   struct tm   strtm;
+   gettimeofday(&tp, NULL);
+   tp.tv_usec=0;
+   t = localtime_r(&tp.tv_sec,&strtm);
+
+   t->tm_year = yy - 1900 ;
+   t->tm_mon  = mm -1;
+   t->tm_mday = dd;
+   t->tm_hour = hour;
+   t->tm_min  = min;
+   t->tm_sec  = sec;
+   return( mktime(t) );
+}
+
+int CSipRteUtil::GetMinuteByTimeval(struct timeval* tp)
+{
+	struct tm *t;
+	struct tm   strtm;
+	t = localtime_r(&(tp->tv_sec),&strtm);
+	return t->tm_min;
+}
+
+int CSipRteUtil::GetMinuteByCurrentTime()
+{
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+	return t->tm_min;
+}
+void CSipRteUtil::GetStrCurrentDate2(char* buf)
+{
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+
+	sprintf(buf, "%04d%02d%02d", (1900 + t->tm_year),(t->tm_mon + 1), t->tm_mday);
+
+}
+void CSipRteUtil::GetStrCurrentTime2(char* buf)
+{
+
+	struct tm *t;
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+
+	struct tm   strtm;
+	t = localtime_r(&tp.tv_sec,&strtm);
+
+	sprintf(buf, "%02d%02d",t->tm_hour, t->tm_min);
+}
+void CSipRteUtil::GetStrDate2(struct timeval* tp,char* buf)
+{
+	struct tm *t;
+	struct tm   strtm;
+	t = localtime_r(&tp->tv_sec,&strtm);
+
+	sprintf(buf, "%04d%02d%02d", (1900 + t->tm_year),(t->tm_mon + 1),t->tm_mday);
+
+}
+void CSipRteUtil::GetStrTime2(struct timeval* tp,char* buf)
+{
+	struct tm *t;
+	struct tm   strtm;
+	t = localtime_r(&tp->tv_sec,&strtm);
+
+	sprintf(buf, "%02d%02d",t->tm_hour, t->tm_min);
+
+}
+
+void CSipRteUtil::nAddrToszAddr(unsigned int nAddr,char * szAddr)
+{
+   uint n1st,n2nd,n3rd,n4th;
+
+   n1st = nAddr >> 24;
+   n2nd = (nAddr & 0x00ff0000 ) >> 16;
+   n3rd = (nAddr & 0x0000ff00 ) >> 8;
+   n4th = nAddr & 0x000000ff;
+#ifndef LINUX
+   sprintf(szAddr,"%d.%d.%d.%d",n1st,n2nd,n3rd,n4th);
+#else
+   sprintf(szAddr,"%d.%d.%d.%d",n4th,n3rd,n2nd,n1st);
+#endif
+}
+void* CSipRteUtil::m_fnCreateShm(int _nSize, key_t _key, int _nRdOnly)
+{
+   int nOldShmId=-1;
+   int nShmId=-1;
+   void *pvShm=NULL;
+
+#if 0
+   //get key with file path
+   if ((_key = ftok(_pszPath, 'x')) < 0) {
+      return NULL;
+   }
+#endif
+   //shm get
+   if ((nShmId = shmget(_key, 0, 0)) < 0) {
+      if (errno != ENOENT) {
+         return NULL;
+      }
+      if ((nShmId = shmget(_key, _nSize, 0666 | IPC_CREAT | IPC_EXCL)) < 0) {
+         return NULL;
+      }
+   }else {
+      nOldShmId = nShmId;
+      if ((nShmId = shmget(_key, _nSize, 0666)) < 0) {
+         return NULL;
+      }
+   }
+
+   if (_nRdOnly){
+      pvShm = shmat(nShmId, 0, SHM_RDONLY);
+   }else{
+      pvShm = shmat(nShmId, 0, 0);
+   }
+   if ((int)(long)pvShm == -1) {
+      return NULL;
+   }
+   return pvShm;
+}
+
+void* CSipRteUtil::m_fnCreateShm(const char* _pszPath, int _nSize, key_t& _key,int _nRdOnly)
+{
+   int nOldShmId=-1;
+   int nShmId=-1;
+   void *pvShm=NULL;
+
+   //get key with file path
+   if ((_key = ftok(_pszPath, 'x')) < 0) {
+      return NULL;
+   }
+
+   //shm get
+   if ((nShmId = shmget(_key, 0, 0)) < 0) {
+      if (errno != ENOENT) {
+         return NULL;
+      }
+      if ((nShmId = shmget(_key, _nSize, 0666 | IPC_CREAT | IPC_EXCL)) < 0) {
+         return NULL;
+      }
+   }else {
+      nOldShmId = nShmId;
+      if ((nShmId = shmget(_key, _nSize, 0666)) < 0) {
+         return NULL;
+      }
+   }
+
+   if (_nRdOnly){
+      pvShm = shmat(nShmId, 0, SHM_RDONLY);
+   }else{
+      pvShm = shmat(nShmId, 0, 0);
+   }
+   if ((int)(long)pvShm == -1) {
+      return NULL;
+   }
+   return pvShm;
+}
+int CSipRteUtil::m_fnDestroyShm(const char *pszPath)
+{
+   key_t key;
+   int nShmId;
+   if ((key = ftok(pszPath, 'x')) < 0) {
+      return -1;
+   }
+
+   if ((nShmId = shmget(key, 0, 0666)) < 0) {
+      if (errno == ENOENT) {
+         return 1;
+      }
+      return -1;
+   }
+   if (shmctl(nShmId, IPC_RMID, 0) < 0) {
+      return -1;
+   }
+   return 1;
+}
+
+
+int CSipRteUtil::axtoi(char* pszHex) {
+   int n = 0;
+   int m = 0;
+   int nCount;
+   int nValue = 0;
+   int nDigit[8+1];
+   if (strncasecmp(pszHex, "0x", 2) == 0) {
+      pszHex += 2;
+   }
+   while (n < 8) {
+      if (pszHex[n]=='\0')
+         break;
+      if (pszHex[n] > 0x29 && pszHex[n] < 0x40 )
+         nDigit[n] = pszHex[n] & 0x0f;
+      else if (pszHex[n] >='a' && pszHex[n] <= 'f')
+         nDigit[n] = (pszHex[n] & 0x0f) + 9;
+      else if (pszHex[n] >='A' && pszHex[n] <= 'F')
+         nDigit[n] = (pszHex[n] & 0x0f) + 9;
+      else break;
+         n++;
+   }
+   nCount = n;
+   m = n - 1;
+   n = 0;
+   while(n < nCount) {
+      nValue = nValue | (nDigit[n] << (m << 2));
+      m--; n++;
+   }
+   return (nValue);
+}
+
+//SIP util
+void CSipRteUtil::m_fnLTrim(char*& _prStr)
+{
+   if( _prStr == NULL || _prStr[0] == 0x00 ) return;
+
+   int nCnt=0;
+   int nLen=strlen(_prStr);
+   if( nLen <= 0 ) return;
+   
+   char szbuf[2048];
+   strncpy(szbuf,_prStr,sizeof(szbuf)-2);
+
+   for (int i = 0; i < nLen; i++)
+   {
+      if (szbuf[i] == ' ' || szbuf[i] == '\t' || szbuf[i] == '\r'|| szbuf[i] == '\n' ){
+         nCnt++;
+      }else{
+         break;
+      }
+   }
+   if( nCnt > 0 && nCnt <= nLen){
+      memcpy(_prStr,szbuf+nCnt,nLen-nCnt);
+      _prStr[nLen-nCnt]=0x00;
+   }
+}
+
+void CSipRteUtil::m_fnRTrim(char* _pStr)
+{
+   if( _pStr == NULL || _pStr[0] == 0x00 ) return;
+   
+   int nLen=strlen(_pStr);
+   if( nLen <= 0 ) return;
+
+   for (int i = (nLen-1); i >= 0; i--)
+   {
+      if (_pStr[i] == ' ' || _pStr[i] == '\t' || _pStr[i] == '\r'|| _pStr[i] == '\n')
+      {
+         _pStr[i] = 0x00;
+      }
+      else
+      {
+         break;
+      }
+   }
+}
+
+
+void CSipRteUtil::m_fnLRTrim(char* _pStr)
+{
+   m_fnRTrim(_pStr);
+   m_fnLTrim(_pStr);
+}
+
+
+void CSipRteUtil::m_fnStrToken(char* _pStr, CSipRteUtilValue_t* _pstData ,int& _rCnt,char _cDelemter)
+{
+   if (_pStr==NULL || _pStr[0] == 0x00 ||
+         _pstData == NULL || _rCnt <= 0 ){
+      _rCnt=0;
+      return;
+   }
+   int nLen=strlen(_pStr);
+   int nStart=0;
+   int nCopyLen=0;
+   int nMaxCnt=_rCnt;
+   _rCnt=0;
+   for( int i = 0 ; i < nLen ;i++){
+      if( _rCnt >= nMaxCnt){
+         break;
+      }
+      if( (unsigned char)(*(_pStr+i)) == (unsigned char)_cDelemter){
+         nCopyLen=(i-nStart);
+         if( nCopyLen > 0 ){
+            if( nCopyLen > (CSipRteUtilValue_t::E_MAXLEN_VALUE - 1) ){
+               nCopyLen= (CSipRteUtilValue_t::E_MAXLEN_VALUE - 1);
+            }
+            memcpy((_pstData+_rCnt)->m_szData,(_pStr+nStart),nCopyLen);
+            (_pstData+_rCnt)->m_szData[nCopyLen]=0x00;
+         }else if ( nCopyLen == 0 ){
+            (_pstData+_rCnt)->m_szData[0]=0x00;
+         }else{
+            break;
+         }
+         if( (i+1) <= nLen ){
+            nStart=(i+1);
+         }
+         _rCnt++;
+      }
+   }
+   if( nStart <= nLen && _rCnt <  nMaxCnt){
+      nCopyLen=(nLen - nStart);
+      if( nCopyLen > 0 ){
+         if( nCopyLen > (CSipRteUtilValue_t::E_MAXLEN_VALUE - 1) ){
+            nCopyLen= (CSipRteUtilValue_t::E_MAXLEN_VALUE - 1);
+         }
+         memcpy((_pstData+_rCnt)->m_szData,(_pStr+nStart),nCopyLen);
+         (_pstData+_rCnt)->m_szData[nCopyLen]=0x00;
+      }else if ( nCopyLen == 0 ){
+         (_pstData+_rCnt)->m_szData[0]=0x00;
+      }
+       _rCnt++;
+   }
+   return;
+}
+
+bool CSipRteUtil::m_fnIsNumberString(char* _pStr)
+{
+   if( _pStr == NULL || _pStr[0] == 0x00 ) return false;
+   int nLen=strlen(_pStr);
+   for( int i=0; i < nLen; i++){
+      if(!(*(_pStr+i) >= '0' && *(_pStr+i) <= '9')){
+         return false;
+      }
+   }
+   return true;
+}
+bool CSipRteUtil::m_fnIsIPv4String(char* _pStr)
+{
+   if( _pStr == NULL || _pStr[0] == 0x00 ) return false;
+   int nLen=strlen(_pStr);
+   int nCnt=0;
+   bool bDot=false;
+   char szBuf[128];
+   int nIdx=0;
+   int nNum=0;
+   for( int i=0; i < nLen; i++){
+      if( *(_pStr+i) == '.' ){
+         if( i == 0 ) return false;
+         nCnt++; 
+         if( bDot ) return false;
+         bDot=true;
+         if( strlen(szBuf) <= 0 ) return false;
+         nNum=atoi(szBuf) ;
+         if( nNum < 0 || nNum >= 256 ) return false;
+         if( (nNum >= 0 &&  nNum <= 9) && strlen(szBuf) != 1 ) return false;
+         else if( (nNum >= 10 &&  nNum <= 99) && strlen(szBuf) != 2 ) return false;
+         else if( (nNum >= 100 &&  nNum <= 255) && strlen(szBuf) != 3 ) return false;
+         nIdx=0;
+         continue;
+      }
+      if(*(_pStr+i) >= '0' && *(_pStr+i) <= '9'){
+         szBuf[nIdx]=*(_pStr+i);
+         nIdx++;
+         szBuf[nIdx]=0x00;
+         bDot=false;
+         continue;
+      }
+      return false;
+   }
+   if(nCnt!=3) return false;
+   if( strlen(szBuf) <= 0 ) return false;
+   nNum=atoi(szBuf) ;
+   if( nNum < 0 || nNum >= 256 ) return false;
+   if( (nNum >= 0 &&  nNum <= 9) && strlen(szBuf) != 1 ) return false;
+   else if( (nNum >= 10 &&  nNum <= 99) && strlen(szBuf) != 2 ) return false;
+   else if( (nNum >= 100 &&  nNum <= 255) && strlen(szBuf) != 3 ) return false;
+   return true;
+}
+
+bool CSipRteUtil::m_fnIsIPv6String(char* _pStr)
+{
+   if( _pStr == NULL || _pStr[0] == 0x00 ) return false;
+   int nLen=strlen(_pStr);
+   for( int i=0; i < nLen; i++){
+      if( *(_pStr+i) == ':' ) continue;
+      if(*(_pStr+i) >= '0' && *(_pStr+i) <= '9') continue;
+      if(*(_pStr+i) >= 'a' && *(_pStr+i) <= 'f') continue;
+      if(*(_pStr+i) >= 'A' && *(_pStr+i) <= 'F') continue;
+      return false;
+   }
+   return true;
+}
+
+bool CSipRteUtil::m_fnIsIPversion(unsigned short _usIPver)
+{
+   if( _usIPver == 4 || _usIPver ==6 ) return true;
+   return false;
+}
+bool CSipRteUtil::m_fnIsPort(unsigned int _uiPort)
+{
+   if( _uiPort >= 1 && _uiPort <= 65535 ) return true;
+   return false;
+}
+
+bool CSipRteUtil::m_fnIsID(unsigned int _uiID)
+{
+   if( _uiID >= 1 && _uiID <= 9999999 ) return true;
+   return false;
+}
+
+
+bool CSipRteUtil::m_fnIsNodeStatus(int _nNodeStatus)
+{
+#if 1
+   return true;
+#else
+  if( _nNodeStatus >= E_STATUS_AVAIL &&
+      _nNodeStatus <= (E_STATUS_AVAIL|E_STATUS_MBLOCK|E_STATUS_RBLOCK|E_STATUS_FBLOCK)){
+      return true;
+   }
+   return false;
+#endif
+}
+
+bool CSipRteUtil::m_fnIsSipProtcolType(unsigned short _usProto)
+{
+   if( _usProto <  (unsigned short)E_ESIP_TRANSPORT_MAX ){
+      return true;
+   }
+   return false;
+}
+
+void CSipRteUtil::m_fnMakeSipNodeKey(char* _pIP,unsigned short _usPort, unsigned char _ucType,
+                                 char* _pOutKey)
+{
+   snprintf(_pOutKey,127,"%s_%u_%u",_pIP,_usPort,_ucType);
+}
+
+void CSipRteUtil::m_fnMakeRouteNodeKey(unsigned int _uiLID, unsigned int _uiRID,char* _pOutKey)
+{
+   snprintf(_pOutKey,127,"%u_%u",_uiLID,_uiRID);
+}
+
+int CSipRteUtil::m_fnGetCpuUsage()
+{
+	FILE* fd=NULL;
+	const char* sFilepath = "/proc/stat";
+	char buf[256];buf[0]=0x00;
+	int rc=0;
+	static double nowtotal[8]={0,},pretotal[8]={0,};
+	static double init = 0;
+	unsigned int sum = 0;
+	unsigned int idle=0, user=0, ioWait=0, kernel=0;
+
+	idle = 100;
+	user = 0;
+	kernel = 0;
+	if(!init) {
+		init = 1;
+		return 0;
+	}
+	if((fd = fopen(sFilepath, "r")) == NULL) {
+		return 0;
+	}
+   //the first line
+   //cpu  413241 65287 123003 191773819 57081 155294 26436 0
+   //skip cpu
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+   //add by yun @201602 R105_P3 resource leadk. fd
+	   fclose(fd);
+		return 0;
+	}
+	for(int i=0;i<7;i++) {
+		rc = fscanf(fd,"%lf", &(nowtotal[i]));
+		if(rc < 1) {
+			fclose(fd);
+			return 0;
+		}
+	}
+	fclose(fd);
+
+	nowtotal[7] = 0;
+	for(int i=0;i<7;i++) {
+		nowtotal[7] += nowtotal[i];
+	}
+	sum =(unsigned int)(nowtotal[7]-pretotal[7]);
+	user   = (unsigned int)(100.0*(nowtotal[0]-pretotal[0])/sum + 0.5);
+	kernel = (unsigned int)(100.0*(nowtotal[2]-pretotal[2])/sum + 0.5);
+	ioWait = (unsigned int)(100.0*(nowtotal[4]-pretotal[4])/sum + 0.5);
+	idle   = 100 - (user + kernel + ioWait);
+
+#if 0
+	for(int i=0;i<7;i++) {
+		//      printf("pretotal[%d] : %f\n",i, pretotal[i]);
+	}
+
+	for(int i=0;i<7;i++) {
+//      printf("nowtotal[%d] : %f\n",i, nowtotal[i]);
+	}
+#endif
+	for(int i=0;i<8;i++) {
+		pretotal[i] = nowtotal[i];
+	}
+	//  return (100-idle);
+	if((idle < 0) || (idle > 100)){
+		return 0;
+	} else {
+		return (100-idle);
+	}
+}
+
+/**
+*total: total memory
+*free : Memfree + Buffers + Cached - Shem
+
+***Caution
+*total == 0 or *free == 0 is fail.
+
+**/
+#define RHEL_MEMINFO_LEN_TOTAL       (9)
+#define RHEL_MEMINFO_LEN_FREE        (8)
+#define RHEL_MEMINFO_LEN_BUFFERS     (8)
+#define RHEL_MEMINFO_LEN_CACHED      (7)
+#define RHEL_MEMINFO_LEN_SHMEM       (6)
+void CSipRteUtil::m_fnGetRealMemInfo(int* total, int* free)
+{
+#if 1
+   char strKey[256], strValue[256];
+   unsigned int nFree = 0,    //MemFree
+                nCached = 0,  //Cached
+                nBuffers = 0, //Buffers
+                nShmem = 0;   //Shmem
+
+   //initialize
+   *total=0;
+   *free=0;
+
+   FILE *fd = fopen("/proc/meminfo", "r");
+   if (fd == NULL) {
+      return;
+   }
+
+   char strBuff[1024];
+   memset(strBuff, 0x00, sizeof(strBuff));
+   char* tmpPtr=NULL;
+   char* miscPtr[2];
+   bool  bFind[5]={false,};
+   int nTmpLen=0;
+
+   while (fgets(strBuff, sizeof(strBuff)-1, fd) != NULL) {
+      memset(strKey, 0x00, sizeof(strKey));
+      memset(strValue, 0x00, sizeof(strValue));
+
+      //the first string token
+      tmpPtr=NULL;
+      //strtok_r thread safe
+      if( (tmpPtr=strtok_r(strBuff," ",&miscPtr[0]) )==NULL ){
+         continue;
+      }else{
+         strncpy(strKey,tmpPtr,sizeof(strKey)-1);
+      }
+      //the second string token
+      tmpPtr=NULL;
+      //strtok_r thread safe
+      if( (tmpPtr=strtok_r(NULL," ",&miscPtr[0]) )==NULL ){
+         continue;
+      }else{
+         strncpy(strValue,tmpPtr,sizeof(strValue)-1);
+         //should be number type. 
+         nTmpLen=strlen(strValue);
+         //check number type
+         bool bIsNumber=true;
+         for( int i =0 ; i < nTmpLen ; i ++){
+            if( !(strValue[i] >= '0' && strValue[i] <= '9')){
+               bIsNumber=false;
+               break;
+            }
+         }
+         if( nTmpLen > 0 && bIsNumber == false ) continue;
+      }
+      if (strncasecmp(strKey, "MemTotal:",RHEL_MEMINFO_LEN_TOTAL) == 0) {
+         *total = atoi(strValue);
+         bFind[0]=true;
+      }else if (strncasecmp(strKey, "MemFree:",RHEL_MEMINFO_LEN_FREE) == 0) {
+         nFree = atoi(strValue);
+         bFind[1]=true;
+      }else if (strncasecmp(strKey, "Buffers:",RHEL_MEMINFO_LEN_BUFFERS) == 0) {
+         nBuffers = atoi(strValue);
+         bFind[2]=true;
+      }else if (strncasecmp(strKey, "Cached:",RHEL_MEMINFO_LEN_CACHED) == 0) {
+         nCached = atoi(strValue);
+         bFind[3]=true;
+      }else if (strncasecmp(strKey, "Shmem:",RHEL_MEMINFO_LEN_SHMEM) == 0) {
+         nShmem = atoi(strValue);
+         bFind[4]=true;
+      }
+      //check parsing end...
+      if((bFind[0] == true) &&
+         (bFind[0] == bFind[1]) && 
+         (bFind[1] == bFind[2]) &&
+         (bFind[2] == bFind[3]) &&
+         (bFind[3] == bFind[4])){
+            break;
+      }
+   }
+   //fclose..
+   fclose(fd);
+
+   //check parsing result
+   if((bFind[0] == true) &&
+      (bFind[0] == bFind[1]) && 
+      (bFind[1] == bFind[2]) &&
+      (bFind[2] == bFind[3])){
+      if( nFree > 0 ){
+         *free = nFree;
+      }
+      if ( nBuffers> 0 ){
+         *free += nBuffers;
+      }
+      if ( nCached> 0 ){
+         *free += nCached;
+      }
+   } 
+
+   //check shared mem
+   if( bFind[4] == true && nShmem > 0 ){
+      *free -= nShmem;
+   }
+      
+   //exception
+   if( *free <=0 ) *free=0;
+   if( *total <=0 ) *total=0;
+   if( *free > *total ) *free=*total;
+#else
+	FILE* fd;
+	const char* sFilepath = "/proc/meminfo";
+	char buf[128];
+	char* p;
+	int rc;
+	float ftotal=0, ffree=0, fcached=0, fbuffered=0, favailable=0;
+
+	if((fd = fopen(sFilepath, "r")) == NULL) {
+		return;
+	}
+
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+	rc = fscanf(fd,"%f", &ftotal);
+
+	p = fgets(buf, 128, fd);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+	rc = fscanf(fd,"%f", &ffree);
+
+	p = fgets(buf, 128, fd);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+#ifdef _USRDEF_LINUX_7
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+	rc = fscanf(fd,"%f", &favailable);
+
+	p = fgets(buf, 128, fd);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+#endif
+
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+	rc = fscanf(fd,"%f", &fbuffered);
+
+	p = fgets(buf, 128, fd);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+
+	rc = fscanf(fd,"%s", buf);
+	if(rc < 1) {
+		fclose(fd);
+		return;
+	}
+	rc = fscanf(fd,"%f", &fcached);
+
+	p = fgets(buf, 128, fd);
+	if(rc < 1) {
+		printf("8. File read error!!!\n");
+		fclose(fd);
+		return;
+	}
+#ifdef _USRDEF_LINUX_7
+
+
+#endif
+	fclose(fd);
+	*total = (int)(ftotal);
+	*free = (int)(ffree) + (int)fbuffered + (int)fcached;
+
+#endif
+
+} 
+
+//add @vibc
+unsigned int CSipRteUtil::m_fnCheckSum(char *buffer, size_t len)
+{
+   unsigned int seed=0;
+   unsigned char *buf = (unsigned char *)buffer;
+   size_t i;
+
+   for (i = 0; i < len; ++i)
+         seed += (unsigned int)(*buf++);
+   return seed;
+}
+
+} /*name space */
+

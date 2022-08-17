@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test
+END
+unitTests_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/unitTests_10_0.vcxproj.filters
+END
+testUA_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testUA_10_0.vcxproj.filters
+END
+testua_readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testua_readme.txt
+END
+unitTests.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/unitTests.cxx
+END
+ca.pem
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/ca.pem
+END
+record_prompt.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/record_prompt.h
+END
+testUA.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testUA.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/Makefile.am
+END
+unitTests_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/unitTests_8_0.vcproj
+END
+sdpTests.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/sdpTests.cxx
+END
+unitTests_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/unitTests_9_0.vcproj
+END
+unitTests_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/unitTests_10_0.vcxproj
+END
+testUA_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testUA_8_0.vcproj
+END
+playback_prompt.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/playback_prompt.h
+END
+testUA_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testUA_9_0.vcproj
+END
+testUA_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/test/testUA_10_0.vcxproj
+END

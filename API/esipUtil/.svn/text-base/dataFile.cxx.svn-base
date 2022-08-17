@@ -1,0 +1,272 @@
+
+#include <sys/stat.h>
+
+#include "dataFile.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+DataFileMgr::DataFileMgr()
+	: m_bInit(false), m_clsReloadFileThread(NULL), m_ulFileLastModiTime(0), m_pApplyCbObject1(NULL), m_pApplyCbObject2(NULL)
+{
+}
+
+DataFileMgr::~DataFileMgr()
+{
+}
+
+bool DataFileMgr::m_fnInit(const DataFileConfig & _rstDataFileCfg, void * _pApplyObject1, void * _pApplyObject2)
+{
+	if( m_bInit )
+		return true;	
+
+	m_stDataFileCfg = _rstDataFileCfg;
+	
+	if( !m_clsFileCtrl.m_fnInit(_rstDataFileCfg.m_stFileCtrlCfg, this) )
+		return false;
+	
+	if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_column )
+	{
+		if( !m_clsColumnMgr.m_fnInit(_rstDataFileCfg.m_stColumnStrCfg) )
+			return false;
+	}
+	else if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_json )
+	{
+		;
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : Init : fail : invalid File Format", m_stDataFileCfg.m_clsMgrName.c_str());
+		return false;
+	}
+	m_pApplyCbObject1 = _pApplyObject1;
+	m_pApplyCbObject2 = _pApplyObject2;
+
+	m_fnReloadFile();
+	m_clsReloadFileThread.setName(_rstDataFileCfg.m_clsMgrName.c_str());
+	m_clsReloadFileThread.setObject(this);
+	m_clsReloadFileThread.setProcessCb(m_fnCbReloadFile);
+	m_clsReloadFileThread.run();
+
+	m_bInit = true;
+	return true;
+}
+
+void DataFileMgr::m_fnWriteFile(const list_LineDataAll & _rlistLineAllData, bool _bUseReload)
+{
+	std::string * pclsWriteStr = NULL;
+	
+	if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_column )
+		pclsWriteStr = m_fnCreateFileColumnStr(_rlistLineAllData);
+	else if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_json )
+		pclsWriteStr = m_fnCreateFileJsonStr(_rlistLineAllData);
+
+	if( pclsWriteStr )
+		m_clsFileCtrl.m_fnWriteFile(m_stDataFileCfg.m_clsFileName.c_str(), pclsWriteStr, _bUseReload);
+}
+
+void DataFileMgr::m_fnSetFileLastModiTime()
+{
+	struct stat fileAttr;
+	if( stat(m_stDataFileCfg.m_clsFileName.c_str(), &fileAttr) == 0 )
+	{
+		m_ulFileLastModiTime = fileAttr.st_mtime;
+	}
+}
+
+void DataFileMgr::m_fnReloadFile()
+{
+	m_fnReloadLock();
+
+	struct stat fileAttr;
+	if( stat(m_stDataFileCfg.m_clsFileName.c_str(), &fileAttr) == 0 )
+	{
+		if( m_ulFileLastModiTime != fileAttr.st_mtime )
+		{
+			LogInternal(E_LOG_INFO, "DataFileMgr[%s] : ReloadFile : change File[%s]", 
+														m_stDataFileCfg.m_clsMgrName.c_str(), m_stDataFileCfg.m_clsFileName.c_str());
+
+			if( m_stDataFileCfg.m_pfnCbApplyData )
+			{
+				char * pszReadStr = m_clsFileCtrl.m_fnReadFile(m_stDataFileCfg.m_clsFileName.c_str());
+				if( pszReadStr )
+				{
+					list_LineDataAll listLineDataAll;
+					bool bResult = false;
+					if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_column )
+						bResult = m_fnReadFile4ColumnStr(pszReadStr, strlen(pszReadStr), listLineDataAll);
+					else if( m_stDataFileCfg.m_eFileFormat == E_FILE_FORMAT_json )
+						bResult = m_fnReadFile4JsonStr(pszReadStr, strlen(pszReadStr), listLineDataAll);
+
+					if( bResult )
+						m_stDataFileCfg.m_pfnCbApplyData(listLineDataAll, m_pApplyCbObject1, m_pApplyCbObject2);
+					free(pszReadStr);
+				}
+			}
+			else
+			{
+				LogInternal(E_LOG_INFO, "DataFileMgr[%s] : ReloadFile : fail : invalid ApplyData callback", m_stDataFileCfg.m_clsMgrName.c_str());
+			}
+
+			m_ulFileLastModiTime = fileAttr.st_mtime;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_INFO, "DataFileMgr[%s] : ReloadFile[%s] : fail : stat", 
+													m_stDataFileCfg.m_clsMgrName.c_str(), m_stDataFileCfg.m_clsFileName.c_str());
+	}
+
+	m_fnReloadUnLock();
+}
+
+void DataFileMgr::m_fnCbReloadFile(DataFileMgr * _pclsDataFileMgr)
+{
+	if( !_pclsDataFileMgr )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr : CbReloadFile : fail : invalid argument");
+		return;
+	}
+
+	_pclsDataFileMgr->m_fnReloadFile();
+
+	sleep(1);
+}
+
+std::string * DataFileMgr::m_fnCreateFileColumnStr(const list_LineDataAll & _rlistLineAllData)
+{
+	std::string * pclsWriteStr = new std::string();
+	if( !pclsWriteStr )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : CreateFileColumnStr : fail : can't create string", m_stDataFileCfg.m_clsMgrName.c_str());
+		goto FAIL;
+	}
+	pclsWriteStr->reserve(m_stDataFileCfg.m_unReserveFileLen);
+	
+	if( !m_clsColumnMgr.m_fnCreateTitleComment(*pclsWriteStr) )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : CreateFileColumnStr : fail : CreateTitleComment", m_stDataFileCfg.m_clsMgrName.c_str());
+		goto FAIL;
+	}
+
+	if( !m_clsColumnMgr.m_fnCreateAllLine(_rlistLineAllData, *pclsWriteStr) )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : CreateFileColumnStr : fail : CreateAllLine", m_stDataFileCfg.m_clsMgrName.c_str());
+		goto FAIL;
+	}
+
+	return pclsWriteStr;
+
+FAIL :
+	delete pclsWriteStr;
+	return NULL;
+}
+
+bool DataFileMgr::m_fnReadFile4ColumnStr(const char * _pData, unsigned int _unDataLen, list_LineDataAll & _rlistLineAllData)
+{
+	return m_clsColumnMgr.m_fnParsingTotalLine(_pData, _unDataLen, _rlistLineAllData);
+}
+
+std::string * DataFileMgr::m_fnCreateFileJsonStr(const list_LineDataAll & _rlistLineAllData)
+{
+	list_LineDataAll::const_iterator itrAll;
+	list_LineData::const_iterator itrLine;
+	std::string * pclsWriteStr = new std::string();
+	if( !pclsWriteStr )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : CreateFileJsonStr : fail : can't create string", m_stDataFileCfg.m_clsMgrName.c_str());
+		goto FAIL;
+	}
+	pclsWriteStr->reserve(m_stDataFileCfg.m_unReserveFileLen);
+
+	pclsWriteStr->append("{\r\n");
+
+	pclsWriteStr->append("\"\":\r\n");
+	pclsWriteStr->append("[\r\n");
+	
+	itrAll = _rlistLineAllData.begin();
+	while( itrAll != _rlistLineAllData.end() )
+	{		
+		pclsWriteStr->append("{");
+		
+		const list_LineData & listLineData = *itrAll;
+		itrLine = listLineData.begin();
+		while( itrLine != listLineData.end() )
+		{
+			pclsWriteStr->append("\"");
+			pclsWriteStr->append(itrLine->first);
+			pclsWriteStr->append("\":\"");
+			pclsWriteStr->append(itrLine->second);			
+			++itrLine;
+			if( itrLine != listLineData.end() )
+				pclsWriteStr->append("\", ");
+			else
+				pclsWriteStr->append("\"");
+		}
+		
+		pclsWriteStr->append("}");
+		++itrAll;
+		if( itrAll != _rlistLineAllData.end() )
+			pclsWriteStr->append(",\r\n");
+		else
+			pclsWriteStr->append("\r\n");
+	}
+	
+	pclsWriteStr->append("]\r\n");
+
+	pclsWriteStr->append("}\r\n");
+
+	return pclsWriteStr;
+
+FAIL :
+	delete pclsWriteStr;
+	return NULL;
+}
+
+bool DataFileMgr::m_fnReadFile4JsonStr(const char * _pData, unsigned int _unDataLen, list_LineDataAll & _rlistLineAllData)
+{
+	if( !m_clsJsonParse.m_fnParseJson(_pData) )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : ReadFile4JsonStr : fail : Parsing Json", m_stDataFileCfg.m_clsMgrName.c_str());
+		return false;
+	}
+
+	JsonObject * pclsRoot = m_clsJsonParse.m_fnFindObj("");
+	if( !pclsRoot )
+	{
+		LogInternal(E_LOG_ERR, "DataFileMgr[%s] : ReadFile4JsonStr : fail : not found Object", m_stDataFileCfg.m_clsMgrName.c_str());
+		return false;
+	}
+
+	_rlistLineAllData.clear();
+
+	ListItr_t stJsonItr1, stJsonItr2;
+	JsonObject * pclsArray = NULL, * pclsElement = NULL;
+
+	pclsArray = pclsRoot->m_fnBegin(stJsonItr1);
+	while( pclsArray )
+	{
+		list_LineData listLineData;
+		pclsElement = pclsArray->m_fnBegin(stJsonItr2);
+		while( pclsElement )
+		{
+			if( (KCSTR)(pclsElement->m_clsJKey) != NULL )
+			{
+				const char * pszValue = "";
+				if( (KCSTR)(pclsElement->m_clsJData) != NULL )
+					pszValue = (KCSTR)(pclsElement->m_clsJData);
+				listLineData.push_back(std::make_pair((KCSTR)(pclsElement->m_clsJKey), pszValue));
+			}
+
+			pclsElement = pclsArray->m_fnNext(stJsonItr2);
+		}
+		_rlistLineAllData.push_back(listLineData);
+		pclsArray = pclsRoot->m_fnNext(stJsonItr1);
+	}
+
+	return true;
+}
+
+}
+

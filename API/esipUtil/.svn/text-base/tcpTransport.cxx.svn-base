@@ -1,0 +1,790 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
+#include <errno.h>
+
+#include "tcpTransport.hxx"
+#include "transportMgr.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+#define LOCK_SND(this) \
+	do \
+	{ \
+		if( !this->m_rclsTransportMgr.isUseSndThread() ) \
+			this->m_clsSndMutex.m_fnLock(); \
+	}while(false)
+
+#define UNLOCK_SND(this) \
+	do \
+	{ \
+		if( !this->m_rclsTransportMgr.isUseSndThread() ) \
+			this->m_clsSndMutex.m_fnUnlock(); \
+	}while(false)
+
+static const unsigned int s_unMaxResizeSize = 10000000;		//10 mbyte
+
+static const char * s_arrTcpConStateStr[E_TCP_CONNECT_STATE_NUM] =
+{
+	"TCP_CONNECT_STATE_idle",
+	"TCP_CONNECT_STATE_try",
+	"TCP_CONNECT_STATE_establish",
+};
+
+const char * getTcpConnectStateStr(ETcpConnectState_t _eTcpConState)
+{
+	static const char * s_pszUnknown = "unknown_type";
+
+	if( _eTcpConState >= 0 && _eTcpConState < E_TCP_CONNECT_STATE_NUM )
+		return s_arrTcpConStateStr[_eTcpConState];
+	else
+		return s_pszUnknown;
+}
+
+TcpTransport::TcpTransport(TransportMgr & _rclsTransportMgr, Epoll & _rclsEpoll, const Net5Tuple_t & _rstNet5Tuple, const SocketCfg & _rstSocketCfg, const TransportConfig & _rstTransportCfg)
+	: Transport(_rclsTransportMgr, _rclsEpoll, _rstNet5Tuple, _rstSocketCfg, _rstTransportCfg), m_eTcpConState(E_TCP_CONNECT_STATE_idle), 
+	m_pRcvBuffer(NULL), m_pSndBuffer(NULL), m_unRcvBufferMaxLen(0), m_unRcvBufferCurrentLen(0), m_unRcvCompleteMsgLen(0), m_unSndBufferCurrentLen(0),
+	m_bConnectErr(false), m_pAppBuffer(NULL)
+{
+	if( _rstTransportCfg.m_stTcpConfig.m_unSndBufferSize > 0 )
+		m_pSndBuffer = (char *)malloc(_rstTransportCfg.m_stTcpConfig.m_unSndBufferSize);
+	else
+		m_pSndBuffer = (char *)malloc(TcpConfig::E_CONST_DFT_SND_BUFFER_SIZE);
+
+	if( _rstTransportCfg.m_stTcpConfig.m_unAppBufferSize > 0 )
+		m_pAppBuffer = (char *)malloc(_rstTransportCfg.m_stTcpConfig.m_unAppBufferSize);
+}
+
+TcpTransport::~TcpTransport()
+{
+	free(m_pRcvBuffer);
+	free(m_pSndBuffer);
+	free(m_pAppBuffer);
+}
+
+ETransportErr_t TcpTransport::init(int _nFd)
+{
+	if( m_nFd >= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : init : already init : %s", m_szDesc);
+		return E_TRSP_ERR_TRSP_ALREADY_INIT;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	
+	m_nFd = _nFd;	
+	m_eTcpConState = E_TCP_CONNECT_STATE_idle;
+	m_unRcvBufferMaxLen = 0;
+	resetRcvCurrentBuffer();	
+	resetSndCurrentBuffer();
+
+	/*==== create Socket ====*/
+	if( m_nFd < 0 )
+	{
+		m_nFd = Socket::createSocket(m_nIpVersion, E_TRANSPORT_TYPE_tcp, m_stSocketCfg);
+		if( m_nFd >= 0 )
+		{
+			if( Socket::bindSocket(m_nFd, m_stNet5Tuple.m_szLocalIp, m_stNet5Tuple.m_nLocalPort, m_nIpVersion) != 0 )
+			{
+				char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+				LogInternal(E_LOG_ERR, "TcpTransport : init : fail : can't bind : %s", m_stNet5Tuple.getStr(szNet5Tuple, Net5Tuple::E_CONST_MAX_STR_LEN, true));
+				eErr = E_TRSP_ERR_FAIL_BIND_SOCKET;
+				goto ERR_TCP_INIT;
+			}
+		}
+		else
+		{
+			char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+			LogInternal(E_LOG_ERR, "TcpTransport : init : fail : can't create socket : %s", m_stNet5Tuple.getStr(szNet5Tuple, Net5Tuple::E_CONST_MAX_STR_LEN, true));
+			eErr = E_TRSP_ERR_FAIL_CREATE_SOCKET;
+			goto ERR_TCP_INIT;
+		}
+	}
+	else //accept case
+	{		
+		setSocketCfg(m_stSocketCfg);
+	}
+
+	m_szDesc[0] = 0x00;
+	strncat(m_szDesc, E_CONST_MAX_STR_LEN-1, "Transport(%d, ", m_nFd);
+	m_stNet5Tuple.getKeyStr(m_szDesc, E_CONST_MAX_STR_LEN-1, false);
+	strncat(m_szDesc, E_CONST_MAX_STR_LEN-1, ", TcpRole(%d)", m_stTransportCfg.m_stTcpConfig.m_nTcpRole);
+	strncat(m_szDesc, E_CONST_MAX_STR_LEN-1, ")");
+	
+	LogInternal(E_LOG_INFO, "TcpTransport : init : %s", m_szDesc);
+	
+	return E_TRSP_ERR_NONE;
+	
+ERR_TCP_INIT:
+	freeRsc();
+	
+	return eErr;
+}
+
+ETransportErr_t TcpTransport::start()
+{
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : start : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		return E_TRSP_ERR_TRSP_NOT_INIT;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+
+	m_rclsEpoll.addFD(m_nFd, EPOLLIN|EPOLLET);
+
+	if( m_stTransportCfg.m_stTcpConfig.m_nTcpRole == 0 )
+	{
+		if( (eErr = start4Server()) != E_TRSP_ERR_NONE )
+			goto ERR_START;
+	}
+	else if( m_stTransportCfg.m_stTcpConfig.m_nTcpRole == 1 )
+	{
+		if( (eErr = start4Client()) != E_TRSP_ERR_NONE )
+			goto ERR_START;
+	}
+	else if( m_stTransportCfg.m_stTcpConfig.m_nTcpRole == 2 )
+	{
+		if( (eErr = start4Accepted()) != E_TRSP_ERR_NONE )
+			goto ERR_START;
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : start : invalid TcpRole[%d] : %s", m_stTransportCfg.m_stTcpConfig.m_nTcpRole, m_szDesc);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_START;
+	}
+
+	LogInternal(E_LOG_DEBUG, "TcpTransport : start : %s", m_szDesc);	
+
+	return E_TRSP_ERR_NONE;
+
+ERR_START :
+
+	m_rclsEpoll.delFD(m_nFd);
+	
+	return eErr;
+}
+
+ETransportErr_t TcpTransport::recvEventProcess()
+{
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : recvEventProcess : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		return E_TRSP_ERR_TRSP_NOT_INIT;
+	}
+
+	if( m_stTransportCfg.m_stTcpConfig.m_nTcpRole == 0 )
+	{
+		return recvEvent4Server();
+	}
+	else
+	{
+		return recvEvent4Connection();
+	}
+}
+
+ETransportErr_t TcpTransport::sndEventProcess()
+{
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		return E_TRSP_ERR_TRSP_NOT_INIT;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+
+	if( m_eTcpConState == E_TCP_CONNECT_STATE_try )
+	{	
+		Lock lock(m_clsConnectMutex);
+
+		if( m_bConnectErr )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : already fail to connect : %s", m_szDesc);
+			goto END_SND_EVENT;
+		}
+	
+		int nErr = 0;
+		socklen_t nErrLen = sizeof(nErr);
+		if( getsockopt(m_nFd, SOL_SOCKET, SO_ERROR, &nErr, &nErrLen) < 0 )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : fail to try connecting : getsockopt : %s", m_szDesc);
+			eErr = E_TRSP_ERR_FAIL_ASYNC_CONNECT_SOCKET;
+			goto END_SND_EVENT;
+		}
+		
+		if( nErr == 0 )
+		{
+			LogInternal(E_LOG_INFO, "TcpTransport : sndEventProcess : success to try connecting : %s", m_szDesc);
+			m_eTcpConState = E_TCP_CONNECT_STATE_establish;
+			m_rclsEpoll.modFD(m_nFd, EPOLLIN|EPOLLET);
+			if( m_stTransportCfg.m_stTcpConfig.m_pfnConnected4NonblockCb )
+				m_stTransportCfg.m_stTcpConfig.m_pfnConnected4NonblockCb(m_rclsTransportMgr, m_stNet5Tuple);
+			goto END_SND_EVENT;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : fail to try connecting : %s : %s", m_szDesc, strerror_r(nErr, szErr, sizeof(szErr)));
+			eErr = E_TRSP_ERR_FAIL_ASYNC_CONNECT_SOCKET;
+			m_bConnectErr = true;
+			goto END_SND_EVENT;
+		}
+	}
+	else if( m_eTcpConState == E_TCP_CONNECT_STATE_establish )
+	{
+		LOCK_SND(this);
+	
+		if( !m_pSndBuffer )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : invalid SndBuffer : %s", m_szDesc);
+			UNLOCK_SND(this);
+			eErr = E_TRSP_ERR_INVALID_SND_BUFFER;
+			goto END_SND_EVENT;
+		}
+
+		if( m_unSndBufferCurrentLen == 0 )
+		{
+			LogInternal(E_LOG_DEBUG, "TcpTransport : sndEventProcess : no send data : %s", m_szDesc);
+			UNLOCK_SND(this);
+			goto END_SND_EVENT;
+		}
+
+		bool bWouldBlock = false;
+		int nSndRet = Socket::sendSocket(m_nFd, m_pSndBuffer, m_unSndBufferCurrentLen, bWouldBlock);
+		
+		if( nSndRet < 0 )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : sndEventProcess : fail : sendSocket(). Ret[%d] : %s", nSndRet, m_szDesc);
+			UNLOCK_SND(this);
+			eErr = E_TRSP_ERR_FAIL_SEND_SOCKET;
+			goto END_SND_EVENT;
+		}
+		else
+		{
+			if( bWouldBlock && (unsigned int)nSndRet < m_unSndBufferCurrentLen )
+			{
+				m_unSndBufferCurrentLen -= nSndRet;
+				memmove(m_pSndBuffer, m_pSndBuffer + nSndRet, m_unSndBufferCurrentLen);
+				m_rclsEpoll.modFD(m_nFd, EPOLLIN|EPOLLET|EPOLLOUT);
+				LogInternal(E_LOG_DEBUG, "TcpTransport : sndEventProcess : set SndBuffer for remaining data : Remaining Len[%u] : %s", m_unSndBufferCurrentLen, m_szDesc);
+			}
+			else
+			{
+				resetSndCurrentBuffer();
+				m_rclsEpoll.modFD(m_nFd, EPOLLIN|EPOLLET);
+			}
+
+			LogInternal(E_LOG_DEBUG, "TcpTransport : sndEventProcess : send data of buffer. Sending Len[%d] : %s", nSndRet, m_szDesc);
+			UNLOCK_SND(this);
+		}
+	}
+
+END_SND_EVENT :
+
+	return eErr;
+}
+
+int TcpTransport::sndData(char * _pSndData, unsigned int _unSndLen, const char * _pszRemoteIp, int _nRemotePort, void * _pSndAppData, ETransportErr_t * _peTransportErr)
+{
+	if( !_pSndData || _unSndLen <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : invalid argument : SndData[%p], SndLen[%u] : %s", _pSndData, _unSndLen, m_szDesc);
+		if( _peTransportErr )
+			*_peTransportErr = E_TRSP_ERR_INVALID_ARG;
+		return -1;
+	}
+
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		if( _peTransportErr )
+			*_peTransportErr = E_TRSP_ERR_TRSP_NOT_INIT;
+		return -1;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	int nSndRet = 0;
+	bool bWouldBlock = false;
+
+	LOCK_SND(this);
+
+	if( !m_pSndBuffer )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : invalid SndBuffer : %s", m_szDesc);
+		eErr = E_TRSP_ERR_INVALID_SND_BUFFER;
+		goto ERR_SND_DATA;
+	}
+
+	if( m_eTcpConState != E_TCP_CONNECT_STATE_establish )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : invalid Connect State [%s] : %s", getTcpConnectStateStr(m_eTcpConState), m_szDesc);
+		eErr = E_TRSP_ERR_INVALID_TCP_STATE;
+		goto ERR_SND_DATA;
+	}
+
+	if( m_unSndBufferCurrentLen > 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : exist remaining sending data. Remaining Len[%u] : %s", m_unSndBufferCurrentLen, m_szDesc);
+		eErr = E_TRSP_ERR_FAIL_SEND_REMAIN_BUFFER;
+		goto ERR_SND_DATA;
+	}
+
+	if( m_stTransportCfg.m_pfnSndPrevProcCb )
+	{
+		LogInternal(E_LOG_DEBUG, "TcpTransport : sndData : execute SndPrevProc callback : %s, SndLen[%u]", m_szDesc, _unSndLen);
+		m_stTransportCfg.m_pfnSndPrevProcCb(m_rclsTransportMgr, _pSndData, _unSndLen, m_stNet5Tuple, _pSndAppData);
+	}
+
+	nSndRet = Socket::sendSocket(m_nFd, _pSndData, _unSndLen, bWouldBlock);
+	if( nSndRet < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : sendSocket(). Ret[%d] : %s", nSndRet, m_szDesc);
+		if( nSndRet == -1 )
+			eErr = E_TRSP_ERR_FAIL_SEND_SOCKET;
+		else
+			eErr = E_TRSP_ERR_INTERNAL_ERR;
+		goto ERR_SND_DATA;
+	}
+
+	if( bWouldBlock && (unsigned int)nSndRet < _unSndLen )
+	{
+		m_unSndBufferCurrentLen = _unSndLen - nSndRet;
+		memmove(m_pSndBuffer, _pSndData + nSndRet, m_unSndBufferCurrentLen);
+		m_rclsEpoll.modFD(m_nFd, EPOLLIN|EPOLLET|EPOLLOUT);
+		LogInternal(E_LOG_DEBUG, "TcpTransport : sndData : set SndBuffer for remaining data : Remaining Len[%u] : %s", m_unSndBufferCurrentLen, m_szDesc);
+	}
+	else
+	{
+		resetSndCurrentBuffer();
+		m_rclsEpoll.modFD(m_nFd, EPOLLIN|EPOLLET);
+	}
+
+	if( m_stTransportCfg.m_pfnSndAfterProcCb )
+	{
+		LogInternal(E_LOG_DEBUG, "TcpTransport : sndData : execute SndAfterProc callback : %s, SndLen[%u]", m_szDesc, nSndRet);
+		m_stTransportCfg.m_pfnSndAfterProcCb(m_rclsTransportMgr, _pSndData, nSndRet, m_stNet5Tuple, _pSndAppData);
+	}
+
+	LogInternal(E_LOG_DEBUG, "TcpTransport : sndData : SndLen[%d] : %s", nSndRet, m_szDesc);
+
+	UNLOCK_SND(this);
+
+	free(_pSndAppData);
+	free(_pSndData);
+	
+	return nSndRet;	
+
+ERR_SND_DATA :
+	UNLOCK_SND(this);
+
+	if( _peTransportErr )
+		*_peTransportErr = eErr;
+
+	return -1;	
+}
+
+ETransportErr_t TcpTransport::start4Server()
+{
+	/*==== listen ====*/
+	if( m_stTransportCfg.m_stTcpConfig.m_unBacklogSize > 0 )
+		listen(m_nFd, m_stTransportCfg.m_stTcpConfig.m_unBacklogSize);
+	else
+		listen(m_nFd, TcpConfig_t::E_CONST_DFT_BACKLOG_SIZE);
+
+	LogInternal(E_LOG_INFO, "TcpTransport : start4Server : %s", m_szDesc);
+
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t TcpTransport::start4Client()
+{
+	int nResult = Socket::connectSocket(m_nFd, m_stNet5Tuple.m_szRemoteIp, m_stNet5Tuple.m_nRemotePort, m_nIpVersion);
+	if( nResult == 0 )
+	{
+		m_eTcpConState = E_TCP_CONNECT_STATE_establish;
+		LogInternal(E_LOG_INFO, "TcpTransport : start4Client : Tcp is connected : %s", m_szDesc);
+	}
+	else if( nResult == 1 )
+	{
+		m_eTcpConState = E_TCP_CONNECT_STATE_try;
+		m_rclsEpoll.modFD(m_nFd, EPOLLET|EPOLLOUT|EPOLLIN);
+		LogInternal(E_LOG_INFO, "TcpTransport : start4Client : Tcp is trying to connect : %s", m_szDesc);
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : start4Client : fail : fail to connect : %s", m_szDesc);
+		return E_TRSP_ERR_FAIL_SYNC_CONNECT_SOCKET;
+	}
+
+	if( m_nIpVersion == 6 )
+	{
+		struct sockaddr_in6 stLocalAddr;
+		socklen_t nLocalAddrSize = sizeof(stLocalAddr);
+		getsockname(m_nFd, (struct sockaddr *)&stLocalAddr, &nLocalAddrSize);
+		m_stNet5Tuple.m_fnSetClientRealLocalPort(ntohs(stLocalAddr.sin6_port));
+	}
+	else
+	{
+		struct sockaddr_in stLocalAddr;
+		socklen_t nLocalAddrSize = sizeof(stLocalAddr);
+		getsockname(m_nFd, (struct sockaddr *)&stLocalAddr, &nLocalAddrSize);
+		m_stNet5Tuple.m_fnSetClientRealLocalPort(ntohs(stLocalAddr.sin_port));
+	}
+
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t TcpTransport::start4Accepted()
+{
+	m_eTcpConState = E_TCP_CONNECT_STATE_establish;
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t TcpTransport::recvEvent4Server()
+{
+	int nClientLen = 0;
+	Net5Tuple_t stAddedTuple;
+	int nAddedFd = -1;
+	TransportConfig stTransportCfg;
+	
+	while( 1 )
+	{
+		if( m_nIpVersion == 4 )
+		{
+			struct sockaddr_in clientaddr;
+			nClientLen = sizeof(clientaddr);
+			nAddedFd = accept(m_nFd, (struct sockaddr *)&clientaddr, (socklen_t *)&nClientLen);
+			if( nAddedFd >= 0 )
+			{
+				stAddedTuple.m_fnSetLocalIp(m_stNet5Tuple.m_szLocalIp);
+				stAddedTuple.m_fnSetLocalPort(m_stNet5Tuple.m_nLocalPort);
+				inet_ntop(AF_INET, &(clientaddr.sin_addr), stAddedTuple.m_szRemoteIp, Net5Tuple_t::E_CONST_MAX_IPADDR_LEN-1);
+				stAddedTuple.m_fnSetRemotePort(ntohs(clientaddr.sin_port));
+				stAddedTuple.m_fnSetTransportType(m_stNet5Tuple.m_eTransportType);
+				stAddedTuple.m_fnSetAppKey(-1);
+				stTransportCfg = m_stTransportCfg;
+				stTransportCfg.m_stTcpConfig.m_nTcpRole = 2;
+				
+				LogInternal(E_LOG_INFO, "TcpTransport : recvEventProcess : accept() of Ipv4 : Fd[%d], RemoteIP[%s], RemotePort[%d] : %s", 
+											nAddedFd, stAddedTuple.m_szRemoteIp, stAddedTuple.m_nRemotePort, m_szDesc);
+
+				m_rclsTransportMgr.acceptTransportInternal(nAddedFd, m_stTransportCfg.m_stTcpConfig.m_pfnAcceptConnectionCb, stAddedTuple, m_stSocketCfg, stTransportCfg);
+			}
+			else
+			{
+				if( errno == EAGAIN || errno == EWOULDBLOCK )
+					break;
+				else if( errno == EINTR )
+					continue;
+				else
+				{
+					char szErr[64];
+					LogInternal(E_LOG_ERR, "TcpTransport : recvEventProcess : fail : accept() of Ipv4 : %s : %s", strerror_r(errno, szErr, sizeof(szErr)), m_szDesc);
+					return E_TRSP_ERR_FAIL_ACCEPT_SOCKET;
+				}
+			}
+		}
+		else
+		{
+			struct sockaddr_in6 clientaddr;
+			nClientLen = sizeof(clientaddr);
+			nAddedFd = accept(m_nFd, (struct sockaddr *)&clientaddr, (socklen_t *)&nClientLen);
+			if( nAddedFd >= 0 )
+			{
+				stAddedTuple.m_fnSetLocalIp(m_stNet5Tuple.m_szLocalIp);
+				stAddedTuple.m_fnSetLocalPort(m_stNet5Tuple.m_nLocalPort);
+				inet_ntop(AF_INET6, &(clientaddr.sin6_addr), stAddedTuple.m_szRemoteIp, Net5Tuple_t::E_CONST_MAX_IPADDR_LEN-1);
+				stAddedTuple.m_fnSetRemotePort(ntohs(clientaddr.sin6_port));
+				stAddedTuple.m_fnSetTransportType(m_stNet5Tuple.m_eTransportType);
+				stAddedTuple.m_fnSetAppKey(-1);
+
+				stTransportCfg = m_stTransportCfg;
+				stTransportCfg.m_stTcpConfig.m_nTcpRole = 2;
+
+				LogInternal(E_LOG_INFO, "TcpTransport : recvEventProcess : accept() of Ipv6 : Fd[%d], RemoteIP[%s], RemotePort[%d] : %s", 
+											nAddedFd, stAddedTuple.m_szRemoteIp, stAddedTuple.m_nRemotePort, m_szDesc);
+				
+				m_rclsTransportMgr.acceptTransportInternal(nAddedFd, m_stTransportCfg.m_stTcpConfig.m_pfnAcceptConnectionCb, stAddedTuple, m_stSocketCfg, stTransportCfg);
+			}
+			else
+			{
+				if( errno == EAGAIN || errno == EWOULDBLOCK )
+					break;
+				else if( errno == EINTR )
+					continue;
+				else
+				{
+					char szErr[64];
+					LogInternal(E_LOG_ERR, "TcpTransport : recvEventProcess : fail : accept() of Ipv6 : %s : %s", strerror_r(errno, szErr, sizeof(szErr)), m_szDesc);
+					return E_TRSP_ERR_FAIL_ACCEPT_SOCKET;
+				}
+			}
+		}
+	}
+
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t TcpTransport::recvEvent4Connection()
+{
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	int nRcvRet = -1;
+	unsigned int unTotalRcvLen = 0, unRemainLen = 0;
+	bool bWouldBlock = false;
+
+	if( m_eTcpConState == E_TCP_CONNECT_STATE_try )
+	{		
+		m_clsConnectMutex.m_fnLock();
+
+		if( m_bConnectErr )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : already fail to connect : %s", m_szDesc);
+			goto END_RECV_CON;
+		}
+	}
+
+	while( !bWouldBlock )
+	{
+		if( !allocateRcvBuffer() )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : can't allocate RcvBuffer 1 : %s", m_szDesc);
+			eErr = E_TRSP_ERR_FAIL_CREATE_RCV_BUFFER;
+			goto END_RECV_CON;
+		}
+
+		if( m_unRcvCompleteMsgLen > 0 )
+		{
+			if( m_unRcvCompleteMsgLen > m_unRcvBufferMaxLen-1 )
+			{
+				LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : CompleteMsgLen[%u] > MaxLen[%u] : %s", m_unRcvCompleteMsgLen, m_unRcvBufferMaxLen-1, m_szDesc);
+				resetRcvCurrentBuffer();	
+				continue;
+			}
+			unRemainLen = m_unRcvCompleteMsgLen - m_unRcvBufferCurrentLen;
+		}
+		else
+		{
+			unRemainLen = (m_stTransportCfg.m_stTcpConfig.m_unMinRcvNotiSize < m_unRcvBufferMaxLen-1-m_unRcvBufferCurrentLen) ? m_stTransportCfg.m_stTcpConfig.m_unMinRcvNotiSize : m_unRcvBufferMaxLen-1-m_unRcvBufferCurrentLen;
+		}
+		
+		nRcvRet = Socket::recvSocket(m_nFd, m_pRcvBuffer+m_unRcvBufferCurrentLen, unRemainLen, bWouldBlock);
+		if( nRcvRet > 0 )
+		{
+			unTotalRcvLen += nRcvRet;
+			m_unRcvBufferCurrentLen += nRcvRet;
+
+			LogInternal(E_LOG_DEBUG, "TcpTransport : recvEvent4Connection : recv data. CompleteDataLen[%u], RcvBufferLen[%u], RcvLen[%d], TotalRcvLen[%u] : %s", 
+											m_unRcvCompleteMsgLen, m_unRcvBufferCurrentLen, nRcvRet, unTotalRcvLen, m_szDesc);
+
+			while( m_unRcvBufferCurrentLen > 0 )
+			{
+				if( m_unRcvCompleteMsgLen > 0 )
+				{
+					if( m_unRcvBufferCurrentLen < m_unRcvCompleteMsgLen )
+						break;
+				}
+				else
+				{
+					int nCompleteMsgLen = 0;
+					if( m_stTransportCfg.m_stTcpConfig.m_pfnTcpRcvMatchCb )
+					{
+						m_pRcvBuffer[m_unRcvBufferCurrentLen] = 0x00;
+						nCompleteMsgLen = m_stTransportCfg.m_stTcpConfig.m_pfnTcpRcvMatchCb(m_rclsTransportMgr, m_pRcvBuffer, m_unRcvBufferCurrentLen, m_stNet5Tuple, (void *)m_pAppBuffer);
+						LogInternal(E_LOG_DEBUG, "TcpTransport : recvEvent4Connection : execute RcvMatch callback. RcvBufferLen[%u], CompleteMsgLen[%d] : %s", 
+														m_unRcvBufferCurrentLen, nCompleteMsgLen, m_szDesc);
+					}
+					else
+						nCompleteMsgLen = 0;
+					if( nCompleteMsgLen < 0 )
+					{
+						LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : TcpRcvMatchCb error : %s", m_szDesc);
+						resetRcvCurrentBuffer();
+						break;
+					}
+					else if( nCompleteMsgLen == 0 )
+					{
+						break;
+					}
+					else
+					{
+						m_unRcvCompleteMsgLen = nCompleteMsgLen;
+						if( m_unRcvBufferCurrentLen < m_unRcvCompleteMsgLen )
+						{
+							if( m_unRcvBufferMaxLen-1 < m_unRcvCompleteMsgLen )
+							{
+								if( !resizeRcvBuffer(m_unRcvCompleteMsgLen+1) )
+								{
+									resetRcvCurrentBuffer();
+								}
+							}
+							break;
+						}
+					}
+				}
+				
+				char * pCompleteData = m_pRcvBuffer;
+				unsigned int unRcvCompleteMsgLen = m_unRcvCompleteMsgLen;
+				unsigned int unRcvBufferCurrentLen = m_unRcvBufferCurrentLen;
+				m_pRcvBuffer = NULL;
+				m_unRcvBufferMaxLen = 0;
+				resetRcvCurrentBuffer();
+				if( unRcvBufferCurrentLen - unRcvCompleteMsgLen > 0 )
+				{
+					if( allocateRcvBuffer(unRcvBufferCurrentLen-unRcvCompleteMsgLen+E_CONST_DFT_RCV_BUFFER_SPARE_LEN) )
+					{
+						m_unRcvBufferCurrentLen = unRcvBufferCurrentLen-unRcvCompleteMsgLen;
+						memmove(m_pRcvBuffer, pCompleteData+unRcvCompleteMsgLen, m_unRcvBufferCurrentLen);
+						LogInternal(E_LOG_DEBUG, "TcpTransport : recvEvent4Connection : CompleteLen[%u], RemainingLen[%u] : %s", unRcvCompleteMsgLen, m_unRcvBufferCurrentLen, m_szDesc);
+					}
+					else
+					{
+						LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : can't allocate RcvBuffer 2 : %s", m_szDesc);
+						m_pRcvBuffer = NULL;
+						m_unRcvBufferMaxLen = 0;
+						resetRcvCurrentBuffer();
+					}
+				}
+				
+				if( m_stTransportCfg.m_pfnRcvProcCb )
+				{
+					LogInternal(E_LOG_DEBUG, "TcpTransport : recvEvent4Connection : execute RcvProc callback : %s", m_szDesc);
+					pCompleteData[unRcvCompleteMsgLen] = 0x00;
+					m_stTransportCfg.m_pfnRcvProcCb(m_rclsTransportMgr, pCompleteData, unRcvCompleteMsgLen, m_stNet5Tuple);
+				}
+				else
+				{
+					free(pCompleteData);
+				}
+			}
+		}
+		else if( nRcvRet == 0 )
+		{
+			LogInternal(E_LOG_DEBUG, "TcpTransport : recvEvent4Connection : no read data : %s", m_szDesc);
+			break;
+		}
+		else if( nRcvRet == -1 )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : Socket Error : %s", m_szDesc);
+			eErr = E_TRSP_ERR_FAIL_RECV_SOCKET;
+			if( m_eTcpConState == E_TCP_CONNECT_STATE_try )
+				m_bConnectErr = true;
+			goto END_RECV_CON;
+		}
+		else if( nRcvRet == -2 )
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : recvSocket() close by peer : %s", m_szDesc);
+			eErr = E_TRSP_ERR_TCP_CLOSE_BYPEER;
+			goto END_RECV_CON;
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "TcpTransport : recvEvent4Connection : fail : recvSocket(). Ret[%d] : %s", nRcvRet, m_szDesc);
+			eErr = E_TRSP_ERR_INTERNAL_ERR;
+			goto END_RECV_CON;
+		}
+	}
+
+END_RECV_CON :
+
+	if( m_eTcpConState == E_TCP_CONNECT_STATE_try )
+		m_clsConnectMutex.m_fnUnlock();
+
+	return eErr;
+}
+
+void TcpTransport::resetRcvCurrentBuffer()
+{
+	m_unRcvBufferCurrentLen = 0;
+	m_unRcvCompleteMsgLen = 0;
+
+	if( m_stTransportCfg.m_stTcpConfig.m_pfnResetTcpRcvBuffer )
+		m_stTransportCfg.m_stTcpConfig.m_pfnResetTcpRcvBuffer(m_rclsTransportMgr, m_pAppBuffer, m_stNet5Tuple);
+}
+
+void TcpTransport::resetSndCurrentBuffer()
+{
+	m_unSndBufferCurrentLen = 0;
+}
+
+bool TcpTransport::resizeRcvBuffer(unsigned int _unResizeLen)
+{
+	if( _unResizeLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : resizeRcvBuffer : fail : invalid argument : %s", m_szDesc);
+		return false;
+	}
+
+	if( _unResizeLen <= m_unRcvBufferMaxLen )
+		return true;
+
+	if( _unResizeLen >= s_unMaxResizeSize )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : resizeRcvBuffer : fail : can't MaxResizeSize : [%u >= %u] : %s", _unResizeLen, s_unMaxResizeSize, m_szDesc);
+		return false;
+	}
+	
+	char * pResizeBuffer = (char *)malloc(_unResizeLen);
+	if( !pResizeBuffer )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : resizeRcvBuffer : fail : can't create buffer : %s", m_szDesc);
+		return false;
+	}
+
+	//memset(pResizeBuffer, 0x00, _unResizeLen);
+	memcpy(pResizeBuffer, m_pRcvBuffer, m_unRcvBufferCurrentLen);
+	free(m_pRcvBuffer);
+	m_pRcvBuffer = pResizeBuffer;
+	m_unRcvBufferMaxLen = _unResizeLen;
+
+	LogInternal(E_LOG_DEBUG, "TcpTransport : resizeRcvBuffer : ResizeLen[%u] : %s", _unResizeLen, m_szDesc);
+
+	return true;
+}
+
+bool TcpTransport::allocateRcvBuffer(unsigned int _unSize)
+{
+	if( m_pRcvBuffer )
+	{
+		if( m_unRcvBufferCurrentLen >= m_unRcvBufferMaxLen - 1 )
+		{
+			LogInternal(E_LOG_DEBUG, "TcpTransport : allocateRcvBuffer : Buffer is full. reset : %s", m_szDesc);
+			resetRcvCurrentBuffer();
+		}
+	}
+
+	if( !m_pRcvBuffer )
+	{
+		m_unRcvBufferMaxLen = 0;
+		resetRcvCurrentBuffer();
+		
+		unsigned int unMaxSize = 0;
+		if( m_stTransportCfg.m_unRcvBufferSize > 0 )
+			unMaxSize = (_unSize > m_stTransportCfg.m_unRcvBufferSize) ? _unSize : m_stTransportCfg.m_unRcvBufferSize;
+		else
+			unMaxSize = (_unSize > m_stTransportCfg.m_unRcvBufferSize) ? _unSize : TransportConfig::E_CONST_DFT_RCV_BUFFER_SIZE;
+		
+		m_pRcvBuffer = (char *)malloc(unMaxSize);
+		m_unRcvBufferMaxLen = unMaxSize;
+		//if( m_pRcvBuffer )
+		//	memset(m_pRcvBuffer, 0x00, m_unRcvBufferMaxLen);
+	}
+
+	if( m_pRcvBuffer )	
+	{
+		return true;
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : allocateRcvBuffer : fail : can't create buffer : %s", m_szDesc);
+		m_unRcvBufferMaxLen = 0;
+		resetRcvCurrentBuffer();
+		return false;
+	}
+}
+
+}
+

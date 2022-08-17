@@ -1,0 +1,246 @@
+
+#ifndef ESIPUTIL_STRING_H
+#define ESIPUTIL_STRING_H
+
+#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string>
+#include <string.h>
+#include <strings.h>
+#include "StlMap.hxx"
+
+namespace eSipUtil
+{
+char * strncat(char * _pszSrc, unsigned int _unMaxSrcLen, const char * _pszFormat, ...);
+bool isDisitStr(const char * _pszSrc, unsigned int _unMaxSrcLen);
+void createRandomStr(char * _pszOutStr, unsigned int _unMaxLen);
+void replaceAll(std::string & _rclsStr, const char * _pszOrigStr, const char * _pszChangeStr);
+typedef char * KSTR;
+typedef const char * KCSTR;
+typedef char KCHR;
+typedef unsigned char KUCHR;
+typedef unsigned char KHEX;
+typedef short KSHORT;
+typedef unsigned short KUSHORT;
+typedef int KINT;
+typedef unsigned int KUINT;
+typedef long KLONG;
+typedef unsigned long KULONG;
+typedef bool KBOOL;
+typedef void * KVOID;
+typedef const void * KCVOID;
+typedef double KDOUBLE;
+#define KNULL ""
+#define DEF_STR_TRUE_SELECT(a,b,c)    ((a) >= 1 ? (b) : (c))
+#define DEF_STR_1K 1024
+#define DEF_STR_1M 1048576
+#define DEF_STR_1G 1073741824
+#define DEF_NUMERIC(c)      ((c) >= '0' && (c) <= '9')
+#define DEF_MIN(a, b)       ((a) > (b) ? (b) : (a))
+#define DEF_MAX(a, b)       ((a) < (b) ? (b) : (a))
+#define DEF_ABS(x)          (((x) >= 0) ? (x) : -(x))
+#define DEF_TRUE_SELECT(a,b,c)    ((a) >= 1 ? (b) : (c))
+#define DEF_AVERAGE(a,b) ((unsigned long int)((unsigned long int)(((unsigned long int)a*100)/(unsigned long int)b)))
+
+//==========> Util String
+/*
+Unlimited String Buff;
+*/
+class KStrings;
+class TokStrings;
+class KString;
+class KString
+{
+public:
+	enum { E_SZ_NUM = 256, E_SZ_CHR_CAT = DEF_STR_1K, E_SZ_STR_CAT = DEF_STR_1K * 10, E_HEX_LINE = 32, };
+	//==========> new Operator (Store)
+	KString();
+	KString(bool _bBool);
+	KString(char _cVal);
+	KString(unsigned char _ucVal);
+	KString(short _sVal);
+	KString(unsigned short _usVal);
+	KString(int _nVal);
+	KString(unsigned int _unVal);
+	KString(long _lVal);
+	KString(unsigned long _ulVal);
+	KString(char * _pszVal);
+	KString(const char * _pszVal);
+	KString(const KString & _rclsVal);
+	KString(double _dVal);
+	//==========> delete Operator
+	~KString();
+	//==========> Resize Memory
+	void m_fnReSize(unsigned int _unSize);
+	//==========> = Operator (Store)
+	KString & operator=(bool _bBool);
+	KString & operator=(char _cVal);
+	KString & operator=(unsigned char _ucVal);
+	KString & operator=(short _sVal);
+	KString & operator=(unsigned short _usVal);
+	KString & operator=(int _nVal);
+	KString & operator=(unsigned int _unVal);
+	KString & operator=(long _lVal);
+	KString & operator=(unsigned long _unVal);
+	KString & operator=(char * _pszVal);
+	KString & operator=(const char * _pszVal);
+	KString & operator=(KString & _rclsSrc);
+	KString & operator=(double _dVal);
+	//==========> == Operator (Equal)
+	bool operator==(bool _bBool);
+	bool operator==(char _cVal);
+	bool operator==(unsigned char _ucVal);
+	bool operator==(short _sVal);
+	bool operator==(unsigned short _usVal);
+	bool operator==(int _nVal);
+	bool operator==(unsigned int _unVal);
+	bool operator==(long _lVal);
+	bool operator==(unsigned long _ulVal);
+	bool operator==(char * _szSrc);
+	bool operator==(const char * _szSrc);
+	bool operator==(KString & _rclsCmp);
+	bool operator==(double _dVal);
+	//==========> << Operator (Add/Cat)
+	KString & operator<<(bool _bVal);
+	KString & operator<<(char _cVal);
+	KString & operator<<(unsigned char _ucVal);
+	KString & operator<<(short _sVal);
+	KString & operator<<(unsigned short _usVal);
+	KString & operator<<(int _nVal);
+	KString & operator<<(unsigned int _unVal);
+	KString & operator<<(long _lVal);
+	KString & operator<<(unsigned long _ulVal);
+	KString & operator<<(char * _pvVal);
+	KString & operator<<(const char * _pvVal);
+	KString & operator<<(KString & _rclsSrc);
+	KString & operator<<(double _dVal);
+	//==========> type casting operator
+	operator KBOOL();
+	operator KCHR();
+	operator KUCHR();
+	operator KSTR();
+	operator KCSTR();
+	operator KSHORT();
+	operator KUSHORT();
+	operator KINT();
+	operator KUINT();
+	operator KLONG();
+	operator KULONG();
+	operator KDOUBLE();
+	//==========> [] Operator (Array Get/Set)
+	char & operator[](unsigned int _unIndex);
+	//==========> Cat Functions
+	void m_fnCat(const char * _pszSrc);      // cat string
+	void m_fnCat(const char _ucInput);    // cat charicter
+	void m_fnCat(int _nSpace, const char * _szSrc);   // %-5s , %5s , string cat
+	void m_fnHexCat(unsigned char _ucInput);         // char -> hex cat
+	char * m_fnCatHexs(void * _pvData, unsigned int _unLen);
+	void m_fnByteCat(const char * _szSrc, unsigned int _unLen);     // store byte
+	//Unlimited Sprintf, type= %d, %c, %lu, %ul, %lf, %s
+	void m_fnSprintf(const char *format, ...);
+	//==========> Util Functions
+	static int m_fnStrLen(const char * _szString);
+	static int m_fnStrCpy(char * _szDst, const char * _szSrc);
+	static void m_fnStrnCatCpy(char * dst, const char * src, int _nMax); 
+	static void m_fnStrCat(char *mstr, const char * pFormat, ...);
+	static int m_fnStrnCat(char *_szSrc, unsigned int _unMaxSz, const char * _szVar, ...);
+	static int m_fnStrCmp(const char * _sz1, const char * _sz2);
+	static int m_fnStrnCmp(const char * _sz1, const char * _sz2, unsigned int _unLen);
+	static int m_fnStrCaseCmp(const char * _sz1, const char * _sz2);
+	static int m_fnStrnCaseCmp(const char * _sz1, const char * _sz2, unsigned int _unLen);
+	static int m_fnAtoi(const char * _szString);
+	static long m_fnAtol(const char * _szString);
+	static double m_fnAtof(const char * _szString);
+	static const char *m_fnStr(char *_szStr);
+	static char * m_fnStrStr(const char * _pszSrc, const char * _pszFind);
+	static char * m_fnTrimTailString(char * _pszSrc, const char * _pszTrim);
+	static char * m_fnSkipString(const char * _pszSrc, const char * _pszTrim);
+	static char * m_fnGetOptimizeString(char * _pszSrc, const char * _pszTrim);
+	static void m_fnUnEscapeToString(const char * _pszSrc, KString &_rclsResult);
+	static void m_fnEscapeToString(const char * _pszSrc, const char *_pszChangeChr,
+																			KString &_rclsResult);
+	static bool m_fnTokenizeC(char *_pszOrig, const char *_pszTrimChr, TokStrings &_rclsResult);
+	static bool m_fnTokenizeS(char *_pszOrig, const char *_pszTrimStr, TokStrings &_rclsResult);
+	static bool m_fnTokenizeP(char *_pszOrig, const char *_pszPattern, TokStrings &_rclsResult);
+	static int m_fnRmChr(char* dest, char *source, const char* ptrim);
+	char *m_pszString;
+	unsigned int m_unLen;
+	unsigned int m_unRealLen;
+private:
+	void m_fnClear();
+	void m_fnCreateString(unsigned int _uiSize);
+	void m_fnCreateString(const char * _szString);
+	static unsigned int m_fnFixedStrCat(char * _pszDst, int _nSpace, const char * _pszSrc);
+};
+class StringObj : public StlObject
+{
+	public:
+		StringObj();
+		~StringObj();
+		KString m_clsStringData;
+};
+class KStrings
+{
+	public:
+		KStrings();
+		~KStrings();
+		KStrings & operator+=(const char * _pszV);
+		KString & operator[](unsigned int _unIndex);
+		unsigned int m_fnGetNum();
+		StringObj m_clsExept;
+		StlList m_listString;
+};
+class TokString : public StlObject
+{
+	public:
+		TokString();
+		~TokString();
+		char * m_pszLine;
+};
+class TokStrings
+{
+	public:
+		TokStrings();
+		~TokStrings();
+		TokStrings & operator+=(const char * _pszV);
+		char * operator[](unsigned int _unIndex);
+		unsigned int m_fnGetNum();
+		TokString m_clsExept;
+		StlList m_listString;
+};
+class CmpString
+{
+	public:
+      CmpString(); 
+		CmpString(const char * _pszSrc);
+		~CmpString();
+		bool operator==(bool _bBool);
+		bool operator==(char _cVal);
+		bool operator==(unsigned char _ucVal);
+		bool operator==(short _sVal);
+		bool operator==(unsigned short _usVal);
+		bool operator==(int _nVal);
+		bool operator==(unsigned int _unVal);
+		bool operator==(long _lVal);
+		bool operator==(unsigned long _ulVal);
+		bool operator==(char * _szSrc);
+		bool operator==(const char * _szSrc);
+		operator KBOOL();
+		operator KCHR() ;
+		operator KUCHR() ;
+		operator KSTR() ;
+		operator KCSTR() ;
+		operator KSHORT() ;
+		operator KUSHORT() ;
+		operator KINT() ;
+		operator KUINT() ;
+		operator KLONG() ;
+		operator KULONG() ;
+	private:
+		char * m_pszString;
+};
+}
+
+#endif

@@ -1,0 +1,102 @@
+16:48:21.459) TID-0xc135d720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:48:21.459) TID-0xc135d720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:48:21.460) TID-0xc135b700) INFO ) QueueThread[LogInst0]. Tid[4436] : process : start
+16:48:21.460) TID-0xbbfff700) INFO ) NormalThread[DelLogMgr]. Tid[4437] : process : start
+16:48:21.461) TID-0xbaffe700) INFO ) NormalThread[ColumFile]. Tid[4438] : process : start
+16:48:21.461) TID-0xc135d720) ERR  ) Colum Raw Data
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:48:21.461) TID-0xc135d720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:52:34.267) TID-0x9bf36720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:52:34.267) TID-0x9bf36720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:52:34.267) TID-0x9bf34700) INFO ) QueueThread[LogInst0]. Tid[15797] : process : start
+16:52:34.267) TID-0x92f33700) INFO ) NormalThread[DelLogMgr]. Tid[15798] : process : start
+16:52:34.268) TID-0x9af33700) INFO ) NormalThread[ColumFile]. Tid[15799] : process : start
+16:52:34.268) TID-0x9bf36720) ERR  ) Colum Raw Data
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:52:34.268) TID-0x9bf36720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:53:06.115) TID-0x71614720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:53:06.115) TID-0x71614720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:53:06.116) TID-0x71612700) INFO ) QueueThread[LogInst0]. Tid[17225] : process : start
+16:53:06.116) TID-0x6bfff700) INFO ) NormalThread[DelLogMgr]. Tid[17226] : process : start
+16:53:06.117) TID-0x6affe700) INFO ) NormalThread[ColumFile]. Tid[17227] : process : start
+16:53:06.117) TID-0x71614720) ERR  ) Colum Raw Data
+T_ID=6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:53:06.117) TID-0x71614720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID=6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:53:08.897) TID-0x0b342720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:53:08.897) TID-0x0b342720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:53:08.897) TID-0x0b340700) INFO ) QueueThread[LogInst0]. Tid[17347] : process : start
+16:53:08.897) TID-0x0a33f700) INFO ) NormalThread[DelLogMgr]. Tid[17348] : process : start
+16:53:08.898) TID-0x0933e700) INFO ) NormalThread[ColumFile]. Tid[17349] : process : start
+16:53:08.898) TID-0x0b342720) ERR  ) Colum Raw Data
+T_ID=6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:53:08.898) TID-0x0b342720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID=6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:57:59.821) TID-0x88246720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:57:59.821) TID-0x88246720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:57:59.822) TID-0x88244700) INFO ) QueueThread[LogInst0]. Tid[30574] : process : start
+16:57:59.822) TID-0x87243700) INFO ) NormalThread[DelLogMgr]. Tid[30575] : process : start
+16:57:59.822) TID-0x86242700) INFO ) NormalThread[ColumFile]. Tid[30576] : process : start
+16:57:59.822) TID-0x88246720) ERR  ) Colum Raw Data
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:57:59.822) TID-0x88246720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:58:03.602) TID-0x186ba720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+16:58:03.602) TID-0x186ba720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+16:58:03.602) TID-0x186b8700) INFO ) QueueThread[LogInst0]. Tid[30807] : process : start
+16:58:03.602) TID-0x176b7700) INFO ) NormalThread[DelLogMgr]. Tid[30808] : process : start
+16:58:03.602) TID-0x166b6700) INFO ) NormalThread[ColumFile]. Tid[30809] : process : start
+16:58:03.602) TID-0x186ba720) ERR  ) Colum Raw Data
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+
+16:58:03.602) TID-0x186ba720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+T_ID:6, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+T_ID:2, T_TYPE_ID:0x09, T_LEVEL:1, CALLED:010
+T_ID:4, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010, CALLED:010
+

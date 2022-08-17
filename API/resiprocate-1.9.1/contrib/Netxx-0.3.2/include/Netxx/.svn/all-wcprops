@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx
+END
+Peer.h
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Peer.h
+END
+Stream.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Stream.h
+END
+Datagram.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Datagram.h
+END
+SockOpt.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/SockOpt.h
+END
+StreamServer.h
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/StreamServer.h
+END
+Netbuf.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Netbuf.h
+END
+ProbeInfo.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/ProbeInfo.h
+END
+Types.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Types.h
+END
+Address.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Address.h
+END
+StreamBase.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/StreamBase.h
+END
+Timeout.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Timeout.h
+END
+DatagramServer.h
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/DatagramServer.h
+END
+Probe.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/Netxx-0.3.2/include/Netxx/Probe.h
+END

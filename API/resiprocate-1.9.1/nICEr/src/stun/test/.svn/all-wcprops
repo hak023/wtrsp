@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test
+END
+targets.mk
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/targets.mk
+END
+turn_loopback_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/turn_loopback_test.c
+END
+stun_loopback_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/stun_loopback_test.c
+END
+server.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/server.c
+END
+turn_test_server_util.c
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/turn_test_server_util.c
+END
+odd_test_vectors.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/odd_test_vectors.c
+END
+turn_test_echo_server.c
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/turn_test_echo_server.c
+END
+turn_test_server.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/turn_test_server.c
+END
+remi_vector_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/remi_vector_test.c
+END
+client.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/client.c
+END
+dup_addr_test.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/dup_addr_test.c
+END
+turn_test_client.c
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/turn_test_client.c
+END
+stun_test_util.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/stun_test_util.c
+END
+udp.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/udp.c
+END
+tlsServer.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/tlsServer.c
+END
+stun_test_util.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/stun_test_util.h
+END
+udp.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/nICEr/src/stun/test/udp.h
+END

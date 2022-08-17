@@ -1,0 +1,1 @@
+./configure --prefix=/home/ibc/ibc/src/vIBC/trunk --libdir=/home/ibc/ibc/src/vIBC/trunk/lib --includedir=/home/ibc/ibc/src/vIBC/trunk/src/include --with-ssl --enable-ipv6 --enable-shared=yes --enable-static=no CPPFLAGS="-DNDEBUG -DESIP_IN_RESIP"

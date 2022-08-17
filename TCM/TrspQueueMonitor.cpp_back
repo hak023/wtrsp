@@ -1,0 +1,72 @@
+#include "TrspQueueMonitor.h"
+#include "MainConfig.h"
+#include "main.h"
+using namespace eSipUtil;
+
+TrspQueueMonitor * g_fnCreateTrspQueueMonitor()
+{
+	TrspQueueMonitor * pclsObj = TrspQueueMonitor::m_fnGetInstance();
+	return pclsObj;
+}
+
+TrspQueueMonitor * TrspQueueMonitor::m_pclsMy = NULL;
+TrspQueueMonitor::TrspQueueMonitor() : m_clsQMonThread("TrspQueueMonitor")
+{
+	m_ulPrevLastTouch = 0;
+	int nShmKey = 0x40001009;
+	int nShmId;
+	void * pShm = createShm(nShmKey, 0, true, nShmId);
+
+	if (!pShm)
+	{
+		IFLOG(E_LOG_ERR, "Fail to get Shmkey[%X]", nShmKey);
+		return;
+	}
+	m_unMaxQueueMonSize = MainConfig::m_fnGetInstance()->m_unWorkerNum+2;
+	m_pstQueueMonShm = (const QueueMonShm *)pShm;
+	m_arrQueueMonEntity = m_pstQueueMonShm->m_fnGetQueueMonEntityArray();
+
+	IFLOG(E_LOG_INFO, "TRSE Current QueueNum[%u]",
+			m_pstQueueMonShm->m_unCurrentQueueNum);
+
+	m_clsQMonThread.setObject(this);
+	m_clsQMonThread.setProcessCb(m_fnCbkQMon);
+	m_clsQMonThread.run();
+}
+TrspQueueMonitor::~TrspQueueMonitor()
+{
+	m_clsQMonThread.shutdown();
+	m_clsQMonThread.join();
+}
+TrspQueueMonitor * TrspQueueMonitor::m_fnGetInstance()
+{
+	if(m_pclsMy==NULL)
+	{
+		m_pclsMy = new TrspQueueMonitor;
+	}
+	return m_pclsMy;
+}
+
+void TrspQueueMonitor::m_fnCbkQMon(TrspQueueMonitor * _pclsMy)
+{
+	for (unsigned int i = 0; i < _pclsMy->m_unMaxQueueMonSize; i++)
+	{
+		IFLOG(E_LOG_INFO, "TrspQueueMonitor Idx[%d] : Name[%s], CurSize[%u], MaxSize[%u], Touch[%lu]",
+				i,
+				_pclsMy->m_arrQueueMonEntity[i].m_szQueueName,
+				_pclsMy->m_arrQueueMonEntity[i].m_unCurrentSize,
+				_pclsMy->m_arrQueueMonEntity[i].m_unMaxSize,
+				_pclsMy->m_arrQueueMonEntity[i].m_ulLastTouch);
+
+
+//		if (_pclsMy->m_ulPrevLastTouch != _pclsMy->m_arrQueueMonEntity[i].m_ulLastTouch
+//				&& _pclsMy->m_ulPrevLastTouch + 1 != _pclsMy->m_arrQueueMonEntity[i].m_ulLastTouch)
+//			IFLOG(E_LOG_INFO, "ERR : prevTimer[%lu], curTime[%lu]",
+//					_pclsMy->m_ulPrevLastTouch,
+//					_pclsMy->m_arrQueueMonEntity[i].m_ulLastTouch);
+
+		_pclsMy->m_ulPrevLastTouch = _pclsMy->m_arrQueueMonEntity[i].m_ulLastTouch;
+	}
+	IFLOG(E_LOG_INFO, "TrspQueueMonitor==================================================");
+	usleep(1000 * 500);
+}

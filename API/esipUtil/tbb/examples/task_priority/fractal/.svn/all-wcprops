@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal
+END
+fractal.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/fractal.h
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/main.cpp
+END
+fractal_video.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/fractal_video.h
+END
+index.html
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/index.html
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/Makefile
+END
+fractal.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_priority/fractal/fractal.cpp
+END

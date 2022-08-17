@@ -1,0 +1,182 @@
+/******************************* GCC Include ********************************************/
+#include <iostream>
+#include <signal.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <sys/wait.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/timeb.h>
+#include <sys/resource.h>
+#include <fstream>
+#include <cstring>
+/******************************* Util Include ********************************************/
+#include "ConfigFile.hxx"
+#include "string.hxx"
+#include "log.hxx"
+#include "rutil/XMLCursor.hxx"
+#include "rutil/DataStream.hxx"
+#include "rutil/Inserter.hxx"
+#include "rutil/Random.hxx"
+#include "rutil/Time.hxx"
+/******************************* Process Include *****************************************/
+#include "main.h"
+#include "MainConfig.h"
+#include "Worker.h"
+#include "TrseNodeMgr.h"
+#include "TrssNodeMgr.h"
+#include "tinyxml/tinyxml.h"
+#include "AppXmlParser.h"
+#include "CBase64.h"
+#include "TrsgCdr.h"
+#include "CZip.h"
+#include "TargetContent.h"
+/******************************* Using Name Space ***************************************/
+using namespace eSipUtil;
+/******************************** Global Instance ****************************************/
+KString g_clsProcName;
+unsigned int g_unPid = 0;
+KString g_clsBuildDate;
+int g_unVwtrsgLogInst = 0;
+
+/********************************* Main Local Function Defines *******************************/
+static const char *s_fnStringSignal(int sig);
+static void s_fnSignalHandle(int sig);
+static void s_fnSetSignal();
+static void s_fnSetProcName(int argc, char ** argv);
+void main_memory_init()
+{
+	struct rlimit rlim;
+	rlim.rlim_cur = MAIN_PROCESS_STACK_SIZE;
+	rlim.rlim_max = MAIN_PROCESS_STACK_SIZE;
+	setrlimit(RLIMIT_STACK, &rlim);
+}
+
+int g_fnGetLog()
+{
+	return g_unVwtrsgLogInst;
+}
+void s_fnCreateLog(const char *_pszProcName)
+{
+	KString clsLogPath; clsLogPath<<(KCSTR)"../log/"<<_pszProcName<<(KCSTR)"/";
+	std::cout << "clsLogPath:" << (KCSTR)clsLogPath << "\n";
+	AsyncFileLog::m_fnInit((KCSTR)clsLogPath,(KCSTR)g_clsProcName, g_unVwtrsgLogInst,819200,10);
+	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_UTIL,"UTIL");
+	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_APP, "APP ");
+	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_TRSE,  "TRSE");
+	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_TRSS,  "TRSS");
+	g_fnSetLog(E_VWTRSG_LOG_CATE_UTIL,E_LOG_DISABLE);
+	g_fnSetLog(E_VWTRSG_LOG_CATE_APP,E_LOG_DEBUG);
+	g_fnSetLog(E_VWTRSG_LOG_CATE_TRSE,E_LOG_DEBUG);
+	g_fnSetLog(E_VWTRSG_LOG_CATE_TRSS,E_LOG_DEBUG);
+	IFLOG(E_LOG_ERR,"CREATE MODULE : [%-30s] End",__func__);
+}
+bool g_fnCheckLog( eSipUtil::ELogLevel_t _eLogLevel)
+{
+	return AsyncFileLog::m_fnCheckLogLevel(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_APP, _eLogLevel);
+}
+bool g_fnCheckTrseLog( eSipUtil::ELogLevel_t _eLogLevel)
+{
+	return AsyncFileLog::m_fnCheckLogLevel(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_TRSE, _eLogLevel);
+}
+bool g_fnCheckTrssLog( eSipUtil::ELogLevel_t _eLogLevel)
+{
+	return AsyncFileLog::m_fnCheckLogLevel(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_TRSS, _eLogLevel);
+}
+void g_fnSetLog(EVwtrsgLogCate_t _eCate,eSipUtil::ELogLevel_t _eLv)
+{
+	AsyncFileLog::m_fnSetLogLevel(g_unVwtrsgLogInst,_eCate,_eLv);
+}
+/********************************** MAIN **********************************************/
+int main(int argc, char ** argv)
+{
+	main_memory_init();
+	g_unPid = (unsigned int) getpid();
+	g_clsBuildDate << (KCSTR) __DATE__ << " - " << (KCSTR) __TIME__;
+	s_fnSetProcName(argc, argv);
+	s_fnSetSignal();
+	s_fnCreateLog((KCSTR)g_clsProcName);
+	g_fnCreateMainConfig();
+	g_fnCreateAclSystemTable();
+	g_fnCreateTrsgCdr();
+	g_fnCreateWorker();
+	g_fnCreateTrseNodeMgr();
+	g_fnCreateTrssNodeMgr();
+	g_fnCreateTrssTransport();//media
+	g_fnCreateTrseTransport();
+	pid_t ppid;
+	while(1)
+	{
+		ppid=getppid();
+		if(ppid==1 )
+		{
+			printf("PPID is  1, we will exit\r\n");
+			break;
+		}
+		sleep(1);
+	}
+	return 0;
+}
+/**********************************Main Local Functions ************************************/
+const char *s_fnStringSignal(int sig)
+{
+	switch(sig)
+	{
+		case SIGINT: return "SIGINIT";
+		case SIGKILL: return "SIGKILL";
+		case SIGTERM: return "SIGTERM";
+		case SIGHUP: return "SIGHUP ";
+		case SIGPIPE: return "SIGPIPE";
+		default: return "NONE   ";
+	};
+	return "NONE   ";
+}
+void g_fnKillMyself()
+{
+	pid_t mypid=getpid();
+	if( mypid )
+	{
+		kill(mypid,SIGKILL);
+		usleep(2000*1000);
+		kill(mypid,SIGKILL);
+		usleep(2000*1000);
+		exit(0);
+	}
+}
+void s_fnSignalHandle(int sig)
+{
+   IFLOG(E_LOG_ERR,"recv signal(%s)\r\n",s_fnStringSignal(sig));
+   if((sig == SIGINT) || (sig == SIGKILL) || (sig == SIGTERM))
+   {
+      printf("Finished %s Process(%s)\r\n",(KCSTR)g_clsProcName, s_fnStringSignal(sig));
+      sleep(1);
+      g_fnKillMyself();
+   }
+}
+void s_fnSetSignal()
+{
+	signal(SIGINT, s_fnSignalHandle);	signal(SIGKILL, s_fnSignalHandle);
+	signal(SIGTERM, s_fnSignalHandle);	signal(SIGHUP, s_fnSignalHandle);
+	signal(SIGPIPE, s_fnSignalHandle);
+}
+void s_fnSetProcName(int argc, char ** argv)
+{
+	char *tok = NULL;
+	char Temp_AppName[128];memset(Temp_AppName,0x00,128);
+	char Temp_AppName2[128];memset(Temp_AppName2,0x00,128);
+	strcpy(Temp_AppName,argv[0]);
+	if (!(tok = strtok(Temp_AppName, "/"))) 
+	{
+		perror("Illegal command\r\n");exit(-1);
+	}
+	do 
+	{
+		Temp_AppName2[0]=0;	strcpy(Temp_AppName2,tok);
+	} while ((tok = strtok(NULL, "/")));
+	g_clsProcName<<(KSTR)Temp_AppName2;
+}

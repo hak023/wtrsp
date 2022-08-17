@@ -1,0 +1,1175 @@
+[ConfigFile.hxx:128]: (style) C-style pointer casting
+[ConfigFile.hxx:134]: (style) C-style pointer casting
+[ConfigFile.hxx:140]: (style) C-style pointer casting
+[Directory.hxx:57]: (style) C-style pointer casting
+[Directory.hxx:58]: (style) C-style pointer casting
+[Directory.hxx:59]: (style) C-style pointer casting
+[Directory.hxx:60]: (style) C-style pointer casting
+[Cdr.cxx:75]: (style) C-style pointer casting
+[queueThread.hxx:250]: (style) The scope of the variable 'pclsData' can be reduced.
+[ConfigFile.hxx:41]: (warning) Member variable 'CfgTimerData_t::m_pclsCfg' is not initialized in the constructor.
+[queue.hxx:130]: (style) C-style pointer casting
+[queue.hxx:452]: (style) C-style pointer casting
+[queue.hxx:473]: (style) C-style pointer casting
+[ColumFile.hxx:71]: (style) C-style pointer casting
+[ColumFile.hxx:72]: (style) C-style pointer casting
+[ColumFile.hxx:162]: (style) C-style pointer casting
+[ColumFile.hxx:164]: (style) C-style pointer casting
+[ColumFile.hxx:165]: (style) C-style pointer casting
+[ColumFile.hxx:166]: (style) C-style pointer casting
+[ColumFile.hxx:167]: (style) C-style pointer casting
+[ColumFile.cxx:215]: (style) C-style pointer casting
+[ColumFile.cxx:341]: (style) C-style pointer casting
+[ColumFile.cxx:342]: (style) C-style pointer casting
+[ColumFile.cxx:159]: (style) The scope of the variable 'pclsNew' can be reduced.
+[ColumFile.cxx:153]: (warning) Member variable 'ColumParams::m_eSt' is not assigned a value in 'ColumParams::operator='.
+[ColumFile.cxx:153]: (warning) Member variable 'ColumParams::m_cKeyword' is not assigned a value in 'ColumParams::operator='.
+[ColumFile.cxx:153]: (warning) Member variable 'ColumParams::m_clsExp' is not assigned a value in 'ColumParams::operator='.
+[ColumFile.hxx:116]: (warning) Member variable 'ColumTimerData_t::m_pclsColum' is not initialized in the constructor.
+[ColumFile.cxx:366]: (warning) Member variable 'ColumFile::m_pfnChanged' is not initialized in the constructor.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_cKeyword' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_bReadChange' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pfnChanged' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pvUser' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pszDefComment' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.hxx:41]: (style) Unused private function: 'ColumParam::m_fnE_PARSE_PARAM_NONE'
+[ColumFile.hxx:42]: (style) Unused private function: 'ColumParam::m_fnE_PARSE_PARAM_KEY'
+[ColumFile.hxx:43]: (style) Unused private function: 'ColumParam::m_fnE_PARSE_PARAM_KEY_SP'
+[ColumFile.hxx:44]: (style) Unused private function: 'ColumParam::m_fnE_PARSE_PARAM_VAL'
+[ColumFile.hxx:83]: (style) Unused private function: 'ColumParams::m_fnE_PARSE_PARAMS_NONE'
+[ColumFile.hxx:84]: (style) Unused private function: 'ColumParams::m_fnE_PARSE_PARAMS_SP'
+[ColumFile.hxx:85]: (style) Unused private function: 'ColumParams::m_fnE_PARSE_PARAMS'
+[ColumnStr.cxx:53]: (style) The scope of the variable 'nDummySpaceLen' can be reduced.
+[ColumnStr.cxx:86]: (style) The scope of the variable 'unColumnIdx' can be reduced.
+[ColumnStr.cxx:108]: (style) The scope of the variable 'nDummySpaceLen' can be reduced.
+[ColumnStr.cxx:109]: (style) The scope of the variable 'unDataLen' can be reduced.
+[ColumnStr.cxx:238]: (performance) Possible inefficient checking for 'listLineData' emptiness.
+[ConfigFile.cxx:1036]: (style) C-style pointer casting
+[ConfigFile.cxx:1058]: (style) C-style pointer casting
+[ConfigFile.cxx:1059]: (style) C-style pointer casting
+[ConfigFile.cxx:1062]: (style) C-style pointer casting
+[ConfigFile.cxx:1066]: (style) C-style pointer casting
+[ConfigFile.cxx:136] -> [ConfigFile.cxx:137]: (performance) Buffer 'm_szTime' is being written before its old content has been used.
+[ConfigFile.cxx:99]: (style) The scope of the variable 's1' can be reduced.
+[ConfigFile.cxx:99]: (style) The scope of the variable 's2' can be reduced.
+[ConfigFile.cxx:761]: (style) The scope of the variable 'match_temp' can be reduced.
+[ConfigFile.cxx:459]: (warning) Member variable 'CfgFile::m_pfnChanged' is not initialized in the constructor.
+[DelLog.cxx:81]: (warning) %d in format string (no. 4) requires 'int' but the argument type is 'unsigned int'.
+[DelLog.cxx:215]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[DelLog.cxx:220]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[DelLog.hxx:61]: (style) C-style pointer casting
+[DelLog.hxx:62]: (style) C-style pointer casting
+[DelLog.cxx:194]: (style) C-style pointer casting
+[DelLog.cxx:207]: (style) C-style pointer casting
+[DelLog.cxx:42]: (style) Variable 'bRet' is assigned a value that is never used.
+[Directory.cxx:136]: (style) The scope of the variable 'pstEntry' can be reduced.
+[JsonK.hxx:22]: (style) C-style pointer casting
+[JsonK.hxx:24]: (style) C-style pointer casting
+[JsonK.hxx:25]: (style) C-style pointer casting
+[JsonK.hxx:50]: (style) C-style pointer casting
+[JsonK.hxx:52]: (style) C-style pointer casting
+[JsonK.hxx:53]: (style) C-style pointer casting
+[JsonFile.cxx:30]: (style) C-style pointer casting
+[JsonFile.cxx:34]: (style) C-style pointer casting
+[JsonFile.cxx:42]: (style) C-style pointer casting
+[JsonFile.cxx:100]: (style) C-style pointer casting
+[JsonFile.cxx:104]: (style) C-style pointer casting
+[JsonFile.cxx:119]: (style) C-style pointer casting
+[JsonFile.cxx:123]: (style) C-style pointer casting
+[JsonFile.cxx:207]: (style) C-style pointer casting
+[JsonFile.cxx:211]: (style) C-style pointer casting
+[JsonFile.cxx:219]: (style) C-style pointer casting
+[JsonFile.cxx:277]: (style) C-style pointer casting
+[JsonFile.cxx:281]: (style) C-style pointer casting
+[JsonFile.cxx:286]: (style) C-style pointer casting
+[JsonFile.cxx:290]: (style) C-style pointer casting
+[JsonK.cxx:237]: (style) C-style pointer casting
+[JsonK.cxx:241]: (style) C-style pointer casting
+[JsonK.cxx:259]: (style) C-style pointer casting
+[JsonK.cxx:263]: (style) C-style pointer casting
+[JsonK.cxx:400]: (style) C-style pointer casting
+[JsonK.cxx:405]: (style) C-style pointer casting
+[JsonK.cxx:196]: (style) The scope of the variable 'pclsNew' can be reduced.
+[JsonK.cxx:337]: (style) The scope of the variable 'pclsNew' can be reduced.
+[JsonK.cxx:331]: (warning) Member variable 'JsonK::m_clsNull' is not assigned a value in 'JsonK::operator='.
+[JsonK.cxx:331]: (warning) Member variable 'JsonK::m_pclsCurObj' is not assigned a value in 'JsonK::operator='.
+[KForking.cxx:113]: (warning) %u in format string (no. 4) requires 'unsigned int' but the argument type is 'int'.
+[FxData.hxx:270]: (style) C-style pointer casting
+[KPacket.cxx:166]: (style) C-style pointer casting
+[KPacket.cxx:172]: (style) C-style pointer casting
+[KPacket.cxx:144] -> [KPacket.cxx:145]: (performance) Buffer 'pszNew' is being written before its old content has been used.
+[FxData.hxx:50]: (style) The scope of the variable 'k' can be reduced.
+[KPacket.cxx:41]: (style) The scope of the variable 'pstObj2' can be reduced.
+[KPacket.cxx:63]: (warning) Member variable 'KPacket::m_clsChildKey' is not assigned a value in 'KPacket::operator='.
+[KPacket.cxx:63]: (warning) Member variable 'KPacket::m_clsChildSubKey' is not assigned a value in 'KPacket::operator='.
+[KPacket.cxx:63]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.
+[KSdpAttrParse.hxx:58]: (style) C-style pointer casting
+[KSdpAttrParse.hxx:59]: (style) C-style pointer casting
+[KSdpAttrParse.cxx:101]: (style) C-style pointer casting
+[KSdpAttrParse.cxx:107]: (style) C-style pointer casting
+[KSdpAttrParse.cxx:155]: (style) C-style pointer casting
+[KSdpAttrParse.cxx:102]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSdpAttrParse.cxx:97]: (warning) Member variable 'KSdpParams::m_eSt' is not assigned a value in 'KSdpParams::operator='.
+[KSdpAttrParse.cxx:363]: (warning) Member variable 'KSdpAttrFmtp::m_eSt' is not assigned a value in 'KSdpAttrFmtp::operator='.
+[KSdpAttrParse.hxx:31]: (style) Unused private function: 'KSdpParam::m_fnE_PARSE_PARAM_NONE'
+[KSdpAttrParse.hxx:32]: (style) Unused private function: 'KSdpParam::m_fnE_PARSE_PARAM_KEY'
+[KSdpAttrParse.hxx:33]: (style) Unused private function: 'KSdpParam::m_fnE_PARSE_PARAM_KEY_SP'
+[KSdpAttrParse.hxx:34]: (style) Unused private function: 'KSdpParam::m_fnE_PARSE_PARAM_VAL'
+[KSdpAttrParse.hxx:69]: (style) Unused private function: 'KSdpParams::m_fnE_PARSE_PARAMS_NONE'
+[KSdpAttrParse.hxx:70]: (style) Unused private function: 'KSdpParams::m_fnE_PARSE_PARAMS_SP'
+[KSdpAttrParse.hxx:71]: (style) Unused private function: 'KSdpParams::m_fnE_PARSE_PARAMS'
+[KSdpAttrParse.hxx:118]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_NONE'
+[KSdpAttrParse.hxx:119]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_PT'
+[KSdpAttrParse.hxx:120]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_PT_SP'
+[KSdpAttrParse.hxx:121]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_ENCODING'
+[KSdpAttrParse.hxx:122]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_ENCODING_SP'
+[KSdpAttrParse.hxx:123]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_CLOCK'
+[KSdpAttrParse.hxx:124]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_CLOCK_SP'
+[KSdpAttrParse.hxx:125]: (style) Unused private function: 'KSdpAttrRtpMap::m_fnE_SDP_A_RTPMAP_PARAMS'
+[KSdpAttrParse.hxx:151]: (style) Unused private function: 'KSdpAttrFmtp::m_fnE_SDP_A_FMTP_NONE'
+[KSdpAttrParse.hxx:152]: (style) Unused private function: 'KSdpAttrFmtp::m_fnE_SDP_A_FMTP_FORMAT'
+[KSdpAttrParse.hxx:153]: (style) Unused private function: 'KSdpAttrFmtp::m_fnE_SDP_A_FMTP_FORMAT_SP'
+[KSdpAttrParse.hxx:154]: (style) Unused private function: 'KSdpAttrFmtp::m_fnE_SDP_A_FMTP_PARAMS'
+[KSdpParse.cxx:513]: (style) C-style pointer casting
+[KSdpParse.cxx:517]: (style) C-style pointer casting
+[KSdpParse.cxx:523]: (style) C-style pointer casting
+[KSdpParse.cxx:554]: (style) C-style pointer casting
+[KSdpParse.cxx:558]: (style) C-style pointer casting
+[KSdpParse.cxx:570]: (style) C-style pointer casting
+[KSdpParse.cxx:574]: (style) C-style pointer casting
+[KSdpParse.cxx:638]: (style) C-style pointer casting
+[KSdpParse.cxx:643]: (style) C-style pointer casting
+[KSdpParse.cxx:670]: (style) C-style pointer casting
+[KSdpParse.cxx:676]: (style) C-style pointer casting
+[KSdpParse.cxx:701]: (style) C-style pointer casting
+[KSdpParse.cxx:709]: (style) C-style pointer casting
+[KSdpParse.cxx:726]: (style) C-style pointer casting
+[KSdpParse.cxx:734]: (style) C-style pointer casting
+[KSdpParse.cxx:749]: (style) C-style pointer casting
+[KSdpParse.cxx:755]: (style) C-style pointer casting
+[KSdpParse.cxx:788]: (style) C-style pointer casting
+[KSdpParse.cxx:796]: (style) C-style pointer casting
+[KSdpParse.cxx:815]: (style) C-style pointer casting
+[KSdpParse.cxx:822]: (style) C-style pointer casting
+[KSdpParse.cxx:830]: (style) C-style pointer casting
+[KSdpParse.cxx:834]: (style) C-style pointer casting
+[KSdpParse.cxx:840]: (style) C-style pointer casting
+[KSdpParse.cxx:871]: (style) C-style pointer casting
+[KSdpParse.cxx:875]: (style) C-style pointer casting
+[KSdpParse.cxx:880]: (style) C-style pointer casting
+[KSdpParse.cxx:884]: (style) C-style pointer casting
+[KSdpParse.cxx:996]: (style) C-style pointer casting
+[KSdpParse.cxx:1001]: (style) C-style pointer casting
+[KSdpParse.cxx:1007]: (style) C-style pointer casting
+[KSdpParse.cxx:1031]: (style) C-style pointer casting
+[KSdpParse.cxx:1035]: (style) C-style pointer casting
+[KSdpParse.cxx:1040]: (style) C-style pointer casting
+[KSdpParse.cxx:1044]: (style) C-style pointer casting
+[KSdpParse.cxx:1081]: (style) C-style pointer casting
+[KSdpParse.cxx:1086]: (style) C-style pointer casting
+[KSdpParse.cxx:1092]: (style) C-style pointer casting
+[KSdpParse.cxx:1118]: (style) C-style pointer casting
+[KSdpParse.cxx:1122]: (style) C-style pointer casting
+[KSdpParse.cxx:1134]: (style) C-style pointer casting
+[KSdpParse.cxx:1138]: (style) C-style pointer casting
+[KSdpParse.cxx:1225]: (style) C-style pointer casting
+[KSdpParse.cxx:1230]: (style) C-style pointer casting
+[KSdpParse.cxx:1236]: (style) C-style pointer casting
+[KSdpParse.cxx:1262]: (style) C-style pointer casting
+[KSdpParse.cxx:1266]: (style) C-style pointer casting
+[KSdpParse.cxx:1271]: (style) C-style pointer casting
+[KSdpParse.cxx:1275]: (style) C-style pointer casting
+[KSdpParse.cxx:510]: (warning) Member variable 'KSdpBs::m_clsNull' is not assigned a value in 'KSdpBs::operator='.
+[KSdpParse.cxx:510]: (warning) Member variable 'KSdpBs::m_pclsCurrent' is not assigned a value in 'KSdpBs::operator='.
+[KSdpParse.cxx:828]: (warning) Member variable 'KSdpAs::m_pclsCurrent' is not assigned a value in 'KSdpAs::operator='.
+[KSdpParse.cxx:828]: (warning) Member variable 'KSdpAs::m_clsNull' is not assigned a value in 'KSdpAs::operator='.
+[KSdpParse.cxx:993]: (warning) Member variable 'KSdpTDescs::m_pclsCurrent' is not assigned a value in 'KSdpTDescs::operator='.
+[KSdpParse.cxx:993]: (warning) Member variable 'KSdpTDescs::m_clsNull' is not assigned a value in 'KSdpTDescs::operator='.
+[KSdpParse.cxx:1070]: (warning) Member variable 'KSdpM::m_clsC' is not assigned a value in 'KSdpM::operator='.
+[KSdpParse.cxx:1070]: (warning) Member variable 'KSdpM::m_pclsCurrentFmtp' is not assigned a value in 'KSdpM::operator='.
+[KSdpParse.cxx:1070]: (warning) Member variable 'KSdpM::m_clsNull' is not assigned a value in 'KSdpM::operator='.
+[KSdpParse.cxx:1223]: (warning) Member variable 'KSdpMs::m_clsVal' is not assigned a value in 'KSdpMs::operator='.
+[KSdpParse.cxx:1223]: (warning) Member variable 'KSdpMs::m_pclsCurrent' is not assigned a value in 'KSdpMs::operator='.
+[KSdpParse.cxx:1223]: (warning) Member variable 'KSdpMs::m_clsNull' is not assigned a value in 'KSdpMs::operator='.
+[KSdpParse.cxx:1313]: (warning) Member variable 'KSdpParse::m_eSt' is not assigned a value in 'KSdpParse::operator='.
+[KSdpParse.cxx:1313]: (warning) Member variable 'KSdpParse::m_clsTmpHeaderName' is not assigned a value in 'KSdpParse::operator='.
+[KSdpParse.hxx:63]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_NONE'
+[KSdpParse.hxx:64]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_USERNAME'
+[KSdpParse.hxx:65]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_USERNAME_SP'
+[KSdpParse.hxx:66]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_SESSIONID'
+[KSdpParse.hxx:67]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_SESSIONID_SP'
+[KSdpParse.hxx:68]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_VERSION'
+[KSdpParse.hxx:69]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_VERSION_SP'
+[KSdpParse.hxx:70]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_NETTYPE'
+[KSdpParse.hxx:71]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_NETTYPE_SP'
+[KSdpParse.hxx:72]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_ADDRTYPE'
+[KSdpParse.hxx:73]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_ADDRTYPE_SP'
+[KSdpParse.hxx:74]: (style) Unused private function: 'KSdpO::m_fnE_SDP_O_ADDR'
+[KSdpParse.hxx:170]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_NONE'
+[KSdpParse.hxx:171]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_NETTYPE'
+[KSdpParse.hxx:172]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_NETTYPE_SP'
+[KSdpParse.hxx:173]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_ADDRTYPE'
+[KSdpParse.hxx:174]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_ADDRTYPE_SP'
+[KSdpParse.hxx:175]: (style) Unused private function: 'KSdpC::m_fnE_SDP_C_CONNECTION'
+[KSdpParse.hxx:204]: (style) Unused private function: 'KSdpB::m_fnE_SDP_B_NONE'
+[KSdpParse.hxx:205]: (style) Unused private function: 'KSdpB::m_fnE_SDP_B_MODIFIER'
+[KSdpParse.hxx:206]: (style) Unused private function: 'KSdpB::m_fnE_SDP_B_MODIFIER_SP'
+[KSdpParse.hxx:207]: (style) Unused private function: 'KSdpB::m_fnE_SDP_B_BANDWIDTH'
+[KSdpParse.hxx:289]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_NONE'
+[KSdpParse.hxx:290]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_KEY'
+[KSdpParse.hxx:291]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_KEY_SP'
+[KSdpParse.hxx:292]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_VAL'
+[KSdpParse.hxx:293]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_EXT_RTPMAP'
+[KSdpParse.hxx:294]: (style) Unused private function: 'KSdpA::m_fnE_SDP_A_EXT_FMTP'
+[KSdpParse.hxx:338]: (style) Unused private function: 'KSdpT::m_fnE_SDP_T_NONE'
+[KSdpParse.hxx:339]: (style) Unused private function: 'KSdpT::m_fnE_SDP_T_1'
+[KSdpParse.hxx:340]: (style) Unused private function: 'KSdpT::m_fnE_SDP_T_1_SP'
+[KSdpParse.hxx:341]: (style) Unused private function: 'KSdpT::m_fnE_SDP_T_2'
+[KSdpParse.hxx:453]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_NONE'
+[KSdpParse.hxx:454]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_MEDIA'
+[KSdpParse.hxx:455]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_MEDIA_SP'
+[KSdpParse.hxx:456]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_PORT'
+[KSdpParse.hxx:457]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_PORT_SP'
+[KSdpParse.hxx:458]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_TRANSPORT'
+[KSdpParse.hxx:459]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_TRANSPORT_SP'
+[KSdpParse.hxx:460]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_FMT'
+[KSdpParse.hxx:461]: (style) Unused private function: 'KSdpM::m_fnE_SDP_M_FMT_SP'
+[KSdpParse.hxx:568]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_NONE'
+[KSdpParse.hxx:569]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_CR'
+[KSdpParse.hxx:570]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_LF'
+[KSdpParse.hxx:571]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_NAME'
+[KSdpParse.hxx:572]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_NAME_SP'
+[KSdpParse.hxx:573]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_V'
+[KSdpParse.hxx:574]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_O'
+[KSdpParse.hxx:575]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_S'
+[KSdpParse.hxx:576]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_I'
+[KSdpParse.hxx:577]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_U'
+[KSdpParse.hxx:578]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_E'
+[KSdpParse.hxx:579]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_P'
+[KSdpParse.hxx:580]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_C'
+[KSdpParse.hxx:581]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_B'
+[KSdpParse.hxx:582]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_Z'
+[KSdpParse.hxx:583]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_K'
+[KSdpParse.hxx:584]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_A'
+[KSdpParse.hxx:585]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_T'
+[KSdpParse.hxx:586]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_R'
+[KSdpParse.hxx:587]: (style) Unused private function: 'KSdpParse::m_fnE_SDP_M'
+[KSdpParse.cxx:653]: (warning) 'operator=' should check for assignment to self to avoid problems with dynamic memory.
+[KSipParse.hxx:163]: (style) C-style pointer casting
+[KSipParse.hxx:164]: (style) C-style pointer casting
+[KSipParse.hxx:246]: (style) C-style pointer casting
+[KSipParse.hxx:247]: (style) C-style pointer casting
+[KSipParse.hxx:425]: (style) C-style pointer casting
+[KSipParse.hxx:426]: (style) C-style pointer casting
+[KSipParse.hxx:601]: (style) C-style pointer casting
+[KSipParse.hxx:602]: (style) C-style pointer casting
+[KSipParse.hxx:630]: (style) C-style pointer casting
+[KSipParse.hxx:631]: (style) C-style pointer casting
+[KSipParse.cxx:273]: (style) C-style pointer casting
+[KSipParse.cxx:1000]: (style) C-style pointer casting
+[KSipParse.cxx:1006]: (style) C-style pointer casting
+[KSipParse.cxx:1019]: (style) C-style pointer casting
+[KSipParse.cxx:1023]: (style) C-style pointer casting
+[KSipParse.cxx:1030]: (style) C-style pointer casting
+[KSipParse.cxx:1035]: (style) C-style pointer casting
+[KSipParse.cxx:1055]: (style) C-style pointer casting
+[KSipParse.cxx:1827]: (style) C-style pointer casting
+[KSipParse.cxx:1833]: (style) C-style pointer casting
+[KSipParse.cxx:2073]: (style) C-style pointer casting
+[KSipParse.cxx:2078]: (style) C-style pointer casting
+[KSipParse.cxx:983]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.
+[KSipParse.cxx:1355]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.
+[KSipParse.cxx:234]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSipParse.cxx:524]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSipParse.cxx:1001]: (style) The scope of the variable 'pclsSrc' can be reduced.
+[KSipParse.cxx:1728]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSipParse.cxx:1931]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSipParse.cxx:2061]: (style) The scope of the variable 'pclsNew' can be reduced.
+[KSipParse.cxx:64]: (warning) Member variable 'KSipFirstLine::m_eSt' is not assigned a value in 'KSipFirstLine::operator='.
+[KSipParse.cxx:228]: (warning) Member variable 'KSipParams::m_eSt' is not assigned a value in 'KSipParams::operator='.
+[KSipParse.cxx:369]: (warning) Member variable 'KSipVia::m_eSt' is not assigned a value in 'KSipVia::operator='.
+[KSipParse.cxx:657]: (warning) Member variable 'KSipHost::m_eSt' is not assigned a value in 'KSipHost::operator='.
+[KSipParse.cxx:806]: (warning) Member variable 'KSipParseUrn::m_eSt' is not assigned a value in 'KSipParseUrn::operator='.
+[KSipParse.cxx:896]: (warning) Member variable 'KSipParseSubHeader::m_eSt' is not assigned a value in 'KSipParseSubHeader::operator='.
+[KSipParse.cxx:997]: (warning) Member variable 'KSipParseSubHeaders::m_eSt' is not assigned a value in 'KSipParseSubHeaders::operator='.
+[KSipParse.cxx:1138]: (warning) Member variable 'KSipNameAddr::m_bCheckDisplayed' is not initialized in the constructor.
+[KSipParse.cxx:1145]: (warning) Member variable 'KSipNameAddr::m_clsUrn' is not assigned a value in 'KSipNameAddr::operator='.
+[KSipParse.cxx:1145]: (warning) Member variable 'KSipNameAddr::m_eSt' is not assigned a value in 'KSipNameAddr::operator='.
+[KSipParse.cxx:1145]: (warning) Member variable 'KSipNameAddr::m_eScheme' is not assigned a value in 'KSipNameAddr::operator='.
+[KSipParse.cxx:1145]: (warning) Member variable 'KSipNameAddr::m_bCheckDisplayed' is not assigned a value in 'KSipNameAddr::operator='.
+[KSipParse.cxx:2141]: (warning) Member variable 'KSipCSeq::m_eSt' is not assigned a value in 'KSipCSeq::operator='.
+[KSipParse.cxx:2234]: (warning) Member variable 'KSipContentsType::m_eSt' is not assigned a value in 'KSipContentsType::operator='.
+[KSipParse.cxx:2371]: (warning) Member variable 'KSipParse::m_pclsCurrentOther' is not initialized in the constructor.
+[KSipParse.hxx:104]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_NONE'
+[KSipParse.hxx:105]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_SEG1'
+[KSipParse.hxx:106]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_SEG1_SP'
+[KSipParse.hxx:107]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_SEG2'
+[KSipParse.hxx:108]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_SEG2_SP'
+[KSipParse.hxx:109]: (style) Unused private function: 'KSipFirstLine::m_fnE_PARSE_FIRST_SEG3'
+[KSipParse.hxx:136]: (style) Unused private function: 'KSipParam::m_fnE_PARSE_PARAM_NONE'
+[KSipParse.hxx:137]: (style) Unused private function: 'KSipParam::m_fnE_PARSE_PARAM_KEY'
+[KSipParse.hxx:138]: (style) Unused private function: 'KSipParam::m_fnE_PARSE_PARAM_KEY_SP'
+[KSipParse.hxx:139]: (style) Unused private function: 'KSipParam::m_fnE_PARSE_PARAM_VAL'
+[KSipParse.hxx:173]: (style) Unused private function: 'KSipParams::m_fnE_PARSE_PARAMS_NONE'
+[KSipParse.hxx:174]: (style) Unused private function: 'KSipParams::m_fnE_PARSE_PARAMS_SP'
+[KSipParse.hxx:175]: (style) Unused private function: 'KSipParams::m_fnE_PARSE_PARAMS'
+[KSipParse.hxx:214]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_NONE'
+[KSipParse.hxx:215]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_PROTO'
+[KSipParse.hxx:216]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_PROTO_SP'
+[KSipParse.hxx:217]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_VER'
+[KSipParse.hxx:218]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_VER_SP'
+[KSipParse.hxx:219]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_TRANSPORT'
+[KSipParse.hxx:220]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_TRANSPORT_SP'
+[KSipParse.hxx:221]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_ADDRESS'
+[KSipParse.hxx:222]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_ADDRESS_SP'
+[KSipParse.hxx:223]: (style) Unused private function: 'KSipVia::m_fnE_PARSE_VIA_PARAMS'
+[KSipParse.hxx:256]: (style) Unused private function: 'KSipVias::m_fnE_PARSE_VIAS_NONE'
+[KSipParse.hxx:257]: (style) Unused private function: 'KSipVias::m_fnE_PARSE_VIAS_SP'
+[KSipParse.hxx:258]: (style) Unused private function: 'KSipVias::m_fnE_PARSE_VIAS'
+[KSipParse.hxx:289]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_NONE'
+[KSipParse.hxx:290]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_ADDR'
+[KSipParse.hxx:291]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_ADDR_SP'
+[KSipParse.hxx:292]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_NONEV6_SP'
+[KSipParse.hxx:293]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_ADDRV6'
+[KSipParse.hxx:294]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_ADDRV6_SP'
+[KSipParse.hxx:295]: (style) Unused private function: 'KSipHost::m_fnE_PARSE_HOST_PORT'
+[KSipParse.hxx:368]: (style) Unused private function: 'KSipParseUrn::m_fnE_PARSE_URN_NONE'
+[KSipParse.hxx:369]: (style) Unused private function: 'KSipParseUrn::m_fnE_PARSE_URN_NID'
+[KSipParse.hxx:370]: (style) Unused private function: 'KSipParseUrn::m_fnE_PARSE_URN_NID_SP'
+[KSipParse.hxx:371]: (style) Unused private function: 'KSipParseUrn::m_fnE_PARSE_URN_NSS'
+[KSipParse.hxx:398]: (style) Unused private function: 'KSipParseSubHeader::m_fnE_PARSE_SUB_NONE'
+[KSipParse.hxx:399]: (style) Unused private function: 'KSipParseSubHeader::m_fnE_PARSE_SUB_KEY_SP'
+[KSipParse.hxx:400]: (style) Unused private function: 'KSipParseSubHeader::m_fnE_PARSE_SUB_KEY'
+[KSipParse.hxx:401]: (style) Unused private function: 'KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE_SP'
+[KSipParse.hxx:402]: (style) Unused private function: 'KSipParseSubHeader::m_fnE_PARSE_SUB_VALUE'
+[KSipParse.hxx:434]: (style) Unused private function: 'KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_NONE'
+[KSipParse.hxx:435]: (style) Unused private function: 'KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_SP'
+[KSipParse.hxx:436]: (style) Unused private function: 'KSipParseSubHeaders::m_fnE_PARSE_SUB_HDR_VALUE'
+[KSipParse.hxx:505]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_NONE'
+[KSipParse.hxx:506]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING'
+[KSipParse.hxx:507]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_TYPE'
+[KSipParse.hxx:508]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_USER'
+[KSipParse.hxx:509]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PREPARSING_HOST'
+[KSipParse.hxx:510]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY'
+[KSipParse.hxx:511]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_DISPLAY_SP'
+[KSipParse.hxx:512]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE'
+[KSipParse.hxx:513]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_TYPE_SP'
+[KSipParse.hxx:514]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER'
+[KSipParse.hxx:515]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_USER_SP'
+[KSipParse.hxx:516]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST'
+[KSipParse.hxx:517]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_HOST_SP'
+[KSipParse.hxx:518]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_PARAMS'
+[KSipParse.hxx:519]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_SP'
+[KSipParse.hxx:520]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_PARAMS'
+[KSipParse.hxx:521]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URI_QSP'
+[KSipParse.hxx:522]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_SUBHEADERS'
+[KSipParse.hxx:524]: (style) Unused private function: 'KSipNameAddr::m_fnE_PARSE_NAME_ADDR_URN'
+[KSipParse.hxx:561]: (style) Unused private function: 'KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_NONE'
+[KSipParse.hxx:562]: (style) Unused private function: 'KSipNameAddrs::m_fnE_PARSE_NAMEADDRS_SP'
+[KSipParse.hxx:563]: (style) Unused private function: 'KSipNameAddrs::m_fnE_PARSE_NAMEADDRS'
+[KSipParse.hxx:613]: (style) Unused private function: 'KSipOthers::m_fnE_PARSE_OTHERS_NONE'
+[KSipParse.hxx:614]: (style) Unused private function: 'KSipOthers::m_fnE_PARSE_OTHERS_SP'
+[KSipParse.hxx:615]: (style) Unused private function: 'KSipOthers::m_fnE_PARSE_OTHERS'
+[KSipParse.hxx:664]: (style) Unused private function: 'KSipCSeq::m_fnE_PARSE_CSEQ_NONE'
+[KSipParse.hxx:665]: (style) Unused private function: 'KSipCSeq::m_fnE_PARSE_CSEQ_NUM'
+[KSipParse.hxx:666]: (style) Unused private function: 'KSipCSeq::m_fnE_PARSE_CSEQ_NUM_SP'
+[KSipParse.hxx:667]: (style) Unused private function: 'KSipCSeq::m_fnE_PARSE_CSEQ_METHOD'
+[KSipParse.hxx:694]: (style) Unused private function: 'KSipContentsType::m_fnE_PARSE_CTYPE_NONE'
+[KSipParse.hxx:695]: (style) Unused private function: 'KSipContentsType::m_fnE_PARSE_CTYPE_SEG1'
+[KSipParse.hxx:696]: (style) Unused private function: 'KSipContentsType::m_fnE_PARSE_CTYPE_SEG1_SP'
+[KSipParse.hxx:697]: (style) Unused private function: 'KSipContentsType::m_fnE_PARSE_CTYPE_SEG2'
+[KSipParse.hxx:770]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_NONE'
+[KSipParse.hxx:771]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_FIRSTLINE'
+[KSipParse.hxx:772]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_CR'
+[KSipParse.hxx:773]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_FIRSTLINE_LF'
+[KSipParse.hxx:774]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_NAME'
+[KSipParse.hxx:775]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_NMAE_SP'
+[KSipParse.hxx:776]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_VAL'
+[KSipParse.hxx:777]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_FROM'
+[KSipParse.hxx:778]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_TO'
+[KSipParse.hxx:779]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CALLID'
+[KSipParse.hxx:780]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CONTACT'
+[KSipParse.hxx:781]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_R'
+[KSipParse.hxx:782]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_RR'
+[KSipParse.hxx:783]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_VIA'
+[KSipParse.hxx:784]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CTYPE'
+[KSipParse.hxx:785]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CLEN'
+[KSipParse.hxx:786]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CSEQ'
+[KSipParse.hxx:787]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_CR'
+[KSipParse.hxx:788]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_LF'
+[KSipParse.hxx:789]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_CR'
+[KSipParse.hxx:790]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_H_DOUBLE_LF'
+[KSipParse.hxx:791]: (style) Unused private function: 'KSipParse::m_fnE_SIP_PARSE_BODY'
+[NodeMgr.cxx:945]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[NodeMgr.cxx:2286]: (warning) Comparison of a boolean with an integer.
+[NodeMgr.cxx:2305]: (warning) Comparison of a boolean with an integer.
+[NodeMgr.hxx:92]: (style) C-style pointer casting
+[NodeMgr.hxx:93]: (style) C-style pointer casting
+[NodeMgr.hxx:350]: (style) C-style pointer casting
+[NodeMgr.hxx:352]: (style) C-style pointer casting
+[NodeMgr.hxx:354]: (style) C-style pointer casting
+[NodeMgr.hxx:356]: (style) C-style pointer casting
+[NodeMgr.hxx:389]: (style) C-style pointer casting
+[NodeMgr.hxx:390]: (style) C-style pointer casting
+[NodeMgr.hxx:391]: (style) C-style pointer casting
+[NodeMgr.hxx:392]: (style) C-style pointer casting
+[NodeMgr.hxx:394]: (style) C-style pointer casting
+[NodeMgr.hxx:395]: (style) C-style pointer casting
+[NodeMgr.hxx:396]: (style) C-style pointer casting
+[NodeMgr.hxx:397]: (style) C-style pointer casting
+[NodeMgr.hxx:398]: (style) C-style pointer casting
+[NodeMgr.hxx:400]: (style) C-style pointer casting
+[NodeMgr.cxx:178]: (style) C-style pointer casting
+[NodeMgr.cxx:182]: (style) C-style pointer casting
+[NodeMgr.cxx:188]: (style) C-style pointer casting
+[NodeMgr.cxx:211]: (style) C-style pointer casting
+[NodeMgr.cxx:215]: (style) C-style pointer casting
+[NodeMgr.cxx:2490]: (style) C-style pointer casting
+[NodeMgr.cxx:2498]: (style) C-style pointer casting
+[NodeMgr.cxx:2507]: (style) C-style pointer casting
+[NodeMgr.cxx:2529]: (style) C-style pointer casting
+[NodeMgr.cxx:2538]: (style) C-style pointer casting
+[NodeMgr.cxx:2546]: (style) C-style pointer casting
+[NodeMgr.cxx:2556]: (style) C-style pointer casting
+[NodeMgr.cxx:2577]: (style) C-style pointer casting
+[NodeMgr.cxx:2606]: (style) C-style pointer casting
+[NodeMgr.cxx:2613]: (style) C-style pointer casting
+[NodeMgr.cxx:2649]: (style) C-style pointer casting
+[NodeMgr.cxx:2655]: (style) C-style pointer casting
+[NodeMgr.cxx:2841]: (style) C-style pointer casting
+[NodeMgr.cxx:1502] -> [NodeMgr.cxx:1504]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[NodeMgr.cxx:1442]: (style) The scope of the variable 'pclsCon' can be reduced.
+[NodeMgr.cxx:1686]: (style) The scope of the variable 'unRteID' can be reduced.
+[NodeMgr.cxx:1686]: (style) The scope of the variable 'unRate' can be reduced.
+[NodeMgr.cxx:1856]: (style) The scope of the variable 'unRteId' can be reduced.
+[NodeMgr.cxx:1856]: (style) The scope of the variable 'unRatio' can be reduced.
+[NodeMgr.cxx:1890]: (style) The scope of the variable 'pclsConnect' can be reduced.
+[NodeMgr.cxx:1948]: (style) The scope of the variable 'pclsConnect' can be reduced.
+[NodeMgr.cxx:2508]: (style) The scope of the variable 'pclsExtParam' can be reduced.
+[NodeMgr.cxx:2557]: (style) The scope of the variable 'pclsExtParam' can be reduced.
+[NodeMgr.cxx:2845]: (style) The scope of the variable 'pszVmID' can be reduced.
+[NodeMgr.cxx:2856]: (style) The scope of the variable 'pszVmID' can be reduced.
+[NodeMgr.cxx:2879]: (style) The scope of the variable 'szAddr' can be reduced.
+[NodeMgr.cxx:2165]: (style) Unused variable: ritrRate
+[transport.hxx:23]: (warning) Member variable 'Transport::m_szDesc' is not initialized in the constructor.
+[NodeMgr.cxx:155]: (warning) Member variable 'NodeUserParam::m_pclsOwner' is not initialized in the constructor.
+[NodeMgr.cxx:173]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not initialized in the constructor.
+[NodeMgr.cxx:175]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not assigned a value in 'NodeUserParams::operator='.
+[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsUserObject' is not assigned a value in 'NodeLoc::operator='.
+[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsOwner' is not assigned a value in 'NodeLoc::operator='.
+[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsUserObject' is not assigned a value in 'NodeRmt::operator='.
+[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsOwner' is not assigned a value in 'NodeRmt::operator='.
+[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsUserObject' is not assigned a value in 'NodeRte::operator='.
+[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsOwner' is not assigned a value in 'NodeRte::operator='.
+[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsPrev' is not initialized in the constructor.
+[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsNext' is not initialized in the constructor.
+[SocketCom.cxx:90]: (style) C-style pointer casting
+[SocketCom.cxx:96]: (style) C-style pointer casting
+[SocketCom.cxx:103]: (style) C-style pointer casting
+[SocketCom.cxx:112]: (style) C-style pointer casting
+[SocketCom.cxx:121]: (style) C-style pointer casting
+[SocketCom.cxx:129]: (style) C-style pointer casting
+[SocketCom.cxx:12]: (performance) Variable 'm_szName' is assigned in constructor body. Consider performing initialization in initialization list.
+[SocketCom.hxx:18]: (style) 'class SocketCom' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[StlMap.cxx:233]: (style) C-style pointer casting
+[StlMap.cxx:239]: (style) C-style pointer casting
+[StlMap.cxx:246]: (style) C-style pointer casting
+[StlMap.cxx:250]: (style) C-style pointer casting
+[StlMap.cxx:43]: (style) The scope of the variable 'pclsObj' can be reduced.
+[StlMap.cxx:58]: (style) The scope of the variable 'pclsObj' can be reduced.
+[StlMap.cxx:101]: (style) The scope of the variable 'pclsObj' can be reduced.
+[StlMap.cxx:117]: (style) The scope of the variable 'pclsObj' can be reduced.
+[StlMap.cxx:143]: (style) The scope of the variable 'pclsObj' can be reduced.
+[StlMap.cxx:42]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:57]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:78]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:90]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:100]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:116]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:132]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:142]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:155]: (performance) Possible inefficient checking for 'm_listR' emptiness.
+[StlMap.cxx:256]: (performance) Possible inefficient checking for 'm_mapR' emptiness.
+[StlMap.cxx:277]: (performance) Possible inefficient checking for 'm_mapS' emptiness.
+[StlMap.cxx:36]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:51]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:66]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:84]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:110]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:126]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StlMap.cxx:134]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TimeWheel.cxx:67]: (style) C-style pointer casting
+[TimeWheel.cxx:79]: (style) C-style pointer casting
+[TimeWheel.cxx:81]: (style) C-style pointer casting
+[TimeWheel.cxx:90]: (style) C-style pointer casting
+[TimeWheel.cxx:92]: (style) C-style pointer casting
+[TimeWheel.cxx:100]: (style) C-style pointer casting
+[TimeWheel.cxx:108]: (style) C-style pointer casting
+[TimeWheel.cxx:24]: (style) The scope of the variable 'pclsObj' can be reduced.
+[TimeWheel.cxx:86]: (style) The scope of the variable 'pclsList' can be reduced.
+[TimeWheel.cxx:155]: (style) The scope of the variable 'unTmp' can be reduced.
+[TimeWheel.cxx:156]: (style) The scope of the variable 'unTmpNums' can be reduced.
+[TimeWheel.cxx:117]: (warning) Member variable 'UtilTimeWheel::m_pvUser' is not initialized in the constructor.
+[TimeWheel.cxx:22]: (performance) Possible inefficient checking for 'm_listTr' emptiness.
+[TimeWheel.cxx:37]: (performance) Possible inefficient checking for 'm_listTr' emptiness.
+[TimeWheel.cxx:99]: (performance) Possible inefficient checking for 'm_mapR' emptiness.
+[TimeWheel.cxx:44]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TimeWheel.cxx:106]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TrafficCounter.cxx:8]: (warning) Member variable 'TrafficTime::m_pclsMy' is not initialized in the constructor.
+[TreeCli.cxx:105]: (warning) %u in format string (no. 4) requires 'unsigned int' but the argument type is 'int'.
+[TreeCli.cxx:105]: (warning) %u in format string (no. 6) requires 'unsigned int' but the argument type is 'int'.
+[TreeCli.cxx:128]: (warning) %u in format string (no. 4) requires 'unsigned int' but the argument type is 'int'.
+[TreeCli.cxx:128]: (warning) %u in format string (no. 6) requires 'unsigned int' but the argument type is 'int'.
+[TreeCli.cxx:30]: (style) C-style pointer casting
+[TreeCli.cxx:48]: (style) C-style pointer casting
+[TreeCli.cxx:62]: (style) C-style pointer casting
+[TreeCli.cxx:110]: (style) C-style pointer casting
+[TreeCli.cxx:133]: (style) C-style pointer casting
+[TreeCli.cxx:344]: (style) C-style pointer casting
+[TreeCli.cxx:423]: (style) C-style pointer casting
+[TreeCli.cxx:819]: (style) C-style pointer casting
+[TreeCli.cxx:848]: (style) C-style pointer casting
+[TreeCli.cxx:217] -> [TreeCli.cxx:220]: (performance) Buffer 'm_szCliName' is being written before its old content has been used.
+[TreeCli.cxx:492]: (style) The scope of the variable 'len' can be reduced.
+[TreeCli.cxx:493]: (style) The scope of the variable 'pszTmpPrompt' can be reduced.
+[TreeCli.cxx:1006]: (style) The scope of the variable 'sharp_len' can be reduced.
+[bufferControl.cxx:207]: (style) The scope of the variable 'pTmp' can be reduced.
+[bufferControl.cxx:236]: (style) The scope of the variable 'pTmp' can be reduced.
+[dataFile.cxx:245]: (style) The scope of the variable 'pclsElement' can be reduced.
+[dataFile.hxx:38]: (warning) Member variable 'DataFileConfig::m_unReserveFileLen' is not initialized in the constructor.
+[define.cxx:37]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[ePoll.hxx:22]: (style) 'class Epoll' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[fileControl.cxx:184]: (style) C-style pointer casting
+[fileControl.cxx:263] -> [fileControl.cxx:268]: (performance) Variable 'nFd' is reassigned a value before the old one has been used.
+[flexIf.cxx:122]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.
+[flexIf.cxx:122]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'unsigned int'.
+[flexIf.cxx:259]: (style) C-style pointer casting
+[flexIf.cxx:328]: (style) C-style pointer casting
+[flexIf.cxx:353]: (style) C-style pointer casting
+[flexIf.cxx:377]: (style) C-style pointer casting
+[flexIf.cxx:427]: (style) C-style pointer casting
+[flexIf.cxx:463]: (style) C-style pointer casting
+[flexIf.cxx:481]: (style) C-style pointer casting
+[flexIf.cxx:534]: (style) C-style pointer casting
+[flexIf.cxx:651]: (style) C-style pointer casting
+[flexIf.cxx:755]: (style) C-style pointer casting
+[flexIf.cxx:914]: (style) C-style pointer casting
+[flexIf.cxx:922]: (style) C-style pointer casting
+[flexIf.cxx:272]: (style) The scope of the variable 'pszTmp' can be reduced.
+[flexIf.cxx:349]: (style) The scope of the variable 'pstFlexCategoryHdr' can be reduced.
+[flexIf.hxx:12]: (style) 'class FlexIf' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[idManager.cxx:27] -> [idManager.cxx:31]: (performance) Variable 'nId' is reassigned a value before the old one has been used.
+[idManager.cxx:42] -> [idManager.cxx:46]: (performance) Variable 'bResult' is reassigned a value before the old one has been used.
+[idManager.cxx:55] -> [idManager.cxx:59]: (performance) Variable 'bResult' is reassigned a value before the old one has been used.
+[json_object.cxx:350]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[json_object.cxx:387]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[json_util.cxx:91]: (style) The scope of the variable 'ret' can be reduced.
+[log.cxx:34]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[log.cxx:483]: (style) The scope of the variable 'pEntry' can be reduced.
+[mem.cxx:51]: (style) The scope of the variable 'pptr' can be reduced.
+[mem.cxx:52]: (style) The scope of the variable 'sptr' can be reduced.
+[mem.cxx:91]: (style) The scope of the variable 'pptr' can be reduced.
+[mem.cxx:92]: (style) The scope of the variable 'sptr' can be reduced.
+[queueMonitor.cxx:31]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[queueMonitor.cxx:34]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[queueMonitor.cxx:27]: (style) C-style pointer casting
+[queueThread.cxx:386]: (style) C-style pointer casting
+[queueThread.cxx:407]: (style) C-style pointer casting
+[queueThread.cxx:611]: (style) C-style pointer casting
+[queueThread.cxx:816]: (style) C-style pointer casting
+[queueThread.cxx:848]: (style) C-style pointer casting
+[queueThread.cxx:906]: (style) C-style pointer casting
+[queueThread.cxx:987]: (style) C-style pointer casting
+[queueThread.cxx:374]: (style) The scope of the variable 'pclsQMonInfo' can be reduced.
+[queueThread.hxx:129]: (style) Unused private function: 'QueueMon::m_fnWriteStatus'
+[queueThread.hxx:87]: (style) 'class QueueMon' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[ruleMgr.cxx:1816]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[ruleMgr.cxx:1824]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[ruleMgr.cxx:2166]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[ruleMgr.cxx:2621]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[ruleMgr.cxx:2801]: (style) C-style pointer casting
+[ruleMgr.cxx:2802]: (style) C-style pointer casting
+[ruleMgr.cxx:2824]: (style) C-style pointer casting
+[ruleMgr.cxx:2825]: (style) C-style pointer casting
+[ruleMgr.cxx:1394]: (style) The scope of the variable 'nRuleOpId' can be reduced.
+[ruleMgr.cxx:1452]: (style) The scope of the variable 'bMatchRight' can be reduced.
+[ruleMgr.cxx:1577]: (style) The scope of the variable 'nRuleOpId' can be reduced.
+[ruleMgr.cxx:2158]: (style) Variable 'szRuleData' is assigned a value that is never used.
+[ruleMgr.cxx:2613]: (style) Variable 'szRuleData' is assigned a value that is never used.
+[ruleMgr.cxx:2739]: (style) Variable 'szRuleData' is assigned a value that is never used.
+[ruleMgr.hxx:222]: (style) Unused private function: 'RuleMgr::m_fnGetRuleOpSetConfig'
+[ruleMgr.cxx:1444]: (performance) Possible inefficient checking for '_rlistRuleOpUsrData' emptiness.
+[ruleMgr.cxx:1701]: (performance) Possible inefficient checking for 'listRuleMix' emptiness.
+[ruleMgr.cxx:1811]: (performance) Possible inefficient checking for 'm_listRuleOpConfig' emptiness.
+[shm.cxx:82]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:94]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:114]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:151]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:163]: (warning) %lu in format string (no. 2) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:183]: (warning) %lu in format string (no. 3) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long}'.
+[shm.cxx:48]: (style) The scope of the variable 'nOldShmId' can be reduced.
+[shm.cxx:122]: (style) The scope of the variable 'nOldShmId' can be reduced.
+[shm.cxx:51]: (style) Checking if unsigned variable '_uSize' is less than zero.
+[shm.cxx:125]: (style) Checking if unsigned variable '_uSize' is less than zero.
+[socket.cxx:747] -> [socket.cxx:755]: (performance) Variable 'nRet' is reassigned a value before the old one has been used.
+[socket.cxx:196]: (style) The scope of the variable 'nRet' can be reduced.
+[socket.cxx:252]: (style) The scope of the variable 'nRet' can be reduced.
+[socket.cxx:675]: (style) The scope of the variable 'paddr' can be reduced.
+[socket.cxx:190]: (style) Checking if unsigned variable '_unSndLen' is less than zero.
+[socket.cxx:246]: (style) Checking if unsigned variable '_unMaxBuffLen' is less than zero.
+[socket.cxx:304]: (style) Checking if unsigned variable '_unSndLen' is less than zero.
+[socket.cxx:389]: (style) Checking if unsigned variable '_unMaxBuffLen' is less than zero.
+[socket.cxx:740]: (style) Checking if unsigned variable '_unSndLen' is less than zero.
+[socket.cxx:788]: (style) Checking if unsigned variable '_unMaxBuffLen' is less than zero.
+[string.cxx:450]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[string.cxx:619]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[string.cxx:960]: (style) C-style pointer casting
+[string.cxx:980]: (style) C-style pointer casting
+[string.cxx:112] -> [string.cxx:113]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:119] -> [string.cxx:120]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:126] -> [string.cxx:127]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:133] -> [string.cxx:134]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:140] -> [string.cxx:141]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:147] -> [string.cxx:148]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:167] -> [string.cxx:168]: (performance) Buffer 'pszTemp' is being written before its old content has been used.
+[string.cxx:191] -> [string.cxx:192]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:197] -> [string.cxx:198]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:202] -> [string.cxx:203]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:208] -> [string.cxx:209]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:214] -> [string.cxx:215]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:220] -> [string.cxx:221]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:238] -> [string.cxx:239]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:324] -> [string.cxx:325]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:330] -> [string.cxx:331]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:336] -> [string.cxx:337]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:342] -> [string.cxx:343]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:348] -> [string.cxx:349]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:354] -> [string.cxx:355]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:363] -> [string.cxx:364]: (performance) Buffer 'pszTmp' is being written before its old content has been used.
+[string.cxx:755] -> [string.cxx:756]: (performance) Variable 'escaped' is reassigned a value before the old one has been used.
+[string.cxx:82]: (style) The scope of the variable 's1' can be reduced.
+[string.cxx:82]: (style) The scope of the variable 's2' can be reduced.
+[string.cxx:481]: (style) The scope of the variable 'k' can be reduced.
+[string.cxx:625]: (style) The scope of the variable 'btrim' can be reduced.
+[string.cxx:645]: (style) The scope of the variable 'btrim' can be reduced.
+[string.cxx:854]: (style) The scope of the variable 'match_temp' can be reduced.
+[tbb/examples/common/gui/video.h:41]: (style) The class 'drawing_memory' does not have a constructor.
+[tbb/examples/common/gui/winvideo.h:190]: (style) C-style pointer casting
+[tbb/examples/common/gui/d2dvideo.cpp:137] -> [tbb/examples/common/gui/d2dvideo.cpp:139]: (performance) Variable 'hr' is reassigned a value before the old one has been used.
+[tbb/examples/common/gui/d2dvideo.cpp:50]: (style) The scope of the variable 'retval' can be reduced.
+[tbb/examples/common/gui/d2dvideo.cpp:55]: (style) Variable 'retval' is assigned a value that is never used.
+[tbb/examples/common/gui/gdivideo.cpp:40]: (style) The scope of the variable 'retval' can be reduced.
+[tbb/examples/common/gui/gdivideo.cpp:48]: (style) Variable 'retval' is assigned a value that is never used.
+[tbb/examples/common/utility/utility.h:263]: (style) Variable 'str' is assigned a value that is never used.
+[tbb/examples/common/utility/utility.h:62]: (style) Copying 'auto_ptr' pointer to another does not create two equal objects since one has lost its ownership of the pointer.
+[tbb/examples/graph/logic_sim/basics.h:173]: (warning) Member variable 'steady_signal::init_signal' is not assigned a value in 'steady_signal::operator='.
+[tbb/examples/graph/logic_sim/basics.h:249]: (warning) Member variable 'toggle::state' is not assigned a value in 'toggle::operator='.
+[tbb/examples/graph/logic_sim/basics.h:424]: (style) 'class nor_body' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/graph/logic_sim/basics.h:386]: (style) 'class xor_body' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/graph/logic_sim/basics.h:350]: (style) 'class or_body' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/graph/logic_sim/basics.h:314]: (style) 'class and_body' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/graph/som/som.cpp:157]: (style) The scope of the variable 'yd' can be reduced.
+[tbb/examples/graph/som/som.cpp:153]: (style) Variable 'max_xiter' is assigned a value that is never used.
+[tbb/examples/graph/som/som_graph.cpp:241]: (style) Variable 'all_srs' is assigned a value that is never used.
+[tbb/examples/graph/som/som_graph.cpp:283]: (style) Variable 'min_distance' is assigned a value that is never used.
+[tbb/examples/graph/som/som_graph.cpp:78]: (performance) Function parameter 's' should be passed by reference.
+[tbb/examples/parallel_do/parallel_preorder/Graph.h:64]: (warning) Member variable 'Cell::op' is not initialized in the constructor.
+[tbb/examples/parallel_do/parallel_preorder/Graph.h:64]: (warning) Member variable 'Cell::input' is not initialized in the constructor.
+[tbb/examples/parallel_for/game_of_life/src/Board.h:63]: (portability) The extra qualification 'Board::' is unnecessary and is considered an error by many compilers.
+[tbb/examples/parallel_for/game_of_life/src/Evolution.h:54]: (information) The code 'class Evolution abstract {' is not handled. You can use -I or --include to add handling of this code.
+[tbb/examples/parallel_for/game_of_life/src/Evolution.cpp:148]: (style) Variable 'work_time' is assigned a value that is never used.
+[tbb/examples/parallel_for/game_of_life/src/Evolution.h:60]: (warning) Member variable 'Evolution::m_nIteration' is not initialized in the constructor.
+[tbb/examples/parallel_for/game_of_life/src/Evolution.h:56]: (style) 'class Evolution' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/parallel_for/game_of_life/src/Board.h:52]: (style) 'class Board' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/parallel_for/seismic/universe.h:34]: (style) The class 'Universe' does not have a constructor.
+[tbb/examples/parallel_for/seismic/main.cpp:109]: (style) Variable 'memSize' is assigned a value that is never used.
+[tbb/examples/parallel_for/tachyon/android/jni/jni-engine.cpp:223]: (style) The scope of the variable 'buf' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/api.cpp]: (information) Too many #ifdef configurations - cppcheck only checks 12 of 14 configurations. Use --force to check all configurations.
+[tbb/examples/parallel_for/tachyon/src/apigeom.cpp:65]: (style) The scope of the variable 'i' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apigeom.cpp:199]: (style) The scope of the variable 'd' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apigeom.cpp:199]: (style) The scope of the variable 'v' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:71]: (style) The scope of the variable 'u' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:71]: (style) The scope of the variable 'v' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:71]: (style) The scope of the variable 'u2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:71]: (style) The scope of the variable 'v2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:124]: (style) The scope of the variable 'u' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:124]: (style) The scope of the variable 'v' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:124]: (style) The scope of the variable 'u2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:124]: (style) The scope of the variable 'v2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'tx1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'tx2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'ty1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'ty2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'tz1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/bndbox.cpp:108]: (style) The scope of the variable 'tz2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'tx1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'tx2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'ty1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'ty2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'tz1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/box.cpp:92]: (style) The scope of the variable 'tz2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:99]: (style) The scope of the variable 't' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:99]: (style) The scope of the variable 's' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 't' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 's' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 'tin' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 'tout' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 'tmp' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/cylinder.cpp:213]: (style) The scope of the variable 'tmp3' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'tx1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'tx2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'ty1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'ty2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'tz1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/extvol.cpp:157]: (style) The scope of the variable 'tz2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:127]: (style) The scope of the variable 'lnext' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:267]: (style) The scope of the variable 'g' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:268]: (style) The scope of the variable 'numcbrt' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:329]: (style) The scope of the variable 'numcbrt' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:329]: (style) The scope of the variable 'xs' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:329]: (style) The scope of the variable 'ys' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:329]: (style) The scope of the variable 'zs' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:330]: (style) The scope of the variable 'g' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:406]: (style) The scope of the variable 'zindex' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'tx1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'tx2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'ty1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'ty2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'tz1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:631]: (style) The scope of the variable 'tz2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:287]: (style) Variable 'numobj' is assigned a value that is never used.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:609]: (style) Variable 'curpos' is assigned a value that is never used.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:80]: (style) The scope of the variable 'x' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:80]: (style) The scope of the variable 'y' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:80]: (style) The scope of the variable 'px' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:80]: (style) The scope of the variable 'py' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:81]: (style) The scope of the variable 'x1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:81]: (style) The scope of the variable 'x2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:81]: (style) The scope of the variable 'y1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:81]: (style) The scope of the variable 'y2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:82]: (style) The scope of the variable 'ptr' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:83]: (style) The scope of the variable 'ptr2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:132]: (style) The scope of the variable 'i' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:133]: (style) The scope of the variable 'len' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/intersect.cpp:160]: (style) The scope of the variable 'i' can be reduced.
+[tbb/examples/common/utility/utility.h:156]: (warning) Member variable 'argument::matched_' is not assigned a value in 'argument::operator='.
+[tbb/examples/common/utility/utility.h:186]: (style) The class 'cli_argument_pack' does not have a constructor.
+[tbb/examples/parallel_for/tachyon/src/objbound.cpp:321]: (style) The scope of the variable 'gbox' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:214] -> [tbb/examples/parallel_for/tachyon/src/parse.cpp:216]: (performance) Variable 'dfile' is reassigned a value before the old one has been used.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:502]: (style) Variable 'rc' is assigned a value that is never used.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:199]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:256]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:264]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:267]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:274]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:278]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:282]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:285]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:288]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:294]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:300]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:317]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:377]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:390]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:401]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:411]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:412]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:423]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:441]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:445]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:449]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:453]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:456]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:458]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:469]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:471]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:472]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:480]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:486]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:488]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:523]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:536]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:557]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:585]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:603]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:612]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:634]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:673]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:675]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:711]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:713]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:781]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:784]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:823]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/parse.cpp:833]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/ppm.cpp:86]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/ppm.cpp:90]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/ppm.cpp:106]: (warning) scanf without field width limits can crash with huge input data.
+[tbb/examples/parallel_for/tachyon/src/pthread.cpp:110]: (warning) Assignment of function parameter has no effect outside the function.
+[tbb/examples/parallel_for/tachyon/src/quadric.cpp:88]: (style) The scope of the variable 't2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/quadric.cpp:89]: (style) The scope of the variable 'disc' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/shade.cpp:77]: (style) The scope of the variable 'inten' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/shade.cpp:77]: (style) The scope of the variable 'Llen' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/shade.cpp:79]: (style) The scope of the variable 'i' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/tachyon_video.cpp:66]: (style) The scope of the variable 'runtime' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:63]: (style) The scope of the variable 'ofp' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:125]: (style) The scope of the variable 'bufpos' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:126]: (style) The scope of the variable 'filepos' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:157]: (style) The scope of the variable 'tmp' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/trace.serial.cpp:83]: (style) The scope of the variable 'alias' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/trace.simple.cpp:79]: (style) Unused variable: sample
+[tbb/examples/parallel_for/tachyon/src/trace.simple.cpp:80]: (style) Unused variable: avcol
+[tbb/examples/parallel_for/tachyon/src/trace.simple.cpp:83]: (style) Unused variable: alias
+[tbb/examples/parallel_for/tachyon/src/trace.tbb.cpp:116]: (style) The scope of the variable 'alias' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb.cpp:188]: (style) The scope of the variable 'serial' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb.cpp:235]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb.cpp:257]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb1d.cpp:90]: (style) The scope of the variable 'alias' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb1d.cpp:179]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/trace.tbb1d.cpp:194]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/parallel_for/tachyon/src/triangle.cpp:79]: (style) The scope of the variable 't' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/triangle.cpp:110]: (style) The scope of the variable 't' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'tx1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'tx2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'ty1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'ty2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'tz1' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:161]: (style) The scope of the variable 'tz2' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:166]: (style) The scope of the variable 'scalar' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:166]: (style) The scope of the variable 'transval' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:167]: (style) The scope of the variable 'x' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:167]: (style) The scope of the variable 'y' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:167]: (style) The scope of the variable 'z' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:168]: (style) The scope of the variable 'ptr' can be reduced.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:300]: (style) Variable 'status' is assigned a value that is never used.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:301]: (error) Resource leak: dfile
+[tbb/examples/parallel_reduce/convex_hull/convex_hull_bench.cpp:631]: (style) Variable 'rseed' is assigned a value that is never used.
+[tbb/examples/parallel_reduce/primes/primes.cpp:48]: (style) 'class Multiples' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[tbb/examples/pipeline/square/gen_input.cpp:48]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[tbb/examples/pipeline/square/square.cpp:51]: (style) C-style pointer casting
+[tbb/examples/pipeline/square/square.cpp:42]: (style) The class 'TextSlice' does not have a constructor.
+[tbb/examples/pipeline/square/square.cpp:197]: (error) Resource leak: input_file
+[tbb/examples/task/tree_sum/OptimizedParallelSumTree.cpp:30]: (warning) Member variable 'OptimizedSumTask::x' is not initialized in the constructor.
+[tbb/examples/task/tree_sum/OptimizedParallelSumTree.cpp:30]: (warning) Member variable 'OptimizedSumTask::y' is not initialized in the constructor.
+[tbb/examples/task_group/sudoku/sudoku.cpp:76]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.
+[tbb/examples/task_group/sudoku/sudoku.cpp:100]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.
+[tbb/examples/task_group/sudoku/sudoku.cpp:73]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::off_x' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::off_y' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::size_x' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::size_y' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::cx' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::cy' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::magn' is not initialized in the constructor.
+[tbb/examples/task_priority/fractal/fractal.h:58]: (warning) Member variable 'fractal::max_iterations' is not initialized in the constructor.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:460]: (warning) Member variable 'FibTask::x' is not initialized in the constructor.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:460]: (warning) Member variable 'FibTask::y' is not initialized in the constructor.
+[tcpTransport.cxx:368]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[tcpTransport.cxx:39]: (style) The scope of the variable 's_pszUnknown' can be reduced.
+[tcpTransport.cxx:293]: (style) Checking if unsigned variable '_unSndLen' is less than zero.
+[test/testQueue.cxx:62]: (style) The scope of the variable 'pclsTestData' can be reduced.
+[test/testQueue.cxx:80]: (style) The scope of the variable 'pclsTestData' can be reduced.
+[test/testQueueMon_read.cxx:23]: (style) C-style pointer casting
+[test/testQueueThread.cxx:27]: (style) The scope of the variable 'nGetCnt' can be reduced.
+[test/testTransport.cxx:827]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'unsigned int'.
+[test/testTransportData.hxx:21]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[test/testTransport.cxx:496]: (style) Unsigned variable 'unTmp' can't be negative so it is unnecessary to test it.
+[test/testTransport.cxx:522]: (style) Unsigned variable 'unTmp' can't be negative so it is unnecessary to test it.
+[test/testTransportPerformSip.cxx:114]: (style) The scope of the variable 'pEndContentLengthPos' can be reduced.
+[test/testTransportPerformSip.cxx:203]: (style) The scope of the variable 'szNet5Tuple' can be reduced.
+[test/testTransportPerformSip.cxx:251]: (style) The scope of the variable 'pEndCallIdPos' can be reduced.
+[test/testVCM.cxx:187]: (style) The scope of the variable 'pstSndHeader' can be reduced.
+[test/testVCM.cxx:234]: (style) The scope of the variable 'pstSndHeader' can be reduced.
+[thread.cxx:88]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[thread.cxx:93]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[thread.cxx:94]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[thread.cxx:157]: (style) C-style pointer casting
+[thread.cxx:161]: (style) C-style pointer casting
+[thread.cxx:189]: (style) C-style pointer casting
+[thread.cxx:211]: (style) C-style pointer casting
+[thread.cxx:220]: (style) C-style pointer casting
+[timeUtil.cxx:133]: (style) Checking if unsigned variable '_unKind' is less than zero.
+[transportErr.cxx:47]: (style) The scope of the variable 's_pszUnknown' can be reduced.
+[transportMgr.cxx:1352]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[transportMgr.cxx:1366]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[transportMgr.cxx:1368]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[transportMgr.cxx:1462]: (style) C-style pointer casting
+[transportMgr.cxx:1516]: (style) C-style pointer casting
+[transportMgr.cxx:915] -> [transportMgr.cxx:922]: (performance) Variable 'nTransportDataIdx' is reassigned a value before the old one has been used.
+[transportMgr.cxx:1056] -> [transportMgr.cxx:1058]: (performance) Variable 'nTransportDataIdx' is reassigned a value before the old one has been used.
+[transportMgr.cxx:1105] -> [transportMgr.cxx:1107]: (performance) Variable 'nTransportDataIdx' is reassigned a value before the old one has been used.
+[transportMgr.cxx:57]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[transportMgr.cxx:1392]: (style) The scope of the variable 'pstTransportMsg' can be reduced.
+[transportMgr.hxx:49]: (style) 'class TransportMgr' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[udpTransport.cxx:180]: (style) Checking if unsigned variable '_unSndLen' is less than zero.
+[tbb/examples/parallel_for/polygon_overlay/polymain.cpp:551]: (style) The function 'CompOnePolygon' is never used.
+[tbb/examples/parallel_for/tachyon/src/imap.cpp:163]: (style) The function 'DeallocateImage' is never used.
+[tbb/examples/parallel_for/tachyon/android/jni/jni-engine.cpp:213]: (style) The function 'Java_com_intel_tbb_example_tachyon_tachyonView_getElapsedTime' is never used.
+[tbb/examples/parallel_for/tachyon/android/jni/jni-engine.cpp:218]: (style) The function 'Java_com_intel_tbb_example_tachyon_tachyonView_initBitmap' is never used.
+[tbb/examples/parallel_for/tachyon/android/jni/jni-engine.cpp:250]: (style) The function 'Java_com_intel_tbb_example_tachyon_tachyonView_renderBitmap' is never used.
+[tbb/examples/parallel_for/tachyon/android/jni/jni-engine.cpp:275]: (style) The function 'Java_com_intel_tbb_example_tachyon_tachyon_setPaused' is never used.
+[tbb/examples/parallel_for/game_of_life/src/Game_of_life.cpp:123]: (style) The function 'OnPaint' is never used.
+[socket.cxx:709]: (style) The function 'bindUnixUdpSocket' is never used.
+[transportMgr.cxx:693]: (style) The function 'checkValidTransportInternalMsg' is never used.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:252]: (style) The function 'countobjlist' is never used.
+[string.cxx:48]: (style) The function 'createRandomStr' is never used.
+[socket.cxx:699]: (style) The function 'createUnixUdpSocket' is never used.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:61]: (style) The function 'createtgafile' is never used.
+[tbb/examples/graph/som/som.cpp:191]: (style) The function 'debug_output' is never used.
+[transportMgr.cxx:338]: (style) The function 'delTransportAll' is never used.
+[thread.cxx:350]: (style) The function 'detach' is never used.
+[tbb/examples/parallel_for/tachyon/src/objbound.cpp:320]: (style) The function 'dividespace' is never used.
+[tbb/examples/parallel_for/polygon_overlay/polyover.cpp:255]: (style) The function 'dump_map' is never used.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:181]: (style) The function 'equal' is never used.
+[tbb/examples/task/tree_sum/SimpleParallelSumTree.cpp:29]: (style) The function 'execute' is never used.
+[TimeWheel.cxx:122]: (style) The function 'fnAddTime' is never used.
+[TimeWheel.cxx:135]: (style) The function 'fnProcessTimeOut' is never used.
+[NodeMgr.cxx:2895]: (style) The function 'g_fnAddNodeLoc' is never used.
+[NodeMgr.cxx:2933]: (style) The function 'g_fnAddNodeRmt' is never used.
+[NodeMgr.cxx:2971]: (style) The function 'g_fnAddNodeRte' is never used.
+[NodeMgr.cxx:3034]: (style) The function 'g_fnAddNodeSeq' is never used.
+[NodeMgr.cxx:2993]: (style) The function 'g_fnBlockNodeRte' is never used.
+[TreeCli.cxx:1053]: (style) The function 'g_fnCliPrintCliVar' is never used.
+[TreeCli.cxx:1102]: (style) The function 'g_fnCliPrintEv' is never used.
+[TreeCli.cxx:1083]: (style) The function 'g_fnCliPrintSrvVar' is never used.
+[TreeCli.cxx:1003]: (style) The function 'g_fnCliPrint_RangeCat' is never used.
+[SampleCli.cxx:5]: (style) The function 'g_fnCreateSampleCli' is never used.
+[log.cxx:600]: (style) The function 'g_fnDebugPoint' is never used.
+[NodeMgr.cxx:2918]: (style) The function 'g_fnDelNodeLoc' is never used.
+[NodeMgr.cxx:2955]: (style) The function 'g_fnDelNodeRmt' is never used.
+[NodeMgr.cxx:3018]: (style) The function 'g_fnDelNodeRte' is never used.
+[NodeMgr.cxx:3062]: (style) The function 'g_fnDelNodeSeq' is never used.
+[JsonK.cxx:85]: (style) The function 'g_fnJsonTest' is never used.
+[KPacket.cxx:4]: (style) The function 'g_fnKPacketTest' is never used.
+[KSipParse.cxx:33]: (style) The function 'g_fnKSipParseTest' is never used.
+[NodeMgr.cxx:3077]: (style) The function 'g_fnModNodeSeq' is never used.
+[DelLog.cxx:45]: (style) The function 'g_fnTerminateDelLog' is never used.
+[SampleCli.cxx:11]: (style) The function 'g_fnTerminateSampleCli' is never used.
+[KSdpParse.cxx:63]: (style) The function 'g_fnTestKSdp' is never used.
+[tbb/examples/parallel_for/polygon_overlay/pover_video.cpp:61]: (style) The function 'g_last_frame' is never used.
+[idManager.cxx:25]: (style) The function 'getAvailableId' is never used.
+[ePoll.cxx:98]: (style) The function 'getEpollFD' is never used.
+[thread.cxx:381]: (style) The function 'getId' is never used.
+[transportMgr.cxx:682]: (style) The function 'getQueueStatusStr' is never used.
+[define.cxx:131]: (style) The function 'getStrDir' is never used.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:182]: (style) The function 'hash' is never used.
+[tbb/examples/task_group/sudoku/sudoku.cpp:121]: (style) The function 'init_potentials' is never used.
+[string.cxx:31]: (style) The function 'isDisitStr' is never used.
+[bufferControl.cxx:104]: (style) The function 'isWhitespace' is never used.
+[json_object.cxx:499]: (style) The function 'json_object_array_add' is never used.
+[json_object.cxx:504]: (style) The function 'json_object_array_put_idx' is never used.
+[json_object.cxx:67]: (style) The function 'json_object_fini' is never used.
+[json_util.cxx:57]: (style) The function 'json_object_from_file' is never used.
+[json_object.cxx:133]: (style) The function 'json_object_get' is never used.
+[json_object.cxx:483]: (style) The function 'json_object_get_array' is never used.
+[json_object.cxx:61]: (style) The function 'json_object_init' is never used.
+[json_object.cxx:182]: (style) The function 'json_object_is_type' is never used.
+[json_object.cxx:473]: (style) The function 'json_object_new_array' is never used.
+[json_object.cxx:293]: (style) The function 'json_object_new_boolean' is never used.
+[json_object.cxx:365]: (style) The function 'json_object_new_double' is never used.
+[json_object.cxx:328]: (style) The function 'json_object_new_int' is never used.
+[json_object.cxx:244]: (style) The function 'json_object_new_object' is never used.
+[json_object.cxx:411]: (style) The function 'json_object_new_string' is never used.
+[json_object.cxx:421]: (style) The function 'json_object_new_string_len' is never used.
+[json_object.cxx:266]: (style) The function 'json_object_object_add' is never used.
+[json_object.cxx:278]: (style) The function 'json_object_object_del' is never used.
+[json_object.cxx:273]: (style) The function 'json_object_object_get' is never used.
+[json_util.cxx:88]: (style) The function 'json_object_to_file' is never used.
+[Cdr.cxx:48]: (style) The function 'm_fnAddCdr' is never used.
+[KSdpParse.cxx:1278]: (style) The function 'm_fnAddM' is never used.
+[KSipParse.cxx:1865]: (style) The function 'm_fnAddNameAddr' is never used.
+[JsonFile.cxx:102]: (style) The function 'm_fnAddObject' is never used.
+[KSipParse.cxx:1274]: (style) The function 'm_fnAddUriParam' is never used.
+[KSipParse.cxx:633]: (style) The function 'm_fnAddVia' is never used.
+[KPacket.cxx:123]: (style) The function 'm_fnAutoPtr' is never used.
+[NodeMgr.cxx:2646]: (style) The function 'm_fnAutoRegiFromConInfo' is never used.
+[NodeMgr.cxx:2642]: (style) The function 'm_fnAutoRegisterNode' is never used.
+[NodeMgr.cxx:2799]: (style) The function 'm_fnAutoRemoveNode' is never used.
+[KForking.cxx:137]: (style) The function 'm_fnBackGroundMode' is never used.
+[ConfigFile.cxx:1060]: (style) The function 'm_fnBeginCate' is never used.
+[JsonFile.cxx:184]: (style) The function 'm_fnBuildFile' is never used.
+[string.cxx:491]: (style) The function 'm_fnByteCat' is never used.
+[test/testVCM.cxx:226]: (style) The function 'm_fnCbProcTimer' is never used.
+[NodeMgr.cxx:2316]: (style) The function 'm_fnChangeConnectivity' is never used.
+[TrafficCounter.cxx:61]: (style) The function 'm_fnChangeDuration' is never used.
+[ConfigFile.cxx:256]: (style) The function 'm_fnChangeLastTime' is never used.
+[NodeMgr.cxx:2278]: (style) The function 'm_fnChangeMBlock' is never used.
+[ColumFile.cxx:42]: (style) The function 'm_fnChangeParamKeyword' is never used.
+[NodeMgr.cxx:2271]: (style) The function 'm_fnChangeSeqRate' is never used.
+[NodeMgr.cxx:626]: (style) The function 'm_fnChgExtParam' is never used.
+[ruleMgr.cxx:2197]: (style) The function 'm_fnClearAllRule' is never used.
+[ruleMgr.cxx:2774]: (style) The function 'm_fnClearAllRuleOp' is never used.
+[ruleMgr.cxx:2752]: (style) The function 'm_fnClearRuleOp' is never used.
+[TreeCli.cxx:273]: (style) The function 'm_fnConnectClient' is never used.
+[NodeMgr.cxx:2241]: (style) The function 'm_fnCountingRte' is never used.
+[KSdpParse.cxx:751]: (style) The function 'm_fnCreateFmtp' is never used.
+[KSdpParse.cxx:745]: (style) The function 'm_fnCreateRtpMap' is never used.
+[queueThread.cxx:535]: (style) The function 'm_fnDelAllQThread' is never used.
+[KSipParse.cxx:1872]: (style) The function 'm_fnDelNameAddr' is never used.
+[KSipParse.cxx:640]: (style) The function 'm_fnDelTopVia' is never used.
+[KSipParse.cxx:2219]: (style) The function 'm_fnE_PARSE_CSEQ_METHOD' is never used.
+[KSipParse.cxx:2181]: (style) The function 'm_fnE_PARSE_CSEQ_NONE' is never used.
+[KSipParse.cxx:2267]: (style) The function 'm_fnE_PARSE_CTYPE_NONE' is never used.
+[KSipParse.cxx:2299]: (style) The function 'm_fnE_PARSE_CTYPE_SEG2' is never used.
+[KSipParse.cxx:97]: (style) The function 'm_fnE_PARSE_FIRST_NONE' is never used.
+[KSipParse.cxx:135]: (style) The function 'm_fnE_PARSE_FIRST_SEG3' is never used.
+[KSipParse.cxx:669]: (style) The function 'm_fnE_PARSE_HOST_NONE' is never used.
+[KSipParse.cxx:758]: (style) The function 'm_fnE_PARSE_HOST_PORT' is never used.
+[KSipParse.cxx:1779]: (style) The function 'm_fnE_PARSE_NAMEADDRS' is never used.
+[KSipParse.cxx:1747]: (style) The function 'm_fnE_PARSE_NAMEADDRS_NONE' is never used.
+[KSipParse.cxx:1335]: (style) The function 'm_fnE_PARSE_NAME_ADDR_NONE' is never used.
+[KSipParse.cxx:1981]: (style) The function 'm_fnE_PARSE_OTHERS' is never used.
+[KSipParse.cxx:1949]: (style) The function 'm_fnE_PARSE_OTHERS_NONE' is never used.
+[ColumFile.cxx:301]: (style) The function 'm_fnE_PARSE_PARAMS' is never used.
+[ColumFile.cxx:281]: (style) The function 'm_fnE_PARSE_PARAMS_NONE' is never used.
+[ColumFile.cxx:106]: (style) The function 'm_fnE_PARSE_PARAM_NONE' is never used.
+[ColumFile.cxx:135]: (style) The function 'm_fnE_PARSE_PARAM_VAL' is never used.
+[KSipParse.cxx:1068]: (style) The function 'm_fnE_PARSE_SUB_HDR_NONE' is never used.
+[KSipParse.cxx:1100]: (style) The function 'm_fnE_PARSE_SUB_HDR_VALUE' is never used.
+[KSipParse.cxx:930]: (style) The function 'm_fnE_PARSE_SUB_NONE' is never used.
+[KSipParse.cxx:980]: (style) The function 'm_fnE_PARSE_SUB_VALUE' is never used.
+[KSipParse.cxx:840]: (style) The function 'm_fnE_PARSE_URN_NONE' is never used.
+[KSipParse.cxx:880]: (style) The function 'm_fnE_PARSE_URN_NSS' is never used.
+[KSipParse.cxx:575]: (style) The function 'm_fnE_PARSE_VIAS' is never used.
+[KSipParse.cxx:543]: (style) The function 'm_fnE_PARSE_VIAS_NONE' is never used.
+[KSipParse.cxx:433]: (style) The function 'm_fnE_PARSE_VIA_NONE' is never used.
+[KSipParse.cxx:506]: (style) The function 'm_fnE_PARSE_VIA_PARAMS' is never used.
+[KSdpAttrParse.cxx:388]: (style) The function 'm_fnE_SDP_A_FMTP_NONE' is never used.
+[KSdpParse.cxx:757]: (style) The function 'm_fnE_SDP_A_NONE' is never used.
+[KSdpAttrParse.cxx:272]: (style) The function 'm_fnE_SDP_A_RTPMAP_NONE' is never used.
+[KSdpParse.cxx:475]: (style) The function 'm_fnE_SDP_B_NONE' is never used.
+[KSdpParse.cxx:391]: (style) The function 'm_fnE_SDP_C_NONE' is never used.
+[KSdpParse.cxx:1148]: (style) The function 'm_fnE_SDP_M_NONE' is never used.
+[KSdpParse.cxx:1379]: (style) The function 'm_fnE_SDP_NONE' is never used.
+[KSdpParse.cxx:155]: (style) The function 'm_fnE_SDP_O_NONE' is never used.
+[KSdpParse.cxx:926]: (style) The function 'm_fnE_SDP_T_NONE' is never used.
+[KSipParse.cxx:2751]: (style) The function 'm_fnE_SIP_PARSE_BODY' is never used.
+[KSipParse.cxx:2418]: (style) The function 'm_fnE_SIP_PARSE_NONE' is never used.
+[string.cxx:792]: (style) The function 'm_fnEscapeToString' is never used.
+[KPacket.cxx:109]: (style) The function 'm_fnFindByte' is never used.
+[KSipParse.cxx:1266]: (style) The function 'm_fnFindSubHeaderParam' is never used.
+[KSipParse.cxx:1256]: (style) The function 'm_fnFindUriParam' is never used.
+[socket.cxx:860]: (style) The function 'm_fnGetAddr' is never used.
+[socket.cxx:868]: (style) The function 'm_fnGetBroadCast' is never used.
+[flexIf.cxx:366]: (style) The function 'm_fnGetBuildMsgLen' is never used.
+[NodeMgr.cxx:1317]: (style) The function 'm_fnGetCfgPath' is never used.
+[KForking.cxx:72]: (style) The function 'm_fnGetChildName' is never used.
+[ConfigFile.cxx:613]: (style) The function 'm_fnGetComVal' is never used.
+[SocketCom.cxx:132]: (style) The function 'm_fnGetEvString' is never used.
+[flexIf.cxx:826]: (style) The function 'm_fnGetFailPacketStr' is never used.
+[socket.cxx:864]: (style) The function 'm_fnGetMask' is never used.
+[flexIf.cxx:361]: (style) The function 'm_fnGetMinMsgLen' is never used.
+[StlMap.cxx:306]: (style) The function 'm_fnGetNextS' is never used.
+[NodeMgr.cxx:2259]: (style) The function 'm_fnGetRteCnt' is never used.
+[NodeMgr.cxx:2329]: (style) The function 'm_fnGetRteStatus' is never used.
+[ruleMgr.cxx:2879]: (style) The function 'm_fnGetRuleOpSetConfig' is never used.
+[StlMap.cxx:317]: (style) The function 'm_fnGetSizeInt' is never used.
+[NodeMgr.cxx:1322]: (style) The function 'm_fnGetStatusPath' is never used.
+[NodeMgr.cxx:2485]: (style) The function 'm_fnGetStatusString' is never used.
+[Directory.cxx:112]: (style) The function 'm_fnGetStringFileMode' is never used.
+[TrafficCounter.cxx:84]: (style) The function 'm_fnGetSumPerDuration' is never used.
+[KSipParse.cxx:1843]: (style) The function 'm_fnGetTag' is never used.
+[socket.cxx:656]: (style) The function 'm_fnIsActiveVIP' is never used.
+[StlMap.cxx:169]: (style) The function 'm_fnIsEnd' is never used.
+[StlMap.cxx:269]: (style) The function 'm_fnIsEndI' is never used.
+[StlMap.cxx:290]: (style) The function 'm_fnIsEndS' is never used.
+[socket.cxx:872]: (style) The function 'm_fnIsUp' is never used.
+[NodeMgr.cxx:1440]: (style) The function 'm_fnLoadStatus' is never used.
+[SocketCom.cxx:54]: (style) The function 'm_fnLoadWinSocDll' is never used.
+[ConfigFile.cxx:1064]: (style) The function 'm_fnNextCate' is never used.
+[TreeCli.cxx:296]: (style) The function 'm_fnPrint' is never used.
+[NodeMgr.cxx:2033]: (style) The function 'm_fnRefreshConnection' is never used.
+[queueThread.cxx:478]: (style) The function 'm_fnRegisterQThread' is never used.
+[NodeMgr.cxx:1509]: (style) The function 'm_fnReloadStatus' is never used.
+[ColumFile.cxx:230]: (style) The function 'm_fnRemoveParam' is never used.
+[KSipParse.cxx:1282]: (style) The function 'm_fnRemoveSubHeader' is never used.
+[queueThread.cxx:553]: (style) The function 'm_fnResetQThread' is never used.
+[KSipParse.cxx:1877]: (style) The function 'm_fnReverseNameAddr' is never used.
+[string.cxx:927]: (style) The function 'm_fnRmChr' is never used.
+[SocketCom.cxx:79]: (style) The function 'm_fnSend' is never used.
+[test/testVCM.cxx:82]: (style) The function 'm_fnSendTo' is never used.
+[TreeCli.cxx:254]: (style) The function 'm_fnSetAppCallBack' is never used.
+[queueThread.cxx:340]: (style) The function 'm_fnSetAppEnable' is never used.
+[NodeMgr.cxx:1315]: (style) The function 'm_fnSetJson' is never used.
+[log.cxx:159]: (style) The function 'm_fnSetMaxFileNum' is never used.
+[socket.cxx:876]: (style) The function 'm_fnSetMtu' is never used.
+[NodeMgr.cxx:2005]: (style) The function 'm_fnSetNotifyChangedFileJson' is never used.
+[NodeMgr.cxx:2009]: (style) The function 'm_fnSetNotifyChangedFileStatus' is never used.
+[NodeMgr.cxx:2013]: (style) The function 'm_fnSetNotifyChangedFileStatusJson' is never used.
+[log.cxx:199]: (style) The function 'm_fnSetQueueFullCallback' is never used.
+[queueMonitor.cxx:86]: (style) The function 'm_fnSetQueueName' is never used.
+[log.cxx:592]: (style) The function 'm_fnSetReason' is never used.
+[ruleMgr.cxx:735]: (style) The function 'm_fnSetRuleDataAll' is never used.
+[NodeMgr.cxx:339]: (style) The function 'm_fnSetUserObject' is never used.
+[StlMap.cxx:185]: (style) The function 'm_fnSort' is never used.
+[string.cxx:558]: (style) The function 'm_fnStrCat' is never used.
+[ConfigFile.cxx:794]: (style) The function 'm_fnTokenizeP' is never used.
+[ConfigFile.cxx:758]: (style) The function 'm_fnTokenizeS' is never used.
+[KSipParse.cxx:1999]: (style) The function 'm_fnTopHeader' is never used.
+[string.cxx:741]: (style) The function 'm_fnUnEscapeToString' is never used.
+[SocketCom.cxx:62]: (style) The function 'm_fnUnloadWinSocDll' is never used.
+[NodeMgr.cxx:2017]: (style) The function 'm_fnWriteConfig' is never used.
+[queueThread.cxx:983]: (style) The function 'm_fnWriteStatus' is never used.
+[json_debug.cxx:40]: (style) The function 'mc_get_debug' is never used.
+[json_debug.cxx:90]: (style) The function 'mc_info' is never used.
+[json_debug.cxx:39]: (style) The function 'mc_set_debug' is never used.
+[json_debug.cxx:42]: (style) The function 'mc_set_syslog' is never used.
+[transportMgr.cxx:622]: (style) The function 'modifySocketCfgBlock' is never used.
+[transportMgr.cxx:670]: (style) The function 'modifySocketCfgDscp' is never used.
+[transportMgr.cxx:646]: (style) The function 'modifySocketCfgRcvBufferSize' is never used.
+[transportMgr.cxx:634]: (style) The function 'modifySocketCfgReuse' is never used.
+[transportMgr.cxx:658]: (style) The function 'modifySocketCfgSndBufferSize' is never used.
+[tbb/examples/common/gui/macvideo.cpp:118]: (style) The function 'on_key_func' is never used.
+[tbb/examples/common/gui/macvideo.cpp:112]: (style) The function 'on_mouse_func' is never used.
+[tbb/examples/parallel_for/tachyon/src/tgafile.cpp:105]: (style) The function 'opentgafile' is never used.
+[string.cxx:368]: (style) The function 'operatorbool' is never used.
+[string.cxx:380]: (style) The function 'operatorchar' is never used.
+[string.cxx:382]: (style) The function 'operatorchar*' is never used.
+[string.cxx:383]: (style) The function 'operatorconstchar*' is never used.
+[string.cxx:390]: (style) The function 'operatordouble' is never used.
+[string.cxx:386]: (style) The function 'operatorint' is never used.
+[string.cxx:388]: (style) The function 'operatorlong' is never used.
+[string.cxx:384]: (style) The function 'operatorshort' is never used.
+[tbb/examples/graph/som/som_graph.cpp:189]: (style) The function 'overlap' is never used.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:238]: (style) The function 'pop_if_present' is never used.
+[tbb/examples/parallel_do/parallel_preorder/Graph.cpp:58]: (style) The function 'print' is never used.
+[tbb/examples/task_group/sudoku/sudoku.cpp:94]: (style) The function 'print_potential_board' is never used.
+[tbb/examples/parallel_for/tachyon/src/pthread.cpp:116]: (style) The function 'pthread_exit' is never used.
+[socket.cxx:786]: (style) The function 'recvFromUnixUdpSocket' is never used.
+[test/testTransportPerformSip.cxx:224]: (style) The function 'recvProc' is never used.
+[idManager.cxx:53]: (style) The function 'releaseId' is never used.
+[tbb/examples/graph/som/som.cpp:72]: (style) The function 'remark_search_result_type' is never used.
+[string.cxx:66]: (style) The function 'replaceAll' is never used.
+[transportMgr.cxx:257]: (style) The function 'resetData' is never used.
+[tbb/examples/test_all/fibonacci/Fibonacci.cpp:427]: (style) The function 'reverse_join' is never used.
+[tbb/examples/parallel_for/tachyon/src/api.cpp:96]: (style) The function 'rt_color' is never used.
+[tbb/examples/parallel_for/tachyon/src/api.cpp:236]: (style) The function 'rt_deletescene' is never used.
+[tbb/examples/parallel_for/tachyon/src/api.cpp:349]: (style) The function 'rt_extvol' is never used.
+[tbb/examples/parallel_for/tachyon/src/apigeom.cpp:87]: (style) The function 'rt_heightfield' is never used.
+[tbb/examples/parallel_for/tachyon/src/util.cpp:138]: (style) The function 'rt_meminuse' is never used.
+[tbb/examples/parallel_for/tachyon/src/api.cpp:398]: (style) The function 'rt_quadsphere' is never used.
+[tbb/examples/parallel_for/tachyon/src/api.cpp:317]: (style) The function 'rt_tex_color' is never used.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:170]: (style) The function 'rt_tri_box' is never used.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:118]: (style) The function 'rt_tri_cylinder' is never used.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:69]: (style) The function 'rt_tri_fcylinder' is never used.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:223]: (style) The function 'rt_tri_plane' is never used.
+[tbb/examples/parallel_for/tachyon/src/apitrigeom.cpp:220]: (style) The function 'rt_tri_sphere' is never used.
+[tbb/examples/parallel_for/tachyon/src/ui.cpp:96]: (style) The function 'rt_ui_checkaction' is never used.
+[tbb/examples/parallel_for/tachyon/src/ui.cpp:85]: (style) The function 'rt_ui_progress' is never used.
+[tbb/examples/parallel_for/tachyon/src/vol.cpp:67]: (style) The function 'scalarvol_bbox' is never used.
+[transportMgr.cxx:504]: (style) The function 'sendDataAsync' is never used.
+[socket.cxx:738]: (style) The function 'sendToUnixUdpSocket' is never used.
+[tbb/examples/parallel_reduce/convex_hull/convex_hull_bench.cpp:628]: (style) The function 'serial_initialize' is never used.
+[timeUtil.cxx:129]: (style) The function 'setEndDelayTest' is never used.
+[bufferControl.cxx:37]: (style) The function 'setEndPos' is never used.
+[timeUtil.cxx:111]: (style) The function 'setStartDelayTest' is never used.
+[timeUtil.cxx:66]: (style) The function 'setTime' is never used.
+[tbb/examples/parallel_for/tachyon/src/ui.cpp:66]: (style) The function 'set_rt_ui_message' is never used.
+[tbb/examples/parallel_for/tachyon/src/ui.cpp:70]: (style) The function 'set_rt_ui_progress' is never used.
+[bufferControl.cxx:203]: (style) The function 'skipChar' is never used.
+[tbb/examples/graph/som/som.cpp:174]: (style) The function 'teach' is never used.
+[tbb/examples/parallel_for/tachyon/src/trace_rest.cpp:82]: (style) The function 'thread_io' is never used.
+[tbb/examples/parallel_for/tachyon/src/grid.cpp:620]: (style) The function 'voxel_intersect' is never used.
+[thread.cxx:311]: (style) The function 'waitForShutdown' is never used.
+[tbb/examples/parallel_for/tachyon/src/coordsys.cpp:58]: (style) The function 'xytopolar' is never used.
+(information) Cppcheck cannot find all the include files (use --check-config for details)

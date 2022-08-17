@@ -1,0 +1,665 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro
+END
+AclStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AclStore.hxx
+END
+AsyncProcessor.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AsyncProcessor.hxx
+END
+Doxyfile
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Doxyfile
+END
+WebAdminThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WebAdminThread.hxx
+END
+VERSION
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/VERSION
+END
+reprolib_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprolib_8_0.vcproj
+END
+ReproRunner.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproRunner.hxx
+END
+Dispatcher.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Dispatcher.cxx
+END
+Target.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Target.cxx
+END
+WebAdmin.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WebAdmin.cxx
+END
+ProcessorMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ProcessorMessage.hxx
+END
+XmlRpcConnection.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/XmlRpcConnection.hxx
+END
+RRDecorator.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RRDecorator.hxx
+END
+genUsers.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/genUsers.cxx
+END
+Store.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Store.cxx
+END
+repro_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro_8_0.vcproj
+END
+HttpConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/HttpConnection.cxx
+END
+repro_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro_10_0.vcxproj
+END
+ReproServerAuthManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproServerAuthManager.hxx
+END
+UserStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/UserStore.hxx
+END
+Registrar.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Registrar.cxx
+END
+FilterStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/FilterStore.cxx
+END
+ResponseContext.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ResponseContext.cxx
+END
+AccountingCollector.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AccountingCollector.hxx
+END
+repro_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro_10_0.vcxproj.filters
+END
+StaticRegStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/StaticRegStore.hxx
+END
+PersistentMessageQueue.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/PersistentMessageQueue.cxx
+END
+OutboundTarget.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/OutboundTarget.hxx
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/.cvsignore
+END
+BerkeleyDb.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/BerkeleyDb.hxx
+END
+RegSyncClient.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncClient.hxx
+END
+MySqlDb.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/MySqlDb.hxx
+END
+RouteStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RouteStore.hxx
+END
+Proxy.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Proxy.cxx
+END
+ProcessorChain.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ProcessorChain.cxx
+END
+Processor.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Processor.hxx
+END
+reprolib_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprolib_9_0.vcproj
+END
+AsyncProcessorMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AsyncProcessorMessage.hxx
+END
+ConfigStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ConfigStore.hxx
+END
+userAdmin.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/userAdmin.cxx
+END
+SiloStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/SiloStore.hxx
+END
+repro.config
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro.config
+END
+XmlRpcServerBase.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/XmlRpcServerBase.hxx
+END
+CommandServerThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/CommandServerThread.cxx
+END
+RequestContext.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RequestContext.cxx
+END
+RegSyncServerThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncServerThread.hxx
+END
+repro_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro_9_0.vcproj
+END
+Ack200DoneMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Ack200DoneMessage.hxx
+END
+ReproVersion.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproVersion.hxx
+END
+CommandServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/CommandServer.cxx
+END
+RegSyncServer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncServer.hxx
+END
+WorkerThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WorkerThread.hxx
+END
+ProxyConfig.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ProxyConfig.cxx
+END
+QValueTarget.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/QValueTarget.hxx
+END
+AclStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AclStore.cxx
+END
+ForkControlMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ForkControlMessage.hxx
+END
+Worker.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Worker.hxx
+END
+AbstractDb.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AbstractDb.hxx
+END
+WebAdminThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WebAdminThread.cxx
+END
+HttpBase.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/HttpBase.hxx
+END
+ReproRunner.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproRunner.cxx
+END
+XmlRpcConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/XmlRpcConnection.cxx
+END
+reprolib_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprolib_10_0.vcxproj
+END
+RRDecorator.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RRDecorator.cxx
+END
+repro.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/repro.cxx
+END
+addUser.html
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/addUser.html
+END
+UserAuthGrabber.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/UserAuthGrabber.hxx
+END
+ReproServerAuthManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproServerAuthManager.cxx
+END
+Dispatcher.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Dispatcher.hxx
+END
+Target.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Target.hxx
+END
+UserStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/UserStore.cxx
+END
+WebAdmin.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WebAdmin.hxx
+END
+TimerCMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/TimerCMessage.hxx
+END
+reprolib_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/reprolib_10_0.vcxproj.filters
+END
+AccountingCollector.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AccountingCollector.cxx
+END
+Store.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Store.hxx
+END
+StaticRegStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/StaticRegStore.cxx
+END
+create_mysql_reprodb.sql
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/create_mysql_reprodb.sql
+END
+HttpConnection.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/HttpConnection.hxx
+END
+UserInfoMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/UserInfoMessage.hxx
+END
+INSTALL
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/INSTALL
+END
+OutboundTarget.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/OutboundTarget.cxx
+END
+Registrar.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Registrar.hxx
+END
+FilterStore.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/FilterStore.hxx
+END
+BerkeleyDb.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/BerkeleyDb.cxx
+END
+ResponseContext.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ResponseContext.hxx
+END
+RegSyncClient.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncClient.cxx
+END
+MySqlDb.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/MySqlDb.cxx
+END
+RouteStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RouteStore.cxx
+END
+Processor.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Processor.cxx
+END
+PersistentMessageQueue.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/PersistentMessageQueue.hxx
+END
+ConfigStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ConfigStore.cxx
+END
+SiloStore.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/SiloStore.cxx
+END
+Proxy.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Proxy.hxx
+END
+ProcessorChain.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ProcessorChain.hxx
+END
+XmlRpcServerBase.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/XmlRpcServerBase.cxx
+END
+RegSyncServerThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncServerThread.cxx
+END
+ReproVersion.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ReproVersion.cxx
+END
+README_MySQL.txt
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/README_MySQL.txt
+END
+RegSyncServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RegSyncServer.cxx
+END
+WorkerThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/WorkerThread.cxx
+END
+CommandServerThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/CommandServerThread.hxx
+END
+RequestContext.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/RequestContext.hxx
+END
+QValueTarget.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/QValueTarget.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/Makefile.am
+END
+AbstractDb.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AbstractDb.cxx
+END
+CommandServer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/CommandServer.hxx
+END
+HttpBase.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/HttpBase.cxx
+END
+ProxyConfig.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/ProxyConfig.hxx
+END
+AsyncProcessorWorker.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/AsyncProcessorWorker.hxx
+END

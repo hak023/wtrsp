@@ -1,0 +1,3043 @@
+#include "eSipRteData.hxx"
+
+namespace eSIP
+{
+
+CSipRteData::CSipRteData()
+   : m_pReadFP(NULL), 
+     m_pWriteFP(NULL),
+     m_pLock(new  resip::RWMutex),
+     m_pRecord(new CSipRteUtil::CSipRteUtilValue_t[E_MAXCNT_RECORD]),
+     m_nIndex(0),
+     m_last_mtime(0),
+     m_uiLastSize(0),
+     m_pFunc(NULL) 
+{
+   m_szFile[0]=0x00;
+   m_szFileBak[0]=0x00;
+   memset(m_pRecord,0x00,sizeof(CSipRteUtil::CSipRteUtilValue_t) * E_MAXCNT_RECORD);
+}
+
+CSipRteData::~CSipRteData()
+{
+
+}
+
+int CSipRteData::m_fnInit(int _nIdx, char* _pName, PfuncNotifyData_t _pFunc)
+{
+   if( _pName == NULL || _pName[0] == 0x00){
+      return 1;
+   }
+   char tmpBuf[1024];
+   memset(tmpBuf,0x00,sizeof(tmpBuf));
+   strncpy(tmpBuf,_pName,sizeof(tmpBuf)-1);
+   if( _nIdx == E_SIPRTE_TRC ){
+     //read file name
+     FILE* pfp=NULL;
+      do{
+         pfp=fopen(_pName,"r");
+         if(pfp==NULL) break; 
+         char linebuf[1024];
+         memset(linebuf,0x00,sizeof(linebuf));
+         while(fgets(linebuf,1024,pfp) != NULL){
+            //trim
+            CSipRteUtil::m_fnLRTrim(linebuf);
+            if( linebuf[0]==0x00 || linebuf[0]=='#' ){
+               continue;
+            }
+            strncpy(tmpBuf,linebuf,sizeof(tmpBuf)-1);
+            break;
+         }
+      }while(0);
+      ESIPRTEUTIL_CLOSE_FP(pfp);
+   }
+   strncpy(m_szFile,tmpBuf,sizeof(m_szFile)-1);
+   snprintf(m_szFileBak,sizeof(m_szFileBak)-1,"%s.tmp",tmpBuf);
+   //index
+   m_nIndex=_nIdx;
+   m_pFunc=_pFunc;
+   return 0;
+}
+
+
+int CSipRteData::m_fnRead(bool bChanged)
+{
+   SLOG(E_ESipRteLogLevel_INF,"rte table_%d load start (%s)",m_nIndex,m_szFile);
+   ESIPRTEUTIL_CLOSE_FP(m_pReadFP);
+   m_pReadFP=fopen(m_szFile,"r");
+   if(m_pReadFP == NULL){
+      SLOG(E_ESipRteLogLevel_WAR,"rte table_%d load fail (%s). open fail",m_nIndex,m_szFile);
+      return -1;
+   }
+
+   char linebuf[(2048+4)];
+   int nCnt=0;
+   //get line from file pointer
+   while(fgets(linebuf,2048, m_pReadFP) != NULL){
+      if( linebuf[0]==0x00 || linebuf[0]=='#' ){
+         continue;
+      }
+      //trim
+      CSipRteUtil::m_fnLRTrim(linebuf);
+      if( linebuf[0]==0x00 ) continue;
+
+      nCnt=CSipRteData::E_MAXCNT_RECORD;
+      if( m_nIndex == CSipRteData::E_SIPRTE_TRC ){
+         CSipRteUtil::m_fnStrToken(linebuf,m_pRecord, nCnt, ',');
+      }else{
+         CSipRteUtil::m_fnStrToken(linebuf,m_pRecord, nCnt, '|');
+      }
+      if(m_pFunc){
+         m_pFunc(m_nIndex,(void*)m_pRecord,nCnt,bChanged);
+      }
+   }
+   SLOG(E_ESipRteLogLevel_INF,"rte table_%d load end",m_nIndex);
+   ESIPRTEUTIL_CLOSE_FP(m_pReadFP);
+   return 0;
+}
+//add @vibc
+bool CSipRteData::m_fnCheckChangedfile()
+{
+   struct stat file_stat;
+   int nret=stat(m_szFile, &file_stat);
+   if(nret < 0 ) return true;
+
+   //get last modify time
+   time_t* mtime=&(file_stat.st_mtime);
+
+   //the first modified?
+   if ( m_last_mtime == (time_t)0 ){
+      m_last_mtime=*mtime;
+      m_uiLastSize=file_stat.st_size;
+      return false;
+   }
+   if( m_last_mtime != *mtime){
+      m_last_mtime=*mtime;
+      m_uiLastSize=file_stat.st_size;
+      return true;
+   }
+   if( file_stat.st_size >= 0 &&
+       m_nIndex != E_SIPRTE_TRC){
+      if( m_uiLastSize != file_stat.st_size){
+         m_last_mtime=*mtime;
+         m_uiLastSize=file_stat.st_size;
+         return true;
+      }
+   }
+   return false;
+}
+//fopen for write..
+int CSipRteData::m_fnOpenWriteNeedClose()
+{
+   ESIPRTEUTIL_CLOSE_FP(m_pWriteFP);
+   //read/write & truncate
+   m_pWriteFP=fopen(m_szFileBak,"w+"); 
+   //sucess
+   if( m_pWriteFP == NULL ) return 1;
+   return 0;
+}
+
+//fopen for write..
+int CSipRteData::m_fnCloseWrite()
+{
+   ESIPRTEUTIL_CLOSE_FP(m_pWriteFP);
+   return 0;
+}
+   
+void CSipRteData::m_fnReadLock()
+{
+   m_pLock->readlock();
+}
+
+void CSipRteData::m_fnLock()
+{
+   m_pLock->lock();
+}
+
+void CSipRteData::m_fnUnLock()
+{
+   m_pLock->unlock();
+}
+int CSipRteData::m_fnString2Data(
+         void* _pvOutData, 
+         void* _pstData,
+         int _nCnt, 
+         char* _pError)
+{
+   int nRet=0;
+   CSipRteUtil::CSipRteUtilValue_t* pUtilData=(CSipRteUtil::CSipRteUtilValue_t*)_pstData;
+   if( m_nIndex == E_SIPRTE_LN ){
+      nRet=m_fnString2StLocalNode(pUtilData,_nCnt,(SipNodeLocal_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_RMT ){
+      nRet=m_fnString2StRemoteNode(pUtilData,_nCnt,(SipNodeRemote_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_GRTE ){
+      nRet=m_fnString2StRouteGroup(pUtilData,_nCnt,(SipRouteGroup_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_RTE ){
+      nRet=m_fnString2StRoute(pUtilData,_nCnt,(SipRoute_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_RSEQ ){
+      nRet=m_fnString2StRouteSeq(pUtilData,_nCnt,(SipRouteSeq_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_SSEQ ){
+      nRet=m_fnString2StSpecialRouteSeq(pUtilData,_nCnt,(SipSpecialRouteSeq_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_TRGW ){
+      nRet=m_fnString2StTrGW(pUtilData,_nCnt,(TrGWRoute_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_RSN ){
+      nRet=m_fnString2StReason(pUtilData,_nCnt,(SipReasonCode_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_ENV ||
+              m_nIndex == E_SIPRTE_ENV_LB ){
+      nRet=m_fnString2StEnv(pUtilData,_nCnt,(GlobalOverLoadEnv_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_TIME ){
+      nRet=m_fnString2StTimer(pUtilData,_nCnt,(SipCoreTimer_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_TRC ){
+      nRet=m_fnString2StTrace(pUtilData,_nCnt,(SipCoreTrace_t*)_pvOutData,_pError);
+   }else if ( m_nIndex == E_SIPRTE_EMER ){
+      nRet=m_fnString2StEmer(pUtilData,_nCnt,(EmergencyCall_t*)_pvOutData,_pError);
+   }
+   return nRet;
+}
+
+int CSipRteData::m_fnCheckData(void* _pvData, char* _pError, bool _bAdd)
+{
+   int nRet=0;
+   if( m_nIndex == E_SIPRTE_LN ){
+      nRet=m_fnCheckLocalNode((SipNodeLocal_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_RMT ){
+      nRet=m_fnCheckRemoteNode((SipNodeRemote_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_GRTE ){
+      nRet=m_fnCheckSipRouteGroup((SipRouteGroup_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_RTE ){
+      nRet=m_fnCheckSipRoute((SipRoute_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_RSEQ ){
+      nRet=m_fnCheckSipRouteSeq((SipRouteSeq_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_SSEQ ){
+      nRet=m_fnCheckSipSpecialRouteSeq((SipSpecialRouteSeq_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_TRGW ){
+      nRet=m_fnCheckTrGW((TrGWRoute_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_RSN ){
+      nRet=m_fnCheckReason((SipReasonCode_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_ENV ||
+              m_nIndex == E_SIPRTE_ENV_LB ){
+      nRet=m_fnCheckEnv((GlobalOverLoadEnv_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_TIME ){
+      nRet=m_fnCheckTimer((SipCoreTimer_t*)_pvData,_pError,_bAdd);
+   }else if ( m_nIndex == E_SIPRTE_EMER ){
+      nRet=m_fnCheckEmer((EmergencyCall_t*)_pvData,_pError,_bAdd);
+   }
+   return nRet;
+}
+int CSipRteData::m_fnMakeModify(void* _pvNewData,void* _pvCurData,char* _pError)
+{
+   int nRet=0;
+   if( m_nIndex == E_SIPRTE_LN ){
+     nRet=m_fnMakeModifyLocalNode((SipNodeLocal_t*)_pvNewData,(SipNodeLocal_t*)_pvCurData, _pError); 
+   }else if ( m_nIndex == E_SIPRTE_RMT ){
+     nRet=m_fnMakeModifyRemoteNode((SipNodeRemote_t*)_pvNewData,(SipNodeRemote_t*)_pvCurData, _pError); 
+   }else if ( m_nIndex == E_SIPRTE_GRTE ){
+     nRet=m_fnMakeModifyRouteGroup((SipRouteGroup_t*)_pvNewData,(SipRouteGroup_t*)_pvCurData, _pError); 
+   }else if ( m_nIndex == E_SIPRTE_RTE ){
+     nRet=m_fnMakeModifyRoute((SipRoute_t*)_pvNewData,(SipRoute_t*)_pvCurData, _pError); 
+   }else if ( m_nIndex == E_SIPRTE_RSEQ ){
+     nRet=m_fnMakeModifyRouteSeq((SipRouteSeq_t*)_pvNewData,(SipRouteSeq_t*)_pvCurData, _pError); 
+   }else if ( m_nIndex == E_SIPRTE_SSEQ ){
+     nRet=m_fnMakeModifySpecialRouteSeq((SipSpecialRouteSeq_t*)_pvNewData,(SipSpecialRouteSeq_t*)_pvCurData,_pError); 
+   }else if ( m_nIndex == E_SIPRTE_TRGW ){
+     nRet=m_fnMakeModifyTrGW((TrGWRoute_t*)_pvNewData,(TrGWRoute_t*)_pvCurData,_pError); 
+   }else if ( m_nIndex == E_SIPRTE_RSN ){
+     nRet=m_fnMakeModifyReason((SipReasonCode_t*)_pvNewData,(SipReasonCode_t*)_pvCurData,_pError); 
+   }else if ( m_nIndex == E_SIPRTE_ENV ||
+              m_nIndex == E_SIPRTE_ENV_LB ){
+     nRet=m_fnMakeModifyEnv((GlobalOverLoadEnv_t*)_pvNewData,(GlobalOverLoadEnv_t*)_pvCurData,_pError); 
+   }else if ( m_nIndex == E_SIPRTE_TIME ){
+     nRet=m_fnMakeModifyTimer((SipCoreTimer_t*)_pvNewData,(SipCoreTimer_t*)_pvCurData,_pError); 
+   }else if ( m_nIndex == E_SIPRTE_EMER ){
+     nRet=m_fnMakeModifyEmer((EmergencyCall_t*)_pvNewData,(EmergencyCall_t*)_pvCurData,_pError); 
+   }
+   return nRet;
+}
+int CSipRteData::m_fnMakeStringWrite(void* _pvData, char* _pszOut)
+{
+   int nRet=0;
+
+   if( m_nIndex == E_SIPRTE_LN ){
+      nRet=m_fnStLocalNode2String((SipNodeLocal_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_RMT ){
+      nRet=m_fnStRemoteNode2String((SipNodeRemote_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_GRTE ){
+      nRet=m_fnStRouteGroup2String((SipRouteGroup_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_RTE ){
+      nRet=m_fnStRoute2String((SipRoute_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_RSEQ ){
+      nRet=m_fnStRouteSeq2String((SipRouteSeq_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_SSEQ ){
+      nRet=m_fnStSpecialRouteSeq2String((SipSpecialRouteSeq_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_TRGW ){
+      nRet=m_fnStTrGW2String((TrGWRoute_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_RSN ){
+      nRet=m_fnStReason2String((SipReasonCode_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_ENV || 
+              m_nIndex == E_SIPRTE_ENV_LB ){
+      nRet=m_fnStEnv2String((GlobalOverLoadEnv_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_TIME ){
+      nRet=m_fnStTimer2String((SipCoreTimer_t*)_pvData,_pszOut);
+   }else if ( m_nIndex == E_SIPRTE_EMER ){
+      nRet=m_fnStEmer2String((EmergencyCall_t*)_pvData,_pszOut);
+   }
+   return nRet;
+}
+
+
+////Local Node
+int  CSipRteData::m_fnCheckLocalNode(SipNodeLocal_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckLocal_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckLocal_InvalidDesc;
+      }
+      //string len is zero
+      if( _pstValue->m_szDomain[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the domain is null");
+         return E_RTE_CheckLocal_InvalidDomain;
+      }
+   }
+   //ip version
+   if( CSipRteUtil::m_fnIsIPversion(_pstValue->m_usIPver) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the ipv isn't 4 or 6. value=%d",_pstValue->m_usIPver);
+      return E_RTE_CheckLocal_InvalidIPver;
+   }
+   //port 
+   if( CSipRteUtil::m_fnIsPort((unsigned int)(_pstValue->m_usPort)) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the port is out of range(1 ~ 65535). value=%d",
+         _pstValue->m_usPort);
+      return E_RTE_CheckLocal_InvalidPort;
+   }
+   //ipversion string 
+   if( _pstValue->m_usIPver == 4 ){
+      if( CSipRteUtil::m_fnIsIPv4String(_pstValue->m_szIP) == false ){ 
+         snprintf(_pError,E_MAXLEN_ERR,"the ip isn't ipv4. value=%s",_pstValue->m_szIP);
+         return E_RTE_CheckLocal_InvalidIP4;
+      }
+   }else{
+      if( CSipRteUtil::m_fnIsIPv6String(_pstValue->m_szIP) == false ){ 
+         snprintf(_pError,E_MAXLEN_ERR,"the ip isn't ipv6. value=%s",_pstValue->m_szIP);
+         return E_RTE_CheckLocal_InvalidIP6;
+      }
+   }
+   //protocol type
+   if( _pstValue->m_ucProto >= E_ESIP_TRANSPORT_MAX || _pstValue->m_ucProto == 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the protocol type is out of range(1 ~ 4). value=%d",
+         _pstValue->m_ucProto);
+      return E_RTE_CheckLocal_InvalidProtocolType;
+   }
+   //@R111 2016/09 RCS ON/OFF
+   if( _pstValue->m_cRCSOn != 0 && _pstValue->m_cRCSOn != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the rcs on is out of range(0 ~ 1). value=%d",
+         _pstValue->m_cRCSOn);
+      return E_RTE_CheckLocal_InvalidRCSOn;
+   }
+   //@local_nat 2017/03/17
+   if( _pstValue->m_cNATOn != 0 && _pstValue->m_cNATOn != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the nat on is out of range(0 ~ 1). value=%d",
+         _pstValue->m_cNATOn);
+      return E_RTE_CheckLocal_InvalidNATOn;
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StLocalNode(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipNodeLocal_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+//@R111 2016/09
+#if 0
+   if( _nCnt != SipNodeLocal_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column isn't %d", SipNodeLocal_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+#else
+   if( _nCnt < SipNodeLocal_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column(%d) < %d ",
+         _nCnt, SipNodeLocal_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+#endif
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipNodeLocal_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      //@R111 2016/09
+      //if( i == 0 || i == 3 || i == 4 || i == 6 || i == 7 ){
+      if( i == 0 || i == 3 || i == 4 || i == 6 || i == 7 || i == 8 ){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set domain
+      }else if ( i == 2 ) {
+         strncpy(_pstValue->m_szDomain,pTmpData,sizeof(_pstValue->m_szDomain)-1);
+      //set ip ver
+      }else if ( i == 3 ) {
+         _pstValue->m_usIPver=atoi(pTmpData); // 4, 6
+      //set port
+      }else if ( i == 4 ) {
+         _pstValue->m_usPort=atoi(pTmpData); // port . 65535
+      //set ip
+      }else if ( i == 5 ) {
+         strncpy(_pstValue->m_szIP,pTmpData,sizeof(_pstValue->m_szIP)-1);
+      //set protocol type
+      }else if ( i == 6 ) {
+         _pstValue->m_ucProto=atoi(pTmpData); // prototype . 65535
+      //set staus
+      }else if ( i == 7 ) {
+         _pstValue->m_ucStatus = atoi(pTmpData);
+      //@R111 2016/09
+      //set RCS_ON
+      }else if ( i == 8 ) {
+         _pstValue->m_cRCSOn = atoi(pTmpData);
+      //@local_nat
+      }else if ( i == 9 ) {
+         _pstValue->m_cNATOn = atoi(pTmpData);
+         if( _pstValue->m_cNATOn != 1 ){
+            _pstValue->m_cNATOn = 0;
+         }
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+////Remote Node
+int  CSipRteData::m_fnCheckRemoteNode(SipNodeRemote_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckRemote_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckRemote_InvalidDesc;
+      }
+      //string len is zero
+      if( _pstValue->m_szDomain[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the domain is null");
+         return E_RTE_CheckRemote_InvalidDomain;
+      }
+   }
+   //ip version
+   if( CSipRteUtil::m_fnIsIPversion(_pstValue->m_usIPver) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the ipv isn't 4 or 6. value=%d",_pstValue->m_usIPver);
+      return E_RTE_CheckRemote_InvalidIPver;
+   }
+   //port 
+   if( CSipRteUtil::m_fnIsPort((unsigned int)(_pstValue->m_usPort)) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the port is out of range(1 ~ 65535). value=%d",
+         _pstValue->m_usPort);
+      return E_RTE_CheckRemote_InvalidPort;
+   }
+   //ipversion string 
+   if( _pstValue->m_usIPver == 4 ){
+      if( CSipRteUtil::m_fnIsIPv4String(_pstValue->m_szIP) == false ){ 
+         snprintf(_pError,E_MAXLEN_ERR,"the ip isn't ipv4. value=%s",_pstValue->m_szIP);
+         return E_RTE_CheckRemote_InvalidIP4;
+      }
+   }else{
+      if( CSipRteUtil::m_fnIsIPv6String(_pstValue->m_szIP) == false ){ 
+         snprintf(_pError,E_MAXLEN_ERR,"the ip node isn't ipv6. value=%s",_pstValue->m_szIP);
+         return E_RTE_CheckRemote_InvalidIP6;
+      }
+   }
+   //protocol type
+   if( _pstValue->m_ucProto >= E_ESIP_TRANSPORT_MAX || _pstValue->m_ucProto == 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the protocol type is out of range(1 ~ 4). value=%d",
+         _pstValue->m_ucProto);
+      return E_RTE_CheckRemote_InvalidProtocolType;
+   }
+   //nat on
+   if( _pstValue->m_sNATOn != 0 && _pstValue->m_sNATOn != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the nat flag is out of range(0 ~ 1). value=%d",
+         _pstValue->m_sNATOn);
+      return E_RTE_CheckRemote_InvalidNATOn;
+   }
+   //dscp
+   if( _pstValue->m_nDSCP < 0 ||  _pstValue->m_nDSCP > 64 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the dscp should be >= 0 or . be <=64 value=%d",
+         _pstValue->m_nDSCP);
+      return E_RTE_CheckRemote_InvalidDSCP;
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StRemoteNode(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipNodeRemote_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != SipNodeRemote_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column isn't %d", SipNodeRemote_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipNodeRemote_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         //if nat ip
+         if( i == 9 ){
+            continue;
+         }
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i == 0 || i == 3 || i == 4 || i == 6 || i == 7 || i == 8 || i == 10 || i == 11){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set domain
+      }else if ( i == 2 ) {
+         strncpy(_pstValue->m_szDomain,pTmpData,sizeof(_pstValue->m_szDomain)-1);
+      //set ip ver
+      }else if ( i == 3 ) {
+         _pstValue->m_usIPver=atoi(pTmpData); // 4, 6
+      //set port
+      }else if ( i == 4 ) {
+         _pstValue->m_usPort=atoi(pTmpData); // port . 65535
+      //set ip
+      }else if ( i == 5 ) {
+         strncpy(_pstValue->m_szIP,pTmpData,sizeof(_pstValue->m_szIP)-1);
+      //set protocol type
+      }else if ( i == 6 ) {
+         _pstValue->m_ucProto=atoi(pTmpData); // prototype . 65535
+      //nat on
+      }else if ( i == 7 ) {
+         _pstValue->m_sNATOn = atoi(pTmpData);
+      //dscp
+      }else if ( i == 8 ) {
+         _pstValue->m_nDSCP = atoi(pTmpData);
+      //nat ip
+      }else if ( i == 9 ) {
+         strncpy(_pstValue->m_szNATIP,pTmpData,sizeof(_pstValue->m_szNATIP)-1);
+      //nat port
+      }else if ( i == 10 ) {
+         _pstValue->m_usNATPort = atoi(pTmpData);
+      //set staus
+      }else if ( i == 11 ) {
+         _pstValue->m_ucStatus = atoi(pTmpData);
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+////route group
+int  CSipRteData::m_fnCheckSipRouteGroup(SipRouteGroup_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckRouteGroup_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckRouteGroup_InvalidDesc;
+      }
+   }
+   //@vibc
+   //max cps
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_nMaxCPS_LB) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the max LB_cps out of range(1 ~ 9999999). value=%d",
+         _pstValue->m_nMaxCPS_LB);
+      return E_RTE_CheckRouteGroup_InvalidLBMaxCPS;
+   }
+   //LMT_CPS_ON
+   if( _pstValue->m_nCtrlCPSOn_LB != 0 && _pstValue->m_nCtrlCPSOn_LB != 1){
+      snprintf(_pError,E_MAXLEN_ERR,"the flag of LB_cps is out of range(0 ~ 1). value=%d",
+         _pstValue->m_nCtrlCPSOn_LB);
+      return E_RTE_CheckRouteGroup_InvalidLBCPSFlag;
+   }
+   //max tps
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_nMaxTPS_LB) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the max LB_tps out of range(1 ~ 9999999). value=%d",
+         _pstValue->m_nMaxTPS_LB);
+      return E_RTE_CheckRouteGroup_InvalidLBMaxTPS;
+   }
+   //LMT_TPS_ON
+   if( _pstValue->m_nCtrlTPSOn_LB != 0 && _pstValue->m_nCtrlTPSOn_LB != 1){
+      snprintf(_pError,E_MAXLEN_ERR,"the flag of LB_tps is out of range(0 ~ 1). value=%d",
+         _pstValue->m_nCtrlTPSOn_LB);
+      return E_RTE_CheckRouteGroup_InvalidLBTPSFlag;
+   }
+   //max cps
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_nMaxCPS) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the max cps out of range(1 ~ 9999999). value=%d",
+         _pstValue->m_nMaxCPS);
+      return E_RTE_CheckRouteGroup_InvalidMaxCPS;
+   }
+   //LMT_CPS_ON
+   if( _pstValue->m_nCtrlCPSOn != 0 && _pstValue->m_nCtrlCPSOn != 1){
+      snprintf(_pError,E_MAXLEN_ERR,"the flag of cps is out of range(0 ~ 1). value=%d",
+         _pstValue->m_nCtrlCPSOn);
+      return E_RTE_CheckRouteGroup_InvalidCPSFlag;
+   }
+   //max tps
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_nMaxTPS) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the max tps out of range(1 ~ 9999999). value=%d",
+         _pstValue->m_nMaxTPS);
+      return E_RTE_CheckRouteGroup_InvalidMaxTPS;
+   }
+   //LMT_TPS_ON
+   if( _pstValue->m_nCtrlTPSOn != 0 && _pstValue->m_nCtrlTPSOn != 1){
+      snprintf(_pError,E_MAXLEN_ERR,"the flag of tps is out of range(0 ~ 1). value=%d",
+         _pstValue->m_nCtrlTPSOn);
+      return E_RTE_CheckRouteGroup_InvalidTPSFlag;
+   }
+   //rsp code
+   if( _pstValue->m_nRspID < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the rsp code is invalid. value=%d",
+         _pstValue->m_nRspID);
+      return E_RTE_CheckRouteGroup_InvalidRSPID;
+   }
+   //@R111 2016/09
+   if( _pstValue->m_nChargingOn != 0 && _pstValue->m_nChargingOn != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the charging_on is invalid(0,1). value=%d",
+         _pstValue->m_nChargingOn);
+      return E_RTE_CheckRouteGroup_InvalidChargingON;
+   }
+   if( _pstValue->m_nChargingCode < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the charging_code is invalid. value=%d",
+         _pstValue->m_nChargingCode);
+      return E_RTE_CheckRouteGroup_InvalidChargingCode;
+   } 
+   if( _pstValue->m_nChargingIDC < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the charging_idc is invalid. value=%d",
+         _pstValue->m_nChargingIDC);
+      return E_RTE_CheckRouteGroup_InvalidChargingIDC;
+   }
+   if( _pstValue->m_nRoamingIDC < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the roaming_idc is invalid. value=%d",
+         _pstValue->m_nRoamingIDC);
+      return E_RTE_CheckRouteGroup_InvalidRoamingIDC;
+   }
+#if 0
+   //dscp
+   if( _pstValue->m_nDSCP < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the dscp is invalid. value=%d",
+         _pstValue->m_nDSCP);
+      return E_RTE_CheckRouteGroup_InvalidDSCP;
+   }
+   //nat
+   if( _pstValue->m_nCtrlNATOn != 0 && _pstValue->m_nCtrlNATOn != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the flag of nat is out of range(0 ~ 1). value=%d",
+         _pstValue->m_nCtrlNATOn);
+      return E_RTE_CheckRouteGroup_InvalidNATFlag;
+   }
+#endif
+   return 0;
+}
+int  CSipRteData::m_fnString2StRouteGroup(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipRouteGroup_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+#if 0
+   if( _nCnt != SipRouteGroup_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column isn't %d", SipRouteGroup_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+#else
+   if( _nCnt < SipRouteGroup_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column(%d) isn't %d",
+            _nCnt, SipRouteGroup_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+#endif
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipRouteGroup_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i != 1){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      //set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //@vibc
+      //set lb max cps
+      }else if ( i == 2 ) {
+         _pstValue->m_nMaxCPS_LB=atoi(pTmpData); //
+      //set flag of lb cps ctrl
+      }else if ( i == 3 ) {
+         _pstValue->m_nCtrlCPSOn_LB=atoi(pTmpData); //
+      //set max lb tps
+      }else if ( i == 4 ) {
+         _pstValue->m_nMaxTPS_LB=atoi(pTmpData); //
+      //set flag of lb tps ctrl
+      }else if ( i == 5 ) {
+         _pstValue->m_nCtrlTPSOn_LB=atoi(pTmpData); //
+      //set max cps
+      }else if ( i == 6 ) {
+         _pstValue->m_nMaxCPS=atoi(pTmpData); //
+      //set flag of cps ctrl
+      }else if ( i == 7 ) {
+         _pstValue->m_nCtrlCPSOn=atoi(pTmpData); //
+      //set max tps
+      }else if ( i == 8 ) {
+         _pstValue->m_nMaxTPS=atoi(pTmpData); //
+      //set flag of tps ctrl
+      }else if ( i == 9 ) {
+         _pstValue->m_nCtrlTPSOn=atoi(pTmpData); //
+      //set rsp code
+      }else if ( i == 10 ) {
+         _pstValue->m_nRspID=atoi(pTmpData); // 
+      //@R111 2016/09
+      //set charging code
+      }else if ( i == 11 ) {
+         _pstValue->m_nChargingOn=atoi(pTmpData); // 
+      }else if ( i == 12 ) {
+         _pstValue->m_nChargingCode=atoi(pTmpData); // 
+      }else if ( i == 13 ) {
+         _pstValue->m_nChargingIDC=atoi(pTmpData); // 
+      }else if ( i == 14 ) {
+         _pstValue->m_nRoamingIDC=atoi(pTmpData); // 
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+
+////Remote Node
+int  CSipRteData::m_fnCheckSipRoute(SipRoute_t* _pstValue,char* _pError,bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckRoute_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckRoute_InvalidDesc;
+      }
+   }
+   //local id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiLID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the local id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiLID);
+      return E_RTE_CheckRoute_InvalidLocalID;
+   }
+   //remote id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiRID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the remote id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiRID);
+      return E_RTE_CheckRoute_InvalidRemoteID;
+   }
+   //trte
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiTRTE) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the trte is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiTRTE);
+      return E_RTE_CheckRoute_InvalidTrGWID;
+   }
+
+   //route type
+   if( _pstValue->m_ucType < SipRoute_t::E_TYPE_MINE || 
+       _pstValue->m_ucType > SipRoute_t::E_TYPE_OTHER ){
+      snprintf(_pError,E_MAXLEN_ERR,"the type is out of range.(1 ~ 2). value=%u",
+         _pstValue->m_ucType);
+       return E_RTE_CheckRoute_InvalidRouteType;
+   }
+
+   //mgw route flag
+   if( _pstValue->m_ucDoRouteMedia < SipRoute_t::E_MGW_ROUTED || 
+       _pstValue->m_ucDoRouteMedia > SipRoute_t::E_MGW_DIRECTED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the media route is out of range.(1 ~ 2). value=%d",
+         _pstValue->m_ucDoRouteMedia);
+      return E_RTE_CheckRoute_InvalidMediaRouteFlag;
+   }
+   //optime
+   if( _pstValue->m_sOptTime < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the option time should be >= 0. value=%d",
+         _pstValue->m_sOptTime);
+      return E_RTE_CheckRoute_InvalidOptTime;
+   }
+   //opt Retry
+   if( _pstValue->m_sOptRetry < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the option retry should be >= 0. value=%d",
+         _pstValue->m_sOptRetry);
+      return E_RTE_CheckRoute_InvalidOptRetry;
+   }
+   //option action
+   if( _pstValue->m_sOptAction > SipRoute_t::E_MANAGE_DEACT){
+      snprintf(_pError,E_MAXLEN_ERR,"the route action is out of range.(0 ~ 1). value=%d",
+         _pstValue->m_sOptAction);
+      return E_RTE_CheckRoute_InvalidAction;
+   }
+   //session refresh
+   if( _pstValue->m_sSesRefreshTime < 0){
+      snprintf(_pError,E_MAXLEN_ERR,"the option retry should be >= 0. value=%d",
+         _pstValue->m_sSesRefreshTime);
+      return E_RTE_CheckRoute_InvalidSesTime;
+   }
+   //route group
+   if( _pstValue->m_nRouteGroup < 0){
+      snprintf(_pError,E_MAXLEN_ERR,"the route group should be >= 0. value=%d",
+         _pstValue->m_nRouteGroup);
+      return E_RTE_CheckRoute_InvalidRouteGroup;
+   }
+   //m_nMAXCnt
+   if( _pstValue->m_nMAXCnt <= 0){
+      snprintf(_pError,E_MAXLEN_ERR,"the max count should be > 0. value=%d",
+         _pstValue->m_nMAXCnt);
+      return E_RTE_CheckRoute_InvalidMaxCnt;
+   }
+   //m_nDeactRsp
+   if( (_pstValue->m_nDeactRsp != SipRoute_t::E_SEND_RESPONSE) &&
+       (_pstValue->m_nDeactRsp != SipRoute_t::E_DROP_RESPONSE)){
+      snprintf(_pError,E_MAXLEN_ERR,"the deact respons should be 0 or 1. value=%d",
+         _pstValue->m_nDeactRsp);
+      return E_RTE_CheckRoute_InvalidDeactRsp;
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StRoute(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipRoute_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != SipRoute_t::E_NUMOF_VALIDFILED ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of isn't %d", SipRoute_t::E_NUMOF_VALIDFILED);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipRoute_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i != 1 ){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set LID
+      }else if ( i == 2 ) {
+         _pstValue->m_uiLID=atoi(pTmpData); 
+      //set RID
+      }else if ( i == 3 ) {
+         _pstValue->m_uiRID=atoi(pTmpData); 
+      //set TRTE
+      }else if ( i == 4 ) {
+         _pstValue->m_uiTRTE=atoi(pTmpData); 
+      //set type (mine/other)
+      }else if ( i == 5 ) {
+         _pstValue->m_ucType=atoi(pTmpData); 
+      //set routed media
+      }else if ( i == 6 ) {
+         _pstValue->m_ucDoRouteMedia=atoi(pTmpData); 
+      //set opt time
+      }else if ( i == 7 ) {
+         _pstValue->m_sOptTime=atoi(pTmpData); 
+      //set opt retry
+      }else if ( i == 8 ) {
+         _pstValue->m_sOptRetry=atoi(pTmpData); 
+      //set opt action (ACT, BYPAS, BYBASS)
+      }else if ( i == 9 ) {
+         _pstValue->m_sOptAction=atoi(pTmpData); 
+      //set ses refresh 
+      }else if ( i == 10 ) {
+         _pstValue->m_sSesRefreshTime=atoi(pTmpData); 
+      //set route group
+      }else if ( i == 11 ) {
+         _pstValue->m_nRouteGroup=atoi(pTmpData); 
+      //set max count
+      }else if ( i == 12 ) {
+         _pstValue->m_nMAXCnt=atoi(pTmpData); 
+      //set deact response
+      }else if ( i == 13) {
+         _pstValue->m_nDeactRsp=atoi(pTmpData); 
+      //set protocol
+      }else if ( i == 14) {
+         _pstValue->m_ucProto=atoi(pTmpData); 
+      //set ses status 
+      }else if ( i == 15 ) {
+         _pstValue->m_ucStatus=atoi(pTmpData); 
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+////route Seq
+int  CSipRteData::m_fnCheckSipRouteSeq(SipRouteSeq_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckRouteSeq_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckRouteSeq_InvalidDesc;
+      }
+   }
+   //drte
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiDRTE) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the drte is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiDRTE);
+      return E_RTE_CheckRouteSeq_InvalidDRTE;
+   }
+   //arte
+   for( int i= 0 ; i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+      if( _pstValue->m_uiARTE[i] < 0 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the arte is invalid. value=%d/idx(%d)",
+            _pstValue->m_uiARTE[i],i);
+         return E_RTE_CheckRouteSeq_InvalidARTE;
+      }
+   }   
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StRouteSeq(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipRouteSeq_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt < SipRouteSeq_t::E_NUMOF_VALIDFILED ||
+       _nCnt > (SipRouteSeq_t::E_NUMOF_VALIDFILED + SipRouteSeq_t::E_MAX_ARTE) ){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipRouteSeq_t));
+   int i=0; int j=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i != 1 ){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set LID
+      }else if ( i == 2 ) {
+         _pstValue->m_uiDRTE=atoi(pTmpData); 
+      //set ARTE
+      }else if ( i >= 3 ){
+         if( j < SipRouteSeq_t::E_MAX_ARTE ){
+            _pstValue->m_uiARTE[j]=atoi(pTmpData);
+            j++; 
+         }
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+////route Seq
+int  CSipRteData::m_fnCheckSipSpecialRouteSeq(SipSpecialRouteSeq_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckSRouteSeq_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckSRouteSeq_InvalidDesc;
+      }
+   }
+   for( int i = 0 ; i < SipSpecialRouteSeq_t::E_MAX_RSEQ; i ++){
+      if( _pstValue->m_uiRSEQ[i] < 0 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the rseq is invalid. value=%d/idx(%d)",
+            _pstValue->m_uiRSEQ[i],i );
+         return E_RTE_CheckSRouteSeq_InvalidRSeq; 
+      }
+      if( _pstValue->m_nRATE[i] < 0 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the rate out of range(1 ~ 9999999). value=%d",
+            _pstValue->m_nRATE[i] );
+         return E_RTE_CheckSRouteSeq_InvalidRate; 
+      }
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StSpecialRouteSeq(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipSpecialRouteSeq_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt < SipSpecialRouteSeq_t::E_NUMOF_VALIDFILED ||
+        _nCnt > (SipSpecialRouteSeq_t::E_MAX_RSEQ*2)+2){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipSpecialRouteSeq_t));
+   int i=0; int j=0; int k=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i != 1 ){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set rswq
+      }else if ( i >= 2 ) {
+         if( i%2 == 0 ){
+            if( j < SipSpecialRouteSeq_t::E_MAX_RSEQ ){
+               _pstValue->m_uiRSEQ[j]=atoi(pTmpData); 
+               j++;
+            }
+         }else{
+            if( k < SipSpecialRouteSeq_t::E_MAX_RSEQ ) {
+               _pstValue->m_nRATE[k]=atoi(pTmpData);
+               k++; 
+            }
+         }
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+////Trgw
+int  CSipRteData::m_fnCheckTrGW(TrGWRoute_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckTrGW_InvalidID;
+   }
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckTrGW_InvalidDesc;
+      }
+   }
+   //server ip
+   if( CSipRteUtil::m_fnIsIPv4String(_pstValue->m_szSvrIP) == false ){ 
+      snprintf(_pError,E_MAXLEN_ERR,"the svr ip isn't ipv4. value=%s",_pstValue->m_szSvrIP);
+      return E_RTE_CheckTrGW_InvalidSvrIP4;
+   }
+   //trgw ip
+   if( CSipRteUtil::m_fnIsIPv4String(_pstValue->m_szTrGWIP) == false ){ 
+      snprintf(_pError,E_MAXLEN_ERR,"the trgw ip isn't ipv4. value=%s",_pstValue->m_szTrGWIP);
+      return E_RTE_CheckTrGW_InvalidTrGWIP4;
+   }
+   //server port
+   if( CSipRteUtil::m_fnIsPort((unsigned int)(_pstValue->m_usSvrPort)) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the svr port is out of range(1 ~ 65535). value=%d",
+         _pstValue->m_usSvrPort);
+      return E_RTE_CheckTrGW_InvalidSvrPort;
+   }
+   //trgw port
+   if( CSipRteUtil::m_fnIsPort((unsigned int)(_pstValue->m_usTrGWPort)) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the trgw port is out of range(1 ~ 65535). value=%d",
+         _pstValue->m_usTrGWPort);
+      return E_RTE_CheckTrGW_InvalidTrGWPort;
+   }
+   //call rate 
+   if( _pstValue->m_nCallRate < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the call rate should be >= 0. value=%d",
+         _pstValue->m_nCallRate);
+      return E_RTE_CheckTrGW_InvalidCallRate;
+   }
+   //Max Cnt
+   if( _pstValue->m_nMaxCount < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max count should be >= 0. value=%d",
+         _pstValue->m_nMaxCount);
+      return E_RTE_CheckTrGW_InvalidMaxCnt;
+   }
+   //status
+   if( _pstValue->m_nStatus < 0 || 
+      _pstValue->m_nStatus > (TrGWRoute_t::E_TRGW_STATUS_FBLOCK|TrGWRoute_t::E_TRGW_STATUS_MBLOCK) ){
+      snprintf(_pError,E_MAXLEN_ERR,"the status is out of range(0 ~ 3). value=%d",
+         _pstValue->m_nStatus);
+      return E_RTE_CheckTrGW_InvalidStatus;
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StTrGW(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            TrGWRoute_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != TrGWRoute_t::E_NUMOF_VALIDFILED){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(TrGWRoute_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( i != 1 && i !=2 && i!=3){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //set sever ip
+      }else if ( i == 2 ) {
+         strncpy(_pstValue->m_szSvrIP,pTmpData,sizeof(_pstValue->m_szSvrIP)-1);
+      //set trgw ip
+      }else if ( i == 3 ) {
+         strncpy(_pstValue->m_szTrGWIP,pTmpData,sizeof(_pstValue->m_szTrGWIP)-1);
+      //set server port
+      }else if ( i == 4 ) {
+         _pstValue->m_usSvrPort=atoi(pTmpData);
+      //set trgw port
+      }else if ( i == 5 ) {
+         _pstValue->m_usTrGWPort=atoi(pTmpData);
+      //set call rate
+      }else if ( i == 6){
+         _pstValue->m_nCallRate=atoi(pTmpData);
+      //set max count
+      }else if ( i == 7){
+         _pstValue->m_nMaxCount=atoi(pTmpData);
+      //set status
+      }else if ( i == 8){
+         _pstValue->m_nStatus=atoi(pTmpData);
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+////Reason
+int  CSipRteData::m_fnCheckReason(SipReasonCode_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckReason_InvalidID;
+   }
+   //desc
+   if( _bAdd == true ){
+      //string len is zero
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckReason_InvalidDesc;
+      }
+   }
+   for( int i=0 ;i < SipReasonCode_t::E_CAUSE_MAX;i++){
+      if( _pstValue->m_nCauseCode[i] < 0 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the cause code should be > 0 . value=%d",
+            _pstValue->m_nCauseCode[i]);
+          return E_RTE_CheckReason_CauseCode;
+      }
+      if( _pstValue->m_nRspCode[i] < 0 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the rsp code should be > 0 . value=%d",
+            _pstValue->m_nRspCode[i]);
+          return E_RTE_CheckReason_RspCode;
+      }
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StReason(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipReasonCode_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != SipReasonCode_t::E_NUMOF_VALIDFILED){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipReasonCode_t));
+   int i=0, j=0, k=4;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL ||
+          //pTmpData[0] == 0x00 ) { 
+          ( i < 4 && pTmpData[0] == 0x00) ){
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      //cause text is null..
+      }
+      if( i != k){
+         if(pTmpData[0] == 0x00){
+            snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+            break;
+         }
+      }else{
+         k+=3;
+      }
+      //check number string
+      if( i == 0 ){
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      // set id
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData); // '1 ~ 9999999'
+      //set desc
+      }else if ( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+     //cause code,rsp code,cause text 
+      }else if ( i >= 2 ){
+         if( j < SipReasonCode_t::E_CAUSE_MAX){
+            if( (i-2)%3 == 0 || (i-2)%3 ==1 ){
+               if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+                    snprintf(_pError,E_MAXLEN_ERR,"the value isn't integer.  column:%d/data(%s)",i,pTmpData);
+                   break;
+               }
+            }
+            if( (i-2)%3 == 0 ){
+               _pstValue->m_nCauseCode[j]=atoi(pTmpData);
+            }else if ( (i-2)%3 == 1 ){
+               _pstValue->m_nRspCode[j]=atoi(pTmpData);
+            }else if ( (i-2)%3 == 2 ){
+               strncpy(_pstValue->m_szCause[j],pTmpData,sizeof(_pstValue->m_szCause[j])-1);
+               j++;
+            }
+         }
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+////Env
+int  CSipRteData::m_fnCheckEnv(GlobalOverLoadEnv_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //max ses
+   if( _pstValue->m_nMaxSES <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max ses is invalid. value=%d",
+      _pstValue->m_nMaxSES);
+      return E_RTE_CheckEnv_InvalidMaxSES;
+   }
+   //desc is none.
+
+   //check ses
+   if( _pstValue->m_nChkSES != 0 &&  _pstValue->m_nChkSES != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max ses flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkSES);
+      return E_RTE_CheckEnv_InvalidMaxSES_Flag;
+   }
+
+   //max message
+   if( _pstValue->m_nMaxMSG < 1400 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max msg should be >= 1400. value=%d",
+      _pstValue->m_nMaxMSG);
+      return E_RTE_CheckEnv_InvalidMaxMSG;
+   }
+   //check msg
+   if( !(_pstValue->m_nChkMSG >= 0 &&  _pstValue->m_nChkMSG <= 3)){
+      snprintf(_pError,E_MAXLEN_ERR,"the max msg flag should be 0~3. value=%d",
+      _pstValue->m_nChkMSG);
+      return E_RTE_CheckEnv_InvalidMaxMSG_Flag;
+   }
+   //max cps
+   if( _pstValue->m_nMaxCPS < 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max cps should be >= 1. value=%d",
+      _pstValue->m_nMaxCPS);
+      return E_RTE_CheckEnv_InvalidMaxCPS;
+   }
+   //check cps
+   if( _pstValue->m_nChkCPS != 0 &&  _pstValue->m_nChkCPS != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max cps flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkCPS);
+      return E_RTE_CheckEnv_InvalidMaxCPS_Flag;
+   }
+   //max cpu
+   if( _pstValue->m_nMaxCPU < 1 ||
+       _pstValue->m_nMaxCPU > 100 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max cpu should be (1~100). value=%d",
+      _pstValue->m_nMaxCPU);
+      return E_RTE_CheckEnv_InvalidMaxCPU;
+   }
+   //check cps
+   if( _pstValue->m_nChkCPU != 0 &&  _pstValue->m_nChkCPU != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max cpu flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkCPU);
+      return E_RTE_CheckEnv_InvalidMaxCPU_Flag;
+   }
+   //max mem
+   if( _pstValue->m_nMaxMEM < 1 ||
+       _pstValue->m_nMaxMEM > 100){
+      snprintf(_pError,E_MAXLEN_ERR,"the max mem should be (1~100). value=%d",
+      _pstValue->m_nMaxMEM);
+      return E_RTE_CheckEnv_InvalidMaxMEM;
+   }
+   //check mem
+   if( _pstValue->m_nChkMEM != 0 &&  _pstValue->m_nChkMEM != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max mem flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkMEM);
+      return E_RTE_CheckEnv_InvalidMaxMEM_Flag;
+   }
+   //max tps
+   if( _pstValue->m_nMaxTPS < 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max tps should be >= 1. value=%d",
+      _pstValue->m_nMaxTPS);
+      return E_RTE_CheckEnv_InvalidMaxTPS;
+   }
+   //check tps
+   if( _pstValue->m_nChkTPS != 0 &&  _pstValue->m_nChkTPS != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max tps flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkTPS);
+      return E_RTE_CheckEnv_InvalidMaxTPS_Flag;
+   }
+   //////////////////
+   //check emergency
+//@vibc_svt
+#if 0
+   if( _pstValue->m_nMinCPS_Emer < 0 ||
+       _pstValue->m_nMinCPS_Emer >= _pstValue->m_nMaxCPS ){
+      snprintf(_pError,E_MAXLEN_ERR,"the min emer_cps(%d) should be < MAX_CPS(%d)",
+      _pstValue->m_nMinCPS_Emer , _pstValue->m_nMaxCPS);
+      return E_RTE_CheckEnv_InvalidMinCPS_Emer;
+   }
+   int nTmpCPS=(_pstValue->m_nMaxCPS) - (_pstValue->m_nMinCPS_Emer);
+   //check audio
+   if( _pstValue->m_nMaxCPS_Audio < 0 ||
+       _pstValue->m_nMaxCPS_Audio > nTmpCPS ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max audio_cps(%d) should be <= (MAX-EMER)CPS(%d)",
+      _pstValue->m_nMaxCPS_Audio , nTmpCPS);
+      return E_RTE_CheckEnv_InvalidMaxCPS_Audio;
+   }
+   //check video
+   if( _pstValue->m_nMaxCPS_Video < 0 ||
+       _pstValue->m_nMaxCPS_Video > nTmpCPS ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max video_cps(%d) should be <= (MAX-EMER)CPS(%d)",
+      _pstValue->m_nMaxCPS_Video , nTmpCPS);
+      return E_RTE_CheckEnv_InvalidMaxCPS_Video;
+   }
+#else
+   if( _pstValue->m_nMinCPS_Emer < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the min emer_cps(%d) < 0", _pstValue->m_nMinCPS_Emer );
+      return E_RTE_CheckEnv_InvalidMinCPS_Emer;
+   }
+   //check audio
+   if( _pstValue->m_nMaxCPS_Audio < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max audio_cps(%d) < 0", _pstValue->m_nMaxCPS_Audio);
+      return E_RTE_CheckEnv_InvalidMaxCPS_Audio;
+   }
+   //check video
+   if( _pstValue->m_nMaxCPS_Video < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the max video_cps(%d) < 0", _pstValue->m_nMaxCPS_Video);
+      return E_RTE_CheckEnv_InvalidMaxCPS_Video;
+   }
+
+   int nTmpCPS= _pstValue->m_nMinCPS_Emer + _pstValue->m_nMaxCPS_Audio + _pstValue->m_nMaxCPS_Video;
+   if( nTmpCPS > _pstValue->m_nMaxCPS ){
+      snprintf(_pError,E_MAXLEN_ERR,"sum of level cps(%d) > max_cps(%d)",nTmpCPS,_pstValue->m_nMaxCPS);
+      return E_RTE_CheckEnv_InvalidSumOfLevelCPS;
+   }
+
+#endif
+   //check overclass
+   if( _pstValue->m_nChkCPSClass != 0 &&  _pstValue->m_nChkCPSClass != 1 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the cps class flag should be 0 or 1. value=%d",
+      _pstValue->m_nChkCPSClass);
+      return E_RTE_CheckEnv_InvalidCPSClass_Flag;
+   }
+   return 0;
+}
+
+int  CSipRteData::m_fnString2StEnv(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            GlobalOverLoadEnv_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != GlobalOverLoadEnv_t::E_NUMOF_VALIDFILED){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(GlobalOverLoadEnv_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+         snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+         break;
+      }
+
+      // max ses
+      if( i == 0 ) {
+         _pstValue->m_nMaxSES=atoi(pTmpData);
+      // check ses
+      }else if( i == 1 ) {
+         _pstValue->m_nChkSES=atoi(pTmpData);
+      //max msg
+      }else if ( i == 2 ){
+         _pstValue->m_nMaxMSG=atoi(pTmpData);
+      //check msg
+      }else if ( i == 3 ){
+         _pstValue->m_nChkMSG=atoi(pTmpData);
+      //max cps
+      }else if ( i == 4 ){
+         _pstValue->m_nMaxCPS=atoi(pTmpData);
+      //check cps
+      }else if ( i == 5 ){
+         _pstValue->m_nChkCPS=atoi(pTmpData);
+      //max cpu
+      }else if ( i == 6 ){
+         _pstValue->m_nMaxCPU=atoi(pTmpData);
+      //check cpu
+      }else if ( i == 7 ){
+         _pstValue->m_nChkCPU=atoi(pTmpData);
+      //max mem
+      }else if ( i == 8 ){
+         _pstValue->m_nMaxMEM=atoi(pTmpData);
+      //check mem
+      }else if ( i == 9 ){
+         _pstValue->m_nChkMEM=atoi(pTmpData);
+      //max tps
+      }else if ( i == 10 ){
+         _pstValue->m_nMaxTPS=atoi(pTmpData);
+      //check cps
+      }else if ( i == 11 ){
+         _pstValue->m_nChkTPS=atoi(pTmpData);
+      //m_nMinCPS_Emer
+      }else if ( i == 12 ){
+         _pstValue->m_nMinCPS_Emer=atoi(pTmpData);
+      //m_nMinCPS_Audio
+      }else if ( i == 13 ){
+         _pstValue->m_nMaxCPS_Audio=atoi(pTmpData);
+      //m_nMinCPS_Video
+      }else if ( i == 14 ){
+         _pstValue->m_nMaxCPS_Video=atoi(pTmpData);
+      //m_nChkCPSClass
+      }else if ( i == 15 ){
+         _pstValue->m_nChkCPSClass=atoi(pTmpData);
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+////Emergency
+int  CSipRteData::m_fnCheckEmer(EmergencyCall_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //id
+   if( CSipRteUtil::m_fnIsID(_pstValue->m_uiID) == false){
+      snprintf(_pError,E_MAXLEN_ERR,"the id is out of range(1 ~ 9999999). value=%u",
+         _pstValue->m_uiID);
+      return E_RTE_CheckEmer_InvalidID;
+   }
+   if( _bAdd == true ){
+      //desc
+      if( _pstValue->m_szDesc[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the desc is null");
+         return E_RTE_CheckEmer_InvalidDesc;
+      }
+      //string len is zero
+      if( _pstValue->m_szMIN[0]==0x00 ){
+         snprintf(_pError,E_MAXLEN_ERR,"the min is null");
+         return E_RTE_CheckEmer_InvalidMIN;
+      }else{
+         //string term
+         _pstValue->m_fnStrTerm();
+         if( CSipRteUtil::m_fnIsNumberString(_pstValue->m_szMIN) == false ) {
+            return E_RTE_CheckEmer_InvalidMIN;
+         }
+      }
+   }
+   return 0;
+}
+int  CSipRteData::m_fnString2StEmer(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            EmergencyCall_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != EmergencyCall_t::E_NUMOF_VALIDFILED){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(EmergencyCall_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      if( i  == 0 || i  == 2 ){
+         //check number string
+         if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+            break;
+         }
+      }
+      //id 
+      if( i == 0 ) {
+         _pstValue->m_uiID=atoi(pTmpData);
+      //desc
+      }else if( i == 1 ) {
+         strncpy(_pstValue->m_szDesc,pTmpData,sizeof(_pstValue->m_szDesc)-1);
+      //min
+      }else if ( i == 2 ){
+         strncpy(_pstValue->m_szMIN,pTmpData,sizeof(_pstValue->m_szMIN)-1);
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+////timer
+int  CSipRteData::m_fnCheckTimer(SipCoreTimer_t* _pstValue,char* _pError, bool _bAdd)
+{
+   //t2
+   if( _pstValue->m_nTimeT2 <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_2 is invalid. value=%d",
+      _pstValue->m_nTimeT2);
+      return E_RTE_CheckTimer_InvalidT2;
+   }
+   //ta
+   if( _pstValue->m_nTimeTA <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_A is invalid. value=%d",
+      _pstValue->m_nTimeTA);
+      return E_RTE_CheckTimer_InvalidTA;
+   }
+   //tb
+   if( _pstValue->m_nTimeTB <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_B is invalid. value=%d",
+      _pstValue->m_nTimeTB);
+      return E_RTE_CheckTimer_InvalidTB;
+   }
+   //tc
+   if( _pstValue->m_nTimeTC <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_C is invalid. value=%d",
+      _pstValue->m_nTimeTC);
+      return E_RTE_CheckTimer_InvalidTC;
+   }
+   //td
+   if( _pstValue->m_nTimeTD <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_D is invalid. value=%d",
+      _pstValue->m_nTimeTD);
+      return E_RTE_CheckTimer_InvalidTD;
+   }
+   //te
+   if( _pstValue->m_nTimeTE <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_E is invalid. value=%d",
+      _pstValue->m_nTimeTE);
+      return E_RTE_CheckTimer_InvalidTE;
+   }
+   //tf
+   if( _pstValue->m_nTimeTF <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_F is invalid. value=%d",
+      _pstValue->m_nTimeTF);
+      return E_RTE_CheckTimer_InvalidTF;
+   }
+   //tg
+   if( _pstValue->m_nTimeTG < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_G is invalid. value=%d",
+      _pstValue->m_nTimeTG);
+      return E_RTE_CheckTimer_InvalidTG;
+   }
+   //th
+   if( _pstValue->m_nTimeTH <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_H is invalid. value=%d",
+      _pstValue->m_nTimeTH);
+      return E_RTE_CheckTimer_InvalidTH;
+   }
+   //ti
+   if( _pstValue->m_nTimeTI <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_I is invalid. value=%d",
+      _pstValue->m_nTimeTI);
+      return E_RTE_CheckTimer_InvalidTI;
+   }
+   //tj
+   if( _pstValue->m_nTimeTJ <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_J is invalid. value=%d",
+      _pstValue->m_nTimeTJ);
+      return E_RTE_CheckTimer_InvalidTJ;
+   }
+   //tk
+   if( _pstValue->m_nTimeTK <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_K is invalid. value=%d",
+      _pstValue->m_nTimeTK);
+      return E_RTE_CheckTimer_InvalidTJ;
+   }
+   //tl
+   if( _pstValue->m_nTimeTL <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_L is invalid. value=%d",
+      _pstValue->m_nTimeTL);
+      return E_RTE_CheckTimer_InvalidTL;
+   }
+   //tm
+   if( _pstValue->m_nTimeTM <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_M is invalid. value=%d",
+      _pstValue->m_nTimeTM);
+      return E_RTE_CheckTimer_InvalidTM;
+   }
+   //dialog alive
+   if( _pstValue->m_nTimeDAlive <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_dialog_alive is invalid. value=%d",
+      _pstValue->m_nTimeDAlive);
+      return E_RTE_CheckTimer_InvalidDAlive;
+   }
+   //dialog term
+   if( _pstValue->m_nTimeDTerm <= 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_dialog_term is invalid. value=%d",
+      _pstValue->m_nTimeDTerm);
+      return E_RTE_CheckTimer_InvalidDTerm;
+   }
+   //m_nTimerTrGW
+   if( _pstValue->m_nTimeTrGW < 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"the timer_trgw is invalid. value=%d",
+      _pstValue->m_nTimeTrGW);
+      return E_RTE_CheckTimer_InvalidTrGW;
+   }
+   return 0;
+}
+int  CSipRteData::m_fnString2StTimer(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipCoreTimer_t* _pstValue, char* _pError)
+{
+   int nRet = -1;
+   if( _nCnt != SipCoreTimer_t::E_NUMOF_VALIDFILED){
+      snprintf(_pError,E_MAXLEN_ERR,"the number of column is invalid. count(%d)", _nCnt);
+      return -1;
+   }
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipCoreTimer_t));
+   int i=0;
+   for(  ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         break;
+      }
+      //check number string
+      if( CSipRteUtil::m_fnIsNumberString(pTmpData) == false ) {
+         snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. column:%d/data(%s)",i,pTmpData);
+         break;
+      }
+      //t2
+      if( i == 0 ) {
+         _pstValue->m_nTimeT2=atoi(pTmpData);
+      // ta
+      }else if( i == 1 ) {
+         _pstValue->m_nTimeTA=atoi(pTmpData);
+      // tb
+      }else if( i == 2 ) {
+         _pstValue->m_nTimeTB=atoi(pTmpData);
+      // tc
+      }else if( i == 3 ) {
+         _pstValue->m_nTimeTC=atoi(pTmpData);
+      // td
+      }else if( i == 4 ) {
+         _pstValue->m_nTimeTD=atoi(pTmpData);
+      //te
+      }else if( i == 5 ) {
+         _pstValue->m_nTimeTE=atoi(pTmpData);
+      //tf
+      }else if( i == 6 ) {
+         _pstValue->m_nTimeTF=atoi(pTmpData);
+      //tg
+      }else if( i == 7 ) {
+         _pstValue->m_nTimeTG=atoi(pTmpData);
+      //th
+      }else if( i == 8 ) {
+         _pstValue->m_nTimeTH=atoi(pTmpData);
+      //ti
+      }else if( i == 9 ) {
+         _pstValue->m_nTimeTI=atoi(pTmpData);
+      //tj
+      }else if( i == 10 ) {
+         _pstValue->m_nTimeTJ=atoi(pTmpData);
+      //tk
+      }else if( i == 11 ) {
+         _pstValue->m_nTimeTK=atoi(pTmpData);
+      //tl
+      }else if( i == 12 ) {
+         _pstValue->m_nTimeTL=atoi(pTmpData);
+      //tm
+      }else if( i == 13 ) {
+         _pstValue->m_nTimeTM=atoi(pTmpData);
+      // dialog alive
+      }else if( i == 14 ) {
+         _pstValue->m_nTimeDAlive=atoi(pTmpData);
+      // dialog term
+      }else if( i == 15 ) {
+         _pstValue->m_nTimeDTerm=atoi(pTmpData);
+      // trgw
+      }else if( i == 16 ) {
+         _pstValue->m_nTimeTrGW=atoi(pTmpData);
+      }
+   }
+   if( i == _nCnt ){ 
+      _pstValue->m_ucUsed =1;
+      nRet = 0;
+   }
+   return nRet; 
+}
+
+//T_ID:52, T_TYPE_ID:0x09, T_LEVEL:1, CALLER:010
+int  CSipRteData::m_fnString2StTrace(CSipRteUtil::CSipRteUtilValue_t* _pstData, int _nCnt,
+            SipCoreTrace_t* _pstValue, char* _pError)
+{
+   int nRet = 0;
+   char* pTmpData = NULL;
+   memset(_pstValue,0x00,sizeof(SipCoreTrace_t));
+   static const int   stnKeyMax=5;
+   static const char* pstSipRteTraceKey[ ]={
+      "T_ID","T_TYPE_ID","T_LEVEL","CALLER","NODE_ID"
+   };
+
+   char pairName[2][128];
+   int nTmp=0;
+   for( int i=0 ; i < _nCnt ; i++ ){
+      pTmpData=NULL;
+      pTmpData=(_pstData+i)->m_szData;
+      //trim
+      CSipRteUtil::m_fnLRTrim(pTmpData);
+      //check mandatory string
+      if( pTmpData == NULL  ||  pTmpData[0] == 0x00 ) { 
+         snprintf(_pError,E_MAXLEN_ERR,"invalid data column(%d)",i);
+         return -1;
+      }
+      pairName[0][0]=0x00;
+      pairName[1][0]=0x00;
+      nTmp=CSipRteUtil::StrTokenFix(pTmpData,(char*)":",pairName,2);
+      if( nTmp != 0) return -1;
+      CSipRteUtil::m_fnLRTrim(pairName[0]);
+      CSipRteUtil::m_fnLRTrim(pairName[1]);
+      //check value
+      if( pairName[0][0] == 0x00 || pairName[1][0] == 0x00 ) continue;
+      //find key
+      int j=0;
+      for( j=0; j < stnKeyMax ; j++){
+         if( strcmp(pairName[0],pstSipRteTraceKey[j]) == 0 ){
+            break;
+         }
+      }
+      if( j == stnKeyMax ){
+         continue;
+      }
+      //ID
+      if( j == 0 ){
+         if( CSipRteUtil::m_fnIsNumberString(pairName[1]) == false ) {
+            snprintf(_pError,E_MAXLEN_ERR,"the value isn't an integer greater than or equal to 0. data(%s)",
+               pairName[1]);
+            return -1;
+         }
+         _pstValue->m_uiID=atoi(pairName[1]); 
+      //TYPE
+      }else if ( j == 1 ){
+         _pstValue->m_nType=CSipRteUtil::axtoi(pairName[1]);
+         //type sip bitmask
+         if(!(_pstValue->m_nType&0x08) ){
+            return -1;
+         }
+      //T_LEVEL
+      }else if ( j == 2 ){
+         _pstValue->m_nLevel=atoi(pairName[1]); 
+      //CALLER
+      }else if ( j == 3 ){
+        strncpy(_pstValue->m_szMIN,pairName[1],sizeof(_pstValue->m_szMIN));
+      //NODE_ID
+      }else if ( j == 4 ){
+         _pstValue->m_nNodeID=atoi(pairName[1]);
+      }
+   }
+   if( _pstValue->m_szMIN[0] != 0x00 ||
+       _pstValue->m_nNodeID != 0 )
+   {
+      _pstValue->m_ucUsed =1;
+      nRet=0;
+   }else{
+      nRet=-1;
+   }
+
+   return nRet; 
+}
+int CSipRteData::m_fnMakeModifyLocalNode(SipNodeLocal_t* _pstNew, SipNodeLocal_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //domain
+   if( _pstNew->m_szDomain[0] != 0x00 &&
+       strcmp(_pstNew->m_szDomain,_pstCur->m_szDomain) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDomain,_pstNew->m_szDomain,sizeof(_pstCur->m_szDomain) -1);
+   }
+   //ipver
+   if( _pstNew->m_usIPver != 0 && 
+      _pstNew->m_usIPver != _pstCur->m_usIPver ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification IPv=%u", _pstNew->m_usIPver);
+      return E_RTE_CheckLocal_NoModIP_Port_Type;
+   }
+   //port
+   if( _pstNew->m_usPort !=0 &&
+      _pstNew->m_usPort != _pstCur->m_usPort ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification Port=%u", _pstNew->m_usPort);
+      return E_RTE_CheckLocal_NoModIP_Port_Type;
+   }
+   //ip
+   if( _pstNew->m_szIP[0] != 0x00 &&
+       strcmp(_pstNew->m_szIP,_pstCur->m_szIP) != 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification IP=%s", _pstNew->m_szIP);
+      return E_RTE_CheckLocal_NoModIP_Port_Type;
+   }
+   //transport
+   if( _pstNew->m_ucProto != 0 &&
+      _pstNew->m_ucProto != _pstCur->m_ucProto ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification TransportType=%u", _pstNew->m_ucProto);
+      return E_RTE_CheckLocal_NoModIP_Port_Type;
+   }
+//@R111 2016/09
+   if( _pstNew->m_cRCSOn >= 0 &&
+       _pstNew->m_cRCSOn != _pstCur->m_cRCSOn ){
+      bChange=true;
+      _pstCur->m_cRCSOn=_pstNew->m_cRCSOn;
+   }
+//@local_node 2017/03/17
+   if( _pstNew->m_cNATOn >= 0 &&
+       _pstNew->m_cNATOn != _pstCur->m_cNATOn ){
+      bChange=true;
+      _pstCur->m_cNATOn=_pstNew->m_cNATOn;
+   }
+//delete... mmi  @vibc_cvt
+#if 0 // cwkim local status    2017/03/27
+ 	if(_pstNew->m_ucStatus != E_ESIP_STATUS_MAX && _pstNew->m_ucStatus  != _pstCur->m_ucStatus)
+	{
+		bChange = true;
+		_pstCur->m_ucStatus = _pstNew->m_ucStatus;
+	}
+#endif
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckLocal_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyRemoteNode(SipNodeRemote_t* _pstNew, SipNodeRemote_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //domain
+   if( _pstNew->m_szDomain[0] != 0x00 &&
+       strcmp(_pstNew->m_szDomain,_pstCur->m_szDomain) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDomain,_pstNew->m_szDomain,sizeof(_pstCur->m_szDomain) -1);
+   }
+   //ipver
+   if( _pstNew->m_usIPver != 0 && 
+      _pstNew->m_usIPver != _pstCur->m_usIPver ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification IPv=%u", _pstNew->m_usIPver);
+      return E_RTE_CheckRemote_NoModIP_Port_Type;
+   }
+   //port
+   if( _pstNew->m_usPort !=0 &&
+      _pstNew->m_usPort != _pstCur->m_usPort ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification Port=%u", _pstNew->m_usPort);
+      return E_RTE_CheckRemote_NoModIP_Port_Type;
+   }
+   //ip
+   if( _pstNew->m_szIP[0] != 0x00 &&
+       strcmp(_pstNew->m_szIP,_pstCur->m_szIP) != 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification IP=%s", _pstNew->m_szIP);
+      return E_RTE_CheckRemote_NoModIP_Port_Type;
+   }
+   //transport
+   if( _pstNew->m_ucProto != 0 &&
+      _pstNew->m_ucProto != _pstCur->m_ucProto ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification TransportType=%u", _pstNew->m_ucProto);
+      return E_RTE_CheckRemote_NoModIP_Port_Type;
+   }
+   //nat on
+   if( _pstNew->m_sNATOn >= 0 &&
+      _pstNew->m_sNATOn != _pstCur->m_sNATOn ){
+      bChange=true;
+      _pstCur->m_sNATOn=_pstNew->m_sNATOn;
+   }
+   //dscp
+   if( _pstNew->m_nDSCP >= 0 &&
+      _pstNew->m_nDSCP != _pstCur->m_nDSCP ){
+      bChange=true;
+      _pstCur->m_nDSCP=_pstNew->m_nDSCP;
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckRemote_SameAsExistingValue;
+   }
+   return 0;
+}
+int CSipRteData::m_fnMakeModifyRouteGroup(SipRouteGroup_t* _pstNew, SipRouteGroup_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0 ){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //@vibc
+   //max cps
+   if( _pstNew->m_nMaxCPS_LB >= 0 && 
+       _pstNew->m_nMaxCPS_LB != _pstCur->m_nMaxCPS_LB ){
+      bChange=true;
+      _pstCur->m_nMaxCPS_LB=_pstNew->m_nMaxCPS_LB;
+   }
+   //the flag of cps
+   if( _pstNew->m_nCtrlCPSOn_LB >= 0 && 
+      _pstNew->m_nCtrlCPSOn_LB != _pstCur->m_nCtrlCPSOn_LB ){
+      bChange=true;
+      _pstCur->m_nCtrlCPSOn_LB=_pstNew->m_nCtrlCPSOn_LB;
+   }
+   //max tps
+   if( _pstNew->m_nMaxTPS_LB >= 0 && 
+       _pstNew->m_nMaxTPS_LB != _pstCur->m_nMaxTPS_LB ){
+      bChange=true;
+      _pstCur->m_nMaxTPS_LB=_pstNew->m_nMaxTPS_LB;
+   }
+   //the flag of tps
+   if( _pstNew->m_nCtrlTPSOn_LB >= 0 && 
+      _pstNew->m_nCtrlTPSOn_LB != _pstCur->m_nCtrlTPSOn_LB ){
+      bChange=true;
+      _pstCur->m_nCtrlTPSOn_LB=_pstNew->m_nCtrlTPSOn_LB;
+   }
+   //max cps
+   if( _pstNew->m_nMaxCPS >= 0 && 
+       _pstNew->m_nMaxCPS != _pstCur->m_nMaxCPS ){
+      bChange=true;
+      _pstCur->m_nMaxCPS=_pstNew->m_nMaxCPS;
+   }
+   //the flag of cps
+   if( _pstNew->m_nCtrlCPSOn >= 0 && 
+      _pstNew->m_nCtrlCPSOn != _pstCur->m_nCtrlCPSOn ){
+      bChange=true;
+      _pstCur->m_nCtrlCPSOn=_pstNew->m_nCtrlCPSOn;
+   }
+   //max tps
+   if( _pstNew->m_nMaxTPS >= 0 && 
+       _pstNew->m_nMaxTPS != _pstCur->m_nMaxTPS ){
+      bChange=true;
+      _pstCur->m_nMaxTPS=_pstNew->m_nMaxTPS;
+   }
+   //the flag of tps
+   if( _pstNew->m_nCtrlTPSOn >= 0 && 
+      _pstNew->m_nCtrlTPSOn != _pstCur->m_nCtrlTPSOn ){
+      bChange=true;
+      _pstCur->m_nCtrlTPSOn=_pstNew->m_nCtrlTPSOn;
+   }
+   //rsp code
+   if( _pstNew->m_nRspID >= 0 &&
+       _pstNew->m_nRspID != _pstCur->m_nRspID){
+      bChange=true;
+      _pstCur->m_nRspID=_pstNew->m_nRspID;
+   }
+   //@R111 2016/09
+   if( _pstNew->m_nChargingOn >= 0 &&
+       _pstNew->m_nChargingOn != _pstCur->m_nChargingOn){
+      bChange=true;
+      _pstCur->m_nChargingOn=_pstNew->m_nChargingOn;
+   }
+   if( _pstNew->m_nChargingCode >= 0 &&
+       _pstNew->m_nChargingCode != _pstCur->m_nChargingCode){
+      bChange=true;
+      _pstCur->m_nChargingCode=_pstNew->m_nChargingCode;
+   }
+   if( _pstNew->m_nChargingIDC >= 0 &&
+       _pstNew->m_nChargingIDC != _pstCur->m_nChargingIDC){
+      bChange=true;
+      _pstCur->m_nChargingIDC=_pstNew->m_nChargingIDC;
+   }
+   if( _pstNew->m_nRoamingIDC >= 0 &&
+       _pstNew->m_nRoamingIDC != _pstCur->m_nRoamingIDC){
+      bChange=true;
+      _pstCur->m_nRoamingIDC=_pstNew->m_nRoamingIDC;
+   }
+
+
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckRouteGroup_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyRoute(SipRoute_t* _pstNew, SipRoute_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0 ){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //local id
+   if( _pstNew->m_uiLID != 0 && 
+       _pstNew->m_uiLID != _pstCur->m_uiLID ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification LID=%u", _pstNew->m_uiLID);
+      return E_RTE_CheckRoute_NoModLID_RID;
+   }
+   //remote id
+   if( _pstNew->m_uiRID != 0 && 
+      _pstNew->m_uiRID != _pstCur->m_uiRID ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification RID=%u", _pstNew->m_uiRID);
+      return E_RTE_CheckRoute_NoModLID_RID;
+   }
+   //trgw id
+   if( _pstNew->m_uiTRTE != 0 &&
+       _pstNew->m_uiTRTE != _pstCur->m_uiTRTE){
+      bChange=true;
+      _pstCur->m_uiTRTE=_pstNew->m_uiTRTE;
+   }
+   //mine/other
+   if( _pstNew->m_ucType != 0 &&
+       _pstNew->m_ucType != _pstCur->m_ucType){
+      bChange=true;
+      _pstCur->m_ucType=_pstNew->m_ucType;
+   }
+   //routed
+   if( _pstNew->m_ucDoRouteMedia != 0 &&
+       _pstNew->m_ucDoRouteMedia != _pstCur->m_ucDoRouteMedia){
+      bChange=true;
+      _pstCur->m_ucDoRouteMedia=_pstNew->m_ucDoRouteMedia;
+   }
+   //opt time
+   if( _pstNew->m_sOptTime >= 0 && 
+      _pstNew->m_sOptTime != _pstCur->m_sOptTime){
+      bChange=true;
+      _pstCur->m_sOptTime=_pstNew->m_sOptTime;
+   }
+   //opt retry
+   if( _pstNew->m_sOptRetry >= 0 &&
+       _pstNew->m_sOptRetry != _pstCur->m_sOptRetry){
+      bChange=true;
+      _pstCur->m_sOptRetry=_pstNew->m_sOptRetry;
+   }
+   //opt action
+   if( _pstNew->m_sOptAction >= 0 &&
+       _pstNew->m_sOptAction != _pstCur->m_sOptAction){
+      bChange=true;
+      _pstCur->m_sOptAction=_pstNew->m_sOptAction;
+   }
+   //session refresh time
+   if( _pstNew->m_sSesRefreshTime >= 0 &&
+       _pstNew->m_sSesRefreshTime != _pstCur->m_sSesRefreshTime){
+      bChange=true;
+      _pstCur->m_sSesRefreshTime=_pstNew->m_sSesRefreshTime;
+   }
+   //route group
+   if( _pstNew->m_nRouteGroup >= 0 &&
+       _pstNew->m_nRouteGroup != _pstCur->m_nRouteGroup){
+      bChange=true;
+      _pstCur->m_nRouteGroup=_pstNew->m_nRouteGroup;
+   }
+
+   //m_nMAXCnt
+   if( _pstNew->m_nMAXCnt > 0 &&
+       _pstNew->m_nMAXCnt != _pstCur->m_nMAXCnt){
+      bChange=true;
+      _pstCur->m_nMAXCnt=_pstNew->m_nMAXCnt;
+   }
+
+   //m_nDeactRsp
+   if( _pstNew->m_nDeactRsp > 0 &&
+       _pstNew->m_nDeactRsp != _pstCur->m_nDeactRsp){
+      bChange=true;
+      _pstCur->m_nDeactRsp=_pstNew->m_nDeactRsp;
+   }
+
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckRoute_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyRouteSeq(SipRouteSeq_t* _pstNew, SipRouteSeq_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //drte
+   if( _pstNew->m_uiDRTE != 0 &&
+       _pstNew->m_uiDRTE != _pstCur->m_uiDRTE ){
+      bChange=true;
+      _pstCur->m_uiDRTE=_pstNew->m_uiDRTE;
+   }
+   //arte
+   for( int i=0; i < SipRouteSeq_t::E_MAX_ARTE ; i++){
+      if( _pstNew->m_uiARTE[i] >= 0 &&
+          _pstNew->m_uiARTE[i] != _pstCur->m_uiARTE[i]){
+         bChange=true;
+         _pstCur->m_uiARTE[i]=_pstNew->m_uiARTE[i];
+      }
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckRouteSeq_SameAsExistingValue;
+   }
+   return 0;
+}
+int CSipRteData::m_fnMakeModifySpecialRouteSeq(SipSpecialRouteSeq_t* _pstNew, 
+                     SipSpecialRouteSeq_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //rseq, rate
+   for( int i=0; i < SipSpecialRouteSeq_t::E_MAX_RSEQ ; i++){
+      if( _pstNew->m_uiRSEQ[i] >= 0 &&
+          _pstNew->m_uiRSEQ[i] != _pstCur->m_uiRSEQ[i] ){
+         bChange=true;
+         _pstCur->m_uiRSEQ[i]=_pstNew->m_uiRSEQ[i];
+      }
+      if( _pstNew->m_nRATE[i] >= 0 &&
+          _pstNew->m_nRATE[i] != _pstCur->m_nRATE[i] ){
+         bChange=true;
+         _pstCur->m_nRATE[i]=_pstNew->m_nRATE[i];
+      }
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckSRouteSeq_SameAsExistingValue;
+   }
+   return 0;
+}
+int CSipRteData::m_fnMakeModifyTrGW(TrGWRoute_t* _pstNew, TrGWRoute_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //server ip
+   if( _pstNew->m_szSvrIP[0] != 0x00 &&
+       strcmp(_pstNew->m_szSvrIP,_pstCur->m_szSvrIP) != 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification SvrIP=%s", _pstNew->m_szSvrIP);
+      return E_RTE_CheckTrGW_NoModSvrIP;
+   }
+   //trgw ip
+   if( _pstNew->m_szTrGWIP[0] != 0x00 &&
+       strcmp(_pstNew->m_szTrGWIP,_pstCur->m_szTrGWIP) != 0 ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification TrGWIP=%s", _pstNew->m_szTrGWIP);
+      return E_RTE_CheckTrGW_NoModTrGWIP;
+   }
+   //server port
+   if( _pstNew->m_usSvrPort != 0x00 &&
+       _pstNew->m_usSvrPort != _pstCur->m_usSvrPort ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification SvrPort=%u", _pstNew->m_usSvrPort);
+      return E_RTE_CheckTrGW_NoModSvrPort;
+   }
+   //trgw port
+   if( _pstNew->m_usTrGWPort != 0x00 &&
+       _pstNew->m_usTrGWPort != _pstCur->m_usTrGWPort ){
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification TrGWPort=%u", _pstNew->m_usTrGWPort);
+      return E_RTE_CheckTrGW_NoModTrGWPort;
+   }
+   //call rate
+   if( _pstNew->m_nCallRate > 0 &&
+       _pstNew->m_nCallRate != _pstCur->m_nCallRate ){
+      bChange=true;
+      _pstCur->m_nCallRate=_pstNew->m_nCallRate;
+   }
+   //max count
+   if( _pstNew->m_nMaxCount > 0 &&
+       _pstNew->m_nMaxCount != _pstCur->m_nMaxCount ){
+      bChange=true;
+      _pstCur->m_nMaxCount=_pstNew->m_nMaxCount;
+   }
+   //status
+   if( _pstNew->m_nStatus == TrGWRoute_t::E_TRGW_STATUS_FBLOCK )
+   {
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification Status F_BLK");
+      return E_RTE_CheckTrGW_NoModStatus;
+   }
+   if( _pstNew->m_nStatus >= 0 &&
+       _pstNew->m_nStatus != _pstCur->m_nStatus ){
+      //@R106 201603
+      //M_BLK -> AVAIL
+      if( _pstNew->m_nStatus == TrGWRoute_t::E_TRGW_STATUS_AVAIL ){
+         if( _pstCur->m_nStatus&TrGWRoute_t::E_TRGW_STATUS_MBLOCK){
+             _pstCur->m_nStatus&=~TrGWRoute_t::E_TRGW_STATUS_MBLOCK;
+            bChange=true;
+         }
+      //AVAIL -> M_BLK
+      }else if( _pstNew->m_nStatus == TrGWRoute_t::E_TRGW_STATUS_MBLOCK ){
+         if( (_pstCur->m_nStatus&TrGWRoute_t::E_TRGW_STATUS_MBLOCK) == 0 ){
+            _pstCur->m_nStatus|=_pstNew->m_nStatus;
+            bChange=true;
+         }
+      //F_BLK fail.
+      }else{
+         snprintf(_pError,E_MAXLEN_ERR,"No Modification Status F_BLK");
+         return E_RTE_CheckTrGW_NoModStatus;
+      }
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckTrGW_SameAsExistingValue;
+   }
+   return 0;
+}
+int CSipRteData::m_fnMakeModifyEmer(EmergencyCall_t* _pstNew, EmergencyCall_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+   //min
+   if( _pstNew->m_szMIN[0] != 0x00 &&
+       strcmp(_pstNew->m_szMIN,_pstCur->m_szMIN) != 0){
+      //bChange=true;
+      //strncpy(_pstCur->m_szMIN,_pstNew->m_szMIN,sizeof(_pstCur->m_szMIN) -1);
+      snprintf(_pError,E_MAXLEN_ERR,"No Modification MIN");
+      return E_RTE_CheckEmer_NoModMIN;
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckEmer_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyReason(SipReasonCode_t* _pstNew, SipReasonCode_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //desc
+   if( _pstNew->m_szDesc[0] != 0x00 &&
+       strcmp(_pstNew->m_szDesc,_pstCur->m_szDesc) != 0){
+      bChange=true;
+      strncpy(_pstCur->m_szDesc,_pstNew->m_szDesc,sizeof(_pstCur->m_szDesc) -1);
+   }
+
+   //reason
+   for( int i=0; i < SipReasonCode_t::E_CAUSE_MAX; i++){
+      //cause code
+      if( _pstNew->m_nCauseCode[i] > 0 &&
+          _pstNew->m_nCauseCode[i] != _pstCur->m_nCauseCode[i] ){
+         bChange=true;
+         _pstCur->m_nCauseCode[i]=_pstNew->m_nCauseCode[i];
+      }
+      //response code
+      if( _pstNew->m_nRspCode[i] > 0 &&
+          _pstNew->m_nRspCode[i] != _pstCur->m_nRspCode[i] ){
+         bChange=true;
+         _pstCur->m_nRspCode[i]=_pstNew->m_nRspCode[i];
+      }
+      //cause text
+      if( _pstNew->m_szCause[i][0] != 0x00 &&
+         strcmp(_pstNew->m_szCause[i],_pstCur->m_szCause[i]) != 0){
+         bChange=true;
+         strncpy(_pstCur->m_szCause[i],_pstNew->m_szCause[i],sizeof(_pstCur->m_szCause[i]) -1);
+      }
+   }
+
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckReason_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyEnv(GlobalOverLoadEnv_t* _pstNew, GlobalOverLoadEnv_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //max ses
+   if( _pstNew->m_nMaxSES > 0 &&
+       _pstNew->m_nMaxSES != _pstCur->m_nMaxSES ){
+      bChange=true;
+      _pstCur->m_nMaxSES=_pstNew->m_nMaxSES;
+   }
+   //check ses
+   if( _pstNew->m_nChkSES >= 0 &&
+       _pstNew->m_nChkSES != _pstCur->m_nChkSES ){
+      bChange=true;
+      _pstCur->m_nChkSES=_pstNew->m_nChkSES;
+   }
+   //max message
+   if( _pstNew->m_nMaxMSG > 0 &&
+       _pstNew->m_nMaxMSG != _pstCur->m_nMaxMSG ){
+      bChange=true;
+      _pstCur->m_nMaxMSG=_pstNew->m_nMaxMSG;
+   }
+   //check msg
+   if( _pstNew->m_nChkMSG >= 0 &&
+       _pstNew->m_nChkMSG != _pstCur->m_nChkMSG ){
+      bChange=true;
+      _pstCur->m_nChkMSG=_pstNew->m_nChkMSG;
+   }
+   //max cps
+   if( _pstNew->m_nMaxCPS > 0 &&
+       _pstNew->m_nMaxCPS != _pstCur->m_nMaxCPS ){
+      bChange=true;
+      _pstCur->m_nMaxCPS=_pstNew->m_nMaxCPS;
+   }
+   //check cps
+   if( _pstNew->m_nChkCPS >= 0 &&
+       _pstNew->m_nChkCPS != _pstCur->m_nChkCPS ){
+      bChange=true;
+      _pstCur->m_nChkCPS=_pstNew->m_nChkCPS;
+   }
+   //max cpu
+   if( _pstNew->m_nMaxCPU > 0 &&
+       _pstNew->m_nMaxCPU != _pstCur->m_nMaxCPU ){
+      bChange=true;
+      _pstCur->m_nMaxCPU=_pstNew->m_nMaxCPU;
+   }
+   //check cpu
+   if( _pstNew->m_nChkCPU >= 0 &&
+       _pstNew->m_nChkCPU != _pstCur->m_nChkCPU ){
+      bChange=true;
+      _pstCur->m_nChkCPU=_pstNew->m_nChkCPU;
+   }
+   //max mem
+   if( _pstNew->m_nMaxMEM > 0 &&
+       _pstNew->m_nMaxMEM != _pstCur->m_nMaxMEM ){
+      bChange=true;
+      _pstCur->m_nMaxMEM=_pstNew->m_nMaxMEM;
+   }
+   //check mem
+   if( _pstNew->m_nChkMEM >= 0 &&
+       _pstNew->m_nChkMEM != _pstCur->m_nChkMEM ){
+      bChange=true;
+      _pstCur->m_nChkMEM=_pstNew->m_nChkMEM;
+   }
+   //max tps
+   if( _pstNew->m_nMaxTPS > 0 &&
+       _pstNew->m_nMaxTPS != _pstCur->m_nMaxTPS ){
+      bChange=true;
+      _pstCur->m_nMaxTPS=_pstNew->m_nMaxTPS;
+   }
+   //check tps
+   if( _pstNew->m_nChkTPS >= 0 &&
+       _pstNew->m_nChkTPS != _pstCur->m_nChkTPS ){
+      bChange=true;
+      _pstCur->m_nChkTPS=_pstNew->m_nChkTPS;
+   }
+   //m_nMinCPS_Emer
+   if( _pstNew->m_nMinCPS_Emer >= 0 &&
+       _pstNew->m_nMinCPS_Emer != _pstCur->m_nMinCPS_Emer ){
+      bChange=true;
+      _pstCur->m_nMinCPS_Emer=_pstNew->m_nMinCPS_Emer;
+   }
+   //m_nMaxCPS_Audio
+   if( _pstNew->m_nMaxCPS_Audio >= 0 &&
+       _pstNew->m_nMaxCPS_Audio != _pstCur->m_nMaxCPS_Audio ){
+      bChange=true;
+      _pstCur->m_nMaxCPS_Audio=_pstNew->m_nMaxCPS_Audio;
+   }
+   //m_nMaxCPS_Video
+   if( _pstNew->m_nMaxCPS_Video >= 0 &&
+       _pstNew->m_nMaxCPS_Video != _pstCur->m_nMaxCPS_Video ){
+      bChange=true;
+      _pstCur->m_nMaxCPS_Video=_pstNew->m_nMaxCPS_Video;
+   }
+   //m_nChkCPSClass
+   if( _pstNew->m_nChkCPSClass >= 0 &&
+       _pstNew->m_nChkCPSClass != _pstCur->m_nChkCPSClass ){
+      bChange=true;
+      _pstCur->m_nChkCPSClass=_pstNew->m_nChkCPSClass;
+   }
+
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckEnv_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnMakeModifyTimer(SipCoreTimer_t* _pstNew, SipCoreTimer_t* _pstCur,char* _pError)
+{
+   bool bChange=false;
+   //t2
+   if( _pstNew->m_nTimeT2 > 0 &&
+       _pstNew->m_nTimeT2 != _pstCur->m_nTimeT2 ){
+      bChange=true;
+      _pstCur->m_nTimeT2=_pstNew->m_nTimeT2;
+   }
+   //ta
+   if( _pstNew->m_nTimeTA > 0 &&
+       _pstNew->m_nTimeTA != _pstCur->m_nTimeTA ){
+      bChange=true;
+      _pstCur->m_nTimeTA=_pstNew->m_nTimeTA;
+   }
+   //tb
+   if( _pstNew->m_nTimeTB > 0 &&
+       _pstNew->m_nTimeTB != _pstCur->m_nTimeTB ){
+      bChange=true;
+      _pstCur->m_nTimeTB=_pstNew->m_nTimeTB;
+   }
+   //tc
+   if( _pstNew->m_nTimeTC > 0 &&
+       _pstNew->m_nTimeTC != _pstCur->m_nTimeTC ){
+      bChange=true;
+      _pstCur->m_nTimeTC=_pstNew->m_nTimeTC;
+   }
+   //td
+   if( _pstNew->m_nTimeTD > 0 &&
+       _pstNew->m_nTimeTD != _pstCur->m_nTimeTD ){
+      bChange=true;
+      _pstCur->m_nTimeTD=_pstNew->m_nTimeTD;
+   }
+   //te
+   if( _pstNew->m_nTimeTE > 0 &&
+       _pstNew->m_nTimeTE != _pstCur->m_nTimeTE ){
+      bChange=true;
+      _pstCur->m_nTimeTE=_pstNew->m_nTimeTE;
+   }
+   //tf
+   if( _pstNew->m_nTimeTF > 0 &&
+       _pstNew->m_nTimeTF != _pstCur->m_nTimeTF ){
+      bChange=true;
+      _pstCur->m_nTimeTF=_pstNew->m_nTimeTF;
+   }
+   //tg
+   if( _pstNew->m_nTimeTG > 0 &&
+       _pstNew->m_nTimeTG != _pstCur->m_nTimeTG ){
+      bChange=true;
+      _pstCur->m_nTimeTG=_pstNew->m_nTimeTG;
+   }
+   //th
+   if( _pstNew->m_nTimeTH > 0 &&
+       _pstNew->m_nTimeTH != _pstCur->m_nTimeTH ){
+      bChange=true;
+      _pstCur->m_nTimeTH=_pstNew->m_nTimeTH;
+   }
+   //ti
+   if( _pstNew->m_nTimeTI > 0 &&
+       _pstNew->m_nTimeTI != _pstCur->m_nTimeTI ){
+      bChange=true;
+      _pstCur->m_nTimeTI=_pstNew->m_nTimeTI;
+   }
+   //tj
+   if( _pstNew->m_nTimeTJ > 0 &&
+       _pstNew->m_nTimeTJ != _pstCur->m_nTimeTJ ){
+      bChange=true;
+      _pstCur->m_nTimeTJ=_pstNew->m_nTimeTJ;
+   }
+   //tk
+   if( _pstNew->m_nTimeTK > 0 &&
+       _pstNew->m_nTimeTK != _pstCur->m_nTimeTK ){
+      bChange=true;
+      _pstCur->m_nTimeTK=_pstNew->m_nTimeTK;
+   }
+   //tl
+   if( _pstNew->m_nTimeTL > 0 &&
+       _pstNew->m_nTimeTL != _pstCur->m_nTimeTL ){
+      bChange=true;
+      _pstCur->m_nTimeTL=_pstNew->m_nTimeTL;
+   }
+   //tm
+   if( _pstNew->m_nTimeTM > 0 &&
+       _pstNew->m_nTimeTM != _pstCur->m_nTimeTM ){
+      bChange=true;
+      _pstCur->m_nTimeTM=_pstNew->m_nTimeTM;
+   }
+   //dalive
+   if( _pstNew->m_nTimeDAlive > 0 &&
+       _pstNew->m_nTimeDAlive != _pstCur->m_nTimeDAlive ){
+      bChange=true;
+      _pstCur->m_nTimeDAlive=_pstNew->m_nTimeDAlive;
+   }
+   //dterm
+   if( _pstNew->m_nTimeDTerm > 0 &&
+       _pstNew->m_nTimeDTerm != _pstCur->m_nTimeDTerm ){
+      bChange=true;
+      _pstCur->m_nTimeDTerm=_pstNew->m_nTimeDTerm;
+   }
+   //garbag
+   if( _pstNew->m_nTimeTrGW > 0 &&
+       _pstNew->m_nTimeTrGW != _pstCur->m_nTimeTrGW ){
+      bChange=true;
+      _pstCur->m_nTimeTrGW=_pstNew->m_nTimeTrGW;
+   }
+   if( bChange == false){
+      snprintf(_pError,E_MAXLEN_ERR,"Same as the existing value");
+      return E_RTE_CheckTimer_SameAsExistingValue;
+   }
+   return 0;
+}
+
+int CSipRteData::m_fnStLocalNode2String(SipNodeLocal_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //domain
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDomain);
+   //ipver
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usIPver);
+   //port
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usPort);
+   //ip
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szIP);
+   //protocol type
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucProto);
+   //status
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucStatus);
+   //@R111 2016/09
+   //m_cRCSOn 
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_cRCSOn);
+   //@local_nat 2017/03/17
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d\n",_pstValue->m_cNATOn);
+
+   return 0;
+}
+int CSipRteData::m_fnStRemoteNode2String(SipNodeRemote_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //domain
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDomain);
+   //ipver
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usIPver);
+   //port
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usPort);
+   //ip
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szIP);
+   //protocol type
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucProto);
+   //nat on
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_sNATOn);
+   //dscp
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nDSCP);
+   //nat ip
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szNATIP);
+   //nat port
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usNATPort);
+   //status
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_ucStatus);
+   return 0;
+}
+int CSipRteData::m_fnStRouteGroup2String(SipRouteGroup_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //@vibc
+   //max cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPS_LB);
+   //flag cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nCtrlCPSOn_LB);
+   //max tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxTPS_LB);
+   //flag tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nCtrlTPSOn_LB);
+   //max cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPS);
+   //flag cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nCtrlCPSOn);
+   //max tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxTPS);
+   //flag tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nCtrlTPSOn);
+   //rsp code
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nRspID);
+   //@R111 2016/09
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_nChargingOn);
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_nChargingCode);
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_nChargingIDC);
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d\n",_pstValue->m_nRoamingIDC);
+   return 0;
+}
+
+int CSipRteData::m_fnStRoute2String(SipRoute_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //lid
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiLID);
+   //Rid
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiRID);
+   //trte
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiTRTE);
+   //type
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucType);
+   //Route
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucDoRouteMedia);
+   //opt time
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_sOptTime);
+   //opt retry
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_sOptRetry);
+   //opt action
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_sOptAction);
+   //opt refresh
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_sSesRefreshTime);
+   //route group
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nRouteGroup);
+   //m_nMAXCnt
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMAXCnt);
+   //m_nDeactRsp
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nDeactRsp);
+   //m_ucProto
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_ucProto);
+   //status
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_ucStatus);
+   return 0;
+}
+
+int CSipRteData::m_fnStRouteSeq2String(SipRouteSeq_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+
+   //arte check number
+   int i=0;
+   for( i=(SipRouteSeq_t::E_MAX_ARTE-1); i >=0 ; i--){
+      if( _pstValue->m_uiARTE[i] != 0 ) break;
+   }
+   if( i < 0 ){ 
+      //drte
+      snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_uiDRTE);
+      return 0;
+   }
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiDRTE);
+   int nNum=(i+1); //valid number
+   for( i = 0 ; i < nNum ; i++){
+      if( i != (nNum-1)){
+         snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiARTE[i]);
+      }else{
+         snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_uiARTE[i]);
+      }
+   } 
+   return 0;
+}
+int CSipRteData::m_fnStSpecialRouteSeq2String(SipSpecialRouteSeq_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+
+   //rseq check number
+   int i=0;
+   for( i=(SipSpecialRouteSeq_t::E_MAX_RSEQ -1) ; i >= 0 ; i--){
+      if( _pstValue->m_uiRSEQ[i] != 0 ) break;
+   }
+   if( i < 0 ) return 1;
+   int nNum=(i+1); //valid number
+   for( i = 0 ; i < nNum ; i++){
+      if( i != (nNum-1)){
+         snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|%u|",
+            _pstValue->m_uiRSEQ[i],_pstValue->m_nRATE[i]);
+      }else{
+         snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|%u\n",
+            _pstValue->m_uiRSEQ[i],_pstValue->m_nRATE[i]);
+      }
+   } 
+   return 0;
+}
+int CSipRteData::m_fnStTrGW2String(TrGWRoute_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //Svrip
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szSvrIP);
+   //TrGWIP
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szTrGWIP);
+   //Svr Port
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usSvrPort);
+   //TrGW Port
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_usTrGWPort);
+   //call rate
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_nCallRate);
+   //max count
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d|",_pstValue->m_nMaxCount);
+   //status
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%d\n",_pstValue->m_nStatus);
+   return 0;
+}
+int CSipRteData::m_fnStEmer2String(EmergencyCall_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+   //min
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s\n",_pstValue->m_szMIN);
+   return 0;
+}
+
+int CSipRteData::m_fnStReason2String(SipReasonCode_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //id
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_uiID);
+   //desc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%s|",_pstValue->m_szDesc);
+
+   for( int i = 0 ; i < SipReasonCode_t::E_CAUSE_MAX; i++){
+      //cause,rspcode,cause text
+      if( i < (SipReasonCode_t::E_CAUSE_MAX)-1 ){
+         snprintf(_pszOut+strlen(_pszOut),100,"%d|%d|%s|",
+            _pstValue->m_nCauseCode[i],_pstValue->m_nRspCode[i],_pstValue->m_szCause[i]);
+      }else{
+         snprintf(_pszOut+strlen(_pszOut),100,"%d|%d|%s\n",
+            _pstValue->m_nCauseCode[i],_pstValue->m_nRspCode[i],_pstValue->m_szCause[i]);
+      }
+   }
+   return 0;
+}
+int CSipRteData::m_fnStEnv2String(GlobalOverLoadEnv_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //max ses
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxSES);
+   //check ses
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkSES);
+   //max message size
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxMSG);
+   //check msg
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkMSG);
+   //max cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPS);
+   //check cps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkCPS);
+   //max cpu
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPU);
+   //check cpu
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkCPU);
+   //max mem
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxMEM);
+   //check mem
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkMEM);
+   //max tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxTPS);
+   //check tps
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nChkTPS);
+   //m_nMinCPS_Emer
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMinCPS_Emer);
+   //m_nMaxCPS_Audio
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPS_Audio);
+   //m_nMaxCPS_Video
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nMaxCPS_Video);
+   //m_nChkCPSClass
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_nChkCPSClass);
+   return 0;
+}
+
+int CSipRteData::m_fnStTimer2String(SipCoreTimer_t* _pstValue, char* _pszOut)
+{
+   if( _pstValue== NULL || _pszOut == NULL ) return 1;
+   _pszOut[0]=0x00;
+   //t2
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeT2);
+   //ta
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTA);
+   //tb
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTB);
+   //tc
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTC);
+   //td
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTD);
+   //te
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTE);
+   //tf
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTF);
+   //tg
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTG);
+   //th
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTH);
+   //ti
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTI);
+   //tj
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTJ);
+   //tk
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTK);
+   //tl
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTL);
+   //tm
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeTM);
+   //dialog alive
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeDAlive);
+   //dialog term
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u|",_pstValue->m_nTimeDTerm);
+   //garbage
+   snprintf(_pszOut+strlen(_pszOut),E_MAXLEN_ERR,"%u\n",_pstValue->m_nTimeTrGW);
+   return 0;
+}
+
+int CSipRteData::m_fnWrite(char* buf)
+{
+   int nLen=0;
+   nLen=strlen(buf);
+   if( nLen <= 0 || m_pWriteFP == NULL) return 1;
+   fwrite(buf,nLen,1,m_pWriteFP);
+   return 0;
+}
+
+
+void CSipRteData::m_fnBakup2ActiveDB()
+{
+
+   struct stat file_stat;
+   int nRet=stat(m_szFileBak, &file_stat);
+   if( nRet < 0 ) return ;
+   //size
+   if(file_stat.st_size <= 0 ) return;
+
+   //@R106 201603
+#if 1
+   //rename
+   nRet=rename(m_szFileBak,m_szFile);
+   SLOG(E_ESipRteLogLevel_INF,"change db(%d) %d",m_nIndex, nRet);
+#else
+   //copy
+   FILE* fp=NULL;
+   fp=fopen(m_szFileBak,"r");
+   if(fp==NULL) return;
+    
+   //new file size
+   char* pFile=NULL;
+   pFile=new char[file_stat.st_size+1];
+   int nLen=0;
+   FILE* fp2=NULL;
+   bool bOK=false;
+
+   int nWriteCnt=0;
+   int nTotalLen=0;
+   int nRemainLen=0;
+   do{
+      nLen=fread(pFile,1,file_stat.st_size,fp); 
+      if(nLen <= 0 ) break;
+      fp2=fopen(m_szFile,"w+");//read&write&truncate
+      if( fp2 == NULL) break; 
+     
+      nRemainLen=nLen; 
+      while( nRemainLen > 0 ){
+         nLen=fwrite(pFile+nTotalLen,1,nRemainLen,fp2);
+         if(nLen <= 0 ) break;
+         nTotalLen+=nLen;
+         nRemainLen-=nLen;
+         if ( ++nWriteCnt > 5) break;
+      }
+      if( nWriteCnt >=3 ) break;
+
+      bOK=true;
+   }while(0); 
+   ESIPRTEUTIL_CLOSE_FP(fp);
+   ESIPRTEUTIL_CLOSE_FP(fp2);
+   //delete
+   delete[] pFile;
+   SLOG(E_ESipRteLogLevel_INF,"change db(%d) size %d. %s",
+         m_nIndex,file_stat.st_size,bOK?"OK":"NG");
+#endif
+}
+
+
+} /* end namesapce */

@@ -1,0 +1,377 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon
+END
+recon_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_10_0.vcxproj
+END
+Participant.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/Participant.cxx
+END
+Conversation.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/Conversation.hxx
+END
+FlowManagerSipXSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/FlowManagerSipXSocket.cxx
+END
+recon_10_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_10_0.sln
+END
+MediaResourceCache.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaResourceCache.hxx
+END
+DefaultDialogSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/DefaultDialogSet.cxx
+END
+Participant.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/Participant.hxx
+END
+FlowManagerSipXSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/FlowManagerSipXSocket.hxx
+END
+DefaultDialogSet.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/DefaultDialogSet.hxx
+END
+recon_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_10_0.vcxproj.filters
+END
+MediaResourceParticipant.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaResourceParticipant.cxx
+END
+RemoteParticipantDialogSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RemoteParticipantDialogSet.cxx
+END
+LocalParticipant.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/LocalParticipant.cxx
+END
+RemoteParticipant.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RemoteParticipant.cxx
+END
+MediaResourceParticipant.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaResourceParticipant.hxx
+END
+RemoteParticipantDialogSet.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RemoteParticipantDialogSet.hxx
+END
+DtmfEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/DtmfEvent.cxx
+END
+MediaStreamEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaStreamEvent.cxx
+END
+UserAgent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgent.cxx
+END
+LocalParticipant.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/LocalParticipant.hxx
+END
+RemoteParticipant.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RemoteParticipant.hxx
+END
+DtmfEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/DtmfEvent.hxx
+END
+UserAgent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgent.hxx
+END
+MediaStreamEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaStreamEvent.hxx
+END
+recon_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_9_0.vcproj
+END
+ConversationManagerCmds.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationManagerCmds.hxx
+END
+MediaEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaEvent.cxx
+END
+UserAgentDialogSetFactory.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentDialogSetFactory.cxx
+END
+ReconSubsystem.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ReconSubsystem.cxx
+END
+HandleTypes.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/HandleTypes.hxx
+END
+UserAgentDialogSetFactory.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentDialogSetFactory.hxx
+END
+MediaEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaEvent.hxx
+END
+RelatedConversationSet.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RelatedConversationSet.cxx
+END
+UserAgentRegistration.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentRegistration.cxx
+END
+ReconSubsystem.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ReconSubsystem.hxx
+END
+UserAgentMasterProfile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentMasterProfile.cxx
+END
+ConversationProfile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationProfile.cxx
+END
+RelatedConversationSet.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/RelatedConversationSet.hxx
+END
+UserAgentRegistration.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentRegistration.hxx
+END
+UserAgentMasterProfile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentMasterProfile.hxx
+END
+MediaInterface.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaInterface.cxx
+END
+ConversationProfile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationProfile.hxx
+END
+UserAgentServerAuthManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentServerAuthManager.cxx
+END
+BridgeMixer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/BridgeMixer.cxx
+END
+UserAgentClientSubscription.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentClientSubscription.cxx
+END
+ConversationParticipantAssignment.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationParticipantAssignment.cxx
+END
+MediaInterface.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaInterface.hxx
+END
+ConversationManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationManager.cxx
+END
+BridgeMixer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/BridgeMixer.hxx
+END
+UserAgentClientSubscription.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentClientSubscription.hxx
+END
+recon_8_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_8_0.sln
+END
+UserAgentServerAuthManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentServerAuthManager.hxx
+END
+ConversationParticipantAssignment.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationParticipantAssignment.hxx
+END
+recon_9_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_9_0.sln
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/Makefile.am
+END
+UserAgentCmds.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/UserAgentCmds.hxx
+END
+ConversationManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/ConversationManager.hxx
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/readme.txt
+END
+Conversation.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/Conversation.cxx
+END
+MediaResourceCache.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/MediaResourceCache.cxx
+END
+recon_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/recon/recon_8_0.vcproj
+END

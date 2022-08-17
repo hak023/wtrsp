@@ -1,0 +1,119 @@
+#ifndef HANGDEF_H
+#define HANGDEF_H
+#include <time.h>
+/******************************* Alarm Defined *******************************************/
+/*
+RTTError=83,
+SIPReasonOverflow,
+ProcessHangUp = 85,       // Ãß°¡
+} ALARM_TYPE, *PALARM_TYPE;
+*/
+#define DEF_ALARM_ProcessHangUp    86
+/******************************* Shared Memory Defined ************************************/
+#define DEF_MAX_MONITOR    100
+typedef struct QueueThreadInfo_t
+{
+	char m_szThreadName[32];
+	unsigned int m_unThreadId;
+	struct timespec m_stReqT;
+	struct timespec m_stRspT;
+	unsigned int m_unCurrentQ;
+	unsigned int m_unMaxQ;
+}QueueThreadInfo_t;
+typedef struct QueueMonitorInfo_t
+{
+	char m_szProcName[32];
+	unsigned int m_unPid;
+	struct timespec m_stBeginT;
+	unsigned int m_unCurThreadNum;
+	QueueThreadInfo_t m_stInfo[DEF_MAX_MONITOR];
+}QueueMonitorInfo_t;
+/******************************* MMI Defined ********************************************/
+//==========> Base Code
+#define DEF_HANG_REQ_MSG_BASE     0x01000000
+#define DEF_HANG_RSP_MSG_BASE      0x02000000
+#define DEF_HANG_PDE_STACK_BASE   0x10000000
+#define DEF_HANG_CS_STACK_BASE     0x20000000
+#define DEF_HANG_EMP_STACK_BASE   0x30000000
+//==========> CM Code
+#define DEF_CS_DIS_HANG_REQ   0x00001191
+#define DEF_CS_DIS_HANG_RSP    0x00001191
+#define DEF_CS_CHG_HANG_REQ  0x00001192
+#define DEF_CS_CHG_HANG_RSP   0x00001192
+#define DEF_STYPE_CS_DIS_HANG_REQ   DEF_HANG_CS_STACK_BASE | DEF_HANG_REQ_MSG_BASE |  DEF_CS_DIS_HANG_REQ    // 0x11001191
+#define DEF_STYPE_CS_DIS_HANG_RSP    DEF_HANG_CS_STACK_BASE | DEF_HANG_RSP_MSG_BASE |  DEF_CS_DIS_HANG_RSP    // 0x12001191
+#define DEF_STYPE_CS_CHG_HANG_REQ   DEF_HANG_CS_STACK_BASE | DEF_HANG_REQ_MSG_BASE |  DEF_CS_CHG_HANG_REQ    // 0x11001192
+#define DEF_STYPE_CS_CHG_HANG_RSP    DEF_HANG_CS_STACK_BASE | DEF_HANG_RSP_MSG_BASE |  DEF_CS_CHG_HANG_REQ    // 0x12001192
+//==========> EMP Code
+#if 0
+#define DEF_EMP_DIS_HANG_REQ  0x00000701
+#define DEF_EMP_DIS_HANG_RSP   0x00000701
+#define DEF_EMP_CHG_HANG_REQ  0x00000702
+#define DEF_EMP_CHG_HANG_RSP   0x00000702
+#define DEF_STYPE_EMP_DIS_HANG_REQ DEF_HANG_EMP_STACK_BASE | DEF_HANG_REQ_MSG_BASE | DEF_EMP_DIS_HANG_REQ    //  0x11000701
+#define DEF_STYPE_EMP_DIS_HANG_RSP  DEF_HANG_EMP_STACK_BASE | DEF_HANG_RSP_MSG_BASE | DEF_EMP_DIS_HANG_RSP   // 0x12000701
+#define DEF_STYPE_EMP_CHG_HANG_REQ DEF_HANG_EMP_STACK_BASE | DEF_HANG_REQ_MSG_BASE | DEF_EMP_CHG_HANG_REQ  // 0x11000702
+#define DEF_STYPE_EMP_CHG_HANG_RSP  DEF_HANG_EMP_STACK_BASE | DEF_HANG_RSP_MSG_BASE | DEF_EMP_CHG_HANG_RSP   // 0x12000702
+#else
+#define DEF_STYPE_EMP_DIS_HANG_REQ 0x0701    
+#define DEF_STYPE_EMP_DIS_HANG_RSP  0x0702   
+#define DEF_STYPE_EMP_CHG_HANG_REQ 0x0703  
+#define DEF_STYPE_EMP_CHG_HANG_RSP  0x0704 
+#endif
+//==========> Struct
+typedef struct DogInfo_t
+{
+	int m_nEnableMonitor;
+	int m_nDogTime;
+	int m_nDogAlarmCnt;
+	int m_nEnableHA;
+	int m_nEnableReset;
+}DogInfo_t;
+typedef struct CmDisDogReq_t
+{
+	DogInfo_t m_stInfo;
+}CmDisDogReq_t;
+typedef struct CmDisDogRsp_t
+{
+	int m_nResult;
+	int m_nReason;
+	char m_szDesc[64];
+	DogInfo_t m_stInfo;
+}CmDisDogRsp_t;
+typedef CmDisDogReq_t CmChgDogReq_t; 
+typedef CmDisDogRsp_t CmChgDogRsp_t; 
+typedef CmDisDogReq_t EmpDisDogReq_t; 
+typedef CmDisDogRsp_t EmpDisDogRsp_t; 
+typedef CmDisDogReq_t EmpChgDogReq_t; 
+typedef CmDisDogRsp_t EmpChgDogRsp_t;
+/************************************ Restart Cmd Defined **********************************/
+/*
+#define MSG_FUNC_CTRL 0x0700
+#define MSG_SUBF_CTRL_PROCESS_RESTART  0x0703
+-------------------------------------------------------------------------
+typedef struct {
+char  szProcName[32];
+} OMCPROCCONTROL, *POMCPROCCONTROL;
+-------------------------------------------------------------------------
+typedef struct {
+XTMMSGHDR  h;
+OMCPROCCONTROL Proc;
+} OMCMSGPROCCONTROL, *POMCMSGPROCCONTROL;
+-------------------------------------------------------------------------
+pReq->h.usType = MSG_FUNC_CTRL;
+pReq->h.usSubType = MSG_SUBF_CTRL_PROCESS_RESTART;
+pReq->Proc.szProcName = "CCM";
+*/
+/********************************** HA Deact Cmd Defined **********************************/
+/*
+#define MSG_FUNC_CTRL 0x0700
+#define MSG_SUBF_CTRL_HA_DEACT  0x0742
+---------------------------------------------------------------?
+typedef struct {
+XTMMSGHDR h;
+} OMCMSGREQUEST, *POMCMSGREQUEST;
+----------------------------------------------------------------
+pReq->h.usType = MSG_FUNC_CTRL;
+pReq->h.usSubType = MSG_SUBF_CTRL_HA_DEACT;
+*/
+#endif

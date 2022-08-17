@@ -1,0 +1,64 @@
+
+#include "transportErr.hxx"
+
+namespace eSipUtil
+{
+
+typedef struct
+{
+	const char * m_pszTransportErrDesc;
+	bool m_bDelTransport;		//It is the flag that transportMgr decide whether to do delete transport or not
+}TransportErrInfo_t;
+
+static const TransportErrInfo_t s_arrTransportErrInfo[E_TRSP_ERR_NUM] =
+{
+	{"TRSP_ERR_NONE",														false	},
+	{"TRSP_ERR_TRSP_MGR_NOT_ACTIVE",						false },
+	{"TRSP_ERR_INVALID_ARG",											false	},
+	{"TRSP_ERR_QUEUE_FULL",											false	},
+	{"TRSP_ERR_INTERNAL_ERR",										true	},
+	{"TRSP_ERR_FAIL_CREATE_INTERNAL_MSG",				false },
+	{"TRSP_ERR_FAIL_ADD_TRSP_DATA",							false },
+	{"TRSP_ERR_FAIL_ADD_MAP_INFO",								false },
+	{"TRSP_ERR_NOT_FOUND_TRSP_DATA_IDX",				false },
+	{"TRSP_ERR_TRSP_DATA_UNUSE,",								false },
+	{"TRSP_ERR_INVALID_SND_BUFFER",							true	},
+	{"TRSP_ERR_INVALID_RCV_BUFFER",							true	},
+	{"TRSP_ERR_FAIL_CREATE_RCV_BUFFER",					false	},
+	{"TRSP_ERR_SEND_BUFFER_FULL",								false	},
+	{"TRSP_ERR_INVALID_TCP_STATE",								false	},
+	{"TRSP_ERR_TRSP_NOT_INIT",										false	},
+	{"TRSP_ERR_TRSP_ALREADY_INIT",								false	},
+	{"TRSP_ERR_FAIL_CREATE_TRSP",								false	},
+	{"TRSP_ERR_FAIL_CREATE_SOCKET",							false	},
+	{"TRSP_ERR_FAIL_BIND_SOCKET",								false	},
+	{"TRSP_ERR_FAIL_ACCEPT_SOCKET",							false	},
+	{"TRSP_ERR_FAIL_SYNC_CONNECT_SOCKET",				true	},
+	{"TRSP_ERR_FAIL_ASYNC_CONNECT_SOCKET",			true	},
+	{"TRSP_ERR_FAIL_SEND_SOCKET",								true	},
+	{"TRSP_ERR_FAIL_RECV_SOCKET",								true	},
+	{"TRSP_ERR_FAIL_SEND_REMAIN_BUFFER",					true	},
+	{"TRSP_ERR_TCP_CLOSE_BYPEER",								true	},
+	{"TRSP_ERR_INTERRUPT",												false	},
+};
+
+const char * g_fnGetTransportErrStr(ETransportErr_t _eTrspErr)
+{
+	static const char * s_pszUnknown = "unknown_type";
+
+	if( _eTrspErr >= 0 && _eTrspErr < E_TRSP_ERR_NUM )
+		return s_arrTransportErrInfo[_eTrspErr].m_pszTransportErrDesc;
+	else
+		return s_pszUnknown;
+}
+
+bool g_fnIsDelTransport(ETransportErr_t _eTrspErr)
+{
+	if( _eTrspErr >= 0 && _eTrspErr < E_TRSP_ERR_NUM )
+		return s_arrTransportErrInfo[_eTrspErr].m_bDelTransport;
+	else
+		return false;
+}
+
+}
+

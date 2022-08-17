@@ -1,0 +1,8 @@
+Symbols.lo: Symbols.cxx /usr/include/stdc-predef.h ../../config.h \
+ ../../resip/stack/Symbols.hxx
+
+/usr/include/stdc-predef.h:
+
+../../config.h:
+
+../../resip/stack/Symbols.hxx:

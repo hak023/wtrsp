@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates
+END
+ExpectUtils.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/ExpectUtils.hxx
+END
+SubscribeExpires.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/SubscribeExpires.cxx
+END
+SubscribeExpired.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/SubscribeExpired.cxx
+END
+NotifyContents.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/NotifyContents.cxx
+END
+SubscribeExpires.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/SubscribeExpires.hxx
+END
+SubscribeExpired.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/SubscribeExpired.hxx
+END
+ExpectUtils.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/ExpectUtils.cxx
+END
+NotifyContents.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/predicates/NotifyContents.hxx
+END

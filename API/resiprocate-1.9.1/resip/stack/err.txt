@@ -1,0 +1,14 @@
+StackThread.cxx: In member function 'virtual void resip::StackThread::thread()':
+StackThread.cxx:28: warning: 'virtual void resip::SipStack::buildFdSet(resip::FdSet&)' is deprecated (declared at ../../resip/stack/SipStack.hxx:811)
+StackThread.cxx:36: warning: 'virtual void resip::SipStack::process(resip::FdSet&)' is deprecated (declared at ../../resip/stack/SipStack.hxx:828)
+InterruptableStackThread.cxx: In member function 'virtual void resip::InterruptableStackThread::thread()':
+InterruptableStackThread.cxx:29: warning: 'virtual void resip::SipStack::process(resip::FdSet&)' is deprecated (declared at ../../resip/stack/SipStack.hxx:828)
+InterruptableStackThread.cxx:31: warning: 'virtual void resip::SipStack::buildFdSet(resip::FdSet&)' is deprecated (declared at ../../resip/stack/SipStack.hxx:811)
+InterruptableStackThread.cxx:41: warning: 'virtual void resip::SipStack::process(resip::FdSet&)' is deprecated (declared at ../../resip/stack/SipStack.hxx:828)
+Tuple.cxx: In member function 'bool resip::Tuple::isEqualWithMask(const resip::Tuple&, short int, bool, bool) const':
+Tuple.cxx:810: warning: dereferencing type-punned pointer will break strict-aliasing rules
+Tuple.cxx:811: warning: dereferencing type-punned pointer will break strict-aliasing rules
+UdpTransport.cxx: In member function 'bool resip::UdpTransport::processRxParse(char*, int, resip::Tuple&)':
+UdpTransport.cxx:572: warning: unused variable 'origBufferConsumed'
+ssl/TlsConnection.cxx: In constructor 'resip::TlsConnection::TlsConnection(resip::Transport*, const resip::Tuple&, resip::Socket, resip::Security*, bool, resip::Data, resip::SecurityTypes::SSLType, resip::Compression&)':
+ssl/TlsConnection.cxx:77: warning: 'verify_mode' may be used uninitialized in this function

@@ -1,0 +1,474 @@
+#ifndef _NODE_MGR_H_
+#define _NODE_MGR_H_
+#include "transportMgr.hxx"
+#include "log.hxx"
+#include "StlMap.hxx"
+#include "string.hxx"
+#include "ColumFile.hxx"
+#include "lock.hxx"
+#include "NodeMgr_MMI.hxx"
+#include "JsonFile.hxx"
+
+namespace eSipUtil
+{
+#define DEF_VM_ID "VM_ID"   // Special Uniq Rte Keyword
+#define DEF_VM_TIME "VM_TIME"     // Insert Rte Complete time
+#define AUTOWLOCK(A)   Lock AutoLock(A,Lock::E_LOCK_TYPE_WRITE)
+#define AUTORLOCK(A)   Lock AutoLock(A,Lock::E_LOCK_TYPE_READ)
+typedef struct N5Tuple_t : public Net5Tuple
+{
+	void m_fnSet(const char * _pszLocalIP, int _unLocalPort, const char * _pszRemoteIP, int _unRemotePort,
+				ETransportType_t _eTrans)
+	{
+		strncpy(m_szLocalIp,_pszLocalIP,E_CONST_MAX_IPADDR_LEN-1);
+		strncpy(m_szRemoteIp,_pszRemoteIP,E_CONST_MAX_IPADDR_LEN-1);
+		m_nLocalPort = _unLocalPort;
+		m_nRemotePort = _unRemotePort;
+		m_eTransportType = _eTrans;
+	}
+}N5Tuple_t;
+typedef enum
+{
+	E_NODE_ADDR_NONE = 0,
+	E_NODE_ADDR_LOC,
+	E_NODE_ADDR_RMT,
+	E_NODE_ADDR_RTE
+}ENodeAddr_t;
+typedef enum
+{
+	E_NODE_API_ERROR_NONE=0,
+	E_NODE_API_ERROR_INVALID_FILE,
+	E_NODE_API_ERROR_INVALID_PARAM,
+	E_NODE_API_ERROR_ADD_LOC_DUP,
+	E_NODE_API_ERROR_ADD_RMT_DUP,
+	E_NODE_API_ERROR_ADD_RTE_DUP,
+	E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_LOC,
+	E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_RMT,
+	E_NODE_API_ERROR_ADD_SEQ_DUP,
+	E_NODE_API_ERROR_ADD_SEQ_NOT_EXIST_RTE,
+	E_NODE_API_ERROR_ADD_SEQ_DUP_RATIO,
+	E_NODE_API_ERROR_DEL_LOC_NOT_EXIST,
+	E_NODE_API_ERROR_DEL_RMT_NOT_EXIST,
+	E_NODE_API_ERROR_DEL_RTE_NOT_EXIST,
+	E_NODE_API_ERROR_DEL_SEQ_NOT_EXIST,
+	E_NODE_API_ERROR_DEL_LOC_USING,
+	E_NODE_API_ERROR_DEL_RMT_USING,
+	E_NODE_API_ERROR_DEL_RTE_USING,
+	E_NODE_API_ERROR_MOD_SEQ_NOT_EXIST,
+	E_NODE_API_ERROR_MOD_SEQ_NOT_EXIST_RTE,
+	E_NODE_API_ERROR_DECISION_NOT_FOUND_NODE,
+	E_NODE_API_ERROR_DECISION_ALL_UNAVAILABLE,
+	E_NODE_API_ERROR_DECISION_INTERNAL,
+	E_NODE_API_ERROR_MAX
+}ENodeMgrApiError_t;
+const char * g_fnGetStringNodeErr(unsigned int _eT);
+class NodeLoc;
+class NodeRmt;
+class NodeRte;
+class NodeRatio;
+class NodeSeq;
+class NodeMgr;
+class NodeUserParam : public StlObject
+{
+	public:
+		NodeUserParam();
+		~NodeUserParam();
+		void m_fnBuild(KString & _rclsBuild,unsigned int _unDepth=0);
+		KString m_clsKey;
+		KString m_clsVal;
+		NodeMgr * m_pclsOwner;
+};
+class NodeUserParams
+{
+	public:
+		NodeUserParams();
+		~NodeUserParams();
+		NodeUserParams & operator=(NodeUserParams & _rclsSrc);
+		NodeUserParam * m_fnFind(const char * _pszKey);
+		const char * m_fnFindVal(const char * _pszKey);
+		bool m_fnAdd(const char * _pszKey, const char * _pszVal);
+		bool m_fnDel(const char * _pszKey);
+		void m_fnBuild(KString & _rclsBuild, unsigned int _unDepth=0);
+		NodeUserParam * m_fnBegin(ListItr_t & _rstItor){return (NodeUserParam*)m_listParams.m_fnBegin(_rstItor);}
+		NodeUserParam * m_fnNext(ListItr_t & _rstItor){return (NodeUserParam*)m_listParams.m_fnNext(_rstItor);}
+		StlList m_listParams;
+		NodeMgr * m_pclsOwner;
+};
+class NodeLoc : public StlObject
+{
+	public:
+		NodeLoc(NodeMgr * _pclsOwner);
+		~NodeLoc();
+		NodeLoc & operator=(NodeLoc & _rclsSrc);
+		bool operator==(NodeLoc & _rclsSrc);
+		bool operator==(Net5Tuple & _rclsSrc);
+		void m_fnCopyStruct(NodeMgrLocReq_t & _rstReq);
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth=0);
+		bool m_fnValid(ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnAddExtParam(const char * _pszKey, KString _clsVal);
+		const char * m_fnFindExtParam(const char * _pszKey);
+		/*  sample code
+		class userobj : public StlObject
+		{}
+		pclsLoc->m_fnSetUserObject(new userobj);
+		*/
+		void m_fnSetUserObject(StlObject * _pclsNewUserObj);
+		unsigned int m_unID;
+		KString m_clsName;
+		KString m_clsIP;
+		unsigned int m_unPort;
+		unsigned int m_eType;    // tcp=0/udp=1/tls=2
+		unsigned int m_eMod;     // server=0/client=1/accepted=2
+		NodeUserParams m_clsUserParams; // additional user config params
+		StlObject * m_pclsUserObject;
+		NodeMgr *m_pclsOwner;
+};
+class NodeRmt : public StlObject
+{
+	public:
+		NodeRmt(NodeMgr * _pclsOwner);
+		~NodeRmt();
+		NodeRmt & operator=(NodeRmt & _rclsSrc);
+		bool operator==(NodeRmt & _rclsSrc);
+		bool operator==(Net5Tuple & _rclsSrc);
+		void m_fnCopyStruct(NodeMgrRmtReq_t & _rstReq);
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth=0);
+		bool m_fnValid(ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnAddExtParam(const char * _pszKey, KString _clsVal);
+		const char * m_fnFindExtParam(const char * _pszKey);
+		/*  sample code
+		class userobj : public StlObject
+		{}
+		pclsLoc->m_fnSetUserObject(new userobj);
+		*/
+		void m_fnSetUserObject(StlObject * _pclsNewUserObj);
+		unsigned int m_unID;
+		KString m_clsName;
+		KString m_clsIP;
+		unsigned int m_unPort;
+		unsigned int m_eType;    // tcp/ udp/tls
+		NodeUserParams m_clsUserParams; // additional user config params
+		StlObject * m_pclsUserObject;
+		NodeMgr *m_pclsOwner;
+};
+class NodeRte : public StlObject
+{
+	public:
+		NodeRte(NodeMgr * _pclsOwner);
+		~NodeRte();
+		NodeRte & operator=(NodeRte & _rclsSrc);
+		bool operator==(NodeRte & _rclsSrc);
+		void m_fnCopyStruct(NodeMgrRteReq_t & _rstReq);
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth=0);
+		unsigned int m_fnGetFBlock();
+		unsigned int m_fnGetCnt();
+		bool m_fnValid(ENodeMgrApiError_t * _peError=NULL);
+		/*  sample code
+		class userobj : public StlObject
+		{}
+		pclsLoc->m_fnSetUserObject(new userobj);
+		*/
+		void m_fnSetUserObject(StlObject * _pclsNewUserObj);
+		bool m_fnAddExtParam(const char * _pszKey, KString _clsVal);
+		bool m_fnChgExtParam(const char * _pszKey, KString _clsVal);
+		const char * m_fnFindExtParam(const char * _pszKey);
+		RwMutex m_clsLock;
+		unsigned int m_unID;
+		KString m_clsName;
+		unsigned int m_unLocID;
+		unsigned int m_unRmtID;
+		unsigned int m_unMBlock;                         // 1-block, 0 - unblock
+		NodeUserParams m_clsUserParams;           // additional user config params
+		StlObject * m_pclsUserObject;                 // user object
+		unsigned int m_unRegiTime;
+		Net5Tuple m_stAddr;
+		NodeMgr *m_pclsOwner;
+};
+class NodeAddresInfo : public StlObject
+{
+	public:
+		NodeAddresInfo(){m_eT = E_NODE_ADDR_NONE,m_unNodeID = 0;}
+		~NodeAddresInfo(){}
+		ENodeAddr_t m_eT;
+		unsigned int m_unNodeID;
+};
+class NodeRatio : public StlObject
+{
+	friend class NodeSeq;
+	public:
+		NodeRatio(NodeMgr * _pclsOwner);
+		~NodeRatio();
+		void m_fnIncre(){m_clsLock.m_fnWriteLock();m_unToken++;m_clsLock.m_fnUnlock();}
+		void m_fnClearTok(){m_clsLock.m_fnWriteLock();m_unToken = 0;m_clsLock.m_fnUnlock();}
+		bool m_fnIsMax();
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth=0);
+		unsigned int m_unRteID;
+		unsigned int m_unRate;
+		NodeRte * m_pclsRte;
+		NodeMgr * m_pclsOwner;
+		RwMutex m_clsLock;
+		// variable values
+		unsigned int m_unToken;
+		NodeRatio * m_pclsPrev;
+		NodeRatio * m_pclsNext;
+};
+class NodeSeq : public StlObject
+{
+	public:
+		NodeSeq(NodeMgr * _pclsOwner);
+		~NodeSeq();
+		void m_fnClear();
+		NodeSeq & operator=(NodeSeq & _rclsSrc);
+		bool operator==(NodeSeq & _rclsSrc);
+		void m_fnCopyStruct(NodeMgrSeqReq_t & _rstReq);
+		bool m_fnAddRatio(unsigned int _unRteID, unsigned int _unRate,
+																ENodeMgrApiError_t * _peError=NULL);
+		NodeRatio * m_fnAddList(unsigned int _unRteID);
+		NodeRatio * m_fnFindList(unsigned int _unRteID);
+		bool m_fnDelList(unsigned int _unRteID);
+		unsigned int m_fnDecisionRteID(Net5Tuple & _rstResult, ENodeMgrApiError_t * _peErr=NULL);
+		bool m_fnIsEixstRte(unsigned int _unRte);
+		bool m_fnIsEixstLoc(unsigned int _unLoc);
+		void m_fnDebug(KString &_rclsDebug);
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth=0);
+		bool m_fnValid(ENodeMgrApiError_t * _peError=NULL);
+		/*  sample code
+		class userobj : public StlObject
+		{}
+		pclsLoc->m_fnSetUserObject(new userobj);
+		*/
+		void m_fnSetUserObject(StlObject * _pclsNewUserObj);
+		bool m_fnAddExtParam(const char * _pszKey, KString _clsVal);
+		const char * m_fnFindExtParam(const char * _pszKey);
+		RwMutex m_clsLock;
+		unsigned int m_unID;
+		KString m_clsName;
+		NodeRatio * m_pclsHead;
+		NodeRatio * m_pclsTail;
+		NodeRatio * m_pclsCurrent;
+		NodeUserParams m_clsUserParams; // additional user config params
+		StlObject * m_pclsUserObject;
+		//variable values
+		unsigned int m_unCnt;	
+		NodeMgr *m_pclsOwner;
+};
+class NodeConnection : public StlObject
+{
+	public:
+		NodeConnection(NodeMgr * _pclsOwner);
+		~NodeConnection();
+		/*  sample code
+		class userobj : public StlObject
+		{}
+		pclsLoc->m_fnSetUserObject(new userobj);
+		*/
+		void m_fnSetUserObject(StlObject * _pclsNewUserObj)
+		{
+			if(m_pclsUserObject) delete m_pclsUserObject;
+			m_pclsUserObject = _pclsNewUserObj;
+		}
+		bool m_fnAddExtParam(const char * _pszKey, KString _clsVal);
+		void m_fnChgExtParam(const char * _pszKey, KString _clsVal);
+		const char * m_fnFindExtParam(const char * _pszKey);
+		NodeUserParam * m_fnExtBegin(ListItr_t & _rstItor){return m_clsUserParams.m_fnBegin(_rstItor);}
+		NodeUserParam * m_fnExtNext(ListItr_t & _rstItor){return m_clsUserParams.m_fnNext(_rstItor);}
+		void m_fnBuild(KString &_rclsBuild,unsigned int _unDepth);
+		Net5Tuple m_stAddr;
+		unsigned int m_unFBlock;
+		unsigned int m_unCurrentCnt;
+		unsigned int m_unLastConnectedTime;      // time_t
+		unsigned int m_unLastDisconnectedTime;  // time_t
+		char m_szLastConnectedTime[20];           //2016-04-28-12-56-12
+		char m_szLastDisconnectedTime[20];       //2016-04-28-12-56-12
+		StlObject * m_pclsUserObject;
+		NodeUserParams m_clsUserParams; // additional user config params
+		NodeMgr *m_pclsOwner;
+		bool m_bInit;
+	private:
+		friend class NodeMgr;
+		void m_fnSetConnectivity(bool _bConnect,bool * _pbChanged=NULL);
+};
+typedef enum 
+{
+	E_NODE_STATUS_ACTION_NONE = 0,
+	E_NODE_STATUS_ACTION_APPLY,   // 이전 상태 파일을 파일로딩 하여 적용 함, 단 FBLK = 1 로 설정 하여 다시 파일에 씀
+	E_NODE_STATUS_ACTION_CLEAR,   // 이전 상태 파일을 모두 지우고 새로 파일을 생성함
+	E_NODE_STATUS_ACTION_READONLY,   // LM 프로세스 용도로 상태 파일을 Read Only 용도로만 사용함
+	E_NODE_STATUS_ACTION_MAX
+}ENodeStatusAction;
+/*
+Node.cfg : Write Only - LM Process, Read Only - User Process
+Node.cfg_status : Write Only User Process, Read Only - LM Process
+*/
+class NodeMgr
+{
+	public:
+		NodeMgr();
+		NodeMgr(NodeMgr & _rclsSrc);
+		~NodeMgr();
+		NodeMgr & operator=(NodeMgr & _rclsSrc);
+		//----------> Change Syntax (Json)
+		void m_fnSetJson();
+		bool m_fnIsJson();
+		//----------> Get Path
+		const char * m_fnGetCfgPath();
+		const char * m_fnGetStatusPath();
+		//----------> Load Config
+		bool m_fnLoadConfig(const char * _pszPath,ENodeMgrApiError_t * _peError=NULL); // 기동후 한번
+		//----------> ReLoad Config
+		bool m_fnReLoadConfig(ENodeMgrApiError_t * _peError=NULL);
+		//----------> Load Status File
+		bool m_fnLoadStatus(const char * _pszPath, ENodeStatusAction _eAction); // 기동 후 한번
+		//----------> ReLoad Status File, LM Process Use Only
+		bool m_fnReloadStatus(); 
+		//----------> Set Notify CallBack (changed node file)
+		void m_fnSetNotifyChangedFile(PFuncColumChanged_t _pfnChanged,void * _pvUser=NULL); // 기동후 한번
+		void m_fnSetNotifyChangedFileJson(PFuncJsonChanged_t _pfnChanged,void * _pvUser=NULL); // 기동후 한번
+		//----------> Set Notify CallBack (changed status file), LM Process Use Only
+		void m_fnSetNotifyChangedFileStatus(PFuncColumChanged_t _pfnChanged,void * _pvUser=NULL); // 기동후 한번
+		void m_fnSetNotifyChangedFileStatusJson(PFuncJsonChanged_t _pfnChanged,void * _pvUser=NULL); // 기동후 한번
+		bool m_fnIsChangedConfig();
+		bool m_fnIsChangedStatus();
+		//----------> WriteConfig
+		bool m_fnWriteConfig(const char * _pszPath=NULL);
+		//----------> Clear All Data
+		void m_fnClearAll();
+		//----------> Add
+		bool m_fnAddLoc(NodeLoc * _pclsNew,ENodeMgrApiError_t * _peError=NULL);   //put new instance
+		bool m_fnAddRmt(NodeRmt * _pclsNew,ENodeMgrApiError_t * _peError=NULL);   //put new instance
+		bool m_fnAddRte(NodeRte * _pclsNew,ENodeMgrApiError_t * _peError=NULL);   //put new instance
+		bool m_fnAddSeq(NodeSeq * _pclsNew,ENodeMgrApiError_t * _peError=NULL);  // put new instance
+		//----------> Del
+		bool m_fnDelLoc(unsigned int _unID,ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnDelRmt(unsigned int _unID,ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnDelRte(unsigned int _unID,ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnDelSeq(unsigned int _unID,ENodeMgrApiError_t * _peError=NULL);
+		bool m_fnDelCon(const Net5Tuple & _rstAddr);
+		//----------> Find
+		NodeLoc * m_fnFindLoc(unsigned int _unID){return (NodeLoc*)m_listLoc.m_fnFindNode(_unID);}
+		NodeLoc * m_fnFindLocFrom5Tuple(const Net5Tuple &_rclsAddr);
+		NodeRmt * m_fnFindRmt(unsigned int _unID){return (NodeRmt*)m_listRmt.m_fnFindNode(_unID);}
+		NodeRmt * m_fnFindRmtFrom5Tuple(const Net5Tuple &_rclsAddr);
+		NodeRte * m_fnFindRte(unsigned int _unID){return (NodeRte*)m_listRte.m_fnFindNode(_unID);}
+		NodeRte * m_fnFindRteFrom5Tuple(const Net5Tuple &_rclsAddr);
+		NodeSeq * m_fnFindSeq(unsigned int _unID){return (NodeSeq*)m_listSeq.m_fnFindNode(_unID);}
+		bool m_fnGetAddressFromRteID(unsigned int _unRteID, Net5Tuple & _rstResult);
+		//----------> Get Size
+		unsigned int m_fnGetLocNums(){return m_listLoc.m_fnGetSize();}
+		unsigned int m_fnGetRmtNums(){return m_listRmt.m_fnGetSize();}
+		unsigned int m_fnGetRteNums(){return m_listRte.m_fnGetSize();}
+		unsigned int m_fnGetSeqNums(){return m_listSeq.m_fnGetSize();}
+		unsigned int m_fnGetStatusNums(){return m_mapConnections.m_fnGetSizeStr();}
+		//----------> Decide Routing
+		unsigned int m_fnDecisionRteID(unsigned int _unSeqID,Net5Tuple & _rstResult, ENodeMgrApiError_t * _peErr=NULL);
+		//----------> Rte Usage Counting
+		bool m_fnCountingRte(unsigned int _unRteID, unsigned int _unCnt);
+		bool m_fnCountingRte(const Net5Tuple & _rstAddr, unsigned int _unCnt);
+		//----------> Get Rte Usage
+		unsigned int m_fnGetRteCnt(unsigned int _unRteID);
+		unsigned int m_fnGetRteCnt(const Net5Tuple & _rstAddr);
+		//----------> Change Ratio
+		bool m_fnChangeSeqRate(unsigned int _unSeqID,unsigned int _unRteID, unsigned int _unRate);
+		//----------> Change Manual Block
+		bool m_fnChangeMBlock(unsigned int _unRteID, bool _bBlock,bool * _pbChanged=NULL);
+		bool m_fnChangeMBlock(const Net5Tuple & _rstAddr, bool _bBlock,bool * _pbChanged=NULL);
+		//----------> Change Connectivity
+		NodeConnection * m_fnChangeConnectivity(const Net5Tuple & _rstAddr, bool _bConnected);
+		void m_fnChangeConnectivity(NodeConnection & _rclsCon, bool _bConnected);		//added by khd 2017.11.23
+		void m_fnRefreshConnection();
+		//----------> Get Rte Status
+		bool m_fnGetRteStatus(const Net5Tuple & _rstAddr);
+		bool m_fnGetRteStatus(unsigned int _unRteID);
+		//----------> Get Node Info String
+		void m_fnDebug(KString &_rclsDebug);
+		//----------> Build Node Config
+		void m_fnBuild(KString &_rclsBuild);
+		//----------> Stl List Iterator
+		NodeLoc * m_fnBeginLoc(ListItr_t & _rclsIter){return (NodeLoc*)m_listLoc.m_fnBegin(_rclsIter);}
+		NodeRmt * m_fnBeginRmt(ListItr_t & _rclsIter){return (NodeRmt*)m_listRmt.m_fnBegin(_rclsIter);}
+		NodeRte * m_fnBeginRte(ListItr_t & _rclsIter){return (NodeRte*)m_listRte.m_fnBegin(_rclsIter);}
+		NodeSeq * m_fnBeginSeq(ListItr_t & _rclsIter){return (NodeSeq*)m_listSeq.m_fnBegin(_rclsIter);}
+		NodeConnection * m_fnBeginConnection(MapStrItr_t & _rclsItem)
+			{return (NodeConnection*)m_mapConnections.m_fnBeginS(_rclsItem);}
+		NodeLoc * m_fnNextLoc(ListItr_t & _rclsIter){return (NodeLoc*)m_listLoc.m_fnNext(_rclsIter);}
+		NodeRmt * m_fnNextRmt(ListItr_t & _rclsIter){return (NodeRmt*)m_listRmt.m_fnNext(_rclsIter);}
+		NodeRte * m_fnNextRte(ListItr_t & _rclsIter){return (NodeRte*)m_listRte.m_fnNext(_rclsIter);}
+		NodeSeq * m_fnNextSeq(ListItr_t & _rclsIter){return (NodeSeq*)m_listSeq.m_fnNext(_rclsIter);}
+		NodeConnection * m_fnNextConnection(MapStrItr_t & _rclsItem){return 
+			(NodeConnection*)m_mapConnections.m_fnNextS(_rclsItem);}
+		//----------> User Lock
+		RwMutex & m_fnGetLock(){return m_clsLock;}
+		void m_fnReadLock(){m_clsLock.m_fnReadLock();}
+		void m_fnWriteLock(){m_clsLock.m_fnWriteLock();}
+		void m_fnUnlock(){m_clsLock.m_fnUnlock();}
+		//----------> Add Node Info (RMT/RTE/SEQ) Automatically
+		NodeSeq * m_fnAutoRegisterNode(const char * _pszPrefix, Net5Tuple & _rstAddr,bool * _pbChanged);
+		bool m_fnAutoRemoveNode(const char * _pszPrefix, Net5Tuple & _rstAddr);
+		bool m_fnAutoRegiFromConInfo(const char * _pszPrefix);
+		//----------> Connection Transport Node Info
+		NodeConnection * m_fnFindConnection(const Net5Tuple & _rstAddr);
+		NodeConnection * m_fnConnectionProc(const Net5Tuple & _rstAddr, bool _bConnect,bool * _pbChanged);
+		//----------> Get File Raw String
+		void m_fnGetNodeString(KString &_rclsResult){m_fnBuild(_rclsResult);}
+		void m_fnGetStatusString(KString & _rclsResult);    // Status File
+		NodeConnection * m_fnFindConnectionFromVmID(const char * _pszVmID);
+		NodeRte * m_fnFindRteFromVmID(const char * _pszVmID);
+	private:
+		friend class NodeLoc;
+		friend class NodeRmt;
+		friend class NodeRte;
+		friend class NodeSeq;
+		friend class NodeConnection;
+		void m_fnStoreFully(NodeMgr & _rclsSrc);
+		//----------> Build & Write Node Status
+		void m_fnWriteNodeStatus();
+		bool m_fnLoadDB(ENodeMgrApiError_t * _peError);
+		bool m_fnLoadStatusDB();
+		bool m_fnAddLocAddr(NodeLoc * _pclsNew);
+		bool m_fnAddRmtAddr(NodeRmt * _pclsNew);
+		NodeAddresInfo *m_fnFindLocFromAddr(const char * _pszIP, unsigned int _unPort,
+																			unsigned int _eTransType);
+		NodeAddresInfo *m_fnFindRmtFromAddr(const char * _pszIP, unsigned int _unPort,
+																			unsigned int _eTransType);
+		
+		bool m_fnDelLocAddr(unsigned int _unID);
+		bool m_fnDelRmtAddr(unsigned int _unID);
+		NodeRte * m_fnFindRteFromAddr(unsigned int _unLocID, unsigned int _unRmtID);
+		NodeRmt * m_fnAutoRegisterRmt(const char * _pszPrefix,Net5Tuple &_rstAddr,bool * _pbChanged);
+		NodeRte * m_fnAutoRegisterRte(const char * _pszPrefix,Net5Tuple & _rstAddr,
+												NodeLoc **_ppclsLoc, 
+												NodeRmt ** _ppclsRmt,bool * _pbChanged);
+		NodeSeq * m_fnAutoRegisterSeq(const char * _pszPrefix,Net5Tuple & _rstAddr,bool * _pbChanged);
+		NodeConnection * m_fnAddConnection(const Net5Tuple & _rstAddr);
+		RwMutex m_clsLock;
+		StlList m_listLoc;
+		StlList m_listRmt;
+		StlList m_listRte;
+		StlList m_listSeq;
+		StlMap m_mapLocAddr;
+		StlMap m_mapRmtAddr;
+		StlMap m_mapConnections;
+		ColumFile m_clsColumFile;
+		ColumFile m_clsStatus;
+		JsonFile m_clsJsonCfg;
+		JsonFile m_clsJsonStatus;
+		bool m_bJson;
+};
+/********************************* MMI ************************************************/
+bool g_fnAddNodeLoc(NodeMgr * _pclsMgr,NodeMgrAddLocReq_t &_rstLoc,NodeMgrAddLocRsp_t &_rstRsp);
+bool g_fnDelNodeLoc(NodeMgr * _pclsMgr,NodeMgrDelLocReq_t &_rstLoc,NodeMgrDelLocRsp_t &_rstRsp);
+bool g_fnAddNodeRmt(NodeMgr * _pclsMgr,NodeMgrAddRmtReq_t &_rstRmt, NodeMgrAddRmtRsp_t &_rstRsp);
+bool g_fnDelNodeRmt(NodeMgr * _pclsMgr,NodeMgrDelRmtReq_t &_rstRmt, NodeMgrDelRmtRsp_t &_rstRsp);
+bool g_fnAddNodeRte(NodeMgr * _pclsMgr,NodeMgrAddRteReq_t &_rstRte,NodeMgrAddRteRsp_t &_rstRsp);
+bool g_fnBlockNodeRte(NodeMgr * _pclsMgr,NodeMgrBlockRteReq_t &_rstRte,NodeMgrBlockRteRsp_t &_rstRsp);
+bool g_fnDelNodeRte(NodeMgr * _pclsMgr,NodeMgrDelRteReq_t &_rstRte, NodeMgrDelRteRsp_t &_rstRsp);
+bool g_fnAddNodeSeq(NodeMgr * _pclsMgr,NodeMgrAddSeqReq_t &_rstSeq, NodeMgrAddSeqRsp_t &_rstRsp);
+bool g_fnDelNodeSeq(NodeMgr * _pclsMgr,NodeMgrDelSeqReq_t &_rstSeq, NodeMgrDelSeqRsp_t &_rstRsp);
+bool g_fnModNodeSeq(NodeMgr * _pclsMgr,NodeMgrModSeqReq_t &_rstSeq,NodeMgrModSeqRsp_t &_rstRsp);
+}
+#endif
+

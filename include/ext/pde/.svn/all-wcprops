@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/repos/vIBC/!svn/ver/368/trunk/src/include/ext/pde
+END
+pde_mmi.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/302/trunk/src/include/ext/pde/pde_mmi.h
+END
+pde_msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/167/trunk/src/include/ext/pde/pde_msg.h
+END
+pde_err.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/368/trunk/src/include/ext/pde/pde_err.h
+END

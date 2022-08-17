@@ -1,0 +1,867 @@
+#include "eSipRteMgr.hxx"
+
+#include "rutil/Log.hxx"
+
+
+int IfESipRteApi_ChangeLogLevelResip2Api(int nLevel)
+{
+   int nRet=E_ESipRteLogLevel_DEB;
+   if( nLevel == resip::Log::Crit ){
+      nRet=E_ESipRteLogLevel_CRI;
+   }else if( nLevel == resip::Log::Err ){
+      nRet=E_ESipRteLogLevel_ERR;
+   }else if( nLevel == resip::Log::Warning ){
+      nRet=E_ESipRteLogLevel_WAR;
+   }else if( nLevel == resip::Log::Info ){
+      nRet=E_ESipRteLogLevel_INF;
+   }else if( nLevel >= resip::Log::Debug ){
+     nRet=E_ESipRteLogLevel_DEB;
+   }
+   return nRet;
+}
+int IfESipRteApi_ChangeLogLevelApi2Resip(int nLevel)
+{
+   int nRet= resip::Log::Debug;
+   if( nLevel == E_ESipRteLogLevel_CRI ){
+      nRet=resip::Log::Crit;
+   }else if( nLevel == E_ESipRteLogLevel_ERR ){
+      nRet=resip::Log::Err;
+   }else if( nLevel == E_ESipRteLogLevel_WAR ){
+      nRet=resip::Log::Warning;
+   }else if( nLevel == E_ESipRteLogLevel_INF ){
+      nRet=resip::Log::Info;
+   }else if( nLevel >= E_ESipRteLogLevel_DEB ){
+     nRet=resip::Log::Debug;
+   }
+   return nRet;
+}
+
+int IfESipRteApi_Init(ESipRteApiCallBack_t* _pstCB, int _nLevel)
+{
+   int nRet=0;
+   THESIPRTEMGR;
+   nRet=THESIPRTEMGR->m_fnInit(_pstCB,_nLevel);
+   return nRet;
+}
+int IfESipRteApi_InitForOnlyDisplay(ESipRteApiCallBack_t* _pstCB)
+{
+   int nRet=0;
+   THESIPRTEMGR;
+   nRet=THESIPRTEMGR->m_fnInit2(_pstCB);
+   return nRet;
+}
+int IfESipRteApi_Init(ESipRteApiCallBack_t* _pstCB,
+                      int _nLevel,
+                      int _nAttachSystem, //0:LB, 1:CM
+                      int _nAttachModule, //0:VLM, 1:CM,LB
+                      int _nHAStatus,     //0:ACTIVE, 1:STANDBY
+                      char* _pStrDir)
+{
+   int nRet=0;
+   THESIPRTEMGR;
+   nRet=THESIPRTEMGR->m_fnInit(_pstCB,_nLevel,_nAttachSystem,_nAttachModule,_nHAStatus,_pStrDir);
+   return nRet;
+}
+
+int IfESipRteApi_SetUpSendOption(PfuncESipRteApiSendOption_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiSendOption=_pFunc;
+   return 0;
+}
+
+void IfESipRteApi_SetHAStatus(int _nHAStatus)
+{
+   THESIPRTEMGR->m_nHAStatus=_nHAStatus;
+}
+
+int IfESipRteApi_SetUpSendUpdate(PfuncESipRteApiSendUpdate_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiSendUpdate=_pFunc;
+   return 0;
+}
+
+int IfESipRteApi_SetUpNotifyChangeRouteStatus(PfuncESipRteApiNotifyChangeRouteStatus_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiNotifyChangeRouteStatus=_pFunc;
+   return 0;
+}
+
+int IfESipRteApi_NotifyTrGWStatus(PfuncESipRteApiNotifyTrGWStatus_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiNotifyTrGWStatus=_pFunc;
+   return 0;
+}
+
+int IfESipRteApi_ChangeLocalNode(PfuncESipRteApiChangeLocalNode_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiChangeLocalNode=_pFunc;
+   return 0;
+}
+
+int IfESipRteApi_PrintLog(PfuncESipRteApiPrintLog_t _pFunc)
+{
+   if(THESIPRTEMGR->m_fnHasbeenInit()==false){
+      return E_RTE_HasNotbeenInit;
+   }
+   THESIPRTECB->m_pfuncESipRteApiPrintLog=_pFunc;
+   return 0;
+}
+
+int IfESipRteApi_SetLogLevel(int _nLevel)
+{
+   THESIPLOGGER->m_fnSetLogLevel(_nLevel);
+   return 0;
+}
+
+///Control TrGW
+int IfESipRteApi_DecisionTrGW(
+         TrGWRoute_t*         _pstTrGW,
+         char*                _pError)            //OUT, error string
+{
+
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstTrGW == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnDecisionTrGW(
+            _pstTrGW,
+            szError);
+      _pstTrGW->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get trgw. %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get trgw. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_SetTrGWStatus(
+         char* _szSvrIP,                           //IN, TCP Server IP
+         int _nSvrPort,                            //IN, TCP Server Port
+         char* _szTrGWIP,                          //IN, TCP Client IP
+         int _nTrGWPort,                           //IN, TCP Client Port
+         bool _bIsConnect)                         //IN, true=Connect, false=disconnect
+
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   char szSvrIP[128];
+   char szTrGWIP[128];
+   memset(szSvrIP,0x00,sizeof(szSvrIP));
+   memset(szTrGWIP,0x00,sizeof(szTrGWIP));
+   do{
+      if( _szSvrIP != NULL ) strncpy(szSvrIP,_szSvrIP,sizeof(szSvrIP)-1);
+      if( _szTrGWIP != NULL ) strncpy(szTrGWIP,_szTrGWIP,sizeof(szTrGWIP)-1);
+
+      if(_nSvrPort==0){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnSetTrGWStatus(
+            szSvrIP, _nSvrPort,szTrGWIP,_nTrGWPort,_bIsConnect);
+   }while(0);
+   return nRet;
+}
+void IfESipRteApi_InCrease1TrGW(
+         char* _szSvrIP,                           //IN, TCP Server IP
+         int _nSvrPort,                            //IN, TCP Server Port
+         char* _szTrGWIP,                          //IN, TCP Client IP
+         int _nTrGWPort)                           //IN, TCP Client Port
+{
+
+   //@R106 201603
+   //int nRet=0;
+   //char szError[256]; szError[0]=0x00;
+   char szSvrIP[128];
+   char szTrGWIP[128];
+   memset(szSvrIP,0x00,sizeof(szSvrIP));
+   memset(szTrGWIP,0x00,sizeof(szTrGWIP));
+   do{
+      if( _szSvrIP != NULL ) strncpy(szSvrIP,_szSvrIP,sizeof(szSvrIP)-1);
+      if( _szTrGWIP != NULL ) strncpy(szTrGWIP,_szTrGWIP,sizeof(szTrGWIP)-1);
+
+      if( _nSvrPort==0 ){
+         //nRet=E_RTE_IllegalParam;
+         break;
+      }
+      THESIPRTEMGR->m_fnInCrease1TrGW(
+            szSvrIP, _nSvrPort,szTrGWIP,_nTrGWPort);
+   }while(0);
+}
+void IfESipRteApi_DecreaseCrease1TrGW(
+         char* _szSvrIP,                           //IN, TCP Server IP
+         int _nSvrPort,                            //IN, TCP Server Port
+         char* _szTrGWIP,                          //IN, TCP Client IP
+         int _nTrGWPort)                           //IN, TCP Client Port
+{
+
+   //@R106 201603
+   //int nRet=0;
+   //char szError[256]; szError[0]=0x00;
+   char szSvrIP[128];
+   char szTrGWIP[128];
+   memset(szSvrIP,0x00,sizeof(szSvrIP));
+   memset(szTrGWIP,0x00,sizeof(szTrGWIP));
+   do{
+      if( _szSvrIP != NULL ) strncpy(szSvrIP,_szSvrIP,sizeof(szSvrIP)-1);
+      if( _szTrGWIP != NULL ) strncpy(szTrGWIP,_szTrGWIP,sizeof(szTrGWIP)-1);
+
+      if(  _nSvrPort==0 ){
+         //nRet=E_RTE_IllegalParam;
+         break;
+      }
+      THESIPRTEMGR->m_fnDeCrease1TrGW(
+            szSvrIP, _nSvrPort,szTrGWIP,_nTrGWPort);
+   }while(0);
+}
+
+void IfESipRteApi_SetCountTrGW(
+         char* _szSvrIP,                           //IN, TCP Server IP
+         int _nSvrPort,                            //IN, TCP Server Port
+         char* _szTrGWIP,                          //IN, TCP Client IP
+         int _nTrGWPort,                           //IN, TCP Client Port
+         int _nCnt)                         //IN, true=Connect, false=disconnect
+
+{
+   //@R106 201603
+   //int nRet=0;
+   //char szError[256]; szError[0]=0x00;
+   char szSvrIP[128];
+   char szTrGWIP[128];
+   memset(szSvrIP,0x00,sizeof(szSvrIP));
+   memset(szTrGWIP,0x00,sizeof(szTrGWIP));
+   do{
+      if( _szSvrIP != NULL ) strncpy(szSvrIP,_szSvrIP,sizeof(szSvrIP)-1);
+      if( _szTrGWIP != NULL ) strncpy(szTrGWIP,_szTrGWIP,sizeof(szTrGWIP)-1);
+
+      if( _nSvrPort==0 ){
+         //nRet=E_RTE_IllegalParam;
+         break;
+      }
+      THESIPRTEMGR->m_fnSetCountTrGW(
+            szSvrIP, _nSvrPort,szTrGWIP,_nTrGWPort,_nCnt);
+   }while(0);
+}
+
+void IfESipRteApi_RecvOption200OK(
+         SipNodeLocal_t* _pLocal,     //IN ip/port/transport type
+         SipNodeRemote_t* _pRemote,
+         bool _bOKRsp,               //IN ip/port/transport type
+         //add response code @R106 201603
+         int  _nResponseCode)
+{
+   if( _pLocal == NULL || _pRemote == NULL ){
+      return;
+   }
+   //mod param @R106 201603
+   //THESIPRTEMGR->m_fnRecvOption200OK(_pLocal,_pRemote,_bOKRsp);
+   THESIPRTEMGR->m_fnRecvOption200OK(_pLocal,_pRemote,_bOKRsp,_nResponseCode);
+}
+int IfESipRteApi_RecvOption(
+         SipNodeLocal_t* _pLocal,      //IN ip/port/transport type
+         SipNodeRemote_t* _pRemote)   //IN ip/port/transport type
+{
+   if( _pLocal == NULL || _pRemote == NULL ){
+      return E_RTE_IllegalParam;
+   }
+   return THESIPRTEMGR->m_fnRecvOption(_pLocal,_pRemote);
+}
+int IfESipRteApi_DecisionTargetByRouteSeq(
+         unsigned int         _uiRSeqID,          //IN - route squence id
+         SipNodeLocal_t*      _pstOGLocal,        //OUT, target local
+         SipNodeRemote_t*     _pstOGRemote,       //OUT, target remote
+         SipRoute_t*          _pstOGRoute,        //OUT, og route
+         char*                _pError,            //OUT, error string
+         bool                 _bOnlyTCP)          //IN,  only transport protocol tcp
+{
+
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   
+   SipRoute_t stOGRoute;
+   memset(&stOGRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstOGLocal == NULL || _pstOGRemote == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnDecisionTargetByRSeq(
+            _uiRSeqID, _pstOGLocal, _pstOGRemote, &stOGRoute, szError,_bOnlyTCP);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get target by rseq(ic none). %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get target by rseq(ic none). %s",nRet,szError);      
+   }else{
+      if( _pstOGRoute != NULL) memcpy(_pstOGRoute,&stOGRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+}
+
+int IfESipRteApi_DecisionTargetByRouteSeq(
+         unsigned int         _uiRSeqID,          //IN - route squence id
+         SipNodeLocal_t*      _pstICLocal,        //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*     _pstICRemote,       //IN/OUT, ip/port/transport type
+         SipNodeLocal_t*      _pstOGLocal,        //OUT, target local
+         SipNodeRemote_t*     _pstOGRemote,       //OUT, target remote
+         SipRoute_t*          _pstICRoute,        //OUT, ic route
+         SipRoute_t*          _pstOGRoute,        //OUT, og route
+         char*                _pError,            //OUT, error string
+         bool                 _bOnlyTCP)          //IN,  only transport protocol tcp
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   
+   SipRoute_t stICRoute;
+   memset(&stICRoute,0x00,sizeof(SipRoute_t));
+   SipRoute_t stOGRoute;
+   memset(&stOGRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstICLocal == NULL || _pstICRemote == NULL ||
+          _pstOGLocal == NULL || _pstOGRemote == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnDecisionTargetByRSeq(
+            _uiRSeqID, _pstICLocal, _pstICRemote, &stICRoute, _pstOGLocal,
+             _pstOGRemote, &stOGRoute, szError,_bOnlyTCP);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get target by rseq. %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get target by rseq. %s",nRet,szError);      
+   }else{
+      if( _pstICRoute != NULL) memcpy(_pstICRoute,&stICRoute,sizeof(SipRoute_t));
+      if( _pstOGRoute != NULL) memcpy(_pstOGRoute,&stOGRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+}
+int IfESipRteApi_DecisionTargetBySpecialRouteSeq(
+         unsigned int         _uiSRSeqID,         //IN - route squence id
+         SipNodeLocal_t*      _pstOGLocal,        //OUT, target local
+         SipNodeRemote_t*     _pstOGRemote,       //OUT, target remote
+         SipRoute_t*          _pstOGRoute,        //OUT, og route
+         char*                _pError,            //OUT, error string
+         bool                 _bOnlyTCP)          //IN,  only transport protocol tcp
+{
+
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   SipRoute_t stOGRoute;
+   memset(&stOGRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstOGLocal == NULL || _pstOGRemote == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnDecisionTargetBySpecialRSeq(
+            _uiSRSeqID, _pstOGLocal, _pstOGRemote, &stOGRoute, szError,_bOnlyTCP);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get target by srseq(ic none). %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get target by srseq(ic none). %s",nRet,szError);      
+   }else{
+      if( _pstOGRoute != NULL) memcpy(_pstOGRoute,&stOGRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+}
+
+int IfESipRteApi_DecisionTargetBySpecialRouteSeq(
+         unsigned int         _uiSRSeqID,         //IN - route squence id
+         SipNodeLocal_t*      _pstICLocal,        //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*     _pstICRemote,       //IN/OUT, ip/port/transport type
+         SipNodeLocal_t*      _pstOGLocal,        //OUT, target local
+         SipNodeRemote_t*     _pstOGRemote,       //OUT, target remote
+         SipRoute_t*          _pstICRoute,        //OUT, ic route
+         SipRoute_t*          _pstOGRoute,        //OUT, og route
+         char*                _pError,            //OUT, error string
+         bool                 _bOnlyTCP)          //IN,  only transport protocol tcp
+{
+
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   SipRoute_t stICRoute;
+   memset(&stICRoute,0x00,sizeof(SipRoute_t));
+   SipRoute_t stOGRoute;
+   memset(&stOGRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstICLocal == NULL || _pstICRemote == NULL ||
+          _pstOGLocal == NULL || _pstOGRemote == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnDecisionTargetBySpecialRSeq(
+            _uiSRSeqID,
+            _pstICLocal,
+            _pstICRemote,
+            &stICRoute,
+            _pstOGLocal,
+            _pstOGRemote,
+            &stOGRoute,          
+            szError,
+            _bOnlyTCP);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get target by srseq. %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get target by srseq. %s",nRet,szError);      
+   }else{
+      if( _pstICRoute != NULL) memcpy(_pstICRoute,&stICRoute,sizeof(SipRoute_t));
+      if( _pstOGRoute != NULL) memcpy(_pstOGRoute,&stOGRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+}
+
+int IfESipRteApi_GetRouteByTransport(
+         SipNodeLocal_t*     _pstLocal,  //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote, //IN/OUT, ip/port/transport type
+         SipRoute_t*         _pstRoute,  //OUT, route info
+         bool        _bCheckRouteStatus, //IN 
+         char*               _pError)    //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   SipRoute_t stRoute;
+   memset(&stRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstLocal == NULL || _pstRemote == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnGetRouteByTransport(
+            _pstLocal,
+            _pstRemote,
+            &stRoute,
+            _bCheckRouteStatus,
+            szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get route by transport. %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to get route by transport. %s",nRet,szError);      
+   }else{
+      if( _pstRoute != NULL) memcpy(_pstRoute,&stRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+
+}
+
+int IfESipRteApi_GetLocalByTransport(
+         SipNodeLocal_t*     _pstLocal,  //IN/OUT, ip/port/transport type
+         char*               _pError)    //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstLocal == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnGetLocalByTransport(
+            _pstLocal,
+            szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get local by transport. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+//@vibc
+int IfESipRteApi_SetLocalStatusByTransport(
+         SipNodeLocal_t*     _pstLocal,  //IN/OUT, ip/port/transport type
+         int                 _nStatus,   //INT, AVAIL(0), UNAVAIL(1)
+         char*               _pError)    //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstLocal == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnSetLocalStatusByTransport(
+            _pstLocal,
+            _nStatus,
+            szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to set local status by transport. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+int IfESipRteApi_GetRemoteByTransport(
+         SipNodeRemote_t*     _pstRemote,  //IN/OUT, ip/port/transport type
+         char*               _pError)    //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstRemote == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnGetRemoteByTransport(
+            _pstRemote,
+            szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get Remote by transport. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+
+int IfESipRteApi_GetRouteByLIDAndRID(
+         unsigned  int       _uiLID,        //IN , Local ID
+         unsigned  int       _uiRID,        //IN , Remote ID
+         SipRoute_t*         _pstRoute,     //OUT, route info
+         char*               _pError)       //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _uiLID <= 0 || _uiRID <= 0 || _pstRoute == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnGetRouteByLIDAndRID(
+            _uiLID,
+            _uiRID,
+            _pstRoute,
+            szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to get route by lid/rid. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+int IfESipRteApi_RecvInitMsgByTransport(
+         SipNodeLocal_t*     _pstLocal,      //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote,     //IN/OUT, ip/port/transport type
+         SipRoute_t*         _pstRoute,      //OUT, route info
+         int&                _rnCurCPS,      //OUT 
+         int&                _rnMaxCPS,      //OUT
+         bool       _bCheckRouteStatus,      //IN,
+         bool                _bPlusCnt,      //IN, InCrease Busy Count
+         char*               _pszMIN,
+         bool                _bAudio,
+         char*               _pError)        //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+
+   SipRoute_t stRoute;
+   memset(&stRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstLocal == NULL || _pstRemote == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnCheckCPSByTransport(
+            _pstLocal, _pstRemote, &stRoute, _rnCurCPS, _rnMaxCPS,
+            _bCheckRouteStatus,true,_bPlusCnt,_pszMIN,_bAudio,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to recv init. %s",nRet, szError);
+      }
+      //SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to recv init. %s",nRet,szError);      
+   }else{
+      if( _pstRoute != NULL) memcpy(_pstRoute,&stRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+
+}
+int IfESipRteApi_RecvInitMsgByRouteID(
+         unsigned int        _uiRouteID,     //IN, Route ID
+         int&                _rnCurCPS,      //OUT 
+         int&                _rnMaxCPS,      //OUT
+         bool                _bPlusCnt,      //IN, InCrease Busy Count
+         char*               _pszMIN,
+         bool                _bAudio,
+         char*               _pError)        //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _uiRouteID <= 0 ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnCheckCPSByRouteID( _uiRouteID,_rnCurCPS,_rnMaxCPS,
+            true,_bPlusCnt,_pszMIN,_bAudio,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to recv init by rte id. %s",nRet, szError);
+      }
+     
+   }
+   return nRet;
+}
+
+int IfESipRteApi_CheckTPSByTransport(
+         SipNodeLocal_t*     _pstLocal,      //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote,     //IN/OUT, ip/port/transport type
+         SipRoute_t*         _pstRoute,      //OUT, route info
+         int&                _rnCurTPS,      //OUT
+         int&                _rnMaxTPS,      //OUT
+         bool        _bCheckRouteStatus,
+         char*               _pError)        //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+
+   SipRoute_t stRoute;
+   memset(&stRoute,0x00,sizeof(SipRoute_t));
+   do{
+      if( _pstLocal == NULL || _pstRemote == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnCheckTPSByTransport(
+            _pstLocal, _pstRemote, &stRoute,_rnCurTPS,_rnMaxTPS,
+            _bCheckRouteStatus,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to check tps. %s",nRet, szError);
+      }
+   }else{
+      if( _pstRoute != NULL) memcpy(_pstRoute,&stRoute,sizeof(SipRoute_t));
+   } 
+   return nRet;
+
+}
+int IfESipRteApi_CheckTPSByRouteID(
+         unsigned int        _uiID,               //IN:RouteID
+         int&                _rnCurTPS,      //OUT
+         int&                _rnMaxTPS,      //OUT
+         char*               _pError)        //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+#if 0
+      if( _uiID == 0 ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+#endif
+      nRet=THESIPRTEMGR->m_fnCheckTPSByRouteID(_uiID,_rnCurTPS,_rnMaxTPS,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to check tps. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+//@vibc
+int IfESipRteApi_SetRouteStatusByRouteID(
+         int                 _nRouteID,
+         int                 _nStatus,
+         char*               _pError)        //OUT, error string
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _nRouteID == 0 ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnSetRouteStatus(NULL,NULL,_nRouteID,true,_nStatus,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to set rstatus. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+int IfESipRteApi_SetRouteStatusByTransport(
+         SipNodeLocal_t*     _pstLocal,    //IN/OUT, ip/port/transport type
+         SipNodeRemote_t*    _pstRemote,   //IN/OUT, ip/port/transport type
+         int                 _nStatus,
+         char*               _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstLocal ==NULL || _pstRemote == NULL){ 
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnSetRouteStatus(_pstLocal,_pstRemote,0,false,_nStatus,szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to set rstatus. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+
+int IfESipRteApi_GetReasonByRouteID(
+         unsigned int _uiRouteID,   //IN,  Route ID
+         int          _nCauseIndex, //IN,  cause index. SipReasonCode_t::ECauseIndex_t (eSipRte.hxx)
+         int&         _rnCauseCode, //OUT, cause code
+         int&         _rnRspCode,   //OUT, response code
+         char*        _pCauseText,  //OUT, cause text
+         char*        _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _uiRouteID <= 0 ||
+          !(_nCauseIndex>=SipReasonCode_t::E_SYSTEM_OVERLOAD_CAUSE  && 
+            _nCauseIndex<=SipReasonCode_t::E_ROUTE_STS_DOWN_CAUSE) ||
+            _pCauseText == NULL ){
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnGetReasonByRouteID( _uiRouteID,_nCauseIndex,_rnCauseCode,
+               _rnRspCode,_pCauseText, szError);
+         
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail too get reason by route id. %s",nRet, szError);
+      }
+   }
+   return nRet;
+}
+int IfESipRteApi_FindTCPRoute(
+      SipNodeLocal_t* _pLocal, SipNodeRemote_t* _pRemote,
+      SipRoute_t* _pRoute)
+{
+   return THESIPRTEMGR->m_fnFindTCPRoute(_pLocal,_pRemote,_pRoute);
+}
+
+int IfESipRteApi_IsNormalSysLoad(
+            int& _rnCurCPU, int& _rnMaxCPU,
+            int& _rnCurMEM, int& _rnMaxMEM)
+{
+   return THESIPDBMGR->m_fnIsNormalSysLoad(_rnCurCPU,_rnMaxCPU,_rnCurMEM,_rnMaxMEM);
+}
+
+void IfESipRteApi_ChangeHAStandby2Active()
+{
+   THESIPRTEMGR->m_nHAStatus=E_ESipRteSystemHAStatus_ACTIVE;
+   THESIPDBMGR->m_nMaintain=1;
+   THESIPRTEMGR->m_fnLoad();
+   THESIPDBMGR->m_nMaintain=0;
+}
+
+bool IfESipRteApi_CheckTrace(
+                  const char*     _pszCaller, //IN,  O, the called number
+                  const char*     _pszCallee, //IN,  O, the callee number
+                  const int       _nRemoteID, //IN,  O, the remote id
+                  int&            _rnCount,
+                  SipCoreTrace_t* _pstTrace[SipTraceDataBase_t::E_MAXNUM])
+{
+
+   return THESIPRTEMGR->m_fnCheckTrace(_pszCaller,_pszCallee,_nRemoteID,_rnCount,_pstTrace);
+}
+
+int IfESipRteApi_CheckMSGSize(int _nSize)
+{
+   return THESIPRTEMGR->m_fnCheckMSGSize(_nSize);
+}
+
+//manage route count
+void IfESipRteApi_InCrease1RouteCount(unsigned int _uiID, bool _bIC)
+{
+   THESIPRTEMGR->m_fnInCrease1RouteCount(_uiID,_bIC);
+}
+void IfESipRteApi_DeCrease1RouteCount(unsigned int _uiID, bool _bIC)
+{
+   THESIPRTEMGR->m_fnDeCrease1RouteCount(_uiID,_bIC);
+}
+void IfESipRteApi_SetZeroRouteCount(unsigned int _uiID)
+{
+   THESIPRTEMGR->m_fnSetZeroRouteCount(_uiID);
+}
+void IfESipRteApi_SetZeroRouteCount_All()
+{
+   THESIPRTEMGR->m_fnSetZeroRouteCount_All();
+}
+
+//ses count
+void IfESipRteApi_InCrease1SesCount()
+{
+   THESIPRTEMGR->m_fnInCrease1SesCount();
+}
+void IfESipRteApi_DeCrease1SesCount()
+{
+   THESIPRTEMGR->m_fnDeCrease1SesCount();
+}
+void IfESipRteApi_SetZeroSesCount()
+{
+   THESIPRTEMGR->m_fnSetZeroSesCount();
+}
+void IfESipRteApi_SetSesCount(int nSes)
+{
+   THESIPRTEMGR->m_fnSetSesCount(nSes);
+}
+
+
+
+
+

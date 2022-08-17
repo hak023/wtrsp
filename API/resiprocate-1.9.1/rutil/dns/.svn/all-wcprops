@@ -1,0 +1,221 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns
+END
+DnsSrvRecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsSrvRecord.cxx
+END
+ExternalDnsFactory.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ExternalDnsFactory.cxx
+END
+DnsStub.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsStub.cxx
+END
+DnsSrvRecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsSrvRecord.hxx
+END
+ExternalDnsFactory.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ExternalDnsFactory.hxx
+END
+DnsStub.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsStub.hxx
+END
+DnsCnameRecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsCnameRecord.cxx
+END
+DnsHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsHandler.hxx
+END
+QueryTypes.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/QueryTypes.cxx
+END
+DnsResourceRecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsResourceRecord.cxx
+END
+ExternalDns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ExternalDns.hxx
+END
+DnsCnameRecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsCnameRecord.hxx
+END
+QueryTypes.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/QueryTypes.hxx
+END
+AresDns.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/AresDns.cxx
+END
+DnsResourceRecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsResourceRecord.hxx
+END
+AresCompat.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/AresCompat.hxx
+END
+AresDns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/AresDns.hxx
+END
+RRCache.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRCache.cxx
+END
+RRCache.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRCache.hxx
+END
+DnsThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsThread.cxx
+END
+RRList.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRList.cxx
+END
+RRFactory.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRFactory.hxx
+END
+DnsThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsThread.hxx
+END
+DnsHostRecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsHostRecord.cxx
+END
+RRList.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRList.hxx
+END
+RROverlay.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RROverlay.cxx
+END
+DnsHostRecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsHostRecord.hxx
+END
+DnsAAAARecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsAAAARecord.cxx
+END
+DnsNaptrRecord.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsNaptrRecord.cxx
+END
+RROverlay.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RROverlay.hxx
+END
+DnsAAAARecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsAAAARecord.hxx
+END
+DnsNaptrRecord.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/DnsNaptrRecord.hxx
+END
+LocalDns.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/LocalDns.cxx
+END
+RRVip.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRVip.cxx
+END
+LocalDns.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/LocalDns.hxx
+END
+RRVip.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/RRVip.hxx
+END

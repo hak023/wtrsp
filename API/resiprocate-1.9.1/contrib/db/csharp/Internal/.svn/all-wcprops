@@ -1,0 +1,137 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal
+END
+libdb_csharp.cs
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/libdb_csharp.cs
+END
+DB_SEQUENCE.cs
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_SEQUENCE.cs
+END
+DB_TXN.cs
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_TXN.cs
+END
+db_lockop_t.cs
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/db_lockop_t.cs
+END
+DbConstants.cs
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DbConstants.cs
+END
+DB_REPMGR_SITE.cs
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_REPMGR_SITE.cs
+END
+DB.cs
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB.cs
+END
+db_lockmode_t.cs
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/db_lockmode_t.cs
+END
+DBTYPE.cs
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DBTYPE.cs
+END
+DBC.cs
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DBC.cs
+END
+DB_COMPACT.cs
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_COMPACT.cs
+END
+Delegates.cs
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/Delegates.cs
+END
+DB_LOCK.cs
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_LOCK.cs
+END
+DB_ENV.cs
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_ENV.cs
+END
+db_recops.cs
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/db_recops.cs
+END
+DB_LSN.cs
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_LSN.cs
+END
+StatStructs.cs
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/StatStructs.cs
+END
+DB_LOCKREQ.cs
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_LOCKREQ.cs
+END
+DB_PREPLIST.cs
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_PREPLIST.cs
+END
+libdb_csharpPINVOKE.cs
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/libdb_csharpPINVOKE.cs
+END
+DB_KEY_RANGE.cs
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DB_KEY_RANGE.cs
+END
+DBT.cs
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/db/csharp/Internal/DBT.cs
+END

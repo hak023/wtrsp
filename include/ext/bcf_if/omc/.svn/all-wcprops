@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/1380/trunk/src/include/ext/bcf_if/omc
+END
+calltrace.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/omc/calltrace.h
+END
+alarm.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/1380/trunk/src/include/ext/bcf_if/omc/alarm.h
+END
+ss7control.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/omc/ss7control.h
+END
+omc.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/547/trunk/src/include/ext/bcf_if/omc/omc.h
+END
+apptypes.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/omc/apptypes.h
+END
+omc_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/547/trunk/src/include/ext/bcf_if/omc/omc_common.h
+END
+shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/omc/shm.h
+END

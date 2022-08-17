@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn
+END
+StdAfx.h
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/StdAfx.h
+END
+DSPlugIn.rgs
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.rgs
+END
+DSPlugIn.def
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.def
+END
+TestRunnerDSPlugin.idl
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/TestRunnerDSPlugin.idl
+END
+DSAddIn.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSAddIn.cpp
+END
+DSPlugIn.rc
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.rc
+END
+DSAddIn.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSAddIn.h
+END
+COMHelper.h
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/COMHelper.h
+END
+DSPlugIn.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.cpp
+END
+StdAfx.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/StdAfx.cpp
+END
+DSPlugIn.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.dsp
+END
+ReadMe.txt
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/ReadMe.txt
+END
+DSPlugIn.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/DSPlugIn.h
+END
+resource.h
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/resource.h
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DSPlugIn/.cvsignore
+END

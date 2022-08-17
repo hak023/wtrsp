@@ -1,0 +1,113 @@
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp
+END
+MainFrm.h
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/MainFrm.h
+END
+StdAfx.h
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/StdAfx.h
+END
+HostApp.rc
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostApp.rc
+END
+HostAppDoc.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostAppDoc.cpp
+END
+HostAppView.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostAppView.cpp
+END
+HostAppDoc.h
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostAppDoc.h
+END
+HostAppView.h
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostAppView.h
+END
+HostApp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostApp.cpp
+END
+HostApp.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostApp.dsp
+END
+HostApp.h
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostApp.h
+END
+ExampleTestCase.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/ExampleTestCase.cpp
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/Makefile.am
+END
+MainFrm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/MainFrm.cpp
+END
+HostApp.dsw
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/HostApp.dsw
+END
+StdAfx.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/StdAfx.cpp
+END
+Resource.h
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/Resource.h
+END
+ExampleTestCase.h
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/ExampleTestCase.h
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/examples/msvc6/HostApp/.cvsignore
+END

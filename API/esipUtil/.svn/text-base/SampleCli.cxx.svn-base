@@ -1,0 +1,117 @@
+#include "TreeCli.hxx"
+using namespace eSipUtil;
+/***************************** CLI Thread Functions ***************************************/
+TreeCli *g_pclsCli = NULL;
+void g_fnCreateSampleCli(const char *_pszPromptName,ECliMode_t _eT,
+								const char * _pszLocalIP,unsigned int _unLocalPort)
+{
+	g_pclsCli = new TreeCli(HCli,_pszPromptName);
+	g_pclsCli->m_fnInit(_eT,_pszLocalIP,_unLocalPort);
+}
+void g_fnTerminateSampleCli()
+{
+	g_pclsCli->m_fnStop();
+	delete g_pclsCli; g_pclsCli = NULL;
+}
+/******************************* Cmd CallBack Functions Define ********************************/
+static void s_fnCbkFree(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+static void s_fnCbkNotMatch(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+static void s_fnCbkDep1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+static void s_fnCbkDep1_1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+static void s_fnCbkDep2Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+static void s_fnCbkDep2_1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num);
+/*
+                                                      <Menu Tree Table>
+
+Element < parents Directory + child Directory + key String + Function + Command Description>
+* parents dir 은 상위 메뉴 트리 디렉토리 핸들 지정
+* child dir 은 하위 메뉴 트리 디렉토리 핸들 지정, 
+  - 있으면 디렉토리 이고 없으면 명령어임(이때는 명령어 수행 함수 지정 해야 함)
+* key string 은 디렉토리일 경우는 디렉토리를 의미 하고 명령어일 경우는 명령어 수행 키가 됨
+* Fucntion 은 명령어일 경우만 적용 되고 명령어 수행 함수임
+* Cmd Desc 은 명령어나 디렉토리에 대한 부연 설명
+*/
+extern CliParam_t HCli[];
+extern CliParam_t HCliDepth1[];
+extern CliParam_t HCliDepth1_1[];
+extern CliParam_t HCliDepth2[];
+extern CliParam_t HCliDepth2_1[];
+/********************************** Root Handler *****************************************/
+CliParam_t HCli[]=
+{
+	{NULL,NULL,"other",s_fnCbkFree,"파라미터를 자유롭게 사용하세요"},
+	{NULL,HCliDepth1,"dep1",NULL,"dep1 dir"},                                           //  directory, Empty Cbk_Func
+	{NULL,HCliDepth1_1,"dep1-1",NULL,"dep1-1 dir"},                                 //  directory, Empty Cbk_Func
+	{NULL,NULL,"",s_fnCbkNotMatch,"not match param 입니다."},
+	{NULL,NULL,"",NULL,""},
+};
+/*********************************** Depth 1 Handler *************************************/
+CliParam_t HCliDepth1[]=
+{
+	{HCli,NULL,"cmd",s_fnCbkDep1Cmd,"Dep1 Sample Cmd"},
+	{HCli,HCliDepth2,"dep2",NULL,"dep2 dir"},                                           //  directory, Empty Cbk_Func
+	{HCli,NULL,"",s_fnCbkNotMatch,"not match param 입니다."},
+	{NULL,NULL,"",NULL,""},
+};
+CliParam_t HCliDepth1_1[]=
+{
+	{HCli,NULL,"cmd",s_fnCbkDep1_1Cmd,"Dep1_1 Sample Cmd"},
+	{HCli,HCliDepth2_1,"dep2-1",NULL,"dep2_1 dir"},                                           //  directory, Empty Cbk_Func	
+	{HCli,NULL,"",s_fnCbkNotMatch,"not match param 입니다."},
+	{NULL,NULL,"",NULL,""},
+};
+/************************************ Depth 2  Handler ***********************************/
+CliParam_t HCliDepth2[]=
+{
+	{HCliDepth1,NULL,"cmd",s_fnCbkDep2Cmd,"Dep2 Sample Cmd"},
+	{HCliDepth1,NULL,"",s_fnCbkNotMatch,"not match param 입니다."},
+	{NULL,NULL,"",NULL,""},
+};
+CliParam_t HCliDepth2_1[]=
+{
+	{HCliDepth1_1,NULL,"cmd",s_fnCbkDep2_1Cmd,"Dep2_1 Sample Cmd"},
+	{HCliDepth1_1,NULL,"",s_fnCbkNotMatch,"not match param 입니다."},
+	{NULL,NULL,"",NULL,""},
+};
+/******************************* CallBack CLI Functions ************************************/
+static void s_fnCbkFree(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{
+	/***** Add Your Code *********/
+	for(int i = 1;i<param_num;i++)
+	{
+		g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"Catch val[%d] = %s",i,Arg[i]);
+	}
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk," ");
+	/******** End ***************/
+}
+static void s_fnCbkNotMatch(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{	
+	/***** Add Your Code *********/
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"잘못  입력 하였습니다.");
+	/******** End ***************/
+}
+static void s_fnCbkDep1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{
+	/***** Add Your Code *********/
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"%s User Code",__func__);
+	/******** End ***************/
+}
+static void s_fnCbkDep1_1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{
+	/***** Add Your Code *********/
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"%s User Code",__func__);
+	/******** End ***************/
+}
+static void s_fnCbkDep2Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{
+	/***** Add Your Code *********/
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"%s User Code",__func__);
+	/******** End ***************/
+}
+void s_fnCbkDep2_1Cmd(TreeCli *pCli,CliSession * _pclsSess, CliNet_t *_pstPk, char *Arg[],int param_num)
+{
+	/***** Add Your Code *********/
+	g_fnCliPrintEvVar(pCli,_pclsSess,_pstPk,"%s User Code",__func__);
+	/******** End ***************/
+}
+

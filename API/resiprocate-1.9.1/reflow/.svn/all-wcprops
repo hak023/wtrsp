@@ -1,0 +1,137 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow
+END
+FakeSelectSocketDescriptor.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FakeSelectSocketDescriptor.cxx
+END
+FlowManagerSubsystem.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowManagerSubsystem.cxx
+END
+FlowDtlsSocketContext.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowDtlsSocketContext.hxx
+END
+FakeSelectSocketDescriptor.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FakeSelectSocketDescriptor.hxx
+END
+FlowManagerSubsystem.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowManagerSubsystem.hxx
+END
+FlowManagerException.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowManagerException.hxx
+END
+ErrorCode.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/ErrorCode.hxx
+END
+MediaStream.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/MediaStream.cxx
+END
+MediaStream.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/MediaStream.hxx
+END
+FlowManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowManager.cxx
+END
+FlowDtlsTimerContext.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowDtlsTimerContext.cxx
+END
+reflow_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/reflow_8_0.vcproj
+END
+reflow_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/reflow_10_0.vcxproj
+END
+reflow_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/reflow_9_0.vcproj
+END
+Flow.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/Flow.cxx
+END
+FlowManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowManager.hxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/Makefile.am
+END
+FlowDtlsTimerContext.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowDtlsTimerContext.hxx
+END
+ReadMe.txt
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/ReadMe.txt
+END
+FlowDtlsSocketContext.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/FlowDtlsSocketContext.cxx
+END
+Flow.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/Flow.hxx
+END
+reflow_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reflow/reflow_10_0.vcxproj.filters
+END

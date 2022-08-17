@@ -1,0 +1,359 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares
+END
+ares.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares.h
+END
+ares_parse_a_reply.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_parse_a_reply.c
+END
+ares_dns.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_dns.h
+END
+ares_destroy.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_destroy.c
+END
+ares_send.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_send.c
+END
+ares_local.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_local.c
+END
+ares_parse_ptr_reply.3
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_parse_ptr_reply.3
+END
+ares_fds.3
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_fds.3
+END
+ares_mkquery.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_mkquery.c
+END
+ares_process.3
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_process.3
+END
+ares_expand_name.3
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_expand_name.3
+END
+ares_local.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_local.h
+END
+ares_strerror.3
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_strerror.3
+END
+ares_gethostbyaddr.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_gethostbyaddr.c
+END
+ahost.c
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ahost.c
+END
+ares_parse_a_reply.3
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_parse_a_reply.3
+END
+ares_query.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_query.c
+END
+ares_search.c
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_search.c
+END
+ares_free_string.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_string.c
+END
+ares_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_8_0.vcproj
+END
+ares_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_10_0.vcxproj
+END
+configure.ac
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/configure.ac
+END
+ares_gethostbyname.c
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_gethostbyname.c
+END
+ares_destroy.3
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_destroy.3
+END
+ares_send.3
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_send.3
+END
+ares_socketfunc.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_socketfunc.h
+END
+ares_mkquery.3
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_mkquery.3
+END
+ares_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_10_0.vcxproj.filters
+END
+NEWS
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/NEWS
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/.cvsignore
+END
+ares_gethostbyaddr.3
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_gethostbyaddr.3
+END
+ares_free_hostent.c
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_hostent.c
+END
+ares_query.3
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_query.3
+END
+ares_search.3
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_search.3
+END
+ares_timeout.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_timeout.c
+END
+ares_free_string.3
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_string.3
+END
+ares_free_errmem.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_errmem.c
+END
+ares_compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_compat.h
+END
+ares_gethostbyname.3
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_gethostbyname.3
+END
+adig.c
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/adig.c
+END
+ares_version.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_version.h
+END
+ares_init_options.3
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_init_options.3
+END
+ares__close_sockets.c
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares__close_sockets.c
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/README
+END
+ares_init.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_init.c
+END
+ares_free_hostent.3
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_hostent.3
+END
+ares_timeout.3
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_timeout.3
+END
+ares_free_errmem.3
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_free_errmem.3
+END
+ares_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_9_0.vcproj
+END
+ares_parse_ptr_reply.c
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_parse_ptr_reply.c
+END
+ares_fds.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_fds.c
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/Makefile.am
+END
+ares_process.c
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_process.c
+END
+ares_expand_name.c
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_expand_name.c
+END
+ares_private.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_private.h
+END
+ares__read_line.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares__read_line.c
+END
+ares__get_hostent.c
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares__get_hostent.c
+END
+ares_strerror.c
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_strerror.c
+END
+ares_init.3
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/rutil/dns/ares/ares_init.3
+END

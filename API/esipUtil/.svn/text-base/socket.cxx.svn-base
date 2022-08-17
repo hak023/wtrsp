@@ -1,0 +1,900 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <ctype.h>
+#include <sys/un.h>
+#include <sys/ioctl.h>
+#include <memory.h>
+#include <fcntl.h>
+
+#include "socket.hxx"
+#include "define.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+static const char * s_pszIpv6LinkLocalPrefix = "fe80:";
+
+/*====================================
+1. return : -1(fail), 0<=(created socket fd)
+2. argument
+	- nIpVersion : 4(ipv4), 6(ipv6)
+=====================================*/
+int Socket::createSocket(int _nIpVersion, ETransportType_t _eTransportType, const SocketCfg & _rstSocketCfg)
+{
+	int nNewFD = -1;
+	int nSocketType = ( _nIpVersion == 6 ? PF_INET6 : PF_INET );
+
+	if( _eTransportType == E_TRANSPORT_TYPE_tcp || _eTransportType == E_TRANSPORT_TYPE_tls )
+		nNewFD = socket(nSocketType, SOCK_STREAM, 0);
+	else
+		nNewFD = socket(nSocketType, SOCK_DGRAM, 0);
+	
+	if( nNewFD >= 0 )
+		setSocketCfg(nNewFD, _rstSocketCfg);
+
+	return nNewFD;
+}
+
+/*====================================
+1. return : -1(fail), 0(success)
+2. argument
+	- nIpVersion : 4(ipv4), 6(ipv6)
+=====================================*/
+int Socket::bindSocket(int _nFd, const char * _pszLocalIpAddr, int _nLocalPort, int _nIpVersion)
+{
+	if( _nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "bindSocket : fail : Fd[%d] : invalid argument", _nFd);
+		return -1;
+	}
+	
+	if( _nIpVersion == 4 )		//ipv4
+	{
+		struct sockaddr_in sockAddr;
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin_family = AF_INET;
+		if( _pszLocalIpAddr && strlen(_pszLocalIpAddr) > 0 && strcmp(_pszLocalIpAddr, "0.0.0.0") != 0 )
+		{
+			long lAddress = inet_addr(_pszLocalIpAddr);
+			if (lAddress == -1)
+			{
+				LogInternal(E_LOG_ERR, "bindSocket : fail : IP[%s], Port[%d] : inet_addr() of Ipv4", _pszLocalIpAddr, _nLocalPort);
+				return -1;
+			}
+			sockAddr.sin_addr.s_addr = lAddress;
+		}
+		else
+		{
+			sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+		}
+		sockAddr.sin_port = htons(_nLocalPort);
+		if( bind(_nFd, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "bindSocket : fail : IP[%s], Port[%d] : bind() of Ipv4: %s", _pszLocalIpAddr, _nLocalPort, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+	else									//ipv6
+	{	
+		struct sockaddr_in6 sockAddr;
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin6_family = AF_INET6;
+		if( _pszLocalIpAddr && strlen(_pszLocalIpAddr) > 0 && strcmp(_pszLocalIpAddr, "0.0.0.0") != 0 )
+		{
+			if( inet_pton(AF_INET6, _pszLocalIpAddr, &(sockAddr.sin6_addr)) != 1 )
+			{
+				LogInternal(E_LOG_ERR, "bindSocket : fail : IP[%s], Port[%d] : inet_addr() of Ipv6", _pszLocalIpAddr, _nLocalPort);
+				return -1;
+			}
+		}
+		else
+		{
+			sockAddr.sin6_addr = in6addr_any;
+		}
+		sockAddr.sin6_port = htons(_nLocalPort);
+		setScopeIdForIpv6(_pszLocalIpAddr, sockAddr);
+		if( bind(_nFd, (struct sockaddr *)&sockAddr, sizeof(sockAddr)) != 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "bindSocket : fail : IP[%s], Port[%d] : bind() of Ipv6 : %s", _pszLocalIpAddr, _nLocalPort, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+
+	LogInternal(E_LOG_INFO, "bindSocket : success : IP[%s], Port[%d]", _pszLocalIpAddr, _nLocalPort);
+	
+	return 0;
+}
+
+/*====================================
+1. return : -1(fail), 0(success), 1(trying)
+2. argument
+	- nIpVersion : 4(ipv4), 6(ipv6)
+=====================================*/
+int Socket::connectSocket(int _nFd, const char * _pszRemoteIp, int _nRemotePort, int _nIpVersion)
+{
+	if( _nFd < 0 || !_pszRemoteIp || strlen(_pszRemoteIp) <= 0 || _nRemotePort <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "connectSocket : fail : Fd[%d], RemoteIp[%p], RemotePort[%d] : invalid argument", _nFd, _pszRemoteIp, _nRemotePort);
+		return -1;
+	}
+
+	int nRet = -1;
+	
+	if( _nIpVersion == 4 )		//ipv4
+	{
+		struct sockaddr_in sockAddr;
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin_family = AF_INET;
+		long lAddress = inet_addr(_pszRemoteIp);
+		if (lAddress == -1)
+		{
+			LogInternal(E_LOG_ERR, "connectSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d] : inet_addr() of Ipv4", _nFd, _pszRemoteIp, _nRemotePort);
+			return -1;
+		}
+		sockAddr.sin_addr.s_addr = lAddress;
+		sockAddr.sin_port = htons(_nRemotePort);
+		nRet = connect(_nFd, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+	}
+	else									//ipv6
+	{	
+		struct sockaddr_in6 sockAddr;
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin6_family = AF_INET6;
+		if( inet_pton(AF_INET6, _pszRemoteIp, &(sockAddr.sin6_addr)) != 1 )
+		{
+			LogInternal(E_LOG_ERR, "connectSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d] : inet_pton() of Ipv6", _nFd, _pszRemoteIp, _nRemotePort);
+			return -1;
+		}
+		sockAddr.sin6_port = htons(_nRemotePort);
+		nRet = connect(_nFd, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+	}
+
+	if( nRet == 0 )
+	{
+		LogInternal(E_LOG_DEBUG, "connectSocket : success : Fd[%d], RmtIP[%s], RmtPort[%d]", _nFd, _pszRemoteIp, _nRemotePort);
+		return 0;
+	}
+	else
+	{
+		if( errno == EINPROGRESS || errno == EALREADY )
+		{
+			return 1;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "connectSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d] : connect() : %s", 
+														_nFd, _pszRemoteIp, _nRemotePort, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+}
+
+/*====================================
+used for TCP
+1. return : -3(invalid argument), -1(socket fail), 0<=(success)
+=====================================*/
+int Socket::sendSocket(int _nFd, const void * _pBuffer, unsigned int _unSndLen, bool & _bWouldBlock)
+{
+	if( !_pBuffer || _unSndLen <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "sendSocket : fail : Fd[%d], Buffer[%p], SndLen[%u] : invalid argument", _nFd, _pBuffer, _unSndLen);
+		return -3;
+	}
+
+	int nRet = -1;
+	unsigned int unSndingLen = 0;
+	unsigned int unIntrCnt = 0;
+	_bWouldBlock = false;
+
+	while( unSndingLen < _unSndLen )
+	{
+		nRet = write(_nFd, (const void *)((const char *)_pBuffer + unSndingLen), _unSndLen - unSndingLen);
+		if( nRet < 0 )
+		{
+			if( errno == EWOULDBLOCK || errno == EAGAIN )
+			{
+				LogInternal(E_LOG_ERR, "sendSocket : success : Fd[%d] : send partially b/c socket buffer is full : send length[%u/%u]", _nFd, unSndingLen, _unSndLen);
+				_bWouldBlock = true; 
+				return unSndingLen;
+			}
+			else if( errno == EINTR )
+			{
+				++unIntrCnt;
+				if( unIntrCnt < 5 )
+					continue;
+				else
+					return unSndingLen;
+			}
+			else
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "sendSocket : fail : Fd[%d] : write() : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+				return -1;
+			}
+		}
+		else if( nRet == 0 )
+		{
+			break;
+		}
+		else
+			unSndingLen += nRet;
+	}
+
+	LogInternal(E_LOG_DEBUG, "sendSocket : success : Fd[%d], SndLen[%u], SndingLen[%u]", _nFd, _unSndLen, unSndingLen);
+
+	return (int)unSndingLen;
+}
+
+/*====================================
+used for TCP
+1. return : -3(invalid argument), -2(close by peer), -1(socket error), 0<=(received data len)
+=====================================*/
+int Socket::recvSocket(int _nFd, const void * _pBuffer, unsigned int _unMaxBuffLen, bool & _bWouldBlock)
+{
+	if( !_pBuffer || _unMaxBuffLen <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "recvSocket : fail : Fd[%d], Buffer[%p], MaxBufferLen[%u] : invalid argument", _nFd, _pBuffer, _unMaxBuffLen);
+		return -3;
+	}
+
+	int nRet = -1;
+	unsigned int unRcvLen = 0;
+	unsigned int unIntrCnt = 0;
+	_bWouldBlock = false;
+
+	while( unRcvLen < _unMaxBuffLen )
+	{
+		nRet = read(_nFd, (void *)((char *)_pBuffer + unRcvLen), _unMaxBuffLen - unRcvLen);
+
+		if( nRet < 0 )
+		{
+			if( errno == EWOULDBLOCK || errno == EAGAIN )
+			{
+				LogInternal(E_LOG_DEBUG, "recvSocket : success : Fd[%d] : none of data to read. RcvLen[%u]", _nFd, unRcvLen);
+				_bWouldBlock = true;
+				return unRcvLen;
+			}
+			else if( errno == EINTR )
+			{
+				++unIntrCnt;
+				if( unIntrCnt < 5 )
+					continue;
+				else
+					return unRcvLen;
+			}
+			else
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "recvSocket : fail : Fd[%d] : read() : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+				return -1;
+			}
+		}
+		else if( nRet == 0 )
+		{
+			LogInternal(E_LOG_INFO, "recvSocket : fail : Fd[%d] : read() : close by peer", _nFd);
+			return -2;
+		}
+		else
+			unRcvLen += nRet;
+	}
+
+	LogInternal(E_LOG_DEBUG, "recvSocket : success : Fd[%d] : recv length[%u]", _nFd, unRcvLen);
+
+	return (int)unRcvLen;
+}
+
+/*====================================
+used for UDP
+1. return : -4(invalid argument), -3(interrupt error), -2(wouldblock), -1(socket error), 0<=(send data len)
+=====================================*/
+int Socket::sendToSocket(int _nFd, const void * _pBuffer, unsigned int _unSndLen, int _nFlag, const char * _pszDstIp, int _nDstPort)
+{
+	if( !_pBuffer || _unSndLen <= 0 || !_pszDstIp || strlen(_pszDstIp) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], Buffer[%p], RemoteIp[%s], SndLen[%u] : invalid argument", 
+												_nFd, _pBuffer, _pszDstIp, _unSndLen);
+		return -4;
+	}
+
+	int nRet = -1;
+	struct sockaddr * pSockAddr = NULL;
+	struct sockaddr_in6 sockAddr6;
+	struct sockaddr_in sockAddr4;
+	int nAddrLen = 0;
+
+	//target address setting
+	if( _pszDstIp )
+	{
+		if( isIpv6(_pszDstIp) )
+		{
+			memset(&sockAddr6, 0, sizeof(sockAddr6));
+			sockAddr6.sin6_family = AF_INET6;
+			if( inet_pton(AF_INET6, _pszDstIp, &(sockAddr6.sin6_addr)) != 1 )
+
+			{
+				LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : inet_pton() of Ipv6", _nFd, _pszDstIp, _nDstPort, _unSndLen);
+				return -4;
+			}
+			sockAddr6.sin6_port = htons(_nDstPort);
+			pSockAddr = (struct sockaddr *)&sockAddr6;
+			nAddrLen = sizeof(sockAddr6);
+		}
+		else
+		{
+			memset(&sockAddr4, 0, sizeof(sockAddr4));
+			sockAddr4.sin_family = AF_INET;
+			long lAddress = inet_addr(_pszDstIp);
+			if( lAddress == -1 )
+			{
+				LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : inet_addr() of Ipv4", _nFd, _pszDstIp, _nDstPort, _unSndLen);
+				return -4;
+			}
+			sockAddr4.sin_addr.s_addr = lAddress;
+			sockAddr4.sin_port = htons(_nDstPort);
+			pSockAddr = (struct sockaddr *)&sockAddr4;
+			nAddrLen = sizeof(sockAddr4);
+		}
+	}
+
+	nRet = sendto(_nFd, _pBuffer, _unSndLen, _nFlag, pSockAddr, nAddrLen);
+	if( nRet < 0 )
+	{
+		if( errno == EWOULDBLOCK || errno == EAGAIN )
+		{
+			LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : wouldblock", _nFd, _pszDstIp, _nDstPort, _unSndLen);
+			return -2;
+		}
+		else if( errno == EINTR )
+		{
+			LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : inturrupt", _nFd, _pszDstIp, _nDstPort, _unSndLen);
+			return -3;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : %s", 
+													_nFd, _pszDstIp, _nDstPort, _unSndLen, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+	else if( nRet == 0 )
+	{
+		LogInternal(E_LOG_ERR, "sendToSocket : fail : Fd[%d], RmtIP[%s], RmtPort[%d], SndLen[%u] : no Write", _nFd, _pszDstIp, _nDstPort, _unSndLen);
+		return 0;
+	}
+
+	LogInternal(E_LOG_DEBUG, "sendToSocket : success : Fd[%d], SndLen[%u], SndingLen[%d]", _nFd, _unSndLen, nRet);
+
+	return nRet;
+}
+
+/*====================================
+used for UDP
+1. return : -4(invalid argument), -3(interrupt error), -2(wouldblock), -1(socket error), 0<=(recv data len)
+=====================================*/
+int Socket::recvFromSocket(int _nFd, void * _pBuffer, unsigned int _unMaxBuffLen, int _nFlag, int _nIpVersion, char * _pszSrcIp, int _nSrcIpLen, int * _pnSrcPort)
+{
+	if( !_pBuffer || _unMaxBuffLen <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "recvFromSocket : fail : Fd[%d], Buffer[%p], MaxBufferLen[%u] : invalid argument", _nFd, _pBuffer, _unMaxBuffLen);
+		return -4;
+	}
+
+	int nRet = 0;
+	socklen_t nAddrLen = 0;
+	struct sockaddr_in6 sockAddr6;
+	struct sockaddr_in sockAddr4;
+	
+	if( _pszSrcIp && _pnSrcPort )
+	{
+		if( _nIpVersion == 6 )
+		{
+			nAddrLen = sizeof(sockAddr6);
+			nRet = recvfrom(_nFd, _pBuffer, _unMaxBuffLen, _nFlag, (struct sockaddr *)&sockAddr6, &nAddrLen);
+			inet_ntop(AF_INET6, &sockAddr6.sin6_addr, _pszSrcIp, _nSrcIpLen);
+			*_pnSrcPort = ntohs(sockAddr6.sin6_port);
+		}
+		else
+		{
+			nAddrLen = sizeof(sockAddr4);
+			nRet = recvfrom(_nFd, _pBuffer, _unMaxBuffLen, _nFlag, (struct sockaddr *)&sockAddr4, &nAddrLen);
+			inet_ntop(AF_INET, &sockAddr4.sin_addr, _pszSrcIp, _nSrcIpLen);
+			*_pnSrcPort = ntohs(sockAddr4.sin_port);
+		}
+	}
+	else
+	{
+		nRet = recvfrom(_nFd, _pBuffer, _unMaxBuffLen, _nFlag, NULL, NULL);
+	}
+	
+	if( nRet < 0 )
+	{
+		if( errno == EWOULDBLOCK || errno == EAGAIN )
+		{
+			LogInternal(E_LOG_DEBUG, "recvFromSocket : success : Fd[%d] : none of data to read", _nFd);
+			return -2;
+		}
+		else if( errno == EINTR )
+		{
+			LogInternal(E_LOG_ERR, "recvFromSocket : fail : Fd[%d] : read() : inturrupt", _nFd);
+			return -3;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "recvFromSocket : fail : Fd[%d] : read() : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+
+	LogInternal(E_LOG_DEBUG, "recvFromSocket : success : Fd[%d] : recv length[%d]", _nFd, nRet);
+
+	return nRet;
+}
+
+void Socket::getInfNameByIp(const char * _pszIpAddress, char * _pszInfName)
+{
+	struct ifaddrs *myaddrs, *ifa;
+	struct sockaddr_in *s4;
+	struct sockaddr_in6 *s6;
+	int status;
+	char buf[64];
+
+	if( !_pszIpAddress )
+	{
+		strcpy(_pszInfName, "eth0");
+		return;
+	}
+
+	status = getifaddrs(&myaddrs);
+	if (status != 0)
+		return;
+
+	for(ifa = myaddrs; ifa != NULL; ifa = ifa->ifa_next)
+	{
+		if (ifa->ifa_addr == NULL) continue;
+		if ((ifa->ifa_flags & IFF_UP) == 0) continue;
+
+		if (ifa->ifa_addr->sa_family == AF_INET)
+		{
+			s4 = (struct sockaddr_in *)(ifa->ifa_addr);
+			if (inet_ntop(ifa->ifa_addr->sa_family, (void *)&(s4->sin_addr), buf, sizeof(buf)) == NULL)
+			{
+				freeifaddrs(myaddrs);
+				return;
+			}
+		}
+		else if (ifa->ifa_addr->sa_family == AF_INET6)
+		{
+			s6 = (struct sockaddr_in6 *)(ifa->ifa_addr);
+			if (inet_ntop(ifa->ifa_addr->sa_family, (void *)&(s6->sin6_addr), buf, sizeof(buf)) == NULL)
+			{
+				freeifaddrs(myaddrs);
+				return;
+			}
+		}
+
+		if( strcmp(buf, _pszIpAddress) == 0 )
+		{
+			strcpy(_pszInfName, ifa->ifa_name);
+			freeifaddrs(myaddrs);
+			return;
+		}
+	}
+
+	freeifaddrs(myaddrs);
+}
+
+
+void Socket::closeSocket(int _nFd)
+{
+	if( _nFd >= 0 )
+		close(_nFd);
+}
+
+void Socket::setSocketCfg(int _nFd, const SocketCfg & _rstSocketCfg)
+{
+	if( _nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "setSocketOpt : fail : invalid Fd[%d]", _nFd);
+		return;
+	}
+
+	/*==== block setting ====*/
+	{
+		int nFlags  = fcntl(_nFd, F_GETFL, 0);	
+		if( _rstSocketCfg.m_nBlock == 1 )
+			fcntl(_nFd, F_SETFL, nFlags & ~O_NONBLOCK );
+		else if( _rstSocketCfg.m_nBlock == 0 )
+			fcntl(_nFd, F_SETFL, nFlags | O_NONBLOCK );
+	}
+
+	/*==== linger ====*/
+	if( _rstSocketCfg.m_nUseLinger == 0 || _rstSocketCfg.m_nUseLinger == 1 )
+	{
+		struct linger stLinger;
+		stLinger.l_onoff = _rstSocketCfg.m_nUseLinger;
+		stLinger.l_linger = _rstSocketCfg.m_nLingerWaitTime;
+		if( setsockopt(_nFd, SOL_SOCKET, SO_LINGER, &stLinger, sizeof(struct linger)) != 0)
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_LINGER : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+		}
+	}
+
+	/*==== reuse setting ====*/
+	if( _rstSocketCfg.m_nReuse == 0 || _rstSocketCfg.m_nReuse == 1 )
+	{
+		int nOn = _rstSocketCfg.m_nReuse;
+		if( setsockopt(_nFd, SOL_SOCKET, SO_REUSEADDR, &nOn, sizeof(nOn)) != 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_REUSEADDR : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+		}
+	}
+
+	/*==== buffer-size setting ====*/
+	if( _rstSocketCfg.m_nRcvSocketBufferSize > 0 )
+	{
+		if( setsockopt(_nFd, SOL_SOCKET, SO_RCVBUF, &(_rstSocketCfg.m_nRcvSocketBufferSize), sizeof(_rstSocketCfg.m_nRcvSocketBufferSize)) == 0 )
+		{
+			int nSocketBufSize = 0;
+			int n = sizeof(int);
+			if( getsockopt(_nFd, SOL_SOCKET, SO_RCVBUF, &nSocketBufSize, (socklen_t *)&n) == 0 )
+				LogInternal(E_LOG_INFO, "setSocketOpt : Fd[%d] : SO_RCVBUF [%d]", _nFd, nSocketBufSize);
+			else
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_RCVBUF [%d] 1 : %s", 
+															_nFd, _rstSocketCfg.m_nRcvSocketBufferSize, strerror_r(errno, szErr, sizeof(szErr)));
+			}
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_RCVBUF [%d] 2 : %s", _nFd, _rstSocketCfg.m_nRcvSocketBufferSize, strerror_r(errno, szErr, sizeof(szErr)));
+		}		
+	}
+	if( _rstSocketCfg.m_nSndSocketBufferSize > 0 )
+	{
+		if( setsockopt(_nFd, SOL_SOCKET, SO_SNDBUF, &(_rstSocketCfg.m_nSndSocketBufferSize), sizeof(_rstSocketCfg.m_nSndSocketBufferSize)) == 0 )
+		{
+			int nSocketBufSize = 0;
+			int n = sizeof(int);
+			if( getsockopt(_nFd, SOL_SOCKET, SO_SNDBUF, &nSocketBufSize, (socklen_t *)&n) == 0 )
+				LogInternal(E_LOG_INFO, "setSocketOpt : Fd[%d] : SO_SNDBUF [%d]", _nFd, nSocketBufSize);
+			else
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_SNDBUF [%d] 1 : %s", _nFd, _rstSocketCfg.m_nSndSocketBufferSize, strerror_r(errno, szErr, sizeof(szErr)));
+			}
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : SO_SNDBUF [%d] : %s", _nFd, _rstSocketCfg.m_nSndSocketBufferSize, strerror_r(errno, szErr, sizeof(szErr)));
+		}
+	}
+
+	/*==== set DSCP ====*/
+	if( _rstSocketCfg.m_nDscp >= 0 )
+	{
+		unsigned int unDSCP = _rstSocketCfg.m_nDscp<<2;
+		if( setsockopt( _nFd, IPPROTO_IP, IP_TOS, (const void *)&unDSCP, sizeof(unDSCP)) != 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : DSCP [%d] : %s", _nFd, _rstSocketCfg.m_nDscp, strerror_r(errno, szErr, sizeof(szErr)));
+		}
+	}
+}
+
+void Socket::setDscp(int _nFd, int _nDscp)
+{
+	if( _nDscp >= 0 )
+	{
+		unsigned int unDSCP = (unsigned int)_nDscp;
+		unDSCP = unDSCP<<2;
+		if( setsockopt( _nFd, IPPROTO_IP, IP_TOS, (const void *)&unDSCP, sizeof(unDSCP)) != 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "setSocketOpt : fail : Fd[%d] : DSCP [%d] : %s", _nFd, _nDscp, strerror_r(errno, szErr, sizeof(szErr)));
+		}
+	}
+}
+
+void Socket::setScopeIdForIpv6(const char * _pszLocalIpAddr, sockaddr_in6 & _stSockAddr6)
+{
+	if( _pszLocalIpAddr 
+		&& strlen(_pszLocalIpAddr) > 0
+		&& strncmp(_pszLocalIpAddr, s_pszIpv6LinkLocalPrefix, strlen(s_pszIpv6LinkLocalPrefix)) == 0 )
+	{
+		char szInfName[24];
+		szInfName[0] = 0x00;
+		getInfNameByIp(_pszLocalIpAddr, szInfName);
+		_stSockAddr6.sin6_scope_id = if_nametoindex(szInfName); 
+	}
+}
+
+bool Socket::isIpAddress(const char * _pszIpAddress)
+{
+   if( !_pszIpAddress || strlen(_pszIpAddress) < 3 )
+	 	return false;
+
+	if( isIpv6(_pszIpAddress) )
+	{
+		struct sockaddr_in6 sockAddr;
+		memset(&sockAddr, 0, sizeof(sockAddr));
+		sockAddr.sin6_family = AF_INET6;
+		
+		if( inet_pton(AF_INET6, _pszIpAddress, &(sockAddr.sin6_addr)) != 1 )
+			return false;
+		else
+			return true;
+	}
+	else
+	{
+		long lAddress = inet_addr(_pszIpAddress);
+		if( lAddress == -1 )
+			return false;
+		else
+			return true;
+	}
+}
+
+bool Socket::m_fnIsActiveVIP(const char* _pszVIp)
+{
+	struct ifconf ifc;
+	char          buf[4096];
+	int m_nSock = socket(AF_INET, SOCK_DGRAM, 0);
+	if(m_nSock == -1)
+	{
+		LogInternal(E_LOG_ERR,"m_nSock Create Error [%d:%s]", errno, strerror(errno));
+		return true;
+	}
+	ifc.ifc_len = sizeof(buf);
+	ifc.ifc_buf = buf;
+	if (ioctl(m_nSock, SIOCGIFCONF, (char *)&ifc) < 0)
+	{
+		LogInternal(E_LOG_ERR,"ioctl SIOCGIFCONF [%d:%s]", errno, strerror(errno));
+		return true;
+	}
+	struct ifreq *ifrp = ifc.ifc_req;
+	struct ifreq ifr;
+	struct sockaddr_in *paddr;
+	char szResult[36];
+	for (int n = ifc.ifc_len / sizeof(struct ifreq); n > 0; n--, ifrp++)
+	{
+		strcpy(ifr.ifr_name, ifrp->ifr_name); 
+		if (ioctl(m_nSock,SIOCGIFADDR , (caddr_t)&ifr) < 0)
+		{
+			LogInternal(E_LOG_ERR,"ioctl [%d:%s]", errno, strerror(errno));
+		}
+		paddr = (struct sockaddr_in *)&(ifr.ifr_addr);
+		sprintf(szResult,"%s",inet_ntoa(paddr->sin_addr));
+		//LogInternal(E_LOG_DEBUG,"Found IP[%s] Config IP[%s]",szResult, _pszVIp);
+		if(!strcmp(szResult, _pszVIp))
+		{
+			LogInternal(E_LOG_INFO,"This system is Active");
+			close(m_nSock);
+			return true;
+		}
+	}
+	LogInternal(E_LOG_INFO,"This system is Standby");
+	close(m_nSock);
+	return false;
+}
+	
+int Socket::createUnixUdpSocket(const SocketCfg & _rstSocketCfg)
+{
+	int nNewFD = socket(AF_UNIX, SOCK_DGRAM, 0);
+	
+	if( nNewFD >= 0 )
+		setSocketCfg(nNewFD, _rstSocketCfg);
+
+	return nNewFD;
+}
+
+int Socket::bindUnixUdpSocket(int _nFd, const char * _pszLocalPath)
+{
+	if( _nFd < 0 || !_pszLocalPath || strlen(_pszLocalPath) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "bindUnixUdpSocket : fail : Fd[%d], LocalPath[%s] : invalid argument", _nFd, _pszLocalPath);
+		return -1;
+	}
+
+	struct sockaddr_un stLocalAddr;
+
+	bzero(&stLocalAddr, sizeof(stLocalAddr));
+    stLocalAddr.sun_family = AF_UNIX;
+    strncpy(stLocalAddr.sun_path, _pszLocalPath, sizeof(stLocalAddr.sun_path)-1);
+	stLocalAddr.sun_path[sizeof(stLocalAddr.sun_path)-1] = 0x00;
+
+	unlink(_pszLocalPath);
+	
+	if( bind(_nFd, (struct sockaddr *)&stLocalAddr, sizeof(stLocalAddr)) != 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "bindUnixUdpSocket : fail : Fd[%d], LocalPath[%s] : %s", _nFd, _pszLocalPath, strerror_r(errno, szErr, sizeof(szErr)));
+		return -1;
+	}
+
+	LogInternal(E_LOG_INFO, "bindUnixUdpSocket : success : Fd[%d], LocalPath[%s]", _nFd, _pszLocalPath);
+	
+	return 0;
+}
+
+int Socket::sendToUnixUdpSocket(int _nFd, const void * _pBuffer, unsigned int _unSndLen, int _nFlag, const char * _pszRemotePath)
+{
+	if( !_pBuffer || _unSndLen <= 0 || !_pszRemotePath || strlen(_pszRemotePath) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "sendToUnixUdpSocket : fail : Fd[%d], Buffer[%p], RemotePath[%s], SndLen[%u] : invalid argument", 
+												_nFd, _pBuffer, _pszRemotePath, _unSndLen);
+		return -3;
+	}
+
+	int nRet = -1;
+	struct sockaddr_un stRemoteAddr;
+	int nAddrLen = sizeof(stRemoteAddr);
+	bzero(&stRemoteAddr, nAddrLen);
+	stRemoteAddr.sun_family = AF_UNIX;
+	strncpy(stRemoteAddr.sun_path, _pszRemotePath, sizeof(stRemoteAddr.sun_path)-1);
+	stRemoteAddr.sun_path[sizeof(stRemoteAddr.sun_path)-1] = 0x00;
+
+	nRet = sendto(_nFd, _pBuffer, _unSndLen, _nFlag, (struct sockaddr *)&stRemoteAddr, nAddrLen);
+	if( nRet < 0 )
+	{
+		if( errno == EWOULDBLOCK || errno == EAGAIN )
+		{
+			LogInternal(E_LOG_ERR, "sendToUnixUdpSocket : fail : Fd[%d], RemotePath[%s], SndLen[%u] : wouldblock", _nFd, _pszRemotePath, _unSndLen);
+			return -2;
+		}
+		else if( errno == EINTR )
+		{
+			LogInternal(E_LOG_ERR, "sendToUnixUdpSocket : fail : Fd[%d], RemotePath[%s], SndLen[%u] : inturrupt", _nFd, _pszRemotePath, _unSndLen);
+			return 0;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "sendToUnixUdpSocket : fail : Fd[%d], RemotePath[%s], SndLen[%u] : %s", _nFd, _pszRemotePath, _unSndLen, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+	else if( nRet == 0 )
+	{
+		LogInternal(E_LOG_ERR, "sendToUnixUdpSocket : fail : Fd[%d], RemotePath[%s], SndLen[%u] : no Write", _nFd, _pszRemotePath, _unSndLen);
+		return 0;
+	}
+
+	LogInternal(E_LOG_DEBUG, "sendToUnixUdpSocket : success : Fd[%d], RemotePath[%s], SndLen[%u], SndingLen[%d]", _nFd, _pszRemotePath, _unSndLen, nRet);
+
+	return nRet;
+}
+
+int Socket::recvFromUnixUdpSocket(int _nFd, void * _pBuffer, unsigned int _unMaxBuffLen, int _nFlag, char * _pszRemotePath, unsigned int _unMaxRemotePathLen)
+{
+	if( !_pBuffer || _unMaxBuffLen <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "recvFromUnixUdpSocket : fail : Fd[%d], Buffer[%p], MaxBufferLen[%u] : invalid argument", _nFd, _pBuffer, _unMaxBuffLen);
+		return -3;
+	}
+
+	int nRet = 0;
+	struct sockaddr_un stRemoteAddr;
+	socklen_t nAddrLen = sizeof(stRemoteAddr);
+	bzero(&stRemoteAddr, nAddrLen);
+	
+	nRet = recvfrom(_nFd, _pBuffer, _unMaxBuffLen, _nFlag, (struct sockaddr *)&stRemoteAddr, &nAddrLen);
+
+	if( nRet < 0 )
+	{
+		if( errno == EWOULDBLOCK || errno == EAGAIN )
+		{
+			LogInternal(E_LOG_DEBUG, "recvFromUnixUdpSocket : success : Fd[%d] : none of data to read", _nFd);
+			return -2;
+		}
+		else if( errno == EINTR )
+		{
+			LogInternal(E_LOG_ERR, "recvFromUnixUdpSocket : fail : Fd[%d] : inturrupt", _nFd);
+			return 0;
+		}
+		else
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "recvFromUnixUdpSocket : fail : Fd[%d] : %s", _nFd, strerror_r(errno, szErr, sizeof(szErr)));
+			return -1;
+		}
+	}
+
+	if( _pszRemotePath && _unMaxRemotePathLen > 0 )
+	{
+		memcpy(_pszRemotePath, stRemoteAddr.sun_path, _unMaxRemotePathLen-1);
+		_pszRemotePath[_unMaxRemotePathLen-1] = 0x00;
+	}
+
+	LogInternal(E_LOG_DEBUG, "recvFromUnixUdpSocket : success : Fd[%d], RemotePath[%s], RcvLen[%d]", _nFd, stRemoteAddr.sun_path, nRet);
+
+	return nRet;
+}
+static const char * s_fnGetAddr(int _nFD,const char * pszifname, int request,char *strDst)
+{
+	if(pszifname==NULL || strDst==NULL) return NULL;
+	int _nSock = -1;
+	if(_nFD == -1) _nSock = socket(AF_INET, SOCK_DGRAM, 0);
+	else _nSock = _nFD;
+	struct ifreq ifr;
+	strcpy(ifr.ifr_name, pszifname);
+	strDst[0]=0;
+	strcpy(strDst,(char*)"0.0.0.0");
+	if (ioctl(_nSock, request, (caddr_t)&ifr) < 0) return (const char *)strDst;
+	struct sockaddr_in *paddr;
+	paddr = (struct sockaddr_in *)&(ifr.ifr_addr);
+	char *temp_addr = inet_ntoa(paddr->sin_addr);
+	strDst[0]=0;
+	strcpy(strDst,temp_addr);
+	if(_nFD == -1) close(_nSock);
+	return (const char *)strDst;
+}
+short Socket::m_fnGetFlags(int _nFD,const char * pszifname)
+{
+	struct ifreq ifr;strcpy(ifr.ifr_name, pszifname);
+	if (ioctl(_nFD, SIOCGIFFLAGS, (caddr_t)&ifr) < 0)
+	{
+		//throw CException("ioctl SIOCGIFFLAGS [%d:%s]", errno, strerror(errno));
+		return -1;
+	}
+	return ifr.ifr_flags;
+}
+const char * Socket::m_fnGetAddr(int _nFD,const char * pszifname,char *strDst)
+{
+	return s_fnGetAddr(_nFD,pszifname, SIOCGIFADDR,strDst);
+}
+const char * Socket::m_fnGetMask(int _nFD,const char * pszifname,char *strDst)
+{
+	return s_fnGetAddr(_nFD,pszifname, SIOCGIFNETMASK,strDst);
+}
+const char * Socket::m_fnGetBroadCast(int _nFD,const char * pszifname,char *strDst)
+{
+	return s_fnGetAddr(_nFD,pszifname, SIOCGIFBRDADDR,strDst);
+}
+bool Socket::m_fnIsUp(int _nFD,const char * pszifname)
+{
+	return (m_fnGetFlags(_nFD,pszifname) & IFF_UP) != 0;
+}
+int Socket::m_fnSetMtu(const char * szIpAddress,int s_set)    // if s_set is -1, process get mtu
+{
+	int s_mtu = (-1), s_socket;
+	struct ifreq s_ifrequest;
+	char szInfName[256];memset(szInfName,0x00,256);
+	getInfNameByIp(szIpAddress,szInfName);
+	s_socket = socket(PF_INET, SOCK_STREAM, 0);
+	if(s_socket != (-1))
+	{
+		(void)memset((void *)(&s_ifrequest), 0, sizeof(s_ifrequest));
+		(void)strcpy(&s_ifrequest.ifr_name[0], szInfName); 
+		if(s_set > 0)
+		{
+			s_ifrequest.ifr_mtu = s_set;
+			if(ioctl(s_socket, SIOCSIFMTU, &s_ifrequest, sizeof(s_ifrequest)) != 0)
+				fprintf(stdout, "io_mtu error !\n");
+		}
+		if(ioctl(s_socket, SIOCGIFMTU, &s_ifrequest, sizeof(s_ifrequest)) == 0)
+			s_mtu = s_ifrequest.ifr_mtu;
+		close(s_socket);
+	} 
+	return(s_mtu);
+}
+}
+

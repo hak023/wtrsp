@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<WTRS.CONFIG Version="1.0">
+   <ACL_ENDPOINT_LIST>
+      <ACL_ENDPOINT Description="" GroupID="urn:wtrsp:auth.group:TRSUser" PWD="mccmcc" ID="urn:wtrsp:auth.endpoint:mcc"/>
+      <ACL_ENDPOINT Description="" GroupID="urn:wtrsp:auth.group:TRSUser" PWD="tts123" ID="urn:wtrsp:auth.endpoint:tts"/>
+      <ACL_ENDPOINT Description="" GroupID="urn:wtrsp:auth.group:TRSUser" PWD="MMSC_DEV" ID="urn:wtrsp:auth.endpoint:MMSC_ACPT"/>
+   </ACL_ENDPOINT_LIST>
+   <ACL_ACCESSPOINT_LIST>
+      <ACL_ACCESSPOINT Description="" IP="172.30.67.227" EndpointID="urn:wtrsp:auth.endpoint:tts"/>
+      <ACL_ACCESSPOINT Description="" IP="172.30.67.228" EndpointID="urn:wtrsp:auth.endpoint:tts"/>
+   </ACL_ACCESSPOINT_LIST>
+</WTRS.CONFIG>
+

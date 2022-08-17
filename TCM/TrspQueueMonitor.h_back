@@ -1,0 +1,30 @@
+#ifndef TRSP_QUEUE_MONITOR_H
+#define TRSP_QUEUE_MONITOR_H
+
+#include "thread.hxx"
+#include "queueMonitor.hxx"
+#include "shm.hxx"
+
+using namespace eSipUtil;
+
+class TrspQueueMonitor
+{
+	public:
+		TrspQueueMonitor();
+		~TrspQueueMonitor();
+		static TrspQueueMonitor * m_fnGetInstance();
+		static TrspQueueMonitor * m_pclsMy;
+		
+		static void m_fnCbkQMon(TrspQueueMonitor * _pclsMy);
+		unsigned int m_unMaxQueueMonSize;
+		const QueueMonEntity * m_arrQueueMonEntity;
+		const QueueMonShm * m_pstQueueMonShm;
+		time_t m_ulPrevLastTouch;
+
+		eSipUtil::NormalThread<TrspQueueMonitor> m_clsQMonThread;
+	private:
+
+};
+TrspQueueMonitor * g_fnCreateTrspQueueMonitor();
+
+#endif

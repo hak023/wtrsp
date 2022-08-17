@@ -1,0 +1,203 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4
+END
+lib-link.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/lib-link.m4
+END
+hmac-sha1.m4
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/hmac-sha1.m4
+END
+ax_have_epoll.m4
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/ax_have_epoll.m4
+END
+eoverflow.m4
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/eoverflow.m4
+END
+gc-md5.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gc-md5.m4
+END
+longlong.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/longlong.m4
+END
+realloc.m4
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/realloc.m4
+END
+onceonly.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/onceonly.m4
+END
+visibility.m4
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/visibility.m4
+END
+stdio_h.m4
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/stdio_h.m4
+END
+gc-hmac-sha1.m4
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gc-hmac-sha1.m4
+END
+gc.m4
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gc.m4
+END
+check-version.m4
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/check-version.m4
+END
+lib-prefix.m4
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/lib-prefix.m4
+END
+lib-ld.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/lib-ld.m4
+END
+wchar.m4
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/wchar.m4
+END
+stdint.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/stdint.m4
+END
+gnulib-common.m4
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gnulib-common.m4
+END
+memxor.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/memxor.m4
+END
+malloc.m4
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/malloc.m4
+END
+strverscmp.m4
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/strverscmp.m4
+END
+gnulib-comp.m4
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gnulib-comp.m4
+END
+unistd_h.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/unistd_h.m4
+END
+sys_stat_h.m4
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/sys_stat_h.m4
+END
+gnulib-cache.m4
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gnulib-cache.m4
+END
+include_next.m4
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/include_next.m4
+END
+md5.m4
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/md5.m4
+END
+getline.m4
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/getline.m4
+END
+stdlib_h.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/stdlib_h.m4
+END
+getdelim.m4
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/getdelim.m4
+END
+gnulib-tool.m4
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/gnulib-tool.m4
+END
+sha1.m4
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/sha1.m4
+END
+extensions.m4
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/m4/extensions.m4
+END

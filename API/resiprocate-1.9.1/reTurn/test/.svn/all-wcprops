@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test
+END
+stunTestVectors_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/stunTestVectors_10_0.vcxproj.filters
+END
+stunTestVectors.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/stunTestVectors.cxx
+END
+stunTestVectors_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/stunTestVectors_8_0.vcproj
+END
+stunTestVectors_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/stunTestVectors_10_0.vcxproj
+END
+stunTestVectors_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/stunTestVectors_9_0.vcproj
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/test/Makefile.am
+END

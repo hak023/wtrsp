@@ -1,0 +1,28 @@
+ares_init.c:933: warning: 'find_server' defined but not used
+ares_init.c:952: warning: 'get_physical_address' defined but not used
+ares_local.c: In function 'ares_local_gethostbyname':
+ares_local.c:9: warning: left-hand operand of comma expression has no effect
+ares_local.c:9: warning: left-hand operand of comma expression has no effect
+ares_local.c:9: warning: left-hand operand of comma expression has no effect
+ares_local.c:9: warning: left-hand operand of comma expression has no effect
+ares_local.c: In function 'ares_local_gethostbyaddr':
+ares_local.c:16: warning: left-hand operand of comma expression has no effect
+ares_local.c:16: warning: left-hand operand of comma expression has no effect
+ares_local.c:16: warning: left-hand operand of comma expression has no effect
+ares_local.c:16: warning: left-hand operand of comma expression has no effect
+ares_local.c:16: warning: left-hand operand of comma expression has no effect
+ares_local.c: In function 'ares_local_query':
+ares_local.c:23: warning: left-hand operand of comma expression has no effect
+ares_local.c:23: warning: left-hand operand of comma expression has no effect
+ares_local.c:23: warning: left-hand operand of comma expression has no effect
+ares_local.c:23: warning: left-hand operand of comma expression has no effect
+ares_local.c:23: warning: left-hand operand of comma expression has no effect
+ServerProcess.cxx: In member function 'void resip::ServerProcess::dropPrivileges(const resip::Data&, const resip::Data&)':
+ServerProcess.cxx:86: warning: comparison between signed and unsigned integer expressions
+FdPoll.cxx: In member function 'virtual void resip::FdPollImplFdSet::buildFdSet(resip::FdSet&)':
+FdPoll.cxx:366: warning: unused variable 'loopCnt'
+FdPoll.cxx: In member function 'virtual bool resip::FdPollImplFdSet::processFdSet(resip::FdSet&)':
+FdPoll.cxx:419: warning: unused variable 'loopCnt'
+FdPoll.cxx: In member function 'virtual resip::FdPollItemFake* resip::FdPollImplEpoll::addPollItem(resip::Socket, resip::FdPollEventMask, resip::FdPollItemIf*)':
+FdPoll.cxx:595: warning: unused variable 'olditem'
+libtool: install: warning: relinking `librutil.la'

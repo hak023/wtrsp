@@ -1,0 +1,1005 @@
+
+#ifdef TEST_MON
+#include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include "bufferControl.hxx"
+#endif
+
+#include <list>
+
+#include "queueThread.hxx"
+#include "ConfigFile.hxx"
+#include "shm.hxx"
+#include "timeUtil.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+#ifdef TEST_MON
+struct TestThreadInfo
+{
+	unsigned int m_unId;
+	bool m_bEnable;
+
+	void m_fnReset()
+	{
+		m_unId = 0;
+		m_bEnable = true;
+	}
+
+	TestThreadInfo()
+	{
+		m_fnReset();
+	}
+};
+static unsigned int s_unTestThreadNum = 0;
+static TestThreadInfo s_arrTestThreadInfo[DEF_MAX_MONITOR];
+static char s_szTestFileName[128];
+static time_t s_LastTestFileModiTime;
+static NormalThread< QueueMon > s_clsTestFileReadThread;
+static Mutex m_clsTestFileMutex;
+
+void s_fnApplyTestFile()
+{	
+	int nTestFileFd = open(s_szTestFileName, O_RDONLY);
+	if( nTestFileFd >= 0 )
+	{
+		char * pszFileData = NULL;
+		off_t lFileSize = 0;
+		ssize_t  lReadLen = 0;
+		
+		lFileSize = lseek(nTestFileFd, 0, SEEK_END);
+		lseek(nTestFileFd, 0, SEEK_SET);
+		if( lFileSize == 0 )
+			return;
+
+		//read file
+		pszFileData = (char *)malloc(lFileSize+1);
+		if( !pszFileData )
+		{
+			LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : can't create Buffer : File[%s]", s_szTestFileName);
+			return;
+		}
+		
+		memset(pszFileData, 0x00, lFileSize+1);
+		lReadLen = read(nTestFileFd, pszFileData, lFileSize);
+		if( lReadLen != lFileSize )
+		{
+			LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : unmatch Len [%ld != %ld] : File[%s]", lReadLen, lFileSize, s_szTestFileName);
+			free(pszFileData);
+			return;
+		}
+
+		char * pszNextLine = pszFileData;
+		while( pszNextLine )
+		{
+			char * pNextPos = strstr(pszNextLine, "\n");
+			BufferControl clsBufferCtl;
+			if( pNextPos )
+			{
+				clsBufferCtl.setBuffer(pszNextLine, pNextPos-pszNextLine);
+				pszNextLine = pNextPos + strlen("\n");
+			}
+			else
+			{
+				clsBufferCtl.setBuffer(pszNextLine, strlen(pszNextLine));
+				pszNextLine = NULL;
+			}
+
+			if( clsBufferCtl.getSize() == 0 )
+				break;
+
+			//find id
+			const char * pIdStartPos = clsBufferCtl.findStr("Id[");
+			const char * pIdEndPos = NULL;
+			if( !pIdStartPos )
+			{
+				LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : not found ID");
+				continue;
+			}			
+			pIdStartPos += strlen("Id[");
+			clsBufferCtl.setStartPos(pIdStartPos);
+			pIdEndPos = clsBufferCtl.findChar(']');
+			if( !pIdEndPos )
+			{
+				LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : not found ']' for ID");
+				continue;
+			}
+			char szId[100];
+			strncpy(szId, pIdStartPos, pIdEndPos-pIdStartPos);
+			szId[pIdEndPos-pIdStartPos] = 0x00;
+			unsigned int unId = atoi(szId);
+
+			//find enable			
+			clsBufferCtl.setStartPos(pIdEndPos);
+			const char * pEnableStartPos = clsBufferCtl.findStr("Enable[");
+			const char * pEnableEndPos = NULL;
+			if( !pEnableStartPos )
+			{
+				LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : not found Enable");
+				continue;
+			}
+			pEnableStartPos += strlen("Enable[");
+			clsBufferCtl.setStartPos(pEnableStartPos);
+			pEnableEndPos = clsBufferCtl.findChar(']');
+			if( !pEnableEndPos )
+			{
+				LogInternal(E_LOG_ERR,  "QueueMon : ApplyTestFile : fail : not found ']' for Enable");
+				continue;
+			}
+			char szEnable[100];
+			strncpy(szEnable, pEnableStartPos, pEnableEndPos-pEnableStartPos);
+			szEnable[pEnableEndPos-pEnableStartPos] = 0x00;
+			bool bEnable;
+			if( atoi(szEnable) == 0 )
+				bEnable = false;
+			else
+				bEnable = true;
+
+			for( unsigned int i = 0; i < s_unTestThreadNum; ++i )
+			{
+				if( s_arrTestThreadInfo[i].m_unId == unId )
+				{
+					if( s_arrTestThreadInfo[i].m_bEnable != bEnable )
+						LogInternal(E_LOG_INFO,  "QueueMon : ApplyTestFile : Id[%u], Enable[%d]", unId, bEnable);
+					s_arrTestThreadInfo[i].m_bEnable = bEnable;					
+				}
+			}
+		}
+
+		close(nTestFileFd);
+	}
+}
+
+void s_fnCbkReloadTestFile(QueueMon * _pclsObject)
+{
+	struct stat testFileAttr;
+	bool bApply = false;
+
+	m_clsTestFileMutex.m_fnLock();
+
+	if( stat(s_szTestFileName, &testFileAttr) == 0 )
+	{
+		if( s_LastTestFileModiTime != testFileAttr.st_mtime )
+		{
+			s_LastTestFileModiTime = testFileAttr.st_mtime;
+			bApply = true;
+		}
+	}
+	else
+	{
+		char szBuffer[128];
+		LogInternal(E_LOG_ERR, "QueueMon : CbkReloadTestFile : fail : stat : %s", strerror_r(errno, szBuffer, sizeof(szBuffer)));
+	}	
+
+	m_clsTestFileMutex.m_fnUnlock();
+
+	if( bApply )
+		s_fnApplyTestFile();
+
+	sleep(1);
+}
+#endif
+
+static void s_fnDiffTimeSpec(struct timespec * _pst1, struct timespec * _pst2, stDiffSpec_t * _pstRet)
+{
+	unsigned long ulA = _pst1->tv_sec*1000 + _pst1->tv_nsec/1000000;
+	unsigned long ulB = _pst2->tv_sec*1000 + _pst2->tv_nsec/1000000;
+#ifndef _MSC_VER
+	unsigned long ulRet = abs(ulA-ulB);
+#else
+	unsigned long ulRet = labs(ulA-ulB);
+#endif
+	_pstRet->m_unSec =  ulRet/1000; _pstRet->m_unMsec = ulRet%1000;
+}
+
+static unsigned long s_fnDiffTimeSpecNow(struct timespec * _pstOld)
+{
+	struct timespec stNow;
+	clock_gettime(CLOCK_REALTIME, &stNow);
+	unsigned long ulA = stNow.tv_sec*1000 + stNow.tv_nsec/1000000;
+	unsigned long ulB = _pstOld->tv_sec*1000 + _pstOld->tv_nsec/1000000;
+#ifndef _MSC_VER
+	unsigned long ulRet = abs(ulA-ulB);
+#else
+	unsigned long ulRet = labs(ulA-ulB);
+#endif
+	return ulRet;
+}
+
+/****************************** Queue Monitor Event Class ***********************************/
+QueueMonEvent::QueueMonEvent()
+{
+	m_unID = 0;
+	m_pvUser = NULL;
+	m_eT = E_QMON_EV_NONE;
+	m_pfnPut=NULL;
+	m_unMaxQueue = 0;
+	m_unCurrentQueue=0;
+}
+
+QueueMonEvent::~QueueMonEvent(){}
+
+/******************************* Queue Monitor Info Class ************************************/
+QueueMonInfo::QueueMonInfo()
+{
+	m_pvUser = NULL;
+	m_unID = 0;
+	memset(&m_stEvTime,0x00,sizeof(struct timespec));
+	memset(&m_stRspTime,0x00,sizeof(struct timespec));
+	m_pfnPut = NULL;
+	m_bUtilQThread = false;
+	m_unDogCnt=0;
+	m_unMaxQueue=0;
+	m_unCurrentQueue=0;
+	m_bAlarm = false;
+	m_nShmIdx = -1;
+}
+
+QueueMonInfo::~QueueMonInfo(){}
+
+void QueueMonInfo::m_fnIncreCnt(){m_unDogCnt++;}
+
+void QueueMonInfo::m_fnDecreCnt(){m_unDogCnt=0;}
+
+void QueueMonInfo::m_fnDebug(KString & _rclsDebug)
+{
+	KString clsTmp; clsTmp.m_fnReSize(1024); char * pszTmp = (KSTR)clsTmp;
+	stDiffSpec_t stDiff; s_fnDiffTimeSpec(&m_stEvTime,&m_stRspTime,&stDiff);
+	KString::m_fnStrnCat(pszTmp,1023,
+						"ID=%08x, NAME=%-30s, EVTIME=%03u.%03u, RSPTIME=%03u.%03u, "\
+						"Diff=%03u.%03u, DogCnt=%02u, Queue=%08u/%08u\r\n",
+						m_unID,(KCSTR)m_clsName,m_stEvTime.tv_sec,m_stEvTime.tv_nsec/1000000,
+						m_stRspTime.tv_sec, m_stRspTime.tv_nsec/1000000,
+						stDiff.m_unSec,stDiff.m_unMsec,
+						m_unDogCnt,
+						m_unCurrentQueue,m_unMaxQueue);
+	_rclsDebug<<clsTmp;
+}
+
+/******************************* Queue Monitor Class ************************************/
+QueueMon::QueueMon(const char * _pszProcName, int _nShmKey, PFuncHangNotify_t _pfnHangNotify)
+	: m_bAppEnable(false),
+	m_bAlarm(false),
+	m_pfnHangNotify(_pfnHangNotify),
+	m_pstHangShm(NULL), 
+	m_pclsProcThread(NULL)
+{
+	if( _pszProcName )
+		m_clsName = _pszProcName;
+
+	if( _nShmKey >= 0 )
+	{
+		int nShmID = -1;
+		m_pstHangShm = (QueueMonitorInfo_t*)createShmAuto(_nShmKey, sizeof(QueueMonitorInfo_t), nShmID);
+		if( m_pstHangShm )
+		{
+			memset(m_pstHangShm, 0x00, sizeof(QueueMonitorInfo_t));
+			strncpy( m_pstHangShm->m_szProcName, _pszProcName, 31);
+			m_pstHangShm->m_szProcName[31] = 0x00;			
+			m_pstHangShm->m_unPid = syscall(SYS_gettid);			
+		}
+		else
+			LogInternal(E_LOG_ERR, "QueueMon : fail : can't create Shm[0x%x:%lu]", _nShmKey, sizeof(QueueMonitorInfo_t));
+	}
+
+	m_fnInitHangConf();
+
+#ifdef TEST_MON
+	snprintf(s_szTestFileName, sizeof(s_szTestFileName)-1, "./TestHang_%s.cfg", _pszProcName);
+	int nTestFileFd = open(s_szTestFileName, O_CREAT|O_RDWR|O_TRUNC, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+	if( nTestFileFd >= 0 )
+	{
+		close(nTestFileFd);
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : fail : can't open TestFile[%s]", s_szTestFileName);
+	}
+	
+	s_LastTestFileModiTime = 0;
+	s_clsTestFileReadThread.setObject(this);
+	s_clsTestFileReadThread.setProcessCb(s_fnCbkReloadTestFile);
+	s_clsTestFileReadThread.run();
+#endif
+
+	memset(&m_stProcT, 0x00, sizeof(struct timespec));
+
+	m_pclsProcThread = new QueueThread< QueueMonEvent >(1000, m_fnCbkProc, 10, "QueueMon", false);
+	m_pclsProcThread->setObject(this);
+	m_pclsProcThread->enableMonitor();
+	m_pclsProcThread->run();
+}
+
+QueueMon::~QueueMon()
+{
+	m_pclsProcThread->shutdown();
+	m_pclsProcThread->join();
+}
+
+QueueMon & QueueMon::m_fnGetInstance(const char * _pszProcName, int _nShmKey, PFuncHangNotify_t _pfnHangNotify)
+{
+	static QueueMon s_clsInstance(_pszProcName, _nShmKey, _pfnHangNotify);
+
+	return s_clsInstance;
+}
+
+void QueueMon::m_fnStart()
+{
+	LogInternal(E_LOG_INFO, "QueueMon : Start : Enable[%d]", m_stHangCfgData.m_nEnableMonitor);
+
+	if( m_pfnHangNotify && m_stHangCfgData.m_nEnableMonitor == 1 )
+		m_pfnHangNotify("", true, false, false);
+	
+	m_bAppEnable = true;
+}
+
+void QueueMon::m_fnSetAppEnable(bool _bEnable, bool _bSync)
+{	
+	if( m_bAppEnable != _bEnable )
+	{
+		if( _bSync )
+		{
+			QueueMonEvent * pclsEvent  = new QueueMonEvent;
+			if( pclsEvent )
+			{
+				if( _bEnable )
+					pclsEvent->m_eT = E_QMON_EV_APP_ENABLE;
+				else
+					pclsEvent->m_eT = E_QMON_EV_APP_DISABLE;
+				if( !m_pclsProcThread->put(pclsEvent) )
+				{
+					LogInternal(E_LOG_ERR, "QueueMon : SetAppEnable(Sync) : fail : Put ProcThread : Enbale[%d]", _bEnable);
+					delete pclsEvent;
+				}
+			}
+			else
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : SetAppEnable(Sync) : fail : can't create Event : Enbale[%d]", _bEnable);
+			}
+		}
+		else
+		{
+			LogInternal(E_LOG_INFO, "QueueMon : SetAppEnable(Async) : %d -> %d", m_bAppEnable, _bEnable);
+			m_bAppEnable = _bEnable;
+		}
+	}
+}
+
+void QueueMon::m_fnOnOff(bool _bOn)
+{
+	QueueMonInfo * pclsQMonInfo = NULL;
+	Iterator clsItr;
+
+	Lock clsLock(m_clsMapMutex);
+
+	if( _bOn )
+	{
+		LogInternal(E_LOG_INFO, "QueueMon : ON");
+	
+		if( m_pstHangShm )
+			clock_gettime(CLOCK_REALTIME, &(m_pstHangShm->m_stBeginT));
+
+		while( (pclsQMonInfo = (QueueMonInfo*)m_mapQMonInfo.m_fnGetNextI(clsItr)) != NULL )
+		{
+			if( pclsQMonInfo->m_bAlarm )
+				pclsQMonInfo->m_unDogCnt = (unsigned int)(m_stHangCfgData.m_nDogAlarmCnt + 1);
+			else
+				pclsQMonInfo->m_unDogCnt = 0;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_INFO, "QueueMon : OFF");
+	
+		if( m_pstHangShm )
+			memset(&(m_pstHangShm->m_stBeginT), 0x00, sizeof(struct timespec));
+	}
+}
+
+void QueueMon::m_fnChangeHangCfg(CfgFile * _pclsObj)
+{
+	_pclsObj->m_fnReLoadConfig();
+
+	QueueMon * pclsMy = (QueueMon*)_pclsObj->m_fnGetUser();	
+	pclsMy->m_fnLoadCfg();
+
+	LogInternal(E_LOG_INFO, "QueueMon : ChangeHangCfg : MONITOR_ENABLE[%d], MONITOR_TIME[%d], MONITOR_TIMEOUT_LIMIT[%d], HA_ENABLE[%d], PROCESS_RESTART_ENABLE[%d]",
+													pclsMy->m_stHangCfgData.m_nEnableMonitor,
+													pclsMy->m_stHangCfgData.m_nDogTime,
+													pclsMy->m_stHangCfgData.m_nDogAlarmCnt,
+													pclsMy->m_stHangCfgData.m_nEnableHA,
+													pclsMy->m_stHangCfgData.m_nEnableReset);
+}
+
+void QueueMon::m_fnInitHangConf()
+{
+	m_stHangCfgData.m_nEnableMonitor = 0;
+	m_stHangCfgData.m_nDogTime = 1000;
+	m_stHangCfgData.m_nDogAlarmCnt = 5;
+	m_stHangCfgData.m_nEnableHA = 0;
+	m_stHangCfgData.m_nEnableReset = 1;
+
+	m_clsHangCfg.m_fnLoadConfig("../config/env/Hang.cfg", NULL,false);
+	m_fnLoadCfg();
+
+	LogInternal(E_LOG_INFO, "QueueMon : InitHangConf : MONITOR_ENABLE[%d], MONITOR_TIME[%d], MONITOR_TIMEOUT_LIMIT[%d], HA_ENABLE[%d], PROCESS_RESTART_ENABLE[%d]",
+													m_stHangCfgData.m_nEnableMonitor,
+													m_stHangCfgData.m_nDogTime,
+													m_stHangCfgData.m_nDogAlarmCnt,
+													m_stHangCfgData.m_nEnableHA,
+													m_stHangCfgData.m_nEnableReset);
+	
+	m_clsHangCfg.m_fnSetNotifyChangedFile(m_fnChangeHangCfg,true, this);
+}
+
+void QueueMon::m_fnLoadCfg()
+{
+	bool bResult = false;
+	
+	int nEnable = (KINT)m_clsHangCfg.m_fnFindVal("MAIN", "MONITOR_ENABLE", &bResult);
+	if( nEnable > 0 )
+		nEnable = 1;
+	else
+		nEnable = 0;
+	if( nEnable !=  m_stHangCfgData.m_nEnableMonitor )
+	{
+		if( nEnable == 1 )
+			m_fnOnOff(true);
+		else
+			m_fnOnOff(false);
+	}
+	m_stHangCfgData.m_nEnableMonitor = nEnable;
+	
+	m_stHangCfgData.m_nDogTime = (KINT)m_clsHangCfg.m_fnFindVal("MAIN", "MONITOR_TIME",&bResult);
+	if( m_stHangCfgData.m_nDogTime <= 0 )
+		m_stHangCfgData.m_nDogTime = 1000;
+	
+	m_stHangCfgData.m_nDogAlarmCnt = (KINT)m_clsHangCfg.m_fnFindVal("MAIN", "MONITOR_TIMEOUT_LIMIT",&bResult);
+	if( m_stHangCfgData.m_nDogAlarmCnt <= 0 )
+		m_stHangCfgData.m_nDogAlarmCnt = 5;
+	
+	m_stHangCfgData.m_nEnableHA= (KINT)m_clsHangCfg.m_fnFindVal("MAIN", "HA_ENABLE",&bResult);
+	if( m_stHangCfgData.m_nEnableHA > 0 )
+		m_stHangCfgData.m_nEnableHA = 1;
+	else
+		m_stHangCfgData.m_nEnableHA = 0;
+	
+	m_stHangCfgData.m_nEnableReset = (KINT)m_clsHangCfg.m_fnFindVal("MAIN", "PROCESS_RESTART_ENABLE",&bResult);
+	if( m_stHangCfgData.m_nEnableReset == 0 )
+		m_stHangCfgData.m_nEnableReset = 0;
+	else
+		m_stHangCfgData.m_nEnableReset = 1;
+}
+
+void QueueMon::m_fnRegisterQThread(const char * _pszName, unsigned int _unID, 
+									void * _pclsQThread,PFuncPutProc_t _pfnPutProc)
+{
+	if( _unID == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : RegisterQThread : fail : invalid argument : Name[%s], ID[%u]", _pszName, _unID);
+		return;
+	}
+
+	QueueMonEvent * pclsEvent  = new QueueMonEvent;
+	if( pclsEvent )
+	{
+		pclsEvent->m_clsName = _pszName;
+		pclsEvent->m_unID= _unID;
+		pclsEvent->m_pvUser = _pclsQThread;
+		pclsEvent->m_eT = E_QMON_EV_ADD; 
+		pclsEvent->m_pfnPut = _pfnPutProc;
+		if( !m_pclsProcThread->put(pclsEvent) )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : RegisterQThread : fail : Put ProcThread : Name[%s], ID[%u]", _pszName, _unID);
+			delete pclsEvent;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : RegisterQThread : fail : can't create Event : Name[%s], ID[%u]", _pszName, _unID);
+	}
+}
+
+void QueueMon::m_fnRegisterInternalQThread(const char * _pszName, unsigned int _unID,
+																			void * _pclsQThread)
+{
+	if( _unID == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : RegisterInternalQThread : fail : invalid argument : Name[%s], ID[%u]", _pszName, _unID);
+		return;
+	}
+
+	QueueMonEvent * pclsEvent  = new QueueMonEvent;
+	if( pclsEvent )
+	{
+		pclsEvent->m_clsName = _pszName;
+		pclsEvent->m_unID= _unID;
+		pclsEvent->m_pvUser = _pclsQThread;
+		pclsEvent->m_eT = E_QMON_EV_ADD_INTERNAL; 
+		if( !m_pclsProcThread->put(pclsEvent) )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : RegisterInternalQThread : fail : Put ProcThread : Name[%s], ID[%u]", _pszName, _unID);
+			delete pclsEvent;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : RegisterInternalQThread : fail : can't create Event : Name[%s], ID[%u]", _pszName, _unID);
+	}
+}
+
+void QueueMon::m_fnDelAllQThread()
+{
+	QueueMonEvent * pclsEvent  = new QueueMonEvent;
+	if( pclsEvent )
+	{
+		pclsEvent->m_eT = E_QMON_EV_DEL_ALL;
+		if( !m_pclsProcThread->put(pclsEvent) )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : DelAllQThread : fail : Put ProcThread");
+			delete pclsEvent;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : DelAllQThread : fail : can't create Event");
+	}
+}
+
+void QueueMon::m_fnResetQThread()
+{
+	QueueMonEvent * pclsEvent  = new QueueMonEvent;
+	if( pclsEvent )
+	{
+		pclsEvent->m_eT = E_QMON_EV_RESET;
+		if( !m_pclsProcThread->put(pclsEvent) )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : ResetQThread : fail : Put ProcThread");
+			delete pclsEvent;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : ResetQThread : fail : can't create Event");
+	}
+}
+
+void QueueMon::m_fnKickAlive(unsigned int _unID,unsigned int _unMax, unsigned int _unCurrent)
+{
+	if( _unID == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : KickAlive : fail : invalid argument : ID[%u]", _unID);
+		return;
+	}
+
+#ifdef TEST_MON
+	for( unsigned int i = 0; i < s_unTestThreadNum; ++i )
+	{
+		if( s_arrTestThreadInfo[i].m_unId == _unID && !s_arrTestThreadInfo[i].m_bEnable )
+		{
+			LogInternal(E_LOG_INFO,  "QueueMon : KickAlive : ignore for test : Id[%u]", _unID);
+			return;
+		}
+	}	
+#endif
+
+	QueueMonEvent * pclsEvent  = new QueueMonEvent;
+	if( pclsEvent )
+	{
+		pclsEvent->m_unID= _unID;
+		pclsEvent->m_eT = E_QMON_EV_KICK_ALIVE;
+		pclsEvent->m_unMaxQueue = _unMax;
+		pclsEvent->m_unCurrentQueue = _unCurrent;
+		if( !m_pclsProcThread->put(pclsEvent) )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : KickAlive : fail : Put ProcThread : ID[%u]", _unID);
+			delete pclsEvent;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : KickAlive : fail : can't create Event : ID[%u]", _unID);
+	}
+}
+
+void QueueMon::m_fnCbkProc(QueueMonEvent * _pclsEv, void * _pvUser)
+{
+	QueueMon * pclsMon = (QueueMon*)_pvUser;
+	
+	if( _pclsEv )
+	{
+		if( _pclsEv->m_eT == E_QMON_EV_ADD )
+		{
+			pclsMon->m_fnAddMon(*_pclsEv);
+		}
+		else if( _pclsEv->m_eT == E_QMON_EV_ADD_INTERNAL )
+		{
+			pclsMon->m_fnAddMon(*_pclsEv);
+		}
+		else if( _pclsEv->m_eT == E_QMON_EV_DEL_ALL )
+		{
+			pclsMon->m_fnDelAllMon();
+		}
+		else if( _pclsEv->m_eT == E_QMON_EV_RESET )
+		{
+			pclsMon->m_fnResetMon();
+		}
+		else if( _pclsEv->m_eT == E_QMON_EV_KICK_ALIVE )
+		{
+			pclsMon->m_fnRefreshMon(*_pclsEv);
+		}
+		else if( _pclsEv->m_eT == E_QMON_EV_APP_ENABLE || _pclsEv->m_eT == E_QMON_EV_APP_DISABLE )
+		{
+			pclsMon->m_fnSetAppEnableSync(*_pclsEv);
+		}
+		
+		delete _pclsEv;
+	}
+
+	if( pclsMon->m_bAppEnable 
+		&& pclsMon->m_stHangCfgData.m_nEnableMonitor == 1 
+		&& (unsigned int)s_fnDiffTimeSpecNow(&(pclsMon->m_stProcT)) >= (unsigned int)(pclsMon->m_stHangCfgData.m_nDogTime) )
+	{
+		pclsMon->m_fnPeriodic();
+		clock_gettime(CLOCK_REALTIME, &(pclsMon->m_stProcT));
+	}
+}
+
+void QueueMon::m_fnAddMon(QueueMonEvent & _rclsEv)
+{
+	if( _rclsEv.m_unID == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : AddMon : fail : invalid ID : Name[%s], ID[%u]", (KCSTR)(_rclsEv.m_clsName), _rclsEv.m_unID);
+		return;
+	}
+
+	Lock clsLock(m_clsMapMutex);
+
+	if( m_mapQMonInfo.m_fnFindMap(_rclsEv.m_unID) )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : AddMon : fail : already ID : Name[%s], ID[%u]", (KCSTR)(_rclsEv.m_clsName), _rclsEv.m_unID);
+		return;
+	}
+	
+	QueueMonInfo * pclsQMonInfo = new QueueMonInfo;
+	if( !pclsQMonInfo )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : AddMon : fail : can't create QueueMonInfo : Name[%s], ID[%u]", (KCSTR)(_rclsEv.m_clsName), _rclsEv.m_unID);
+		return;
+	}
+
+	LogInternal(E_LOG_INFO, "QueueMon : AddMon : Name[%s], ID[%u]", (KCSTR)(_rclsEv.m_clsName), _rclsEv.m_unID);
+	
+	pclsQMonInfo->m_clsName = _rclsEv.m_clsName;
+	pclsQMonInfo->m_unID = _rclsEv.m_unID;
+	pclsQMonInfo->m_pvUser = _rclsEv.m_pvUser;
+	pclsQMonInfo->m_pfnPut = _rclsEv.m_pfnPut;
+	if( _rclsEv.m_eT == E_QMON_EV_ADD_INTERNAL )
+		pclsQMonInfo->m_bUtilQThread = true;
+	m_mapQMonInfo.m_fnSetMap(_rclsEv.m_unID, pclsQMonInfo);
+
+	/*==== write shm ====*/
+	if( m_pstHangShm )
+	{
+		int i;
+		for( i = 0; i < DEF_MAX_MONITOR; ++i )
+		{
+			if( m_pstHangShm->m_stInfo[i].m_unThreadId == 0 )
+			{
+				strncpy(m_pstHangShm->m_stInfo[i].m_szThreadName, (KCSTR)(_rclsEv.m_clsName), 31);
+				m_pstHangShm->m_stInfo[i].m_szThreadName[31] = 0x00;
+				m_pstHangShm->m_stInfo[i].m_unThreadId = _rclsEv.m_unID;
+				++(m_pstHangShm->m_unCurThreadNum);
+				pclsQMonInfo->m_nShmIdx = i;
+				break;
+			}
+		}
+		if( i == DEF_MAX_MONITOR )
+			LogInternal(E_LOG_ERR, "QueueMon : AddMon : fail : write Shm : monitor thread is full : Name[%s], ID[%u]", (KCSTR)(_rclsEv.m_clsName), _rclsEv.m_unID);
+	}
+
+#ifdef TEST_MON
+	int nTestFileFd = open(s_szTestFileName, O_WRONLY|O_APPEND);
+	if( nTestFileFd >= 0 )
+	{	
+		s_arrTestThreadInfo[s_unTestThreadNum].m_unId = _rclsEv.m_unID;
+		s_arrTestThreadInfo[s_unTestThreadNum].m_bEnable = true;
+		++s_unTestThreadNum;
+
+		m_clsTestFileMutex.m_fnLock();
+		char szWriteData[512];
+		snprintf(szWriteData, sizeof(szWriteData)-1, "Id[%u], Name[%s], Enable[1]\n", _rclsEv.m_unID, (KCSTR)_rclsEv.m_clsName);
+		write(nTestFileFd, szWriteData, strlen(szWriteData));		
+		struct stat testFileAttr;
+		if( stat(s_szTestFileName, &testFileAttr) == 0 )
+		{
+			s_LastTestFileModiTime = testFileAttr.st_mtime;
+		}
+		else
+		{
+			char szBuffer[128];
+			LogInternal(E_LOG_ERR, "QueueMon : AddMon : fail : stat : %s", strerror_r(errno, szBuffer, sizeof(szBuffer)));
+		}
+		m_clsTestFileMutex.m_fnUnlock();
+
+		close(nTestFileFd);
+	}
+#endif	
+}
+
+void QueueMon::m_fnDelAllMon()
+{
+	int nQueueMonKernelTid = m_pclsProcThread->getKernelTid();
+	bool bNewAddQueueMon = false;	
+
+	Lock clsLock(m_clsMapMutex);
+
+	if( nQueueMonKernelTid < 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : DelAllMon : fail : invalid QueueMonKernelTid");
+		m_mapQMonInfo.m_fnClear();
+	}
+	else
+	{
+		QueueMonInfo * pclsNewQMonInfo = new QueueMonInfo();
+		if( pclsNewQMonInfo )
+		{
+			LogInternal(E_LOG_INFO, "QueueMon : DelAllMon");
+		
+			pclsNewQMonInfo->m_pvUser = m_pclsProcThread;
+			pclsNewQMonInfo->m_clsName = m_pclsProcThread->getName();
+			pclsNewQMonInfo->m_unID = nQueueMonKernelTid;
+			pclsNewQMonInfo->m_bUtilQThread = true;
+			pclsNewQMonInfo->m_nShmIdx = 0;
+			m_mapQMonInfo.m_fnClear();
+			m_mapQMonInfo.m_fnSetMap(pclsNewQMonInfo->m_unID, pclsNewQMonInfo);
+			bNewAddQueueMon = true;
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : DelAllMon : fail : can't create QueueMonInfo");
+			m_mapQMonInfo.m_fnClear();
+		}
+	}
+
+	/*==== write shm ====*/
+	if( m_pstHangShm )
+	{
+		m_pstHangShm->m_unCurThreadNum = 0;
+		memset(m_pstHangShm->m_stInfo, 0x00, sizeof(QueueThreadInfo_t)*DEF_MAX_MONITOR);
+	
+		if( bNewAddQueueMon )
+		{
+			strncpy(m_pstHangShm->m_stInfo[0].m_szThreadName, m_pclsProcThread->getName(), 31);
+			m_pstHangShm->m_stInfo[0].m_szThreadName[31] = 0x00;
+			m_pstHangShm->m_stInfo[0].m_unThreadId = nQueueMonKernelTid;
+			++(m_pstHangShm->m_unCurThreadNum);
+		}
+	}
+
+#ifdef TEST_MON
+	for( unsigned int i = 0; i < s_unTestThreadNum; ++i )
+	{
+		s_arrTestThreadInfo[i].m_fnReset();
+	}
+	s_unTestThreadNum = 0;
+
+	m_clsTestFileMutex.m_fnLock();
+	truncate(s_szTestFileName, 0);
+	struct stat testFileAttr;
+	if( stat(s_szTestFileName, &testFileAttr) == 0 )
+	{
+		s_LastTestFileModiTime = testFileAttr.st_mtime;
+	}
+	else
+	{
+		char szBuffer[128];
+		LogInternal(E_LOG_ERR, "QueueMon : DelAllMon : fail : stat : %s", strerror_r(errno, szBuffer, sizeof(szBuffer)));
+	}
+	m_clsTestFileMutex.m_fnUnlock();
+#endif	
+}
+
+void QueueMon::m_fnResetMon()
+{
+	LogInternal(E_LOG_INFO, "QueueMon : ResetMon");
+
+	QueueMonInfo * pclsQMonInfo = NULL;
+	Iterator clsItr;
+
+	Lock clsLock(m_clsMapMutex);
+	
+	while( (pclsQMonInfo = (QueueMonInfo*)m_mapQMonInfo.m_fnGetNextI(clsItr)) != NULL )
+	{
+		//memory reset
+		memset(&(pclsQMonInfo->m_stEvTime), 0x00, sizeof(struct timespec));
+		memset(&(pclsQMonInfo->m_stRspTime), 0x00, sizeof(struct timespec));
+		pclsQMonInfo->m_unDogCnt = 0;
+		pclsQMonInfo->m_unMaxQueue = 0;
+		pclsQMonInfo->m_unCurrentQueue = 0;
+
+		//shm reset
+		if( m_pstHangShm )
+		{
+			if( pclsQMonInfo->m_nShmIdx >= 0 && pclsQMonInfo->m_nShmIdx < DEF_MAX_MONITOR )
+			{
+				memset(&(m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_stReqT), 0x00, sizeof(struct timespec));
+				memset(&(m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_stRspT), 0x00, sizeof(struct timespec));
+				m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_unCurrentQ = 0;
+				m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_unMaxQ = 0;
+			}
+			else
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : ResetMon : fail : write Shm : invalid shmIdx[%d] : Name[%s], ID[%u]", 
+															pclsQMonInfo->m_nShmIdx, (KCSTR)(pclsQMonInfo->m_clsName), pclsQMonInfo->m_unID);
+			}
+		}
+	}
+}
+
+void QueueMon::m_fnRefreshMon(const QueueMonEvent & _rclsEv)
+{
+	Lock clsLock(m_clsMapMutex);
+
+	QueueMonInfo * pclsQMonInfo = (QueueMonInfo *)m_mapQMonInfo.m_fnFindMap(_rclsEv.m_unID);
+	if( pclsQMonInfo )
+	{
+		pclsQMonInfo->m_fnDecreCnt();
+		pclsQMonInfo->m_unMaxQueue = _rclsEv.m_unMaxQueue;
+		pclsQMonInfo->m_unCurrentQueue = _rclsEv.m_unCurrentQueue;
+		clock_gettime(CLOCK_REALTIME, &pclsQMonInfo->m_stRspTime);
+
+		/*==== write shm ====*/
+		if( m_pstHangShm )
+		{
+			if( pclsQMonInfo->m_nShmIdx >= 0 && pclsQMonInfo->m_nShmIdx < DEF_MAX_MONITOR )
+			{
+				m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_unMaxQ = _rclsEv.m_unMaxQueue;
+				m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_unCurrentQ = _rclsEv.m_unCurrentQueue;
+				memcpy(&(m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx].m_stRspT), &(pclsQMonInfo->m_stRspTime), sizeof(struct timespec));
+			}
+			else
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : RefreshMon : fail : write Shm : invalid shmIdx[%d] : Name[%s], ID[%u]", 
+															pclsQMonInfo->m_nShmIdx, (KCSTR)(pclsQMonInfo->m_clsName), _rclsEv.m_unID);
+			}
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "QueueMon : RefreshMon : fail : can't find QMonInfo : ID[%u]", _rclsEv.m_unID);
+	}
+}
+
+void QueueMon::m_fnSetAppEnableSync(const QueueMonEvent & _rclsEv)
+{
+	bool bAppEnable = false;
+	if( _rclsEv.m_eT == E_QMON_EV_APP_ENABLE )
+		bAppEnable = true;
+	else if( _rclsEv.m_eT == E_QMON_EV_APP_DISABLE )
+		bAppEnable= false;
+	else
+		return;
+	
+	if( m_bAppEnable != bAppEnable )
+	{
+		LogInternal(E_LOG_INFO, "QueueMon : SetAppEnable(Sync) : %d -> %d", m_bAppEnable, bAppEnable);
+		m_bAppEnable = bAppEnable;
+	}
+}
+
+void QueueMon::m_fnPeriodic()
+{
+	QueueMonInfo * pclsQMonInfo = NULL;
+	Iterator clsItr;
+
+	Lock clsLock(m_clsMapMutex);
+
+	bool bAlarm = false;
+	KString clsAlarmThName;
+	char szReqTime[128];
+	char szRspTime[128];
+	while( (pclsQMonInfo = (QueueMonInfo*)m_mapQMonInfo.m_fnGetNextI(clsItr)) != NULL )
+	{
+		/*==== Check Timeout ====*/
+		if( pclsQMonInfo->m_unDogCnt > (unsigned int)m_stHangCfgData.m_nDogAlarmCnt )
+		{
+			if( !bAlarm )
+				clsAlarmThName = pclsQMonInfo->m_clsName;			
+			if( !pclsQMonInfo->m_bAlarm )
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : Alarm occure : Name[%s], Id[%u], ReqTime[%s], RspTime[%s]",
+															(KCSTR)(pclsQMonInfo->m_clsName), pclsQMonInfo->m_unID, 
+															getTimeStr(pclsQMonInfo->m_stEvTime, szReqTime, sizeof(szReqTime)),
+															getTimeStr(pclsQMonInfo->m_stRspTime, szRspTime, sizeof(szRspTime)));
+			}
+			pclsQMonInfo->m_bAlarm = true;
+			bAlarm = true;
+		}
+		else
+		{
+			if( pclsQMonInfo->m_bAlarm )
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : Alarm clear : Name[%s], Id[%u], ReqTime[%s], RspTime[%s]",
+															(KCSTR)(pclsQMonInfo->m_clsName), pclsQMonInfo->m_unID, 
+															getTimeStr(pclsQMonInfo->m_stEvTime, szReqTime, sizeof(szReqTime)),
+															getTimeStr(pclsQMonInfo->m_stRspTime, szRspTime, sizeof(szRspTime)));
+			}
+			pclsQMonInfo->m_bAlarm = false;
+		}
+	
+		/*==== DogKick All ====*/
+		pclsQMonInfo->m_fnIncreCnt();
+		clock_gettime(CLOCK_REALTIME, &(pclsQMonInfo->m_stEvTime));
+		if( pclsQMonInfo->m_bUtilQThread )
+		{
+			QueueThread< int > * pclsUtilQ = (QueueThread<int> *)(pclsQMonInfo->m_pvUser);
+			pclsUtilQ->putWatchDog();
+		}
+		else if( pclsQMonInfo->m_pfnPut )
+		{
+			pclsQMonInfo->m_pfnPut(pclsQMonInfo->m_pvUser, (KCSTR)(pclsQMonInfo->m_clsName), pclsQMonInfo->m_unID);
+		}
+		
+		/*==== write shm ====*/
+		if( m_pstHangShm )
+		{
+			if( pclsQMonInfo->m_nShmIdx >= 0 && pclsQMonInfo->m_nShmIdx < DEF_MAX_MONITOR )
+			{
+				QueueThreadInfo_t & rstShmInfo = m_pstHangShm->m_stInfo[pclsQMonInfo->m_nShmIdx];
+				memcpy(&(rstShmInfo.m_stReqT), &(pclsQMonInfo->m_stEvTime), sizeof(struct timespec));
+			}
+			else
+			{
+				LogInternal(E_LOG_ERR, "QueueMon : Periodic : fail : write Shm : invalid shmIdx[%d] : Name[%s], ID[%u]", 
+															pclsQMonInfo->m_nShmIdx, (KCSTR)(pclsQMonInfo->m_clsName), pclsQMonInfo->m_unID);
+			}
+		}
+	}
+
+	if( m_bAlarm != bAlarm )
+	{
+		if( bAlarm )
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : Periodic : Alarm : ThreadName[%s]", (KCSTR)clsAlarmThName);
+			if( m_pfnHangNotify )
+				m_pfnHangNotify((KCSTR)clsAlarmThName, false, m_stHangCfgData.m_nEnableHA, m_stHangCfgData.m_nEnableReset);
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "QueueMon : Periodic : Alarm Clear");
+			if( m_pfnHangNotify )
+				m_pfnHangNotify("", true, false, false);
+		}
+			
+		m_bAlarm = bAlarm;
+	}
+}
+
+void QueueMon::m_fnWriteStatus()
+{
+	KString clsPath; clsPath<<"./"<<m_clsName<<".qthread";
+	KString clsBuild; FILE *fp = NULL; QueueMonInfo * pclsInfo = NULL;Iterator clsItr;
+	while((pclsInfo = (QueueMonInfo*)m_mapQMonInfo.m_fnGetNextI(clsItr))!=NULL)
+	{
+		pclsInfo->m_fnDebug(clsBuild);
+	}
+	CfgFile::m_fnCreateDirExeptFile((KSTR)clsPath);
+	#ifdef _MSC_VER
+	_chmod((KCSTR)clsPath, _S_IREAD | _S_IWRITE);
+	#else
+	chmod((KSTR)clsPath, 0755);
+	#endif 
+	if ((fp = fopen((KSTR)clsPath, (char*)"wb")) == NULL)
+	{
+		return;
+	}
+	fputs((KCSTR)clsBuild, fp); fflush(fp); fclose(fp);
+}
+
+}
+

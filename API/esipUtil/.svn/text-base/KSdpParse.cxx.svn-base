@@ -1,0 +1,1741 @@
+#include "KSdpParse.hxx"
+namespace eSipUtil
+{
+static char s_szTestSdp[]=
+ "v=0\r\n"
+ "o=KT-IBCF 2136126983 2136126983 IN IP4 125.159.63.53\r\n"
+ "s=-\r\n"
+ "i=A VT Session\r\n"
+ "c=IN IP4 125.159.63.53\r\n"
+ "t=3034423619 3042462419\r\n"
+ "r=604800 3600 0 90000\r\n"
+ "t=3034423620 3042462420\r\n"
+ "r=604801 3601 0 90001\r\n"
+ "m=audio 40626 RTP/AVP 97 98 100 101 8 0 18 4 102\r\n"
+ "b=AS:41\r\n"
+ "b=RS:0\r\n"
+ "b=RR:1000\r\n"
+ "a=rtpmap:97 AMR-WB/16000/1\r\n"
+ "a=fmtp:97 mode-change-capability=2\r\n"
+ "a=rtpmap:98 AMR-WB/16000/1\r\n"
+ "a=fmtp:98 octet-align=1; mode-change-capability=2\r\n"
+ "a=rtpmap:100 AMR/8000/1\r\n"
+ "a=fmtp:100 mode-change-capability=2\r\n"
+ "a=rtpmap:101 AMR/8000/1\r\n"
+ "a=fmtp:101 octet-align=1; mode-change-capability=2\r\n"
+ "a=rtpmap:8 PCMA/8000\r\n"
+ "a=rtpmap:0 PCMU/8000\r\n"
+ "a=rtpmap:18 G729/8000\r\n"
+ "a=fmtp:18 annexb=no\r\n"
+ "a=rtpmap:4 G723/8000\r\n"
+ "a=fmtp:4 annexa=no\r\n"
+ "a=rtpmap:102 telephone-event/8000/1\r\n"
+ "a=fmtp:102 0-15\r\n"
+ "a=rtpmap:99 telephone-event/16000/1\r\n"
+ "a=fmtp:99 0-15\r\n"
+ "a=sendrecv\r\n"
+ "a=ptime:20\r\n"
+ "m=video 40106 RTP/AVP 103 104 105 34\r\n"
+ "b=AS:768\r\n"
+ "b=RS:0\r\n"
+ "b=RR:19200\r\n"
+ "a=rtpmap:103 H264/90000/1\r\n"
+ "a=fmtp:103 profile-level-id=42C016; packetization-mode=1; sprop-parameter-sets=Z0LAFukDwKMg,aM4G4g==\r\n"
+ "a=framerate:15\r\n"
+ "a=rtpmap:104 H264/90000/1\r\n"
+ "a=fmtp:104 profile-level-id=42C00D; packetization-mode=1; sprop-parameter-sets=Z0LADekCg/I=,aM4G4g==\r\n"
+ "a=framerate:15\r\n"
+ "a=rtpmap:105 H264/90000/1\r\n"
+ "a=fmtp:105 profile-level-id=42C00A; packetization-mode=1; sprop-parameter-sets=Z0LACukFicg=,aM4G4g==\r\n"
+ "a=framerate:10\r\n"
+ "a=rtpmap:34 H263/90000/1\r\n"
+ "a=fmtp:34 PROFILE=0;LEVEL=10;QCIF=4\r\n"
+ "a=framerate:7\r\n"
+ "a=framesize:103 480-640\r\n"
+ "a=framesize:104 320-240\r\n"
+ "a=framesize:105 176-144\r\n"
+ "a=framesize:34 176-144\r\n"
+ "a=sendrecv\r\n";
+static void s_fnAddTab(KString & _rclsString, unsigned int _unTapCnt)
+{
+	for(unsigned int i=0;i<_unTapCnt;i++) _rclsString<<"  ";
+}
+void g_fnTestKSdp()
+{
+	printf("%s\r\n",s_szTestSdp);
+	KSdpParse clsParse;
+	clsParse.m_fnParse(s_szTestSdp, strlen(s_szTestSdp));
+	KString clsDebug;
+	clsParse.m_fnDebug(clsDebug);
+	printf((KCSTR)clsDebug);
+	KSdpParse clsCp;
+	clsCp = clsParse;
+	clsDebug=KNULL;
+	clsCp.m_fnDebug(clsDebug);
+	printf((KCSTR)clsDebug);
+}
+/************************************ V ***********************************************/
+KSdpV::KSdpV():m_clsVal(KNULL){}
+KSdpV::~KSdpV(){}
+KSdpV & KSdpV::operator=(KSdpV & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpV::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpV::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<V> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpV::m_fnEncode(KString &_rclsEncode)
+{
+	_rclsEncode<<"v="<<m_clsVal<<"\r\n";
+}
+/************************************* O *********************************************/
+KSdpO::PFuncParseState KSdpO::m_pfnParseHandle[KSdpO::E_SDP_O_MAX]=
+{
+	KSdpO::m_fnE_SDP_O_NONE,
+	KSdpO::m_fnE_SDP_O_USERNAME,
+	KSdpO::m_fnE_SDP_O_USERNAME_SP,
+	KSdpO::m_fnE_SDP_O_SESSIONID,
+	KSdpO::m_fnE_SDP_O_SESSIONID_SP,
+	KSdpO::m_fnE_SDP_O_VERSION,
+	KSdpO::m_fnE_SDP_O_VERSION_SP,
+	KSdpO::m_fnE_SDP_O_NETTYPE,
+	KSdpO::m_fnE_SDP_O_NETTYPE_SP,
+	KSdpO::m_fnE_SDP_O_ADDRTYPE,
+	KSdpO::m_fnE_SDP_O_ADDRTYPE_SP,
+	KSdpO::m_fnE_SDP_O_ADDR,
+};
+KSdpO::KSdpO():m_clsUserName(KNULL),m_clsSessionID(KNULL),
+			m_clsVersion(KNULL),m_clsNetType(KNULL),
+			m_clsAddrType(KNULL),m_clsAddr(KNULL),
+			m_clsVal(KNULL)
+{m_eSt= E_SDP_O_NONE;}
+KSdpO::~KSdpO(){}
+KSdpO & KSdpO::operator=(KSdpO & _rclsSrc)
+{
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsUserName = _rclsSrc.m_clsUserName;
+	m_clsSessionID = _rclsSrc.m_clsSessionID;
+	m_clsVersion = _rclsSrc.m_clsVersion;
+	m_clsNetType = _rclsSrc.m_clsNetType;
+	m_clsAddrType = _rclsSrc.m_clsAddrType;
+	m_clsAddr = _rclsSrc.m_clsAddr;
+	m_clsVal = _rclsSrc.m_clsVal;
+	return *this;
+}
+bool KSdpO::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpO::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<O> {"<<m_clsVal<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(UserName) {"<<m_clsUserName<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(SessionID) {"<<m_clsSessionID<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Version) {"<<m_clsVersion<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Net Type) {"<<m_clsNetType<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Addr Type) {"<<m_clsAddrType<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Addr) {"<<m_clsAddr<<"}\r\n";
+}
+void KSdpO::m_fnEncode(KString &_rclsEncode)
+{
+	_rclsEncode<<"o="<<m_clsUserName<<' '<<m_clsSessionID<<' '<<m_clsVersion<<' ';
+	_rclsEncode<<m_clsAddrType<<' '<<m_clsAddrType<<' '<<m_clsAddr<<"\r\n";
+}
+bool KSdpO::m_fnE_SDP_O_NONE(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_O_USERNAME;
+	_pclsObj->m_clsUserName<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_USERNAME(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_O_USERNAME_SP;	return true;
+	}
+	_pclsObj->m_clsUserName<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_USERNAME_SP(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_O_SESSIONID;
+	_pclsObj->m_clsSessionID<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_SESSIONID(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_O_SESSIONID_SP;	return true;
+	}
+	_pclsObj->m_clsSessionID<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_SESSIONID_SP(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_O_VERSION;
+	_pclsObj->m_clsVersion<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_VERSION(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_O_VERSION_SP; return true;
+	}
+	_pclsObj->m_clsVersion<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_VERSION_SP(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_O_NETTYPE;
+	_pclsObj->m_clsNetType<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_NETTYPE(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_O_NETTYPE_SP; return true;
+	}
+	_pclsObj->m_clsNetType<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_NETTYPE_SP(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_O_ADDRTYPE;
+	_pclsObj->m_clsAddrType<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_ADDRTYPE(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_O_ADDRTYPE_SP; return true;
+	}
+	_pclsObj->m_clsAddrType<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_ADDRTYPE_SP(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_O_ADDR;
+	_pclsObj->m_clsAddr<<_cInput;
+	return true;
+}
+bool KSdpO::m_fnE_SDP_O_ADDR(KSdpO * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_clsAddr<<_cInput;
+	return true;
+}
+/****************************************** S *****************************************/
+KSdpS::KSdpS():m_clsVal(KNULL){}
+KSdpS::~KSdpS(){}
+KSdpS & KSdpS::operator=(KSdpS & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpS::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpS::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<S> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpS::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) _rclsEncode<<"s=-\r\n";
+	else
+	{
+		_rclsEncode<<"s="<<m_clsVal<<"\r\n";	
+	}
+}
+/****************************************** I ******************************************/
+KSdpI::KSdpI(){}
+KSdpI::~KSdpI(){}
+KSdpI & KSdpI::operator=(KSdpI & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpI::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpI::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<I> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpI::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"i="<<m_clsVal<<"\r\n";
+}
+/****************************************** U *****************************************/
+KSdpU::KSdpU():m_clsVal(KNULL){}
+KSdpU::~KSdpU(){}
+KSdpU & KSdpU::operator=(KSdpU & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpU::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpU::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<U> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpU::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"u="<<m_clsVal<<"\r\n";
+}
+/****************************************** E *****************************************/
+KSdpE::KSdpE():m_clsVal(KNULL){}
+KSdpE::~KSdpE(){}
+KSdpE & KSdpE::operator=(KSdpE & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpE::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpE::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<E> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpE::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"e="<<m_clsVal<<"\r\n";
+}
+/****************************************** P *****************************************/
+KSdpP::KSdpP():m_clsVal(KNULL){}
+KSdpP::~KSdpP(){}
+KSdpP & KSdpP::operator=(KSdpP & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal; return *this;
+}
+bool KSdpP::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpP::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<P> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpP::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"p="<<m_clsVal<<"\r\n";
+}
+/****************************************** C *****************************************/
+KSdpC::PFuncParseState KSdpC::m_pfnParseHandle[KSdpC::E_SDP_C_MAX]=
+{
+	KSdpC::m_fnE_SDP_C_NONE,
+	KSdpC::m_fnE_SDP_C_NETTYPE,
+	KSdpC::m_fnE_SDP_C_NETTYPE_SP,
+	KSdpC::m_fnE_SDP_C_ADDRTYPE,
+	KSdpC::m_fnE_SDP_C_ADDRTYPE_SP,
+	KSdpC::m_fnE_SDP_C_CONNECTION,
+};
+KSdpC::KSdpC():m_clsNetType(KNULL),m_clsAddrType(KNULL),
+				m_clsConnection(KNULL),m_clsVal(KNULL)
+{m_eSt = E_SDP_C_NONE;}
+KSdpC::~KSdpC(){}
+KSdpC & KSdpC::operator=(KSdpC & _rclsSrc)
+{
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsNetType = _rclsSrc.m_clsNetType;
+	m_clsAddrType = _rclsSrc.m_clsAddrType;
+	m_clsConnection = _rclsSrc.m_clsConnection;
+	m_clsVal = _rclsSrc.m_clsVal;
+	return *this;
+}
+bool KSdpC::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpC::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsNetType.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<C> {"<<m_clsVal<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Net Type) {"<<m_clsNetType<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Addr Type) {"<<m_clsAddrType<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Connection) {"<<m_clsConnection<<"}\r\n";
+}
+void KSdpC::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsNetType.m_unRealLen==0) return;
+	_rclsEncode<<"c="<<m_clsNetType<<' '<<m_clsAddrType<<' '<<m_clsConnection<<"\r\n";
+}
+bool KSdpC::m_fnE_SDP_C_NONE(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_C_NETTYPE;
+	_pclsObj->m_clsNetType<<_cInput;
+	return true;
+}
+bool KSdpC::m_fnE_SDP_C_NETTYPE(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_C_NETTYPE_SP; return true;
+	}
+	_pclsObj->m_clsNetType<<_cInput;
+	return true;
+}
+bool KSdpC::m_fnE_SDP_C_NETTYPE_SP(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_C_ADDRTYPE;
+	_pclsObj->m_clsAddrType<<_cInput;
+	return true;
+}
+bool KSdpC::m_fnE_SDP_C_ADDRTYPE(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_C_ADDRTYPE_SP; return true;
+	}
+	_pclsObj->m_clsAddrType<<_cInput;
+	return true;
+}
+bool KSdpC::m_fnE_SDP_C_ADDRTYPE_SP(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_C_CONNECTION;
+	_pclsObj->m_clsConnection<<_cInput;
+	return true;
+}
+bool KSdpC::m_fnE_SDP_C_CONNECTION(KSdpC * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_clsConnection<<_cInput;
+	return true;
+}
+/**************************************** B *******************************************/
+KSdpB::PFuncParseState KSdpB::m_pfnParseHandle[KSdpB::E_SDP_B_MAX]=
+{
+	KSdpB::m_fnE_SDP_B_NONE,
+	KSdpB::m_fnE_SDP_B_MODIFIER,
+	KSdpB::m_fnE_SDP_B_MODIFIER_SP,
+	KSdpB::m_fnE_SDP_B_BANDWIDTH,
+};
+KSdpB::KSdpB():m_clsMod(KNULL),m_clsBandwidth(KNULL),m_clsVal(KNULL)
+{m_eSt = E_SDP_B_NONE;}
+KSdpB::~KSdpB(){}
+KSdpB & KSdpB::operator=(KSdpB & _rclsSrc)
+{
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsMod = _rclsSrc.m_clsMod;
+	m_clsBandwidth = _rclsSrc.m_clsBandwidth;
+	m_clsVal = _rclsSrc.m_clsVal;
+	return *this;			
+}
+bool KSdpB::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpB::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsMod.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<B> {"<<m_clsVal<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Modifier) {"<<m_clsMod<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(Bandwidth) {"<<m_clsBandwidth<<"}\r\n";
+}
+void KSdpB::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsMod.m_unRealLen==0) return;
+	_rclsEncode<<"b="<<m_clsMod<<':'<<m_clsBandwidth<<"\r\n";
+}
+bool KSdpB::m_fnE_SDP_B_NONE(KSdpB * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_B_MODIFIER;
+	_pclsObj->m_clsMod<<_cInput;
+	return true;
+}
+bool KSdpB::m_fnE_SDP_B_MODIFIER(KSdpB * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		return false;
+	}
+	else if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_SDP_B_MODIFIER_SP; return true;
+	}
+	_pclsObj->m_clsMod<<_cInput;
+	return true;
+}
+bool KSdpB::m_fnE_SDP_B_MODIFIER_SP(KSdpB * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t' || _cInput == ':') return true;
+	_pclsObj->m_eSt = E_SDP_B_BANDWIDTH;
+	_pclsObj->m_clsBandwidth<<_cInput;
+	return true;
+}
+bool KSdpB::m_fnE_SDP_B_BANDWIDTH(KSdpB * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_clsBandwidth<<_cInput;
+	return true;
+}
+KSdpBs::KSdpBs(){m_pclsCurrent=NULL;}
+KSdpBs::~KSdpBs(){}
+KSdpBs & KSdpBs::operator=(KSdpBs & _rclsSrc)
+{
+	m_list.m_fnClear();
+	ListItr_t stItor;KSdpB * pclsB = (KSdpB*)_rclsSrc.m_list.m_fnBegin(stItor);
+	while(pclsB)
+	{
+		m_fnAddB((KCSTR)pclsB->m_clsMod,(KCSTR)pclsB->m_clsBandwidth);
+		pclsB = (KSdpB*)_rclsSrc.m_list.m_fnNext(stItor);
+	}
+	return *this;
+}
+KSdpB & KSdpBs::operator[](unsigned int _unIndex)
+{
+	KSdpB * pclsB = (KSdpB*)m_list.m_fnGetIndex(_unIndex);
+	if(pclsB==NULL) return m_clsNull;
+	return *pclsB;
+}
+KSdpBs & KSdpBs::operator+=(KSdpB &_rclsSrc)
+{
+	m_fnAddB((KCSTR)_rclsSrc.m_clsMod,(KCSTR)_rclsSrc.m_clsBandwidth);
+	return *this;
+}
+bool KSdpBs::m_fnParse(const char _cInput,bool _bNew)
+{
+	if(_bNew)
+	{
+		KSdpB * pclsNew = new KSdpB;
+		pclsNew->m_fnParse(_cInput);
+		if(m_list.m_fnPushBack(pclsNew))
+		{
+			m_pclsCurrent = pclsNew; return true;
+		}
+	}
+	else
+	{
+		if(m_pclsCurrent) return m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return false;
+}
+void KSdpBs::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_list.m_fnGetSize() ==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<Bs>\r\n";
+	ListItr_t stItor;KSdpB * pclsB = (KSdpB*)m_list.m_fnBegin(stItor);
+	while(pclsB)
+	{
+		pclsB->m_fnDebug(_rclsDebug,_unDepth+1);
+		pclsB = (KSdpB*)m_list.m_fnNext(stItor);
+	}
+}
+void KSdpBs::m_fnAddB(const char * _pszModifier, const char * _pszBandwidth)
+{
+	KSdpB * pclsNew = new KSdpB;
+	pclsNew->m_clsMod = _pszModifier; pclsNew->m_clsBandwidth = _pszBandwidth;
+	m_list.m_fnPushBack(pclsNew);
+}
+void KSdpBs::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_list.m_fnGetSize() ==0) return;
+	ListItr_t stItor;KSdpB * pclsB = (KSdpB*)m_list.m_fnBegin(stItor);
+	while(pclsB)
+	{
+		pclsB->m_fnEncode(_rclsEncode);
+		pclsB = (KSdpB*)m_list.m_fnNext(stItor);
+	}
+}
+/****************************************** Z *****************************************/
+KSdpZ::KSdpZ():m_clsVal(KNULL){}
+KSdpZ::~KSdpZ(){}
+KSdpZ & KSdpZ::operator=(KSdpZ & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal;return *this;
+}
+bool KSdpZ::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpZ::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<Z> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpZ::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"z="<<m_clsVal<<"\r\n";
+}
+/****************************************** K *****************************************/
+KSdpK::KSdpK():m_clsVal(KNULL){}
+KSdpK::~KSdpK(){}
+KSdpK & KSdpK::operator=(KSdpK & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal;return *this;
+}
+bool KSdpK::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpK::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<K> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpK::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"k="<<m_clsVal<<"\r\n";
+}
+/****************************************** A *****************************************/
+KSdpA::PFuncParseState KSdpA::m_pfnParseHandle[KSdpA::E_SDP_A_MAX]=
+{
+	KSdpA::m_fnE_SDP_A_NONE,
+	KSdpA::m_fnE_SDP_A_KEY,
+	KSdpA::m_fnE_SDP_A_KEY_SP,
+	KSdpA::m_fnE_SDP_A_VAL,
+	KSdpA::m_fnE_SDP_A_EXT_RTPMAP,
+	KSdpA::m_fnE_SDP_A_EXT_FMTP,
+};
+KSdpA::KSdpA():m_clsAttrName(KNULL),m_clsAttrVal(KNULL),m_clsVal(KNULL)
+{m_eSt = E_SDP_A_NONE;m_eAttrT = E_KSDP_A_NONE; m_pclsAttr = NULL;}
+KSdpA::~KSdpA(){m_fnClear();}
+void KSdpA::m_fnClear()
+{
+	if(m_pclsAttr)
+	{
+		if(m_eAttrT == E_KSDP_A_NONE)
+		{
+			delete m_pclsAttr;
+		}
+		else if(m_eAttrT == E_KSDP_A_RTPMAP)
+		{
+			KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)m_pclsAttr;
+			delete pclsRtpMap;
+		}
+		else if(m_eAttrT == E_KSDP_A_FMTP)
+		{
+			KSdpAttrFmtp * pclsFmtp = (KSdpAttrFmtp*)m_pclsAttr;
+			delete pclsFmtp;
+		}
+		else
+		{
+			delete m_pclsAttr;
+		}
+	}
+	m_eAttrT = E_KSDP_A_NONE;m_pclsAttr = NULL;
+}
+KSdpA & KSdpA::operator=(KSdpA & _rclsSrc)
+{
+	m_fnClear();
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsAttrName = _rclsSrc.m_clsAttrName;
+	m_clsAttrVal = _rclsSrc.m_clsAttrVal;
+	m_clsVal = _rclsSrc.m_clsVal;
+	m_eAttrT = _rclsSrc.m_eAttrT;
+	if(_rclsSrc.m_pclsAttr)
+	{
+		if(m_eAttrT == E_KSDP_A_NONE)
+		{
+			m_pclsAttr = new KSdpAttr;
+			*m_pclsAttr = *_rclsSrc.m_pclsAttr;
+		}
+		else if(m_eAttrT == E_KSDP_A_RTPMAP)
+		{
+			KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)_rclsSrc.m_pclsAttr;
+			KSdpAttrRtpMap * pclsNew = new KSdpAttrRtpMap;
+			*pclsNew = *pclsRtpMap;m_pclsAttr = pclsNew;			
+		}
+		else if(m_eAttrT == E_KSDP_A_FMTP)
+		{
+			KSdpAttrFmtp * pclsFmtp = (KSdpAttrFmtp*)_rclsSrc.m_pclsAttr;
+			KSdpAttrFmtp * pclsNew = new KSdpAttrFmtp;
+			*pclsNew = *pclsFmtp;m_pclsAttr = pclsNew;	
+		}
+	}
+	return *this;
+}
+bool KSdpA::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpA::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsAttrName.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	//_rclsDebug<<"<A> {"<<m_clsVal<<"}\r\n";
+	_rclsDebug<<"<A>\r\n";
+	if(m_eAttrT == E_KSDP_A_NONE)
+	{
+		s_fnAddTab(_rclsDebug,_unDepth+1);
+		_rclsDebug<<"("<<m_clsAttrName<<") {"<<m_clsAttrVal<<"}\r\n";
+	}
+	else if(m_eAttrT == E_KSDP_A_RTPMAP)
+	{
+		KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)m_pclsAttr;
+		if(pclsRtpMap)
+		{
+			pclsRtpMap->m_fnDebug(_rclsDebug,_unDepth+1);
+		}
+	}
+	else if(m_eAttrT == E_KSDP_A_FMTP)
+	{
+		KSdpAttrFmtp * pclsFmtp= (KSdpAttrFmtp*)m_pclsAttr;
+		if(pclsFmtp)
+		{
+			pclsFmtp->m_fnDebug(_rclsDebug,_unDepth+1);
+		}
+	}
+}
+void KSdpA::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsAttrName.m_unRealLen==0) return;
+	_rclsEncode<<"a=";
+	if(m_eAttrT == E_KSDP_A_NONE)
+	{
+		_rclsEncode<<m_clsVal<<"\r\n";
+	}
+	else if(m_eAttrT == E_KSDP_A_RTPMAP)
+	{
+		KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)m_pclsAttr;
+		if(pclsRtpMap)
+		{
+			pclsRtpMap->m_fnEncode(_rclsEncode);_rclsEncode<<"\r\n";
+		}
+	}
+	else if(m_eAttrT == E_KSDP_A_FMTP)
+	{
+		KSdpAttrFmtp * pclsFmtp= (KSdpAttrFmtp*)m_pclsAttr;
+		if(pclsFmtp)
+		{
+			pclsFmtp->m_fnEncode(_rclsEncode);_rclsEncode<<"\r\n";
+		}
+	}
+	else
+	{
+		_rclsEncode<<m_clsVal<<"\r\n";
+	}
+}
+KSdpAttrRtpMap * KSdpA::m_fnCreateRtpMap()
+{
+	m_clsAttrName = "rtpmap";
+	m_fnClear();m_pclsAttr = new KSdpAttrRtpMap; 
+	m_eAttrT = E_KSDP_A_RTPMAP;return (KSdpAttrRtpMap*)m_pclsAttr;
+}
+KSdpAttrFmtp * KSdpA::m_fnCreateFmtp()
+{
+	m_clsAttrName = "fmtp";
+	m_fnClear();m_pclsAttr = new KSdpAttrFmtp; 
+	m_eAttrT = E_KSDP_A_FMTP;return (KSdpAttrFmtp*)m_pclsAttr;
+}
+bool KSdpA::m_fnE_SDP_A_NONE(KSdpA * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_A_KEY;
+	_pclsObj->m_clsAttrName<<_cInput;
+	return true;
+}
+bool KSdpA::m_fnE_SDP_A_KEY(KSdpA * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	if(_cInput == ':')
+	{
+		_pclsObj->m_eSt = E_SDP_A_KEY_SP;
+	}
+	else
+	{
+		_pclsObj->m_clsAttrName<<_cInput;
+	}
+	return true;
+}
+bool KSdpA::m_fnE_SDP_A_KEY_SP(KSdpA * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t' || _cInput == ':') return false;
+	else
+	{
+		_pclsObj->m_clsAttrVal<<_cInput;
+		if(_pclsObj->m_clsAttrName == "rtpmap")
+		{	
+			_pclsObj->m_eSt = E_SDP_A_EXT_RTPMAP;
+			_pclsObj->m_eAttrT = E_KSDP_A_RTPMAP;
+			_pclsObj->m_pclsAttr = new  KSdpAttrRtpMap;
+			KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)_pclsObj->m_pclsAttr;
+			pclsRtpMap->m_fnParse(_cInput);
+		}
+		else if(_pclsObj->m_clsAttrName == "fmtp")
+		{	
+			_pclsObj->m_eSt = E_SDP_A_EXT_FMTP;
+			_pclsObj->m_eAttrT = E_KSDP_A_FMTP;
+			_pclsObj->m_pclsAttr = new  KSdpAttrFmtp;
+			KSdpAttrFmtp * pclsFmtp = (KSdpAttrFmtp*)_pclsObj->m_pclsAttr;
+			pclsFmtp->m_fnParse(_cInput);
+		}
+		else
+		{
+			_pclsObj->m_eAttrT = E_KSDP_A_NONE;
+			_pclsObj->m_eSt = E_SDP_A_VAL;
+		}
+	}
+	return true;
+}
+bool KSdpA::m_fnE_SDP_A_VAL(KSdpA * _pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsAttrVal<<_cInput;
+	return true;
+}
+bool KSdpA::m_fnE_SDP_A_EXT_RTPMAP(KSdpA * _pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsAttrVal<<_cInput;
+	KSdpAttrRtpMap * pclsRtpMap = (KSdpAttrRtpMap*)_pclsObj->m_pclsAttr;
+	pclsRtpMap->m_fnParse(_cInput);
+	return true;
+}
+bool KSdpA::m_fnE_SDP_A_EXT_FMTP(KSdpA * _pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsAttrVal<<_cInput;
+	KSdpAttrFmtp * pclsFmtp = (KSdpAttrFmtp*)_pclsObj->m_pclsAttr;
+	pclsFmtp->m_fnParse(_cInput);
+	return true;
+}
+KSdpAs::KSdpAs(){m_pclsCurrent=NULL;}
+KSdpAs::~KSdpAs(){}
+KSdpAs & KSdpAs::operator=(KSdpAs & _rclsSrc)
+{
+	ListItr_t stItor;KSdpA * pclsA = (KSdpA*)_rclsSrc.m_list.m_fnBegin(stItor);
+	while(pclsA)
+	{
+		KSdpA * pclsNew = new KSdpA;	*pclsNew = *pclsA;m_list.m_fnPushBack(pclsNew);
+		pclsA = (KSdpA*)_rclsSrc.m_list.m_fnNext(stItor);
+	}
+	return *this;
+}
+KSdpA & KSdpAs::operator[](unsigned int _unIndex)
+{
+	KSdpA * pclsA = (KSdpA*)m_list.m_fnGetIndex(_unIndex);
+	if(pclsA==NULL) return m_clsNull;
+	return *pclsA;
+}
+KSdpAs & KSdpAs::operator+=(KSdpA &_rclsSrc)
+{
+	KSdpA * pclsNew = new KSdpA; *pclsNew = _rclsSrc; m_list.m_fnPushBack(pclsNew);
+	return *this;
+}
+bool KSdpAs::m_fnParse(const char _cInput,bool _bNew)
+{
+	if(_bNew)
+	{
+		KSdpA * pclsNew = new KSdpA;
+		pclsNew->m_fnParse(_cInput);
+		if(m_list.m_fnPushBack(pclsNew))
+		{
+			m_pclsCurrent = pclsNew; return true;
+		}
+	}
+	else
+	{
+		if(m_pclsCurrent) return m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return false;
+}
+void KSdpAs::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_list.m_fnGetSize() == 0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<As>\r\n";
+	ListItr_t stItor;KSdpA * pclsA = (KSdpA*)m_list.m_fnBegin(stItor);
+	while(pclsA)
+	{
+		pclsA->m_fnDebug(_rclsDebug,_unDepth+1);
+		pclsA = (KSdpA*)m_list.m_fnNext(stItor);
+	}
+}
+void KSdpAs::m_fnEncode(KString &_rclsEncode)
+{
+	ListItr_t stItor;KSdpA * pclsA = (KSdpA*)m_list.m_fnBegin(stItor);
+	while(pclsA)
+	{
+		pclsA->m_fnEncode(_rclsEncode);
+		pclsA = (KSdpA*)m_list.m_fnNext(stItor);
+	}
+}
+/****************************************** T ****************************************/
+KSdpT::PFuncParseState KSdpT::m_pfnParseHandle[KSdpT::E_SDP_T_MAX]=
+{
+	KSdpT::m_fnE_SDP_T_NONE,
+	KSdpT::m_fnE_SDP_T_1,
+	KSdpT::m_fnE_SDP_T_1_SP,
+	KSdpT::m_fnE_SDP_T_2,
+};
+KSdpT::KSdpT():m_clsT1(KNULL),m_clsT2(KNULL),m_clsVal(KNULL)
+{m_eSt = E_SDP_T_NONE;}
+KSdpT::~KSdpT(){}
+KSdpT & KSdpT::operator=(KSdpT & _rclsSrc)
+{
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsT1 = _rclsSrc.m_clsT1;
+	m_clsT2 = _rclsSrc.m_clsT2;
+	m_clsVal = _rclsSrc.m_clsVal;
+	return *this;
+}
+bool KSdpT::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpT::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsT1.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<T> {"<<m_clsVal<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(T1) {"<<m_clsT1<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(T2) {"<<m_clsT2<<"}\r\n";
+}
+void KSdpT::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsT1.m_unRealLen==0) return;
+	_rclsEncode<<"t="<<m_clsT1<<' '<<m_clsT2<<"\r\n";
+}
+bool KSdpT::m_fnE_SDP_T_NONE(KSdpT * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_T_1;
+	_pclsObj->m_clsT1<<_cInput;
+	return true;
+}
+bool KSdpT::m_fnE_SDP_T_1(KSdpT * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_T_1_SP; return true;
+	}
+	_pclsObj->m_clsT1<<_cInput;
+	return true;
+}
+bool KSdpT::m_fnE_SDP_T_1_SP(KSdpT * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_T_2;
+	_pclsObj->m_clsT2<<_cInput;
+	return true;
+}
+bool KSdpT::m_fnE_SDP_T_2(KSdpT * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_clsT2<<_cInput;
+	return true;
+}
+/***************************************** R *****************************************/
+KSdpR::KSdpR():m_clsVal(KNULL){}
+KSdpR::~KSdpR(){}
+KSdpR & KSdpR::operator=(KSdpR & _rclsSrc)
+{
+	m_clsVal = _rclsSrc.m_clsVal;return *this;
+}
+bool KSdpR::m_fnParse(const char _cInput){m_clsVal<<_cInput;return true;}
+void KSdpR::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<R> {"<<m_clsVal<<"}\r\n";
+}
+void KSdpR::m_fnEncode(KString &_rclsEncode)
+{
+	if(m_clsVal.m_unRealLen==0) return;
+	_rclsEncode<<"r="<<m_clsVal<<"\r\n";
+}
+/******************************** Time Descriptions (T/R)[n] *********************************/
+KSdpTDesc::KSdpTDesc(){}
+KSdpTDesc::~KSdpTDesc(){}
+KSdpTDesc & KSdpTDesc::operator=(KSdpTDesc & _rclsSrc)
+{
+	m_clsT = _rclsSrc.m_clsT; m_clsR = _rclsSrc.m_clsR;return *this;
+}
+void KSdpTDesc::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	m_clsT.m_fnDebug(_rclsDebug,_unDepth);
+	m_clsR.m_fnDebug(_rclsDebug,_unDepth);
+}
+void KSdpTDesc::m_fnEncode(KString &_rclsEncode)
+{
+	m_clsT.m_fnEncode(_rclsEncode);
+	m_clsR.m_fnEncode(_rclsEncode);
+}
+KSdpTDescs::KSdpTDescs(){m_pclsCurrent=NULL;}
+KSdpTDescs::~KSdpTDescs(){}
+KSdpTDescs & KSdpTDescs::operator=(KSdpTDescs & _rclsSrc)
+{
+	m_listTs.m_fnClear();
+	ListItr_t stItor; KSdpTDesc * pclsFind = (KSdpTDesc*)_rclsSrc.m_listTs.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		KSdpTDesc * pclsNew = new KSdpTDesc; *pclsNew = *pclsFind;
+		m_listTs.m_fnPushBack(pclsNew);
+		pclsFind = (KSdpTDesc*)_rclsSrc.m_listTs.m_fnNext(stItor);
+	}
+	return *this;
+}
+KSdpTDesc & KSdpTDescs::operator[](unsigned int _unIndex)
+{
+	KSdpTDesc * pclsFind = (KSdpTDesc*)m_listTs.m_fnGetIndex(_unIndex);
+	if(pclsFind==NULL) return m_clsNull;
+	return *pclsFind;
+}
+bool KSdpTDescs::m_fnParseT(const char _cInput,bool _bNew)
+{
+	if(_bNew)
+	{
+		m_pclsCurrent = m_fnCreateAdd();
+		return m_pclsCurrent->m_clsT.m_fnParse(_cInput);
+	}
+	else
+	{
+		if(m_pclsCurrent==NULL) return false;
+		return m_pclsCurrent->m_clsT.m_fnParse(_cInput);
+	}
+}
+bool KSdpTDescs::m_fnParseR(const char _cInput)
+{
+	if(m_pclsCurrent==NULL) return false;
+	return m_pclsCurrent->m_clsR.m_fnParse(_cInput);
+}
+void KSdpTDescs::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	ListItr_t stItor; KSdpTDesc * pclsFind = (KSdpTDesc*)m_listTs.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnDebug(_rclsDebug,_unDepth);
+		pclsFind = (KSdpTDesc*)m_listTs.m_fnNext(stItor);
+	}
+}
+void KSdpTDescs::m_fnEncode(KString &_rclsEncode)
+{
+	ListItr_t stItor; KSdpTDesc * pclsFind = (KSdpTDesc*)m_listTs.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnEncode(_rclsEncode);
+		pclsFind = (KSdpTDesc*)m_listTs.m_fnNext(stItor);
+	}
+}
+KSdpTDesc * KSdpTDescs::m_fnCreateAdd()
+{
+	KSdpTDesc * pclsNew = new KSdpTDesc; 
+	m_listTs.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+/***************************************** M *****************************************/
+KSdpM::PFuncParseState KSdpM::m_pfnParseHandle[KSdpM::E_SDP_M_MAX]=
+{
+	KSdpM::m_fnE_SDP_M_NONE,
+	KSdpM::m_fnE_SDP_M_MEDIA,
+	KSdpM::m_fnE_SDP_M_MEDIA_SP,
+	KSdpM::m_fnE_SDP_M_PORT,
+	KSdpM::m_fnE_SDP_M_PORT_SP,
+	KSdpM::m_fnE_SDP_M_TRANSPORT,
+	KSdpM::m_fnE_SDP_M_TRANSPORT_SP,
+	KSdpM::m_fnE_SDP_M_FMT,
+	KSdpM::m_fnE_SDP_M_FMT_SP,
+};
+KSdpM::KSdpM():m_clsMedia(KNULL),m_clsPort(KNULL),
+	m_clsTransport(KNULL),m_clsVal(KNULL)
+{m_eSt = E_SDP_M_NONE;m_pclsCurrentFmtp = NULL;}
+KSdpM::~KSdpM(){}
+KSdpM & KSdpM::operator=(KSdpM & _rclsSrc)
+{
+	m_eSt = _rclsSrc.m_eSt;
+	m_clsI = _rclsSrc.m_clsI;
+	m_clsBs = _rclsSrc.m_clsBs;
+	m_clsK = _rclsSrc.m_clsK;
+	m_clsAs = _rclsSrc.m_clsAs;
+	m_clsMedia = _rclsSrc.m_clsMedia;
+	m_clsPort = _rclsSrc.m_clsPort;
+	m_clsTransport = _rclsSrc.m_clsTransport;
+	m_clsVal = _rclsSrc.m_clsVal;
+	ListItr_t stItor;KSdpMFmtItem * pclsFmtp = (KSdpMFmtItem*)_rclsSrc.m_listFmt.m_fnBegin(stItor);
+	while(pclsFmtp)
+	{
+		KSdpMFmtItem * pclsNew = new KSdpMFmtItem;
+		*pclsNew = *pclsFmtp; m_listFmt.m_fnPushBack(pclsNew);
+		pclsFmtp = (KSdpMFmtItem*)_rclsSrc.m_listFmt.m_fnNext(stItor);
+	}
+	return *this;
+}
+KString & KSdpM::operator[](unsigned int _unIndex)
+{
+	KSdpMFmtItem * pclsFind = (KSdpMFmtItem*)m_listFmt.m_fnGetIndex(_unIndex);
+	if(pclsFind==NULL)	return m_clsNull.m_clsVal;
+	return pclsFind->m_clsVal;
+}
+KSdpM & KSdpM::operator+=(unsigned int _unCodec)
+{
+	KSdpMFmtItem * pclsNew = new KSdpMFmtItem; pclsNew->m_clsVal = _unCodec;
+	m_listFmt.m_fnPushBack(pclsNew); return *this;
+}
+bool KSdpM::m_fnParse(const char _cInput)
+{
+	m_clsVal<<_cInput;
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void KSdpM::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<M> {"<<m_clsVal<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(media) {"<<m_clsMedia<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(port) {"<<m_clsPort<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(transport) {"<<m_clsTransport<<"}\r\n";
+	s_fnAddTab(_rclsDebug,_unDepth+1);
+	_rclsDebug<< "(fmtp) {";
+	ListItr_t stItor;KSdpMFmtItem * pclsFmtp = (KSdpMFmtItem*)m_listFmt.m_fnBegin(stItor);
+	while(pclsFmtp)
+	{
+		_rclsDebug<<"("<<pclsFmtp->m_clsVal<<")";
+		pclsFmtp = (KSdpMFmtItem*)m_listFmt.m_fnNext(stItor);
+	}
+	_rclsDebug<<"}\r\n";
+	m_clsI.m_fnDebug(_rclsDebug,_unDepth+1);
+	m_clsC.m_fnDebug(_rclsDebug,_unDepth+1);
+	m_clsBs.m_fnDebug(_rclsDebug,_unDepth+1);
+	m_clsK.m_fnDebug(_rclsDebug,_unDepth+1);
+	m_clsAs.m_fnDebug(_rclsDebug,_unDepth+1);
+}
+void KSdpM::m_fnEncode(KString &_rclsEncode)
+{
+	_rclsEncode<<"m="<<m_clsMedia<<' '<<m_clsPort<<' '<<m_clsTransport<<' ';
+	ListItr_t stItor;KSdpMFmtItem * pclsFmtp = (KSdpMFmtItem*)m_listFmt.m_fnBegin(stItor);
+	while(pclsFmtp)
+	{
+		_rclsEncode<<pclsFmtp->m_clsVal;
+		pclsFmtp = (KSdpMFmtItem*)m_listFmt.m_fnNext(stItor);
+		if(pclsFmtp) _rclsEncode<<' ';
+	}
+	_rclsEncode<<"\r\n";
+	m_clsI.m_fnEncode(_rclsEncode);
+	m_clsC.m_fnEncode(_rclsEncode);
+	m_clsBs.m_fnEncode(_rclsEncode);
+	m_clsK.m_fnEncode(_rclsEncode);
+	m_clsAs.m_fnEncode(_rclsEncode);
+}
+bool KSdpM::m_fnE_SDP_M_NONE(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return false;
+	_pclsObj->m_eSt = E_SDP_M_MEDIA;
+	_pclsObj->m_clsMedia<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_MEDIA(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_M_MEDIA_SP; return true;
+	}
+	_pclsObj->m_clsMedia<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_MEDIA_SP(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_M_PORT;
+	_pclsObj->m_clsPort<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_PORT(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_M_PORT_SP; return true;
+	}
+	_pclsObj->m_clsPort<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_PORT_SP(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_M_TRANSPORT;
+	_pclsObj->m_clsTransport<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_TRANSPORT(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_M_TRANSPORT_SP; return true;
+	}
+	_pclsObj->m_clsTransport<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_TRANSPORT_SP(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_M_FMT;
+	_pclsObj->m_pclsCurrentFmtp = new KSdpMFmtItem;
+	_pclsObj->m_pclsCurrentFmtp->m_clsVal<<_cInput;
+	return _pclsObj->m_listFmt.m_fnPushBack(_pclsObj->m_pclsCurrentFmtp);
+}
+bool KSdpM::m_fnE_SDP_M_FMT(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t')
+	{
+		_pclsObj->m_eSt = E_SDP_M_FMT_SP; return true;
+	}
+	if(_pclsObj->m_pclsCurrentFmtp) _pclsObj->m_pclsCurrentFmtp->m_clsVal<<_cInput;
+	return true;
+}
+bool KSdpM::m_fnE_SDP_M_FMT_SP(KSdpM * _pclsObj,const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\t') return true;
+	_pclsObj->m_eSt = E_SDP_M_FMT;
+	_pclsObj->m_pclsCurrentFmtp = new KSdpMFmtItem;
+	_pclsObj->m_pclsCurrentFmtp->m_clsVal<<_cInput;
+	return _pclsObj->m_listFmt.m_fnPushBack(_pclsObj->m_pclsCurrentFmtp);
+}
+KSdpMs::KSdpMs(){m_pclsCurrent=NULL;}
+KSdpMs::~KSdpMs(){}
+KSdpMs & KSdpMs::operator=(KSdpMs & _rclsSrc)
+{
+	ListItr_t stItor;KSdpM * pclsM = (KSdpM *)_rclsSrc.m_list.m_fnBegin(stItor);
+	while(pclsM)
+	{
+		KSdpM * pclsNew = new KSdpM; *pclsNew = *pclsM;
+		m_list.m_fnPushBack(pclsNew);
+		pclsM = (KSdpM *)_rclsSrc.m_list.m_fnNext(stItor);
+	}
+	return *this;
+}
+KSdpM & KSdpMs::operator[](unsigned int _unIndex)
+{
+	KSdpM * pclsFind = (KSdpM*)m_list.m_fnGetIndex(_unIndex);
+	if(pclsFind==NULL) return m_clsNull;
+	return *pclsFind;
+}
+bool KSdpMs::m_fnParse(const char _cInput,bool _bNew)
+{
+	if(_bNew)
+	{
+		KSdpM * pclsNew = new KSdpM;
+		pclsNew->m_fnParse(_cInput);
+		if(m_list.m_fnPushBack(pclsNew))
+		{
+			m_pclsCurrent = pclsNew; return true;
+		}
+	}
+	else
+	{
+		if(m_pclsCurrent) return m_pclsCurrent->m_fnParse(_cInput);
+	}
+	return false;
+}
+void KSdpMs::m_fnDebug(KString &_rclsDebug,unsigned int _unDepth)
+{
+	if(m_list.m_fnGetSize() == 0) return;
+	s_fnAddTab(_rclsDebug,_unDepth);
+	_rclsDebug<<"<Ms>\r\n";
+	ListItr_t stItor;KSdpM * pclsM = (KSdpM *)m_list.m_fnBegin(stItor);
+	while(pclsM)
+	{
+		pclsM->m_fnDebug(_rclsDebug,_unDepth+1);
+		pclsM = (KSdpM *)m_list.m_fnNext(stItor);
+	}
+}
+void KSdpMs::m_fnEncode(KString &_rclsEncode)
+{
+	ListItr_t stItor;KSdpM * pclsM = (KSdpM *)m_list.m_fnBegin(stItor);
+	while(pclsM)
+	{
+		pclsM->m_fnEncode(_rclsEncode);
+		pclsM = (KSdpM *)m_list.m_fnNext(stItor);
+	}
+}
+KSdpM * KSdpMs::m_fnAddM()
+{
+	KSdpM * pclsNew = new KSdpM;
+	if(m_list.m_fnPushBack(pclsNew))
+	{
+		return pclsNew;
+	}
+	return NULL;
+}
+/************************ SDP Parse ******************************************************/
+KSdpParse::PFuncParseState KSdpParse::m_pfnParseHandle[KSdpParse::E_SDP_MAX]=
+{
+	KSdpParse::m_fnE_SDP_NONE,
+	KSdpParse::m_fnE_SDP_CR,
+	KSdpParse::m_fnE_SDP_LF,
+	KSdpParse::m_fnE_SDP_NAME,
+	KSdpParse::m_fnE_SDP_NAME_SP,
+	KSdpParse::m_fnE_SDP_V,
+	KSdpParse::m_fnE_SDP_O,
+	KSdpParse::m_fnE_SDP_S,
+	KSdpParse::m_fnE_SDP_I,
+	KSdpParse::m_fnE_SDP_U,
+	KSdpParse::m_fnE_SDP_E,
+	KSdpParse::m_fnE_SDP_P,
+	KSdpParse::m_fnE_SDP_C,
+	KSdpParse::m_fnE_SDP_B,
+	KSdpParse::m_fnE_SDP_Z,
+	KSdpParse::m_fnE_SDP_K,
+	KSdpParse::m_fnE_SDP_A,
+	KSdpParse::m_fnE_SDP_T,
+	KSdpParse::m_fnE_SDP_R,
+	KSdpParse::m_fnE_SDP_M,
+};
+KSdpParse::KSdpParse(){m_eSt = E_SDP_NONE;}
+KSdpParse::~KSdpParse(){}
+KSdpParse & KSdpParse::operator=(KSdpParse & _rclsSrc)
+{
+	m_clsV = _rclsSrc.m_clsV;
+	m_clsO = _rclsSrc.m_clsO;
+	m_clsS = _rclsSrc.m_clsS;
+	m_clsI = _rclsSrc.m_clsI;
+	m_clsU = _rclsSrc.m_clsU;
+	m_clsE = _rclsSrc.m_clsE;
+	m_clsP = _rclsSrc.m_clsP;
+	m_clsC = _rclsSrc.m_clsC;
+	m_clsBs = _rclsSrc.m_clsBs;
+	m_clsZ = _rclsSrc.m_clsZ;
+	m_clsK = _rclsSrc.m_clsK;
+	m_clsAs = _rclsSrc.m_clsAs;
+	m_clsTs = _rclsSrc.m_clsTs;
+	m_clsMs = _rclsSrc.m_clsMs;
+	return *this;
+}
+bool KSdpParse::m_fnParse(const char * _pszMsg, unsigned int _unLen)
+{
+	bool bRet = true;
+	for(unsigned int i=0;i<_unLen;i++)
+	{
+		if(!m_pfnParseHandle[m_eSt](this,_pszMsg[i]))
+		{
+			if(bRet == true) bRet = false;
+		}
+	}
+	return bRet;
+}
+void KSdpParse::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<"<SDP>\r\n{\r\n";
+	m_clsV.m_fnDebug(_rclsDebug,1);
+	m_clsO.m_fnDebug(_rclsDebug,1);
+	m_clsS.m_fnDebug(_rclsDebug,1);
+	m_clsI.m_fnDebug(_rclsDebug,1);
+	m_clsU.m_fnDebug(_rclsDebug,1);
+	m_clsE.m_fnDebug(_rclsDebug,1);
+	m_clsP.m_fnDebug(_rclsDebug,1);
+	m_clsC.m_fnDebug(_rclsDebug,1);
+	m_clsBs.m_fnDebug(_rclsDebug,1);
+	m_clsTs.m_fnDebug(_rclsDebug,1);
+	m_clsZ.m_fnDebug(_rclsDebug,1);
+	m_clsK.m_fnDebug(_rclsDebug,1);
+	m_clsAs.m_fnDebug(_rclsDebug,1);
+	m_clsMs.m_fnDebug(_rclsDebug,1);	
+	_rclsDebug<<"}\r\n";
+}
+void KSdpParse::m_fnEncode(KString &_rclsEncode)
+{
+	m_clsV.m_fnEncode(_rclsEncode);
+	m_clsO.m_fnEncode(_rclsEncode);
+	m_clsS.m_fnEncode(_rclsEncode);
+	m_clsI.m_fnEncode(_rclsEncode);
+	m_clsU.m_fnEncode(_rclsEncode);
+	m_clsE.m_fnEncode(_rclsEncode);
+	m_clsP.m_fnEncode(_rclsEncode);
+	m_clsC.m_fnEncode(_rclsEncode);
+	m_clsBs.m_fnEncode(_rclsEncode);
+	m_clsTs.m_fnEncode(_rclsEncode);
+	m_clsZ.m_fnEncode(_rclsEncode);
+	m_clsK.m_fnEncode(_rclsEncode);
+	m_clsAs.m_fnEncode(_rclsEncode);
+	m_clsMs.m_fnEncode(_rclsEncode);	
+}
+bool KSdpParse::m_fnE_SDP_NONE(KSdpParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == ' ' || _cInput == '\r' || _cInput == '\n') return false;
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName=_cInput;
+		_pclsObj->m_eSt = E_SDP_NAME;
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_CR(KSdpParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\n') _pclsObj->m_eSt = E_SDP_LF;
+	else if(_cInput == '\r') return false;
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName=_cInput;
+		_pclsObj->m_eSt =E_SDP_NAME;
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_LF(KSdpParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '\n') return false;
+	else if(_cInput == '\r') return false;
+	else if(_cInput == ' ') return false;
+	else
+	{
+		_pclsObj->m_clsTmpHeaderName=_cInput;
+		_pclsObj->m_eSt = E_SDP_NAME;
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_NAME(KSdpParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '=')
+	{
+		_pclsObj->m_eSt = E_SDP_NAME_SP;
+	}
+	else
+	{
+		// skipp ext charicter
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_NAME_SP(KSdpParse *_pclsObj, const char _cInput)
+{
+	if(_cInput == '=' || _cInput == ' ') return false;
+	else
+	{
+		if(_pclsObj->m_clsTmpHeaderName == 'v')
+		{
+			_pclsObj->m_clsV.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_V;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'o')
+		{
+			_pclsObj->m_clsO.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_O;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 's')
+		{
+			_pclsObj->m_clsS.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_S;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'i')
+		{
+			if(_pclsObj->m_clsMs.m_pclsCurrent)
+				_pclsObj->m_clsMs.m_pclsCurrent->m_clsI.m_fnParse(_cInput);
+			else
+				_pclsObj->m_clsI.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_I;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'u')
+		{
+			_pclsObj->m_clsU.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_U;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'e')
+		{
+			_pclsObj->m_clsE.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_E;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'p')
+		{
+			_pclsObj->m_clsP.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_P;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'c')
+		{
+			if(_pclsObj->m_clsMs.m_pclsCurrent)
+				_pclsObj->m_clsMs.m_pclsCurrent->m_clsC.m_fnParse(_cInput);
+			else
+				_pclsObj->m_clsC.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_C;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'b')
+		{
+			if(_pclsObj->m_clsMs.m_pclsCurrent)
+				_pclsObj->m_clsMs.m_pclsCurrent->m_clsBs.m_fnParse(_cInput,true);
+			else
+				_pclsObj->m_clsBs.m_fnParse(_cInput,true);
+			_pclsObj->m_eSt = E_SDP_B;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'z')
+		{
+			_pclsObj->m_clsZ.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_Z;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'k')
+		{
+			if(_pclsObj->m_clsMs.m_pclsCurrent)
+				_pclsObj->m_clsMs.m_pclsCurrent->m_clsK.m_fnParse(_cInput);
+			else
+				_pclsObj->m_clsK.m_fnParse(_cInput);
+			_pclsObj->m_eSt = E_SDP_K;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'a')
+		{
+			if(_pclsObj->m_clsMs.m_pclsCurrent)
+				_pclsObj->m_clsMs.m_pclsCurrent->m_clsAs.m_fnParse(_cInput,true);
+			else
+				_pclsObj->m_clsAs.m_fnParse(_cInput,true);
+			_pclsObj->m_eSt = E_SDP_A;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 't')
+		{
+			_pclsObj->m_clsTs.m_fnParseT(_cInput,true);
+			_pclsObj->m_eSt = E_SDP_T;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'r')
+		{
+			_pclsObj->m_clsTs.m_fnParseR(_cInput);
+			_pclsObj->m_eSt = E_SDP_R;
+		}
+		if(_pclsObj->m_clsTmpHeaderName == 'm')
+		{
+			_pclsObj->m_clsMs.m_fnParse(_cInput,true);
+			_pclsObj->m_eSt = E_SDP_M;
+		}
+		else
+		{
+			
+		}
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_V(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsV.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_O(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsO.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_S(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsS.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_I(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		if(_pclsObj->m_clsMs.m_pclsCurrent) _pclsObj->m_clsMs.m_pclsCurrent->m_clsI.m_fnParse(_cInput);
+		else _pclsObj->m_clsI.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_U(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsU.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_E(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsE.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_P(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsP.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_C(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		if(_pclsObj->m_clsMs.m_pclsCurrent) _pclsObj->m_clsMs.m_pclsCurrent->m_clsC.m_fnParse(_cInput);
+		else _pclsObj->m_clsC.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_B(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		if(_pclsObj->m_clsMs.m_pclsCurrent) _pclsObj->m_clsMs.m_pclsCurrent->m_clsBs.m_fnParse(_cInput);
+		else _pclsObj->m_clsBs.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_Z(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsZ.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_K(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		if(_pclsObj->m_clsMs.m_pclsCurrent) _pclsObj->m_clsMs.m_pclsCurrent->m_clsK.m_fnParse(_cInput);
+		else _pclsObj->m_clsK.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_A(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		if(_pclsObj->m_clsMs.m_pclsCurrent) _pclsObj->m_clsMs.m_pclsCurrent->m_clsAs.m_fnParse(_cInput);
+		else _pclsObj->m_clsAs.m_fnParse(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_T(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsTs.m_fnParseT(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_R(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsTs.m_fnParseR(_cInput);
+	}
+	return true;
+}
+bool KSdpParse::m_fnE_SDP_M(KSdpParse * _pclsObj, const char _cInput)
+{
+	if(_cInput == '\r') 	_pclsObj->m_eSt = E_SDP_CR;
+	else if(_cInput == '\n')
+	{
+		_pclsObj->m_eSt = E_SDP_LF;
+		return false;
+	}
+	else
+	{
+		_pclsObj->m_clsMs.m_fnParse(_cInput);
+	}
+	return true;
+}
+}		

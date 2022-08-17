@@ -1,0 +1,163 @@
+#include "eSipRteDBHandler.hxx"
+#include "eSipRteMgr.hxx"
+//@R106 201603
+#include "eSipRteStatus.hxx"
+namespace eSIP
+{
+
+
+CSipRteDBHandler* CSipRteDBHandler::m_pIns=NULL;
+
+
+CSipRteDBHandler::CSipRteDBHandler()
+  : m_bRun(false),
+    m_pQueue( new ESIP_DBHANDLER_QUEUE(1024))
+{
+}
+
+CSipRteDBHandler::~CSipRteDBHandler()
+{
+}
+CSipRteDBHandler* CSipRteDBHandler::m_fnGetInstance()
+{
+   if( m_pIns == NULL){
+      m_pIns=new CSipRteDBHandler;
+   }
+   return m_pIns;
+}
+
+int CSipRteDBHandler::m_fnAddChangeDB(int _nIndex)
+{
+   SipRteDBAction_t action;
+   memset(&action,0x00,sizeof(SipRteDBAction_t));
+
+   action.m_nChangeIndex=_nIndex;
+   int nRet=m_pQueue->Put(&action,sizeof(SipRteDBAction_t));
+   if( nRet != 0 ) {
+      SLOG(E_ESipRteLogLevel_ERR,"db action queue is full");
+   }
+   return nRet;
+}
+int CSipRteDBHandler::m_fnAddChangeDB_RteStatus()
+{
+   SipRteDBAction_t action;
+   memset(&action,0x00,sizeof(SipRteDBAction_t));
+
+   action.m_nChangeIndex=CSipRteData::E_SIPRTE_RTE;
+   action.m_nChangedRteStatus=1;
+   int nRet=m_pQueue->Put(&action,sizeof(SipRteDBAction_t));
+   if( nRet != 0 ) {
+      SLOG(E_ESipRteLogLevel_ERR,"db action queue_rte_sts is full");
+   }
+   return nRet;
+}
+int CSipRteDBHandler::m_fnInit()
+{
+   m_bRun=false;
+   resip::ThreadIf::run();
+   return 0;
+}
+
+void CSipRteDBHandler::m_fnStop()
+{
+   m_bRun=false;
+   resip::ThreadIf::shutdown();
+}
+
+void CSipRteDBHandler::thread()
+{
+   m_bRun=true;
+   SipRteDBAction_t Element;
+   int nRet=0;
+   CTimeDiff tDiff;
+   memset(&tDiff,0x00,sizeof(CTimeDiff));
+
+   int nMSEC=0;
+   CSipRteUtil::GetTimeDiff(&tDiff,true);
+
+   while( m_bRun ){
+      nMSEC=CSipRteUtil::GetTimeDiff(&tDiff,false);
+      //calculate cps
+      //if( nMSEC >= 500 ){
+      if( nMSEC >= 999 ){
+         //add @vibc
+         if( THESIPRTEMGR->m_nAttachModule == E_ESipRteAttachModule_SVC &&
+             THESIPRTEMGR->m_nHAStatus == E_ESipRteSystemHAStatus_ACTIVE )
+         {
+            m_fnSystemUsage();
+            THESIPDBMGR->m_fnCalculateCurrentCPS();
+            THESIPRTEMGR->m_fnCheckChangedfile();
+         }
+         CSipRteUtil::GetTimeDiff(&tDiff,true);
+         nMSEC=0;
+      }
+
+      nRet=m_pQueue->Get_(&Element);
+      if( nRet != 1 ){
+         CSipRteUtil::MilliSleep(20);
+         continue;
+      }
+      //@R106 201603 only rte status
+      if( Element.m_nChangeIndex == CSipRteData::E_SIPRTE_RTE &&
+          Element.m_nChangedRteStatus == 1 ){
+
+         THESIPRTESTS->m_fnWriteStatus();
+         continue;
+      }
+      //change db
+      m_fnNotifyChangeDB(Element.m_nChangeIndex);
+   } 
+}
+
+void CSipRteDBHandler::m_fnNotifyChangeDB(int _nIndex)
+{
+   if( _nIndex < 0 ) return;
+   THESIPDBMGR->m_fnBuffer2WriteDB(_nIndex);
+}
+
+
+void CSipRteDBHandler::m_fnSystemUsage( )
+{
+   static unsigned long stulTotalCPU=0;
+   static unsigned long stulTotalMEM=0;
+   static int           stnCnt=0;
+
+   int nCPUUsage=0, nMemUsage=0;
+   //get cpu 
+   nCPUUsage=CSipRteUtil::m_fnGetCpuUsage();
+   if( nCPUUsage < 0 ) nCPUUsage=0;
+
+   int nTotal=0, nFree=0;
+   //get mem
+   CSipRteUtil::m_fnGetRealMemInfo(&nTotal,&nFree);
+   if( (nTotal > 0) && (nFree > 0) && (nTotal-nFree) > 0 ){
+      nMemUsage = (int)(double(nTotal-nFree)/nTotal*100);
+      if( nMemUsage < 0 ) nMemUsage=0;
+   }
+   stnCnt++;
+   stulTotalCPU+=nCPUUsage;
+   stulTotalMEM+=nMemUsage;
+
+   if( stnCnt%E_MAX_SYSCHECK_PERIOD == 0 ){
+      int nAveCPU=(int)(stulTotalCPU/(unsigned long)E_MAX_SYSCHECK_PERIOD);
+      int nAveMEM=(int)(stulTotalMEM/(unsigned long)E_MAX_SYSCHECK_PERIOD);
+      if( nAveCPU <= 0) nAveCPU=0;
+      if( nAveMEM <= 0) nAveMEM=0;
+
+      //notify db 
+      THESIPDBMGR->m_fnSetSystemLoad(nAveCPU,nAveMEM);
+#if 0
+      SLOG(1,"AVE: CPU:%d, MEM:%d ",nAveCPU,nAveMEM);
+      SLOG(1,"CUR: CPU:%d, MEM:%d ",nCPUUsage,nMemUsage);
+#endif
+      //init
+      stulTotalCPU=nCPUUsage;
+      stulTotalMEM=nMemUsage;
+      stnCnt=1;
+   }
+}
+
+
+
+} /*end namespace */
+

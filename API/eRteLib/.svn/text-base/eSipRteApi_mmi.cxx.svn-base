@@ -1,0 +1,1365 @@
+#include "eSipRteMgr.hxx"
+
+int IfESipRteApi_AddLocal( SipNodeLocal_t* _pstValue, 
+                           SipNodeLocal_t* _pstResult,
+                           char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_LN,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_LN,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add local. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add local. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_AddRemote(SipNodeRemote_t* _pstValue,
+                           SipNodeRemote_t* _pstResult,
+                           char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_RMT,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RMT,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+
+      //string term
+      _pstResult->m_fnStrTerm();
+
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add remote. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add remote. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_AddRouteGroup(SipRouteGroup_t* _pstValue,
+                               SipRouteGroup_t* _pstResult,
+                               char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_GRTE,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_GRTE,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add route group. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add route group. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_AddRoute(SipRoute_t* _pstValue,
+                          SipRoute_t* _pstResult,
+                          char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      if( _pstValue->m_sOptAction ==  SipRoute_t::E_MANAGE_ACT ){
+         _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL_INIT;
+      }else if ( _pstValue->m_sOptAction ==  SipRoute_t::E_MANAGE_DEACT) {
+         _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      }else{
+         _pstValue->m_ucStatus=E_ESIP_STATUS_AVAIL;
+      }
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_RTE,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RTE,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add route. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add route. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_AddRouteSeq( SipRouteSeq_t* _pstValue, 
+                              SipRouteSeq_t* _pstResult,
+                              char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      _pstResult->m_fnStrTerm();
+
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_AddSpecialRouteSeq(SipSpecialRouteSeq_t* _pstValue, 
+                                    SipSpecialRouteSeq_t* _pstResult,
+                                    char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_SSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_SSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add special route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add special route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_AddTrGW(TrGWRoute_t* _pstValue, 
+                         TrGWRoute_t* _pstResult,
+                         char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      //status is F_BLK
+      if( (_pstValue->m_nStatus&TrGWRoute_t::E_TRGW_STATUS_FBLOCK) == 0 ){
+         _pstValue->m_nStatus|=TrGWRoute_t::E_TRGW_STATUS_FBLOCK;
+      }
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_TRGW,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_TRGW,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add trgw. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add trgw. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_AddReason(SipReasonCode_t* _pstValue, 
+                         SipReasonCode_t* _pstResult,
+                         char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSN,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSN,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add reason. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add reason. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_AddEmer(EmergencyCall_t* _pstValue, 
+                         EmergencyCall_t* _pstResult,
+                         char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnAddRecord(
+            eSIP::CSipRteData::E_SIPRTE_EMER,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_EMER,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to add emergency. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to add emergency. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+///modify
+int IfESipRteApi_ModLocal( SipNodeLocal_t* _pstValue, 
+                           SipNodeLocal_t* _pstResult,
+                           char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_LN,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_LN,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod local. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod local. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_ModRemote( SipNodeRemote_t* _pstValue,
+                            SipNodeRemote_t* _pstResult,
+                            char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_RMT,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RMT,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod remote. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod remote. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModRouteGroup(SipRouteGroup_t* _pstValue,
+                               SipRouteGroup_t* _pstResult,
+                               char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_GRTE,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_GRTE,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod route group. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod route group. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_ModRoute( SipRoute_t* _pstValue, 
+                           SipRoute_t* _pstResult,
+                           char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      if( _pstValue->m_sOptAction ==  SipRoute_t::E_MANAGE_ACT ){
+         _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL_INIT;
+      }else if ( _pstValue->m_sOptAction ==  SipRoute_t::E_MANAGE_DEACT) {
+         _pstValue->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      }else{
+         _pstValue->m_ucStatus=E_ESIP_STATUS_AVAIL;
+      }
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_RTE,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RTE,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //@vibc
+      if(_pstResult->m_sOptAction == SipRoute_t::E_MANAGE_BYPASS){
+         _pstResult->m_ucStatus=E_ESIP_STATUS_AVAIL;
+      }else if ( _pstResult->m_sOptAction == SipRoute_t::E_MANAGE_DEACT){
+         _pstResult->m_ucStatus=E_ESIP_STATUS_UNAVAIL;
+      }
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod route. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod route. %s",nRet,szError);      
+   }
+   return nRet;
+}
+//add @R106 201603 ALL DEACT by GroupID
+int IfESipRteApi_Control_AllRoute(  int _nActFlag,          /* IN    ACT:1, DEACT:0 */
+                                    int _nGroupID,          /* IN    Route Group ID */
+                                    bool _bEnableGroup,     /* IN    whether control by the group, or all */
+                                    bool _bIncludeBypass,   /* IN    whether include BYPASS MODE, or not */
+                                    char* _pError)          /* OUT   error string */
+{
+   int nRet=0;
+   char szError[256];
+   memset(szError,0x00,sizeof(szError));
+   int nTmp=_nActFlag;
+   do{
+      if( nTmp != 0 && nTmp != 1){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      if( nTmp ==  0 ){
+         nTmp = 2; //DEACT
+      }else{
+         nTmp = 0; //ACT
+      }
+      nRet=THESIPRTEMGR->m_fnRoute_Control(
+               nTmp,
+               _nGroupID,
+               _bEnableGroup,
+               _bIncludeBypass,
+               szError);
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to all route contorl. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to all route control. %s",nRet,szError);
+   }
+   return nRet;
+}
+
+int IfESipRteApi_ModRouteSeq( SipRouteSeq_t* _pstValue,
+                              SipRouteSeq_t* _pstResult,
+                              char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModSpecialRouteSeq(SipSpecialRouteSeq_t* _pstValue, 
+                                    SipSpecialRouteSeq_t* _pstResult,
+                                    char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_SSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_SSEQ,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod special route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod special route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModTrGW( TrGWRoute_t* _pstValue,
+                          TrGWRoute_t* _pstResult,
+                          char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_TRGW,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_TRGW,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod trgw. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod trgw. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_ModReason( SipReasonCode_t* _pstValue,
+                          SipReasonCode_t* _pstResult,
+                          char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSN,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSN,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod reason. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod reason. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModEnv( GlobalOverLoadEnv_t* _pstValue,
+                         GlobalOverLoadEnv_t* _pstResult,
+                         char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV,
+            0,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV,
+            0,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod env. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod env. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModEnv_LB( GlobalOverLoadEnv_t* _pstValue,
+                            GlobalOverLoadEnv_t* _pstResult,
+                            char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV_LB,
+            0,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV_LB,
+            0,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod env. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod env. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModTimer( SipCoreTimer_t* _pstValue,
+                           SipCoreTimer_t* _pstResult,
+                           char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_TIME,
+            0,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_TIME,
+            0,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod time. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod time. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_ModEmer( EmergencyCall_t* _pstValue,
+                          EmergencyCall_t* _pstResult,
+                          char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL || _pstResult == NULL ){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      //string term
+      _pstValue->m_fnStrTerm();
+      nRet=THESIPRTEMGR->m_fnModRecord(
+            eSIP::CSipRteData::E_SIPRTE_EMER,
+            _pstValue->m_uiID,
+            (void*)_pstValue,
+            szError);
+      if(nRet != 0 ) break;
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_EMER,
+            _pstValue->m_uiID,
+            (void*)_pstResult);
+      //string term
+      _pstResult->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to mod emergeny. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to mod emergency. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+///find
+int IfESipRteApi_FindLocal(unsigned int _uiID, SipNodeLocal_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_LN,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find local. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindRemote(unsigned int _uiID, SipNodeRemote_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RMT,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find remote. %s",szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_FindRoute(unsigned int _uiID, SipRoute_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RTE,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find route. %s",szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_FindRouteGroup(unsigned int _uiID, SipRouteGroup_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_GRTE,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find route group. %s",szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_FindRouteSeq(unsigned int _uiID, SipRouteSeq_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSEQ,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find route seq. %s",szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_FindSpecialRouteSeq(unsigned int _uiID, SipSpecialRouteSeq_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_SSEQ,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find special route seq. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindTrGW(unsigned int _uiID, TrGWRoute_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_TRGW,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find trgw. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindReason(unsigned int _uiID, SipReasonCode_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_RSN,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find reason. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindEnv(GlobalOverLoadEnv_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV,
+            0,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find env. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindEnv_LB(GlobalOverLoadEnv_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_ENV_LB,
+            0,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find env. %s",szError);
+   }
+   return nRet;
+}
+int IfESipRteApi_FindTimer(SipCoreTimer_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_TIME,
+            0,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find time. %s",szError);
+   }
+   return nRet;
+}
+
+int IfESipRteApi_FindEmer(unsigned int _uiID, EmergencyCall_t* _pstValue)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   do{
+      if( _pstValue == NULL){
+         nRet=E_RTE_IllegalParam;
+         strcpy(szError,"IllegalParam");
+         break;
+      }
+      nRet=THESIPRTEMGR->m_fnFindRecord(
+            eSIP::CSipRteData::E_SIPRTE_EMER,
+            _uiID,
+            (void*)_pstValue);
+      //string term
+      _pstValue->m_fnStrTerm();
+   }while(0);
+   if( nRet != 0 ){
+      GetStringSipRteErr(nRet,szError,sizeof(szError));
+      SLOG(E_ESipRteLogLevel_WAR,"fail to find emeregency. %s",szError);
+   }
+   return nRet;
+}
+
+///delete
+int IfESipRteApi_DelLocal(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_LN,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del local. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del local. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_DelRemote(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_RMT,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del remote. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del remote. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_DelRouteGroup(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_GRTE,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del route group. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del route group. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_DelRoute(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_RTE,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del route. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del route. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_DelRouteSeq(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_RSEQ,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_DelSpecialRouteSeq(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_SSEQ,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del special route seq. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del special route seq. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_DelTrGW(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_TRGW,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del trgw. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del trgw. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+int IfESipRteApi_DelReason(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_RSN,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del reason. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del reason. %s",nRet,szError);      
+   }
+   return nRet;
+}
+int IfESipRteApi_DelEmer(unsigned int _uiID, char* _pError)
+{
+   int nRet=0;
+   char szError[256]; szError[0]=0x00;
+   nRet=THESIPRTEMGR->m_fnDelRecord(
+         eSIP::CSipRteData::E_SIPRTE_EMER,
+         (int)_uiID,
+         szError);
+   if( nRet != 0 ){
+      if( _pError != NULL ) {
+         snprintf(_pError,eSIP::CSipRteData::E_MAXLEN_ERR,
+            "0x%08X: fail to del emergency. %s",nRet, szError);
+      }
+      SLOG(E_ESipRteLogLevel_WAR,"0x%08X: fail to del emergency. %s",nRet,szError);      
+   }
+   return nRet;
+}
+
+//get all
+int IfESipRteApi_GetAllLocal(SipLocalNodeDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_LN,(void*)_pstData);
+   return 0;
+}
+
+int IfESipRteApi_GetAllRemote(SipRemoteNodeDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RMT,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllRouteGroup(SipRouteGroupDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_GRTE,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllRoute(SipRouteDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RTE,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllRouteSeq(SipRouteSeqDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RSEQ,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllSpecialRouteSeq(SipSpecialRouteSeqDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_SSEQ,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllTrGW(TrGWDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TRGW,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllReason(SipReasonCodeDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   _pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RSN,(void*)_pstData);
+   return 0;
+}
+
+int IfESipRteApi_GetAllEnv(GlobalOverLoadEnv_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   //_pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_ENV,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllEnv_LB(GlobalOverLoadEnv_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   //_pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_ENV_LB,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllTimer(SipCoreTimer_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   //_pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TIME,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllTrace(SipTraceDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   //_pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TRC,(void*)_pstData);
+   return 0;
+}
+int IfESipRteApi_GetAllEmer(EmergencyCallDataBase_t* _pstData)
+{
+   if( _pstData == NULL) return E_RTE_IllegalParam;
+   //_pstData->m_nNumber=0;
+   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_EMER,(void*)_pstData);
+   return 0;
+}

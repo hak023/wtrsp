@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tcrm/mp
+END
+mp_com.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tcrm/mp/mp_com.h
+END
+mp_if.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tcrm/mp/mp_if.h
+END
+mp_codectype.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tcrm/mp/mp_codectype.h
+END
+mp_err.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tcrm/mp/mp_err.h
+END

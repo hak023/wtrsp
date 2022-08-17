@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector
+END
+JabberUserDb.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/JabberUserDb.hxx
+END
+IChatUser.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/IChatUser.cxx
+END
+jabberconnector_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/jabberconnector_8_0.vcproj
+END
+JabberComponent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/JabberComponent.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/Makefile.am
+END
+jabberconnector_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/jabberconnector_9_0.vcproj
+END
+JabberUserDb.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/JabberUserDb.cxx
+END
+IChatUser.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/IChatUser.hxx
+END
+JabberComponent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/JabberComponent.hxx
+END
+ichat-gw-jc.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/ichat-gw/jabberconnector/ichat-gw-jc.cxx
+END

@@ -1,0 +1,17 @@
+12:55:08.958) TID-0xc5ffa720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+12:55:08.958) TID-0xc5ff8700) INFO ) QueueThread[LogInst0]. Tid[26785] : process : start
+12:55:08.958) TID-0xc5ffa720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+12:55:08.959) TID-0xbffff700) INFO ) NormalThread[DelLogMgr]. Tid[26786] : process : start
+12:55:08.959) TID-0xbeffe700) INFO ) NormalThread[ColumFile]. Tid[26787] : process : start
+12:55:08.983) TID-0xc5ffa720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+12:55:08.984) TID-0xc5ffa720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+

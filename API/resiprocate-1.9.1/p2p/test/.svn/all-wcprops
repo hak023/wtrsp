@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test
+END
+testCon.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test/testCon.cxx
+END
+testConsole.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test/testConsole.cxx
+END
+testConsole_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test/testConsole_8_0.vcproj
+END
+ReadMe.txt
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test/ReadMe.txt
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/p2p/test/Makefile
+END

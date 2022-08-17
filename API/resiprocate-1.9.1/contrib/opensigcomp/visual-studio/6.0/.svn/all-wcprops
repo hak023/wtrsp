@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/visual-studio/6.0
+END
+libopensigcomp.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/visual-studio/6.0/libopensigcomp.dsp
+END
+opensigcomp.dsw
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/visual-studio/6.0/opensigcomp.dsw
+END
+unittest.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/opensigcomp/visual-studio/6.0/unittest.dsp
+END

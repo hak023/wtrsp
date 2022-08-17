@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/dum/test/curlHttp
+END
+CurlHttpProvider.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/dum/test/curlHttp/CurlHttpProvider.cxx
+END
+testCurlHttpProvider.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/dum/test/curlHttp/testCurlHttpProvider.cxx
+END
+CurlHttpProvider.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/dum/test/curlHttp/CurlHttpProvider.hxx
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/resip/dum/test/curlHttp/Makefile
+END

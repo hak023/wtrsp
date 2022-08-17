@@ -1,0 +1,24 @@
+[LOC]
+# <LOC Category Sample>
+# TYPE = udp(0), tcp(1), tls(2)/  MOD= server(0), client(1), accepted(2)
+# ID=1, NAME=iok_loc, IP=x.x.x.x, PORT=5060, TYPE=0, MOD=0
+ID=1, NAME=TrsgLocal1, IP=121.134.202.25, PORT=30002, TYPE=1, MOD= 0
+ID=2, NAME=TrsgLocal2, IP=121.134.202.25, PORT=30003, TYPE=1, MOD= 0
+
+[RMT]
+# <RMT Category Sample>
+# TYPE = udp(0), tcp(1), tls(2)
+# ID=10, NAME=iok_rmt, IP=x.x.x.x, PORT=6000, TYPE=0
+ID=1, NAME=TRSS_TEST01, IP=121.134.202.25, PORT=33001, TYPE=1
+ID=2, NAME=TRSS_TEST02, IP=121.134.202.25, PORT=33002, TYPE=1
+
+[RTE]
+# <RTE Category Sample>
+# ID=100, NAME=iok_rte, LOC=1, RMT=10, MBLK = 0
+ID=1, NAME=TRSS_RTE01, LOC=1, RMT=1, MBLK=0
+ID=2, NAME=TRSS_RTE02, LOC=1, RMT=2, MBLK=1
+
+[SEQ]
+# <SEQ Category Sample>
+# ID=1000, NAME=rte_cm, RATIO=100-2;101-5;[rte_id]-[rate];[rte_id]-[rate]...
+ID=1000, NAME=TrsgSeq, RATIO=1-1;2-1;

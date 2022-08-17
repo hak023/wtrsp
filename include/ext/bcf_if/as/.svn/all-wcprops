@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/as
+END
+New_SipDecoder.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/New_SipDecoder.h
+END
+as_shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/as/as_shm.h
+END
+cs_msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/as/cs_msg.h
+END
+amp_mtcodectype.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/amp_mtcodectype.h
+END
+Sam_Com.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/Sam_Com.h
+END
+tg_shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/tg_shm.h
+END
+amp_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/amp_common.h
+END
+sipa_new_defs.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/sipa_new_defs.h
+END
+msrp_shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/as/msrp_shm.h
+END

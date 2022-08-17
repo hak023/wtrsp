@@ -1,0 +1,176 @@
+#include "KPacket.hxx"
+namespace eSipUtil
+{
+void g_fnKPacketTest()
+{
+	#if 1  // Fx Data Test
+	KPacket clsPk;
+	// Insert Root Elements
+	clsPk.m_fnAddVarString("aa", NULL,"TestValue_%u",__LINE__);
+	clsPk.m_fnAddVarString("bbb","1111","TestValue_%u",__LINE__);
+	clsPk.m_fnAddVarString("cccc","2222222","TestValue_%u",__LINE__);
+	clsPk.m_fnAddString("ddd","333","========");
+	// Insert Child Tree Object
+	KPacket * pclsSub1 = clsPk.m_fnAddNewObject("obj","obj1");
+	KPacket * pclsSub2 = clsPk.m_fnAddNewObject("obj","obj2");
+	KPacket * pclsChild = clsPk.m_fnAddNewObject("child","child1");
+	KPacket * pclsChildChild = pclsChild->m_fnAddNewObject("childchild","childchild1");
+	KPacket * pclsChildChild2 = pclsChild->m_fnAddNewObject("childchild","childchild2");
+	// Insert Child Elements
+	char szVal1[]="123456789";
+	pclsSub1->m_fnAddBytes("main", "val1",(void*)szVal1,9);  
+	pclsSub1->m_fnAddString("main","val2", "123456789"); 
+
+	pclsSub2->m_fnAddString("etc","val1", "abcdefg"); 
+	
+	pclsChild->m_fnAddString("main", "cmd","child test");
+	pclsChild->m_fnAddString("main", "subcmd","child sub test");
+
+	pclsChildChild->m_fnAddString("main", "cmd", "childchild test");   
+	pclsChildChild->m_fnAddString("main", "subcmd", "childchild sub test");   
+	
+	pclsChildChild2->m_fnAddString("main", "cmd", "childchild2 test");   
+	pclsChildChild2->m_fnAddString("main", "subcmd", "childchild2 sub test");   
+	// copy KPacket Data
+	KPacket clsResultPk; clsResultPk = clsPk;
+	// Debug
+	KString clsDebug;clsResultPk.m_fnDebug((KSTR)clsDebug,10240);
+	printf("Test Data\r\n%s\r\n",(KCSTR)clsDebug);
+	// Find
+	FxPks_t * pstOrg = clsResultPk.m_fnGetPacket();
+	FxPks_t * pstObj = NULL;FxPks_t * pstObj2 = NULL;
+	pstObj = pstOrg->m_fnFindObject("obj","obj1");
+	if(pstObj)
+	{
+		printf("obj/obj1, main/val2=%s\r\n",pstObj->m_fnFindString("main","val2"));
+	}
+	pstObj = pstOrg->m_fnFindObject("child","child1");
+	if(pstObj)
+	{
+		pstObj2 = pstObj->m_fnFindObject("childchild","childchild2");
+		printf("child/child1->childchild/childchild2, main/subcmd=%s\r\n",pstObj2->m_fnFindString("main","subcmd"));
+	}
+	#endif
+}
+/*********************************** K Packet API ****************************************/
+KPacket::KPacket()
+{
+	m_pstPk = (FxPks_t*)new char [FxPks_t::E_PKS_VAR_SZ]; 
+	m_pstPk->m_fnInit(FxPks_t::E_PKS_VAR_SZ);
+	m_bBuild = false;
+}
+KPacket::~KPacket(){m_fnClear();}
+KPacket & KPacket::operator=(KPacket & _rclsSrc)
+{
+	if(_rclsSrc.m_pstPk==NULL) return *this;
+	m_fnClear();
+	FxPks_t * pstSrc = _rclsSrc.m_fnGetPacket();
+	m_pstPk = (FxPks_t*)new char [pstSrc->m_fnGetBufSize()]; 
+	m_pstPk->m_fnInit(pstSrc->m_fnGetBufSize());
+	memcpy(m_pstPk,pstSrc,pstSrc->m_fnGetSize());
+	return *this;
+}
+void KPacket::m_fnAddString(const char * _pszKey, const char * _pszSubKey,const char * _pszVal)
+{
+	if(!m_pstPk->m_fnAddString(_pszKey,_pszSubKey,_pszVal))
+	{
+		m_fnReAlloc(KString::m_fnStrLen(_pszVal));m_pstPk->m_fnAddString(_pszKey,_pszSubKey,_pszVal);
+	}
+}
+void KPacket::m_fnAddVarString(const char * _pszKey, const char * _pszSubKey,const char * _pszCat,...)
+{
+	char szBuff[FxPks_t::E_PKS_VAR_SZ]; memset(szBuff,0x00,FxPks_t::E_PKS_VAR_SZ);
+	va_list ap;va_start(ap, _pszCat);
+	vsnprintf(szBuff,FxPks_t::E_PKS_VAR_SZ-1,_pszCat,ap);va_end(ap);
+	if(!m_pstPk->m_fnAddString(_pszKey,_pszSubKey,szBuff))
+	{
+		m_fnReAlloc(KString::m_fnStrLen(szBuff));
+		m_pstPk->m_fnAddString(_pszKey,_pszSubKey,szBuff);
+	}
+}
+void KPacket::m_fnAddBytes(const char * _pszKey, const char * _pszSubKey,void * _pvBytes, unsigned int _unLen)
+{
+	if(!m_pstPk->m_fnAddBytes(_pszKey,_pszSubKey,_pvBytes,_unLen))
+	{
+		m_fnReAlloc(_unLen);m_pstPk->m_fnAddBytes(_pszKey,_pszSubKey,_pvBytes,_unLen);
+	}
+}
+KPacket * KPacket::m_fnAddNewObject(const char * _pszKey, const char * _pszSubKey)
+{
+	KPacket * pclsNew = new KPacket; pclsNew->m_clsChildKey = _pszKey;
+	pclsNew->m_clsChildSubKey = _pszSubKey;
+	m_listChild.m_fnPushBack(pclsNew);return pclsNew;
+}
+const char * KPacket::m_fnFindString(const char * _pszKey, const char * _pszSubKey)
+{
+	if(m_pstPk==NULL) return NULL;
+	return m_pstPk->m_fnFindString(_pszKey,_pszSubKey);
+}
+const void * KPacket::m_fnFindByte(const char * _pszKey,const char * _pszSubKey)
+{
+	if(m_pstPk==NULL) return NULL;
+	return m_pstPk->m_fnFindBytes(_pszKey,_pszSubKey);
+}
+const FxPks_t * KPacket::m_fnFindObject(const char * _pszKey,const char * _pszSubKey)
+{
+	if(m_pstPk==NULL) return NULL;
+	return m_pstPk->m_fnFindObject(_pszKey,_pszSubKey);
+}
+FxPks_t * KPacket::m_fnGetPacket()
+{
+	m_fnBuild();return m_pstPk;
+}
+FxPks_t * KPacket::m_fnAutoPtr()
+{
+	m_fnBuild();FxPks_t * pstAutoPtr = m_pstPk; m_pstPk = NULL; return pstAutoPtr;
+}
+const char * KPacket::m_fnDebug(char * _pszDebug,unsigned int _unLen)
+{
+	if(m_pstPk==NULL) return _pszDebug;
+	else return m_pstPk->m_fnDebug(_pszDebug,_unLen,0);
+}
+void * KPacket::m_fnFind(EFxType_t _eT,const char * _pszKey, const char * _pszSubKey)
+{
+	if(m_pstPk==NULL) return NULL;
+	FxPk_t * pstElement = m_pstPk->m_fnFind(_pszKey,_pszSubKey);
+	if(pstElement==NULL) return NULL;
+	if(pstElement->m_fnGetType() != _eT) return NULL;
+	return pstElement->m_fnGetVVal();
+}
+void KPacket::m_fnReAlloc(unsigned int _unAddSz)
+{
+	unsigned int unOldSz = m_pstPk->m_fnGetSize();
+	unsigned int unNewSz = unOldSz + _unAddSz + FxPks_t::E_PKS_VAR_SZ;
+	char * pszNew = new char [unNewSz]; memset(pszNew,0x00,unNewSz);
+	memcpy(pszNew,m_pstPk,unOldSz);
+	m_fnClear();
+	m_pstPk = (FxPks_t*)pszNew; m_pstPk->m_fnSetBufSize(unNewSz);
+}
+void KPacket::m_fnClear()
+{
+	if(m_pstPk) delete [] ((char*)m_pstPk); m_pstPk = NULL;m_bBuild = false;
+}
+void KPacket::m_fnAddObjectInternal(const char * _pszKey, const char * _pszSubKey,FxPks_t * _pstPk)
+{
+	if(!m_pstPk->m_fnAddNewObject(_pszKey,_pszSubKey,_pstPk))
+	{
+		m_fnReAlloc(_pstPk->m_fnGetSize());
+		m_pstPk->m_fnAddNewObject(_pszKey,_pszSubKey,_pstPk);
+	}
+}
+void KPacket::m_fnBuild()
+{
+	if(m_bBuild==false)
+	{
+		m_bBuild = true;
+		ListItr_t stItor; KPacket * pclsChild = (KPacket*)m_listChild.m_fnBegin(stItor);
+		while(pclsChild)
+		{
+			m_fnAddObjectInternal((KCSTR)pclsChild->m_clsChildKey,
+							(KCSTR)pclsChild->m_clsChildSubKey,
+							pclsChild->m_fnGetPacket());
+			pclsChild = (KPacket*)m_listChild.m_fnNext(stItor);
+		}
+	}
+}
+}

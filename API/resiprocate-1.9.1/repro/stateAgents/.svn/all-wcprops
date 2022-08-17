@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents
+END
+CertSubscriptionHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertSubscriptionHandler.cxx
+END
+PrivateKeyPublicationHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/PrivateKeyPublicationHandler.hxx
+END
+CertServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertServer.cxx
+END
+CertPublicationHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertPublicationHandler.cxx
+END
+CertSubscriptionHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertSubscriptionHandler.hxx
+END
+PrivateKeySubscriptionHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/PrivateKeySubscriptionHandler.cxx
+END
+CertServer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertServer.hxx
+END
+CertPublicationHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/CertPublicationHandler.hxx
+END
+PrivateKeyPublicationHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/PrivateKeyPublicationHandler.cxx
+END
+PrivateKeySubscriptionHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/repro/stateAgents/PrivateKeySubscriptionHandler.hxx
+END

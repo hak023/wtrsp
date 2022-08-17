@@ -1,0 +1,217 @@
+#include "eSipRteStatus.hxx"
+#include "eSipRteLog.hxx"
+#include "eSipRteDBMgr.hxx"
+
+namespace eSIP
+{
+
+
+static const char* g_pstSipRteStatusFileName="../config/env/sip_sts_rte.cfg";
+
+//static member
+CSipRteStatus* CSipRteStatus::m_pIns=NULL;
+
+CSipRteStatus::CSipRteStatus()
+   : m_pReadFP(NULL),
+     m_pWriteFP(NULL),
+     m_pRecord(new CSipRteUtil::CSipRteUtilValue_t[E_MAXCNT_RECORD]),
+     m_pLock(new  resip::RWMutex),
+     m_pIntMap (new CSipData_IntMap),
+     m_last_mtime(0),
+     m_uiLastSize(0)
+{
+   memset(m_szFile,0x00,sizeof(m_szFile));
+   memset(m_szFileBak,0x00,sizeof(m_szFile));
+}
+
+CSipRteStatus::~CSipRteStatus()
+{
+
+}
+
+CSipRteStatus* CSipRteStatus::m_fnGetInstance()
+{
+   if( m_pIns == NULL){
+      m_pIns=new CSipRteStatus;
+   }
+   return m_pIns;
+}
+//add @vibc
+bool CSipRteStatus::m_fnCheckChangedfile()
+{
+   struct stat file_stat;
+   int nret=stat(m_szFile, &file_stat);
+   if(nret < 0 ) return true;
+
+   //get last modify time
+   time_t* mtime=&(file_stat.st_mtime);
+
+   //the first modified?
+   if ( m_last_mtime == (time_t)0 ){
+      m_last_mtime=*mtime;
+      m_uiLastSize=file_stat.st_size;
+      return false;
+   }
+   //file check 20180214 @vibc_svt 
+   //if( m_last_mtime > *mtime){
+   if( m_last_mtime != *mtime){
+      m_last_mtime=*mtime;
+      m_uiLastSize=file_stat.st_size;
+      return true;
+   }
+   if( m_uiLastSize != file_stat.st_size){
+      m_last_mtime=*mtime;
+      m_uiLastSize=file_stat.st_size;
+      return true;
+   }
+   return false;
+}
+
+void CSipRteStatus::m_fnInit()
+{
+   //set member
+   snprintf(m_szFile,sizeof(m_szFile)-2,"%s",g_pstSipRteStatusFileName);
+   snprintf(m_szFileBak,sizeof(m_szFileBak)-2,"%s.tmp",g_pstSipRteStatusFileName);
+}
+
+//file read -> map insert
+void CSipRteStatus::m_fnLoad()
+{
+   ESIPRTEUTIL_CLOSE_FP(m_pReadFP);
+   m_pReadFP=fopen(m_szFile,"r");
+   if(m_pReadFP == NULL){
+      SLOG(E_ESipRteLogLevel_WAR,"load fail (%s). open fail",m_szFile);
+      return;
+   }
+
+   m_pLock->lock();
+   //clear
+   m_pIntMap->m_fnClear();
+
+   char linebuf[(2048+4)];
+   int nCnt=0;
+   char* pTmpData1=NULL;
+   char* pTmpData2=NULL;
+
+   int nID=0;
+   int nStatus=0;
+   while(fgets(linebuf,2048, m_pReadFP) != NULL){
+      if( linebuf[0]==0x00 || linebuf[0]=='#' ){
+         continue;
+      }
+      //trim
+      CSipRteUtil::m_fnLRTrim(linebuf);
+      if( linebuf[0]==0x00 ) continue;
+      //record 
+      nCnt=2;
+      CSipRteUtil::m_fnStrToken(linebuf,m_pRecord, nCnt, '|');
+      if( nCnt != 2 ) continue;
+      //get
+      pTmpData1=NULL;
+      pTmpData2=NULL;
+      pTmpData1=(m_pRecord)->m_szData;
+      pTmpData2=(m_pRecord+1)->m_szData;
+      if( pTmpData1 == NULL || pTmpData2 == NULL ) continue;
+      CSipRteUtil::m_fnLRTrim(pTmpData1);
+      CSipRteUtil::m_fnLRTrim(pTmpData2);
+      //execption
+      if( pTmpData1 == NULL  ||  
+          pTmpData1[0] == 0x00 || 
+          CSipRteUtil::m_fnIsNumberString(pTmpData1) == false) {
+         continue;
+      }
+      if( pTmpData2 == NULL  ||  
+          pTmpData2[0] == 0x00 || 
+          CSipRteUtil::m_fnIsNumberString(pTmpData2) == false) {
+         continue;
+      }
+      //convert
+      nID=atoi(pTmpData1);
+      nStatus=atoi(pTmpData2);
+      //insert map
+      m_pIntMap->m_fnInsertMap(nID,nStatus);
+   }
+   m_pLock->unlock();
+
+   nStatus=m_pIntMap->m_fnGetCount();
+   SLOG(E_ESipRteLogLevel_INF,"rte status table load end. count(%d)",nStatus);
+   ESIPRTEUTIL_CLOSE_FP(m_pReadFP);
+}
+
+int CSipRteStatus::m_fnGetStatus(int _nID)
+{
+   int nStatus=0;
+   bool bRet=m_pIntMap->m_fnFindMap(_nID,nStatus);
+   if( bRet == false ){
+      return -1;
+   }
+   if( nStatus != E_ESIP_STATUS_AVAIL &&
+       nStatus != E_ESIP_STATUS_UNAVAIL &&
+       nStatus != E_ESIP_STATUS_UNAVAIL_INIT ){
+      return -1;
+   }
+   return nStatus;
+}
+
+
+
+void CSipRteStatus::m_fnWriteStatus()
+{
+   m_pLock->lock();
+   m_fnWrite();
+   m_pLock->unlock();
+}
+
+void CSipRteStatus::m_fnWrite()
+{
+   SipRouteManagerDataBase_t* pDB=THESIPDBMGR->m_fnGetDB();
+   if( pDB == NULL ) return;
+
+   SipRouteDataBase_t* pRteDB=NULL;
+   pRteDB=&(pDB->m_stDBRte);
+   if( pRteDB == NULL ) return;
+
+   ESIPRTEUTIL_CLOSE_FP(m_pWriteFP);
+   //read/write & truncate
+   m_pWriteFP=fopen(m_szFileBak,"w+");
+   if( m_pWriteFP == NULL ){
+      SLOG(E_ESipRteLogLevel_ERR,"rte status write fail. %s",m_szFileBak);
+      return;
+   }
+
+   SipRoute_t* pRte=NULL;
+   char szBuf[1024];
+   int nLen=0;
+   strcpy(szBuf,"#db - route\n");
+   strcat(szBuf,"#ID|STS\n");
+   nLen=strlen(szBuf);
+   fwrite(szBuf,nLen,1,m_pWriteFP);
+   for( int i= 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i++){
+      pRte=&(pRteDB->m_stRte[i]);
+      if( pRte == NULL ) continue;
+      if(pRte->m_ucUsed == 0 ) continue;
+      if(pRte->m_sOptAction != SipRoute_t::E_MANAGE_ACT ) continue;
+      //only status 
+      //if(pRte->m_ucStatus != E_ESIP_STATUS_AVAIL ) continue;
+
+      memset(szBuf,0x00,sizeof(szBuf));
+      snprintf(szBuf,sizeof(szBuf)-2,"%u|%u\n",pRte->m_uiID,pRte->m_ucStatus);
+      nLen=strlen(szBuf);
+      fwrite(szBuf,nLen,1,m_pWriteFP);
+   }
+   ESIPRTEUTIL_CLOSE_FP(m_pWriteFP);
+
+   //backup file check
+   struct stat file_stat;
+   int nRet=stat(m_szFileBak, &file_stat);
+   if( nRet < 0 ) return ;
+   if(file_stat.st_size <= 0 ) return;
+
+   //rename
+   nRet=rename(m_szFileBak,m_szFile);
+   //SLOG(E_ESipRteLogLevel_INF,"rte status table write end. ret(%d)",nRet);
+}
+
+
+
+} /*end namespace */

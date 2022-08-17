@@ -1,0 +1,1554 @@
+
+#include <errno.h>
+
+#include "transportMgr.hxx"
+#include "string.hxx"
+#include "udpTransport.hxx"
+#include "tcpTransport.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+//It is used for sending async
+struct InternalSndInfo
+{
+	char * m_pSndData;
+	unsigned int m_unSndLen;
+	int m_nDscp;
+	void * m_pSndAppData;		//when excute SndCb or SndSuccCb, it is argument of callback
+
+	InternalSndInfo()
+		: m_pSndData(NULL), m_unSndLen(0), m_nDscp(-1), m_pSndAppData(NULL)
+	{
+	}
+
+	~InternalSndInfo()
+	{
+		free(m_pSndData);
+		free(m_pSndAppData);
+	}
+};
+
+typedef enum
+{
+	E_TRANSPORT_INTERNAL_MSG_TYPE_addTransport = 0,	//add transport
+	E_TRANSPORT_INTERNAL_MSG_TYPE_delTransportAll,
+	E_TRANSPORT_INTERNAL_MSG_TYPE_delTransport,			//delete transport
+	E_TRANSPORT_INTERNAL_MSG_TYPE_rcvEvent,					//recv event of epoll
+	E_TRANSPORT_INTERNAL_MSG_TYPE_sndEvent,				//snd event of epoll
+	E_TRANSPORT_INTERNAL_MSG_TYPE_sndData,					//send data
+
+	E_TRANSPORT_INTERNAL_MSG_TYPE_NUM,
+}ETransportInternalMsgType_t;
+
+static const char * s_arrTransportInternalMsgTypeStr[E_TRANSPORT_INTERNAL_MSG_TYPE_NUM] =
+{
+	"TRSP_INTERNAL_MSG_TYPE_addTransport",
+	"TRSP_INTERNAL_MSG_TYPE_delTransportAll",
+	"TRSP_INTERNAL_MSG_TYPE_delTransport",
+	"TRSP_INTERNAL_MSG_TYPE_rcvEvent",
+	"TRSP_INTERNAL_MSG_TYPE_sndEvent",
+	"TRSP_INTERNAL_MSG_TYPE_sndData",
+};
+
+const char * getTransportInternalMsgTypeStr(ETransportInternalMsgType_t _eTransportInternalMsgType)
+{
+	static const char * pszUnknown = "Unknown_Type";
+		
+	if( _eTransportInternalMsgType >= 0 && _eTransportInternalMsgType < E_TRANSPORT_INTERNAL_MSG_TYPE_NUM )
+		return s_arrTransportInternalMsgTypeStr[_eTransportInternalMsgType];
+	else
+		return pszUnknown;
+}
+
+struct TransportInternalMsg
+{
+	ETransportInternalMsgType_t m_eTransportInternalMsgType;
+	int m_nFd;
+	Net5Tuple m_stNet5Tuple;
+
+	/* for sendData */	
+	InternalSndInfo m_stSndInfo;
+
+	/* for add transport */	
+	TransportConfig m_stTransportCfg;
+
+	/* for add transport /modify socket config  */	
+	SocketCfg m_stSocketCfg;
+
+	/* for del transport */	
+	ETransportErr_t m_eTransportErr;
+
+	TransportInternalMsg()
+	{
+		m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_NUM;
+		m_nFd = -1;
+		m_eTransportErr = E_TRSP_ERR_NONE;
+	}
+
+	~TransportInternalMsg()
+	{
+	}
+
+	enum
+	{
+		E_CONST_MAX_STR_LEN = 256,
+	};
+
+	const char * getStr(char * _pszOutStr, unsigned int _unMaxStrLen, bool _bInitial = true) const
+	{
+		if( !_pszOutStr || _unMaxStrLen == 0 )
+			return getBlankStr();
+
+		if( _bInitial )
+			_pszOutStr[0] = 0x00;
+	
+		strncat(_pszOutStr, _unMaxStrLen-1, "TransportInternalMsgType[%s], Fd[%d], Net5Tuple[", 
+																	getTransportInternalMsgTypeStr(m_eTransportInternalMsgType), m_nFd);
+		m_stNet5Tuple.getStr(_pszOutStr, _unMaxStrLen, false);
+		strncat(_pszOutStr, _unMaxStrLen-1, "]");
+
+		return _pszOutStr;
+	}
+};
+
+struct TransportData
+{
+	bool m_bUse;
+	RwMutex m_clsMutex;
+	int m_nFd;
+	Transport * m_pclsTransport;
+
+	TransportData()
+		: m_pclsTransport(NULL)
+	{
+		reset();
+	}
+
+	~TransportData()
+	{
+		delete m_pclsTransport;
+	}
+
+	void reset()
+	{
+		m_bUse = false;
+		m_nFd = -1;
+		delete m_pclsTransport;
+		m_pclsTransport = NULL;
+	}
+};
+
+TransportMgr::TransportMgr(const TransportMgrOption & _rstTrspMgrOpt,int _nCoreID)
+	: m_bActive(false), m_bUseSendThread(_rstTrspMgrOpt.m_bUseSendThread), m_unMaxTransportSize(_rstTrspMgrOpt.m_unMaxTransportSize),	
+	m_arrTransportData(NULL), m_clsEpoll(_rstTrspMgrOpt.m_unMaxEpollSize),
+	m_pclsEpollThread(NULL), m_pclsSndThread(NULL), m_pclsRcvThread(NULL), m_pfnQueueFullCb(_rstTrspMgrOpt.m_pfnQueueFullCb),
+	m_pAppData(NULL)
+{
+	char m_szEpollThreadName[sizeof(m_szName)+32] = {0,};
+	char m_szSndThreadName[sizeof(m_szName)+32] = {0,};
+	char m_szRcvThreadName[sizeof(m_szName)+32] = {0,};
+	
+	m_szName[0] = 0x00;
+	if( _rstTrspMgrOpt.m_pszMgrName )
+	{
+		strncpy(m_szName, _rstTrspMgrOpt.m_pszMgrName, sizeof(m_szName)-1);
+		m_szName[sizeof(m_szName)-1] = 0x00;		
+	}
+	snprintf(m_szEpollThreadName, sizeof(m_szEpollThreadName)-1, "%s_%s", m_szName, "EpollThread");
+	snprintf(m_szSndThreadName, sizeof(m_szSndThreadName)-1, "%s_%s", m_szName, "SndThread");
+	snprintf(m_szRcvThreadName, sizeof(m_szRcvThreadName)-1, "%s_%s", m_szName, "RcvThread");
+
+	if( m_unMaxTransportSize < 1 )
+		m_unMaxTransportSize = 1;
+	m_arrTransportData = new TransportData[m_unMaxTransportSize];
+	if( !m_arrTransportData )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : Construct : fail : can't create array of TransportData", m_szName);
+		goto ERR_CONSTRUCT;
+	}
+
+	m_pclsSndThread = new QueueThread< TransportInternalMsg >(_rstTrspMgrOpt.m_unMaxThreadQueueSize, callbackSndThreadProcess, _rstTrspMgrOpt.m_nThreadQueueWaitMs, m_szSndThreadName);
+	if( !m_pclsSndThread )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : Construct : fail : can't create SndThread", m_szName);
+		goto ERR_CONSTRUCT;
+	}
+	m_pclsSndThread->setObject(this);
+
+	m_pclsRcvThread = new QueueThread< TransportInternalMsg >(_rstTrspMgrOpt.m_unMaxThreadQueueSize, callbackRcvThreadProcess, _rstTrspMgrOpt.m_nThreadQueueWaitMs, m_szRcvThreadName);
+	if( !m_pclsRcvThread )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : Construct : fail : can't create RcvThread", m_szName);
+		goto ERR_CONSTRUCT;
+	}
+	m_pclsRcvThread->setObject(this);
+
+	m_pclsEpollThread = new NormalThread<TransportMgr>(m_szEpollThreadName);
+	if( !m_pclsEpollThread )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : Construct : fail : can't create EpollThread", m_szName);
+		goto ERR_CONSTRUCT;
+	}
+	m_pclsEpollThread->setObject(this);
+	m_pclsEpollThread->setProcessCb(callbackEpollProcess);
+	if(_nCoreID == -1)
+	{
+		m_pclsSndThread->run();
+		m_pclsRcvThread->run();
+		m_pclsEpollThread->run();
+	}
+	else
+	{
+		m_pclsSndThread->run_(_nCoreID,-1,false);
+		m_pclsRcvThread->run_(_nCoreID,-1,false);
+		m_pclsEpollThread->run_(_nCoreID,-1,false);
+	}
+	m_bActive = true;
+
+	return;
+
+ERR_CONSTRUCT :
+	
+	delete[] m_arrTransportData;
+	m_arrTransportData = NULL;
+	delete m_pclsSndThread;
+	m_pclsSndThread = NULL;
+	delete m_pclsRcvThread;
+	m_pclsRcvThread = NULL;
+	delete m_pclsEpollThread;
+	m_pclsEpollThread = NULL;
+
+	m_bActive = false;
+}
+
+TransportMgr::~TransportMgr()
+{
+	m_bActive = false;
+
+	if( m_pclsEpollThread )
+	{
+		//m_pclsEpollThread->detach();
+		m_pclsEpollThread->shutdown();
+		m_pclsEpollThread->join();
+		delete m_pclsEpollThread;
+	}
+
+	if( m_pclsRcvThread )
+	{
+		//m_pclsRcvThread->detach();
+		m_pclsRcvThread->shutdown();
+		m_pclsRcvThread->join();
+		delete m_pclsRcvThread;
+	}
+
+	if( m_pclsSndThread )
+	{
+		//m_pclsSndThread->detach();
+		m_pclsSndThread->shutdown();
+		m_pclsSndThread->join();
+		delete m_pclsSndThread;
+	}
+
+	delete[] m_arrTransportData;
+}
+
+void TransportMgr::resetData()
+{
+	if( m_pclsEpollThread )
+	{
+		m_pclsEpollThread->shutdown();
+		m_pclsEpollThread->join();
+	}
+
+	if( m_pclsRcvThread )
+	{
+		m_pclsRcvThread->shutdown();
+		m_pclsRcvThread->join();
+	}
+
+	if( m_pclsSndThread )
+	{
+		m_pclsSndThread->shutdown();
+		m_pclsSndThread->join();
+	}
+
+	m_MapMutex.m_fnWriteLock();
+	m_mapNet5TupleInfo.clear();
+	m_mapFdInfo.clear();
+	m_MapMutex.m_fnUnlock();
+	
+	if( m_arrTransportData )
+	{
+		for( unsigned int i = 0; i < m_unMaxTransportSize; ++i )
+		{
+			m_arrTransportData[i].m_clsMutex.m_fnWriteLock();
+			m_arrTransportData[i].reset();
+			m_arrTransportData[i].m_clsMutex.m_fnUnlock();
+		}
+	}
+	m_clsEpoll.reset();
+
+	m_pclsSndThread->run();
+	m_pclsRcvThread->run();
+	m_pclsEpollThread->run();
+}
+
+void TransportMgr::addTransport(const Net5Tuple_t & _rstNet5Tuple, const SocketCfg & _rstSocketCfg, const TransportConfig & _rstTransportCfg)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransport : fail : %s : TrspMgr not active",
+													m_szName, _rstNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		if( _rstTransportCfg.m_pfnDelTransportCb )
+			_rstTransportCfg.m_pfnDelTransportCb(*this, _rstNet5Tuple, E_TRSP_ERR_TRSP_MGR_NOT_ACTIVE);
+		return;
+	}
+
+	TransportInternalMsg * pstTransportMsg = new TransportInternalMsg();
+	if( !pstTransportMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransport : fail : %s : can't create TransportInternalMsg", 
+													m_szName, _rstNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		if( _rstTransportCfg.m_pfnDelTransportCb )
+			_rstTransportCfg.m_pfnDelTransportCb(*this, _rstNet5Tuple, E_TRSP_ERR_FAIL_CREATE_INTERNAL_MSG);
+		return;
+	}
+	pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_addTransport;
+	pstTransportMsg->m_nFd = -1;
+	pstTransportMsg->m_stNet5Tuple = _rstNet5Tuple;
+	pstTransportMsg->m_stSocketCfg = _rstSocketCfg;
+	pstTransportMsg->m_stSocketCfg.m_nBlock = 0;		//only support async
+	pstTransportMsg->m_stTransportCfg = _rstTransportCfg;
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : addTransport : %s", m_szName, _rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple)));
+	
+	if( !put(true, pstTransportMsg) )
+	{
+		if( _rstTransportCfg.m_pfnDelTransportCb )
+			_rstTransportCfg.m_pfnDelTransportCb(*this, _rstNet5Tuple, E_TRSP_ERR_QUEUE_FULL);
+		delete pstTransportMsg;
+		return;
+	}
+}
+
+void TransportMgr::delTransportAll(ETransportErr_t _eTrspErr)
+{
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportAll : fail : TrspMgr not active", m_szName);
+		return;
+	}
+
+	TransportInternalMsg * pstTransportMsg = new TransportInternalMsg();
+	if( !pstTransportMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportAll : fail : can't create TransportInternalMsg", m_szName);
+		return;
+	}
+	pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_delTransportAll;
+	pstTransportMsg->m_nFd = -1;
+	pstTransportMsg->m_eTransportErr = _eTrspErr;
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : delTransportAll : %s", m_szName, g_fnGetTransportErrStr(_eTrspErr));
+	
+	if( !put(true, pstTransportMsg) )
+	{
+		delete pstTransportMsg;
+		return;
+	}
+}
+
+void TransportMgr::delTransport(const Net5Tuple_t & _rstNet5Tuple, ETransportErr_t _eTrspErr)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransport : fail : %s : TrspMgr not active",
+													m_szName, _rstNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		return;
+	}
+
+	TransportInternalMsg * pstTransportMsg = new TransportInternalMsg();
+	if( !pstTransportMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransport : fail : %s : can't create TransportInternalMsg", 
+													m_szName, _rstNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		return;
+	}
+	pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_delTransport;
+	pstTransportMsg->m_nFd = -1;
+	pstTransportMsg->m_stNet5Tuple = _rstNet5Tuple;
+	pstTransportMsg->m_eTransportErr = _eTrspErr;
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : delTransport : %s : %s", 
+												m_szName, _rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple)), g_fnGetTransportErrStr(_eTrspErr));
+	
+	if( !put(true, pstTransportMsg) )
+	{
+		delete pstTransportMsg;
+		return;
+	}
+}
+
+int TransportMgr::sendData(const Net5Tuple_t & _rstNet5Tuple, char * _pSndData, unsigned int _unSndLen, int _nDscp, void * _pSndAppData, ETransportErr_t * _peTransportErr)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	if( strlen(szNet5Tuple) <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData : fail : length of net5tuple is 0", m_szName);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_SEND_DATA;
+	}
+
+	if( !_pSndData || _unSndLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData : fail : %s : invalid argument : Data[%p], Len[%u]", 
+													m_szName, szNet5Tuple, _pSndData, _unSndLen);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_SEND_DATA;
+	}
+
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData : fail : %s : TrspMgr not active", m_szName, szNet5Tuple);
+		eErr = E_TRSP_ERR_TRSP_MGR_NOT_ACTIVE;
+		goto ERR_SEND_DATA;
+	}
+
+	if( m_bUseSendThread )		//send async
+	{
+		TransportInternalMsg * pstTransportMsg = new TransportInternalMsg();
+		if( !pstTransportMsg )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData for async : fail : %s : can't create TransportInternalMsg", m_szName, szNet5Tuple);
+			eErr = E_TRSP_ERR_FAIL_CREATE_INTERNAL_MSG;
+			goto ERR_SEND_DATA;
+		}
+		pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_sndData;
+		pstTransportMsg->m_nFd = -1;
+		pstTransportMsg->m_stNet5Tuple = _rstNet5Tuple;
+		pstTransportMsg->m_stSndInfo.m_pSndData = _pSndData;
+		pstTransportMsg->m_stSndInfo.m_unSndLen = _unSndLen;
+		pstTransportMsg->m_stSndInfo.m_nDscp = _nDscp;
+		pstTransportMsg->m_stSndInfo.m_pSndAppData = _pSndAppData;
+
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : sendData for async : %s", m_szName, szNet5Tuple);
+		
+		if( !put(false, pstTransportMsg) )
+		{
+			pstTransportMsg->m_stSndInfo.m_pSndData = NULL;
+			pstTransportMsg->m_stSndInfo.m_pSndAppData = NULL;
+			delete pstTransportMsg;
+			eErr = E_TRSP_ERR_QUEUE_FULL;
+			goto ERR_SEND_DATA;
+		}
+
+		return _unSndLen;
+	}
+	else		//send sync
+	{
+		int nSndRet = -1;
+		int nTransportDataIdx = getTransportDataIndex(szNet5Tuple);
+		
+		if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData for sync : fail : %s : TransportDataIdx is invalid", m_szName, szNet5Tuple);
+			eErr = E_TRSP_ERR_NOT_FOUND_TRSP_DATA_IDX;
+			goto ERR_SEND_DATA;
+		}
+
+		{
+			Lock clsLock(m_arrTransportData[nTransportDataIdx].m_clsMutex, Lock::E_LOCK_TYPE_READ);
+
+			if( !m_arrTransportData[nTransportDataIdx].m_bUse )
+			{			
+				LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData for sync : fail : %s : TransportDataIdx[%d] : Transport is not using", 
+														m_szName, szNet5Tuple, nTransportDataIdx);			
+				eErr = E_TRSP_ERR_TRSP_DATA_UNUSED;
+				goto ERR_SEND_DATA;
+			}
+
+			if( !m_arrTransportData[nTransportDataIdx].m_pclsTransport )
+			{			
+				LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendData for sync : fail : %s : TransportDataIdx[%d] : Transport is NULL", 
+														m_szName, szNet5Tuple, nTransportDataIdx);			
+				eErr = E_TRSP_ERR_INTERNAL_ERR;
+				goto ERR_SEND_DATA;
+			}
+
+			LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : sendData for sync : %s : TransportDataIdx[%d]", m_szName, szNet5Tuple, nTransportDataIdx);	
+
+			m_arrTransportData[nTransportDataIdx].m_pclsTransport->setDscp(_nDscp);
+			nSndRet = m_arrTransportData[nTransportDataIdx].m_pclsTransport->sndData(_pSndData, _unSndLen, _rstNet5Tuple.m_szRemoteIp, _rstNet5Tuple.m_nRemotePort, _pSndAppData, _peTransportErr);
+		}
+
+		return nSndRet;
+	}
+
+ERR_SEND_DATA :
+
+	if( _peTransportErr )
+		*_peTransportErr = eErr;
+
+	return -1;
+}
+
+int TransportMgr::sendDataAsync(const Net5Tuple_t & _rstNet5Tuple, char * _pSndData, unsigned int _unSndLen, int _nDscp, void * _pSndAppData, ETransportErr_t * _peTransportErr)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	TransportInternalMsg * pstTransportMsg = NULL;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	if( strlen(szNet5Tuple) <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendDataAsync : fail : length of net5tuple is 0", m_szName);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_SEND_ASYNC_DATA;
+	}
+
+	if( !_pSndData || _unSndLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendDataAsync : fail : %s : invalid argument : Data[%p], Len[%u]", 
+													m_szName, szNet5Tuple, _pSndData, _unSndLen);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_SEND_ASYNC_DATA;
+	}
+
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendDataAsync : fail : %s : TrspMgr not active", m_szName, szNet5Tuple);
+		eErr = E_TRSP_ERR_TRSP_MGR_NOT_ACTIVE;
+		goto ERR_SEND_ASYNC_DATA;
+	}
+
+	pstTransportMsg = new TransportInternalMsg();
+	if( !pstTransportMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : sendDataAsync : fail : %s : can't create TransportInternalMsg", m_szName, szNet5Tuple);
+		eErr = E_TRSP_ERR_FAIL_CREATE_INTERNAL_MSG;
+		goto ERR_SEND_ASYNC_DATA;
+	}
+	pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_sndData;
+	pstTransportMsg->m_nFd = -1;
+	pstTransportMsg->m_stNet5Tuple = _rstNet5Tuple;
+	pstTransportMsg->m_stSndInfo.m_pSndData = _pSndData;
+	pstTransportMsg->m_stSndInfo.m_unSndLen = _unSndLen;
+	pstTransportMsg->m_stSndInfo.m_nDscp = _nDscp;
+	pstTransportMsg->m_stSndInfo.m_pSndAppData = _pSndAppData;
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : sendDataAsync : %s", m_szName, szNet5Tuple);
+	
+	if( !put(false, pstTransportMsg) )
+	{
+		pstTransportMsg->m_stSndInfo.m_pSndData = NULL;
+		pstTransportMsg->m_stSndInfo.m_pSndAppData = NULL;
+		eErr = E_TRSP_ERR_QUEUE_FULL;
+		goto ERR_SEND_ASYNC_DATA;
+	}
+
+	return _unSndLen;
+
+ERR_SEND_ASYNC_DATA :
+
+	if( _peTransportErr )
+		*_peTransportErr = eErr;
+
+	delete pstTransportMsg;
+
+	return -1;
+}
+
+
+bool TransportMgr::modifySocketCfg(const Net5Tuple_t & _rstNet5Tuple, const SocketCfg_t & _rstSocketCfg)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	int nTransportDataIdx = -1;
+	TransportData * pstTransportData = NULL;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	if( strlen(szNet5Tuple) <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : modifySocketCfg : fail : length of net5tuple is 0", m_szName);
+		return false;
+	}
+
+	if( !m_bActive )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : modifySocketCfg : fail : %s : not active", m_szName, szNet5Tuple);
+		return false;
+	}
+
+	nTransportDataIdx = getTransportDataIndex(szNet5Tuple);
+	if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : modifySocketCfg : fail : %s : TransportDataIdx is invalid", m_szName, szNet5Tuple);
+		return false;
+	}
+
+	pstTransportData = getTransportData(nTransportDataIdx);
+
+	Lock clsLock(pstTransportData->m_clsMutex, Lock::E_LOCK_TYPE_READ);
+
+	if( !m_arrTransportData[nTransportDataIdx].m_bUse )
+	{			
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : modifySocketCfg : fail : %s : TransportDataIdx[%d] : Transport is not using", 
+												m_szName, szNet5Tuple, nTransportDataIdx);			
+		return false;
+	}
+
+	if( !m_arrTransportData[nTransportDataIdx].m_pclsTransport )
+	{			
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : modifySocketCfg : fail : %s : TransportDataIdx[%d] : Transport is NULL", 
+												m_szName, szNet5Tuple, nTransportDataIdx);			
+		return false;
+	}
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : modifySocketCfg : %s : TransportDataIdx[%d]", m_szName, szNet5Tuple, nTransportDataIdx);	
+
+	m_arrTransportData[nTransportDataIdx].m_pclsTransport->setSocketCfg(_rstSocketCfg);
+
+	return true;
+}
+
+bool TransportMgr::modifySocketCfgBlock(const Net5Tuple_t & _rstNet5Tuple, bool _bBlock)
+{
+	SocketCfg_t stSockCfg;
+	stSockCfg.disable();
+	if( _bBlock )
+		stSockCfg.m_nBlock = 1;
+	else
+		stSockCfg.m_nBlock = 0;
+
+	return modifySocketCfg(_rstNet5Tuple, stSockCfg);
+}
+
+bool TransportMgr::modifySocketCfgReuse(const Net5Tuple_t & _rstNet5Tuple, bool _bReuse)
+{
+	SocketCfg_t stSockCfg;
+	stSockCfg.disable();
+	if( _bReuse )
+		stSockCfg.m_nReuse = 1;
+	else
+		stSockCfg.m_nReuse = 0;
+
+	return modifySocketCfg(_rstNet5Tuple, stSockCfg);
+}
+
+bool TransportMgr::modifySocketCfgRcvBufferSize(const Net5Tuple_t & _rstNet5Tuple, unsigned int _unBufferSize)
+{
+	if( _unBufferSize == 0 )
+		return false;
+
+	SocketCfg_t stSockCfg;
+	stSockCfg.disable();
+	stSockCfg.m_nRcvSocketBufferSize = (int)_unBufferSize;
+
+	return modifySocketCfg(_rstNet5Tuple, stSockCfg);
+}
+
+bool TransportMgr::modifySocketCfgSndBufferSize(const Net5Tuple_t & _rstNet5Tuple, unsigned int _unBufferSize)
+{
+	if( _unBufferSize == 0 )
+		return false;
+
+	SocketCfg_t stSockCfg;
+	stSockCfg.disable();
+	stSockCfg.m_nSndSocketBufferSize = (int)_unBufferSize;
+
+	return modifySocketCfg(_rstNet5Tuple, stSockCfg);
+}
+
+bool TransportMgr::modifySocketCfgDscp(const Net5Tuple_t & _rstNet5Tuple, int _nDscp)
+{
+	if( _nDscp < 0 )
+		return false;
+
+	SocketCfg_t stSockCfg;
+	stSockCfg.disable();
+	stSockCfg.m_nDscp = _nDscp;
+
+	return modifySocketCfg(_rstNet5Tuple, stSockCfg);
+}
+
+void TransportMgr::getQueueStatusStr(char * _pszOutStr, unsigned int _unMaxLen) const
+{
+	if( !_pszOutStr || _unMaxLen == 0 )
+		return;
+
+	if( !m_pclsSndThread || !m_pclsRcvThread )
+		return;
+
+	strncat(_pszOutStr, _unMaxLen, "%sQueue(rcv:%u, snd:%u)", m_szName, m_pclsRcvThread->getCurrentQueueSize(), m_pclsSndThread->getCurrentQueueSize());
+}
+
+bool TransportMgr::checkValidTransportInternalMsg(const Transport & _rclsTransport, const TransportInternalMsg & _rclsTransportInternalMsg)
+{
+	bool bSameFd = false;
+
+	if( _rclsTransport.getFd() >= 0 && _rclsTransportInternalMsg.m_nFd >= 0 )
+	{
+		if( _rclsTransport.getFd() != _rclsTransportInternalMsg.m_nFd )
+			return false;
+		else
+			bSameFd = true;
+	}
+
+	if( _rclsTransportInternalMsg.m_stNet5Tuple.m_eTransportType == E_TRANSPORT_TYPE_NUM )
+	{
+		if( bSameFd )
+			return true;
+	}
+	else if( _rclsTransportInternalMsg.m_stNet5Tuple.m_eTransportType == E_TRANSPORT_TYPE_udp )
+	{
+		if( _rclsTransport.getNet5Tuple().m_eTransportType == _rclsTransportInternalMsg.m_stNet5Tuple.m_eTransportType
+			&& strcmp(_rclsTransport.getNet5Tuple().m_szLocalIp, _rclsTransportInternalMsg.m_stNet5Tuple.m_szLocalIp) == 0
+			&& _rclsTransport.getNet5Tuple().m_nLocalPort == _rclsTransportInternalMsg.m_stNet5Tuple.m_nLocalPort )
+		{
+			return true;
+		}
+	}
+	else if( _rclsTransportInternalMsg.m_stNet5Tuple.m_eTransportType == E_TRANSPORT_TYPE_tcp )
+	{
+		if( _rclsTransport.getNet5Tuple() == _rclsTransportInternalMsg.m_stNet5Tuple )
+			return true;
+	}
+
+	return false;
+}
+
+bool TransportMgr::put(bool _bRcvTh, TransportInternalMsg * _pstTrspInternalMsg)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+
+	bool bResult = false;
+	bool bAlarm = false;
+	QueueThread< TransportInternalMsg > * pclsQueueThread = NULL;
+	const char * pszQueueName = "";
+	unsigned int unCurrentQueueSize = 0;
+	unsigned int unMaxQueueSize = 0;
+
+	if( !_pstTrspInternalMsg )
+		return false;
+
+	if( _bRcvTh )
+		pclsQueueThread = m_pclsRcvThread;
+	else
+		pclsQueueThread = m_pclsSndThread;
+
+	if( pclsQueueThread )
+	{
+		pszQueueName = pclsQueueThread->getName();
+		unCurrentQueueSize = pclsQueueThread->getCurrentQueueSize();
+		unMaxQueueSize = pclsQueueThread->getMaxQueueSize();
+	
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : Put to %s : CurrentQueueSize[%u] : Type[%s] : %s", 
+														m_szName, pszQueueName, unCurrentQueueSize,
+														getTransportInternalMsgTypeStr(_pstTrspInternalMsg->m_eTransportInternalMsgType),
+														_pstTrspInternalMsg->m_stNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		
+		if( pclsQueueThread->put(_pstTrspInternalMsg) )
+		{
+			bAlarm = false;
+			bResult = true;
+		}
+		else
+		{
+			bAlarm = true;
+			bResult = false;
+
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : Put to %s : fail : Queue Full. Current[%u], Max[%u] : Type[%s] : %s", 
+														m_szName, pszQueueName, unCurrentQueueSize, unMaxQueueSize,
+														getTransportInternalMsgTypeStr(_pstTrspInternalMsg->m_eTransportInternalMsgType),
+														_pstTrspInternalMsg->m_stNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+		}
+	}
+	else
+	{
+		bAlarm = false;
+		bResult = false;
+
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : Put to : fail : invalid Thread : Type[%s] : %s", 
+													m_szName,
+													getTransportInternalMsgTypeStr(_pstTrspInternalMsg->m_eTransportInternalMsgType),
+													_pstTrspInternalMsg->m_stNet5Tuple.getStr(szNet5Tuple, sizeof(szNet5Tuple)));
+	}
+
+	if( bAlarm && m_pfnQueueFullCb )
+		m_pfnQueueFullCb(pszQueueName, unCurrentQueueSize, unMaxQueueSize);
+
+	return bResult;
+}
+
+Transport * TransportMgr::addTransportInternal(const Net5Tuple_t & _rstNet5Tuple, const SocketCfg & _rstSocketCfg, const TransportConfig & _rstTransportCfg, bool _bDelCb, int _nFd)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	Transport * pclsTransport = NULL;
+	int nTransportDataIdx = -1;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	if( strlen(szNet5Tuple) <= 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : length of net5tuple is 0", m_szName);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_ADD_TRANSPORT_INTERNAL;
+	}
+
+	/*==== create Transport object ====*/
+	if( _rstNet5Tuple.m_eTransportType == E_TRANSPORT_TYPE_udp )
+	{
+		pclsTransport = new UdpTransport(*this, m_clsEpoll, _rstNet5Tuple, _rstSocketCfg, _rstTransportCfg);
+	}
+	else if( _rstNet5Tuple.m_eTransportType == E_TRANSPORT_TYPE_tcp )
+	{
+		pclsTransport = new TcpTransport(*this, m_clsEpoll, _rstNet5Tuple, _rstSocketCfg, _rstTransportCfg);
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : unknown type of transport", m_szName, szNet5Tuple);
+		eErr = E_TRSP_ERR_INVALID_ARG;
+		goto ERR_ADD_TRANSPORT_INTERNAL;
+	}
+	
+	if( !pclsTransport )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : can't create Transport", m_szName, szNet5Tuple);
+		eErr = E_TRSP_ERR_FAIL_CREATE_TRSP;
+		goto ERR_ADD_TRANSPORT_INTERNAL;
+	}
+	
+	if( (eErr = pclsTransport->init(_nFd)) != E_TRSP_ERR_NONE )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : init()", m_szName, szNet5Tuple);
+		delete pclsTransport;
+		goto ERR_ADD_TRANSPORT_INTERNAL;
+	}
+
+	/*==== add TransportData ====*/
+	nTransportDataIdx = getAvailableTransportDataIndex();
+	if( nTransportDataIdx < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : getAvailableTransportDataIndex", m_szName, pclsTransport->getStr());
+		delete pclsTransport;
+		eErr = E_TRSP_ERR_FAIL_ADD_TRSP_DATA;
+		goto ERR_ADD_TRANSPORT_INTERNAL;
+	}
+
+	{
+		Lock clsLock(m_arrTransportData[nTransportDataIdx].m_clsMutex, Lock::E_LOCK_TYPE_WRITE);
+		
+		if( !addTransportData(pclsTransport, nTransportDataIdx) )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : addTransportData", m_szName, pclsTransport->getStr());
+			delete pclsTransport;
+			eErr = E_TRSP_ERR_FAIL_ADD_TRSP_DATA;
+			goto ERR_ADD_TRANSPORT_INTERNAL;
+		}
+
+		/*==== add MapInfo ====*/
+		if( !addToMap(szNet5Tuple, nTransportDataIdx, pclsTransport->getFd()) )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : addToMap", m_szName, pclsTransport->getStr());
+			delTransportData(nTransportDataIdx);
+			eErr = E_TRSP_ERR_FAIL_ADD_MAP_INFO;
+			goto ERR_ADD_TRANSPORT_INTERNAL;
+		}
+		
+		if( (eErr = pclsTransport->start()) != E_TRSP_ERR_NONE )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportInternal : fail : %s : start()", m_szName, pclsTransport->getStr());
+			delFromMap(szNet5Tuple, pclsTransport->getFd());
+			delTransportData(nTransportDataIdx);
+			goto ERR_ADD_TRANSPORT_INTERNAL;
+		}
+
+		LogInternal(E_LOG_INFO, "TransportMgr[%s] : addTransportInternal : %s", m_szName, pclsTransport->getStr());
+	}
+
+	return pclsTransport;
+
+ERR_ADD_TRANSPORT_INTERNAL:
+
+	if( _rstTransportCfg.m_pfnDelTransportCb && _bDelCb )
+		_rstTransportCfg.m_pfnDelTransportCb(*this, _rstNet5Tuple, eErr);
+
+	return NULL;
+}
+
+void TransportMgr::delTransportInternalAll(ETransportErr_t _eTransportErr)
+{
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : delTransportInternalAll : %s", m_szName, g_fnGetTransportErrStr(_eTransportErr));
+
+	unsigned int unCurrentTransportSize = (unsigned int)(m_mapNet5TupleInfo.size());
+	unsigned int unDelTransportSize = 0;
+	Net5Tuple_t stDelTuple;
+	
+	for( unsigned int i = 0; i < m_unMaxTransportSize; ++i )
+	{
+		if( unDelTransportSize >= unCurrentTransportSize )
+			break;
+
+		stDelTuple.reset();
+		if( m_arrTransportData[i].m_bUse )
+		{
+			if( m_arrTransportData[i].m_pclsTransport )
+				stDelTuple = m_arrTransportData[i].m_pclsTransport->getNet5Tuple();
+
+			delTransportInternal(i, stDelTuple, _eTransportErr);
+			++unDelTransportSize;
+		}
+	}
+}
+
+void TransportMgr::delTransportInternal(const Net5Tuple_t & _rstNet5Tuple, int _nFd, ETransportErr_t _eTransportErr)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	int nTransportDataIdx = -1;
+	TransportData * pstTransportData = NULL;
+	PfuncDelTransport pfnDelTransportCb = NULL;
+	int nFd = -1;
+	Net5Tuple_t stNet5TupleOfTrsp;
+	
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	nTransportDataIdx = getTransportDataIndex(szNet5Tuple);
+
+	if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportInternal(NetTuple) : fail : %s : invalid TransportDataIdx", m_szName, szNet5Tuple);
+		return;
+	}
+
+	pstTransportData = &(m_arrTransportData[nTransportDataIdx]);
+
+	{
+		Lock clsLock(pstTransportData->m_clsMutex, Lock::E_LOCK_TYPE_WRITE);
+
+		if( !pstTransportData->m_bUse )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportInternal(NetTuple) : fail : %s : TransportDataIdx[%d] : TransportData is not used", 
+														m_szName, szNet5Tuple, nTransportDataIdx);
+			return;
+		}
+		
+		if( _nFd >= 0 && _nFd != pstTransportData->m_nFd )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportInternal(NetTuple) : fail : %s : TransportDataIdx[%d] : Fd[%d] is not match with Trsp's FD[%d]", 
+														m_szName, szNet5Tuple, nTransportDataIdx, _nFd, pstTransportData->m_nFd);
+			return;
+		}
+
+		if( pstTransportData->m_pclsTransport )
+		{
+			pfnDelTransportCb = pstTransportData->m_pclsTransport->getTransportCfg().m_pfnDelTransportCb;
+			stNet5TupleOfTrsp = pstTransportData->m_pclsTransport->getNet5Tuple();
+		}
+
+		nFd = pstTransportData->m_nFd;
+		m_clsEpoll.delFD(nFd);
+
+		/*==== del MapInfo ====*/
+		delFromMap(szNet5Tuple, nFd);
+
+		/*==== del TransportData ====*/
+		delTransportData(nTransportDataIdx);
+	}
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : delTransportInternal(NetTuple) : %s : Fd[%d] : %s", 
+												m_szName, szNet5Tuple, nFd, g_fnGetTransportErrStr(_eTransportErr));
+
+	if( pfnDelTransportCb )
+	{
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : delTransportInternal(NetTuple) : excute DelTransport Callback : %s : Fd[%d] : %s", 
+														m_szName, szNet5Tuple, nFd, g_fnGetTransportErrStr(_eTransportErr));
+		pfnDelTransportCb(*this, stNet5TupleOfTrsp, _eTransportErr);
+	}
+}
+
+void TransportMgr::delTransportInternal(int _nTransportDataIdx, const Net5Tuple_t & _rstNet5Tuple, ETransportErr_t _eTransportErr)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	TransportData * pstTransportData = NULL;
+	PfuncDelTransport pfnDelTransportCb = NULL;
+	int nFd = -1;
+	Net5Tuple_t stNet5TupleOfTrsp;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+	
+	if( _nTransportDataIdx < 0 || (unsigned int)_nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportInternal(Idx) : fail : %s : invalid TransportDataIdx", m_szName, szNet5Tuple);
+		return;
+	}
+
+	pstTransportData = &(m_arrTransportData[_nTransportDataIdx]);
+
+	{
+		Lock clsLock(pstTransportData->m_clsMutex, Lock::E_LOCK_TYPE_WRITE);
+		
+		if( !pstTransportData->m_bUse )
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportInternal(Idx) : fail : %s : TransportDataIdx[%d] : TransportData is not used", 
+														m_szName, szNet5Tuple, _nTransportDataIdx);
+			return;
+		}
+
+		if( pstTransportData->m_pclsTransport )
+		{
+			pfnDelTransportCb = pstTransportData->m_pclsTransport->getTransportCfg().m_pfnDelTransportCb;
+			stNet5TupleOfTrsp = pstTransportData->m_pclsTransport->getNet5Tuple();
+		}
+
+		nFd = pstTransportData->m_nFd;
+		m_clsEpoll.delFD(nFd);
+
+		/*==== del MapInfo ====*/
+		delFromMap(szNet5Tuple, nFd);
+
+		/*==== del TransportData ====*/
+		delTransportData(_nTransportDataIdx);
+	}
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : delTransportInternal(Idx) : %s : Fd[%d] : %s", 
+												m_szName, szNet5Tuple, nFd, g_fnGetTransportErrStr(_eTransportErr));
+
+	if( pfnDelTransportCb )
+	{
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : delTransportInternal(Idx) : excute DelTransport Callback : %s : Fd[%d] : %s", 
+														m_szName, szNet5Tuple, nFd, g_fnGetTransportErrStr(_eTransportErr));
+		pfnDelTransportCb(*this, stNet5TupleOfTrsp, _eTransportErr);
+	}
+}
+
+void TransportMgr::acceptTransportInternal(int _nAcceptFd, PfuncAcceptConnection _pfnAcceptCb, const Net5Tuple_t & _rstNet5Tuple, const SocketCfg & _rstSocketCfg, const TransportConfig & _rstTransportCfg)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	Transport * pclsTransport = NULL;
+
+	LogInternal(E_LOG_INFO, "TransportMgr[%s] : acceptTransportInternal : AcceptFd[%d] : %s", 
+												m_szName, _nAcceptFd, _rstNet5Tuple.getStr(szNet5Tuple, Net5Tuple::E_CONST_MAX_STR_LEN));
+
+	if( (pclsTransport = addTransportInternal(_rstNet5Tuple, _rstSocketCfg, _rstTransportCfg, false, _nAcceptFd)) )
+	{	
+		if( _pfnAcceptCb )
+		{
+			LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : acceptTransportInternal : AcceptFd[%d] : %s : execute AcceptCallback", 
+															m_szName, _nAcceptFd, szNet5Tuple);
+			Net5Tuple_t stAcceptNet5Tuple = _rstNet5Tuple;
+			_pfnAcceptCb(*this, stAcceptNet5Tuple);
+			pclsTransport->getNet5Tuple().m_nAppKey = stAcceptNet5Tuple.m_nAppKey;
+		}
+	}
+}
+
+void TransportMgr::procRcvEpollEvent(int _nFd)
+{
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	TransportData * pstTransportData = NULL;
+	int nTransportDataIdx = -1;
+
+	nTransportDataIdx = getTransportDataIndex(_nFd);
+	if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procRcvEpollEvent : fail : Fd[%d] : invalid TransportDataIdx", m_szName, _nFd);
+		return;
+	}
+
+	pstTransportData = getTransportData(nTransportDataIdx);
+	if( !pstTransportData->m_bUse )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procRcvEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : TransportData is not used", 
+													m_szName, _nFd, nTransportDataIdx);
+		return;
+	}
+	
+	if( _nFd != pstTransportData->m_nFd )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procRcvEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : Fd[%d] is not match with Trsp's FD[%d]", 
+													m_szName, _nFd, nTransportDataIdx, _nFd, pstTransportData->m_nFd);
+		return;
+	}
+
+	if( !pstTransportData->m_pclsTransport )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procRcvEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : invalid Transport", 
+													m_szName, _nFd, nTransportDataIdx);
+		return;
+	}
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : procRcvEpollEvent : Fd[%d] : TransportDataIdx[%d]", m_szName, _nFd, nTransportDataIdx);
+
+	if( (eErr = pstTransportData->m_pclsTransport->recvEventProcess()) != E_TRSP_ERR_NONE )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procRcvEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : %s", 
+													m_szName, _nFd, nTransportDataIdx, g_fnGetTransportErrStr(eErr));
+		if( g_fnIsDelTransport(eErr) )
+		{
+			Net5Tuple stDelNet5Tuple = pstTransportData->m_pclsTransport->getNet5Tuple();
+			delTransportInternal(nTransportDataIdx, stDelNet5Tuple, eErr);
+		}
+	}
+}
+
+void TransportMgr::procSndEpollEvent(int _nFd)
+{
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	TransportData * pstTransportData = NULL;
+	int nTransportDataIdx = -1;
+
+	nTransportDataIdx = getTransportDataIndex(_nFd);
+	if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndEpollEvent : fail : Fd[%d] : invalid TransportDataIdx", m_szName, _nFd);
+		return;
+	}
+
+	pstTransportData = getTransportData(nTransportDataIdx);
+
+	Lock clsLock(pstTransportData->m_clsMutex, Lock::E_LOCK_TYPE_READ);
+
+	if( !pstTransportData->m_bUse )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : TransportData is not used", 
+													m_szName, _nFd, nTransportDataIdx);
+		return;
+	}
+	
+	if( _nFd != pstTransportData->m_nFd )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : Fd[%d] is not match with Trsp's FD[%d]", 
+													m_szName, _nFd, nTransportDataIdx, _nFd, pstTransportData->m_nFd);
+		return;
+	}
+
+	if( !pstTransportData->m_pclsTransport )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : invalid Transport", 
+													m_szName, _nFd, nTransportDataIdx);
+		return;
+	}
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : procSndEpollEvent : Fd[%d] : TransportDataIdx[%d]", m_szName, _nFd, nTransportDataIdx);
+
+	if( (eErr = pstTransportData->m_pclsTransport->sndEventProcess()) != E_TRSP_ERR_NONE )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndEpollEvent : fail : Fd[%d] : TransportDataIdx[%d] : %s", 
+													m_szName, _nFd, nTransportDataIdx, g_fnGetTransportErrStr(eErr));
+		if( g_fnIsDelTransport(eErr) )
+		{
+			Net5Tuple stDelNet5Tuple = pstTransportData->m_pclsTransport->getNet5Tuple();
+			delTransport(stDelNet5Tuple, eErr);
+		}
+	}
+}
+
+bool TransportMgr::procAsyncSndData(const Net5Tuple_t & _rstNet5Tuple, const InternalSndInfo & _rstInternalSndInfo)
+{
+	char szNet5Tuple[Net5Tuple::E_CONST_MAX_STR_LEN] = {0,};
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	TransportData * pstTransportData = NULL;
+	int nTransportDataIdx = -1;
+
+	_rstNet5Tuple.getKeyStr(szNet5Tuple, sizeof(szNet5Tuple));
+
+	if( !_rstInternalSndInfo.m_pSndData || _rstInternalSndInfo.m_unSndLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndData : fail : %s : invalid argument", m_szName, szNet5Tuple);
+		return false;
+	}
+
+	nTransportDataIdx = getTransportDataIndex(szNet5Tuple);
+	if( nTransportDataIdx < 0 || (unsigned int)nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndData : fail :  %s : invalid TransportDataIdx", m_szName, szNet5Tuple);
+		return false;
+	}
+
+	pstTransportData = getTransportData(nTransportDataIdx);
+
+	Lock clsLock(pstTransportData->m_clsMutex, Lock::E_LOCK_TYPE_READ);
+
+	if( !pstTransportData->m_bUse )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndData : fail : %s : TransportDataIdx[%d] : TransportData is not used", m_szName, szNet5Tuple, nTransportDataIdx);
+		return false;
+	}
+
+	if( !pstTransportData->m_pclsTransport )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndData : fail : %s : TransportDataIdx[%d] : invalid Transport", m_szName, szNet5Tuple, nTransportDataIdx);
+		return false;
+	}
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : procSndData : %s : TransportDataIdx[%d]", m_szName, szNet5Tuple, nTransportDataIdx);
+
+	int nRet = pstTransportData->m_pclsTransport->sndData(_rstInternalSndInfo.m_pSndData, _rstInternalSndInfo.m_unSndLen, 
+																								_rstNet5Tuple.m_szRemoteIp, _rstNet5Tuple.m_nRemotePort,
+																								_rstInternalSndInfo.m_pSndAppData, &eErr);
+	if( nRet < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : procSndData : fail : %s : TransportDataIdx[%d] : %s", 
+													m_szName, szNet5Tuple, nTransportDataIdx, g_fnGetTransportErrStr(eErr));
+		if( g_fnIsDelTransport(eErr) )
+		{
+			Net5Tuple stDelNet5Tuple = pstTransportData->m_pclsTransport->getNet5Tuple();
+			delTransport(stDelNet5Tuple, eErr);
+		}
+		return false;
+	}
+	else
+		return true;
+}
+
+bool TransportMgr::addToMap(const char * _pszNet5TupleStr, int _nTransportDataIndex, int _nFd)
+{
+	if( !_pszNet5TupleStr || strlen(_pszNet5TupleStr) == 0
+		|| _nTransportDataIndex < 0 || (unsigned int)_nTransportDataIndex >= m_unMaxTransportSize 
+		|| _nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addToMap : fail : invalid argument : Net5TupleStr[%p], TransportDataIndex[%d], Fd[%d]", 
+													m_szName, _pszNet5TupleStr, _nTransportDataIndex, _nFd);
+		return false;
+	}
+
+	bool bResult = false;
+	std::string clsNet5TupleStr(_pszNet5TupleStr);	
+
+	m_MapMutex.m_fnWriteLock();
+
+	Map_Net5TupleInfo::iterator mapItr =  m_mapNet5TupleInfo.find(clsNet5TupleStr);
+	if( mapItr == m_mapNet5TupleInfo.end() )
+	{
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : addToMap : %s, TransportDataIndex[%d], Fd[%d]", 
+														m_szName, _pszNet5TupleStr, _nTransportDataIndex, _nFd);
+		m_mapNet5TupleInfo[clsNet5TupleStr] = _nTransportDataIndex;
+		m_mapFdInfo[_nFd] = _nTransportDataIndex;
+		bResult = true;
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addToMap : fail : already exist : %s", m_szName, _pszNet5TupleStr);
+		bResult = false;
+	}
+
+	m_MapMutex.m_fnUnlock();
+
+	return bResult;
+}
+
+void TransportMgr::delFromMap(const char * _pszNet5TupleStr, int _nFd)
+{
+	m_MapMutex.m_fnWriteLock();
+
+	if( _pszNet5TupleStr && strlen(_pszNet5TupleStr) > 0 )
+	{
+		std::string clsNet5TupleStr(_pszNet5TupleStr);
+		Map_Net5TupleInfo::iterator mapItr =  m_mapNet5TupleInfo.find(clsNet5TupleStr);
+		if( mapItr != m_mapNet5TupleInfo.end() )
+			m_mapNet5TupleInfo.erase(mapItr);
+	}
+
+	if( _nFd >= 0 )
+	{
+		Map_FdInfo::iterator mapItr =  m_mapFdInfo.find(_nFd);
+		if( mapItr != m_mapFdInfo.end() )
+			m_mapFdInfo.erase(mapItr);
+	}
+
+	m_MapMutex.m_fnUnlock();
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : delFromMap : Net5TupleStr[%s], Fd[%d]", m_szName, _pszNet5TupleStr, _nFd);
+}
+
+int TransportMgr::getTransportDataIndex(const char * _pszNet5TupleStr) const
+{
+	if( !_pszNet5TupleStr || strlen(_pszNet5TupleStr) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : getTransportDataIndex(Net5Tuple) : fail : invalid argument", m_szName);
+		return -1;
+	}
+
+	int nTransportDataIdx = -1;
+	std::string clsNet5TupleStr(_pszNet5TupleStr);
+
+	m_MapMutex.m_fnReadLock();
+
+
+	Map_Net5TupleInfo::const_iterator mapItr =  m_mapNet5TupleInfo.find(clsNet5TupleStr);
+	//Map_Net5TupleInfo::const_iterator mapItr =  m_mapNet5TupleInfo.find(Map_Net5TupleInfo::key_type(_pszNet5TupleStr));
+	if( mapItr != m_mapNet5TupleInfo.end() )
+		nTransportDataIdx = mapItr->second;
+
+	m_MapMutex.m_fnUnlock();
+
+	return nTransportDataIdx;
+}
+
+int TransportMgr::getTransportDataIndex(int _nFd) const
+{
+	if( _nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : getTransportDataIndex(FD) : fail : invalid argument", m_szName);
+		return -1;
+	}
+
+	int nTransportDataIdx = -1;
+
+	m_MapMutex.m_fnReadLock();
+
+	Map_FdInfo::const_iterator mapItr =  m_mapFdInfo.find(_nFd);
+	if( mapItr != m_mapFdInfo.end() )
+		nTransportDataIdx = mapItr->second;
+
+	m_MapMutex.m_fnUnlock();
+
+	return nTransportDataIdx;
+}
+
+int TransportMgr::getAvailableTransportDataIndex()
+{
+	for( int i = 0; (unsigned int)i < m_unMaxTransportSize; ++i )
+	{
+		if( !m_arrTransportData[i].m_bUse )
+			return i;
+	}
+	
+	return -1;
+}
+
+bool TransportMgr::addTransportData(Transport * _pclsTransport, int _nTransportDataIdx)
+{
+	if( !_pclsTransport )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportData : fail : invalid argument", m_szName);
+		return false;
+	}
+
+	if( _pclsTransport->getFd() < 0 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportData : fail : invalid FD", m_szName);
+		return false;
+	}
+
+	if( _nTransportDataIdx < 0 || (unsigned int)_nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : addTransportData : fail : invalid TransportDataIdx", m_szName);
+		return false;
+	}
+	
+	m_arrTransportData[_nTransportDataIdx].reset();
+	m_arrTransportData[_nTransportDataIdx].m_bUse = true;
+	m_arrTransportData[_nTransportDataIdx].m_nFd = _pclsTransport->getFd();
+	m_arrTransportData[_nTransportDataIdx].m_pclsTransport = _pclsTransport;
+
+	LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : addTransportData : TransportDataIdx[%u], %s", m_szName, _nTransportDataIdx, _pclsTransport->getStr());
+
+	return true;
+}
+
+void TransportMgr::delTransportData(int _nTransportDataIdx)
+{
+	if( _nTransportDataIdx < 0 || (unsigned int)_nTransportDataIdx >= m_unMaxTransportSize )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : delTransportData : fail : invalid argument : TransportDataIdx[%d]", m_szName, _nTransportDataIdx);
+		return;
+	}
+	
+	if( m_arrTransportData[_nTransportDataIdx].m_pclsTransport )
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : delFromArray : TransportDataIdx[%u], %s", m_szName, _nTransportDataIdx, m_arrTransportData[_nTransportDataIdx].m_pclsTransport->getStr());
+	else
+		LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : delFromArray : TransportDataIdx[%u]", m_szName, _nTransportDataIdx);
+
+	m_arrTransportData[_nTransportDataIdx].reset();
+}
+
+TransportData * TransportMgr::getTransportData(int _nTransportDataIdx)
+{
+	if( _nTransportDataIdx < 0 || (unsigned int)_nTransportDataIdx >= m_unMaxTransportSize )
+		return NULL;
+
+	return &(m_arrTransportData[_nTransportDataIdx]);
+}
+
+const TransportData * TransportMgr::getTransportData(int _nTransportDataIdx) const
+{
+	if( _nTransportDataIdx < 0 || (unsigned int)_nTransportDataIdx >= m_unMaxTransportSize )
+		return NULL;
+
+	return &(m_arrTransportData[_nTransportDataIdx]);
+}
+
+void TransportMgr::callbackEpollProcess(TransportMgr * _pclsTransportMgr)
+{
+	Epoll_event_t stEpollEvent;
+	TransportInternalMsg * pstTransportMsg = NULL;
+	
+	int nResult = _pclsTransportMgr->m_clsEpoll.wait(stEpollEvent, 1000);	
+	if( nResult > 0 )
+	{
+		for( int i = 0; i < nResult; ++i )
+		{
+			if( stEpollEvent.m_pEpollEvents[i].events & EPOLLOUT )
+			{
+				pstTransportMsg = new TransportInternalMsg();
+				if( pstTransportMsg )
+				{
+					pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_sndEvent;
+					pstTransportMsg->m_nFd = stEpollEvent.m_pEpollEvents[i].data.fd;
+
+					LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : callbackEpollProcess : EPOLLOUT : Fd[%d]", _pclsTransportMgr->m_szName, pstTransportMsg->m_nFd);
+
+					if( !_pclsTransportMgr->put(false, pstTransportMsg) )
+						delete pstTransportMsg;
+				}
+				else
+				{
+					LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackEpollProcess : EPOLLOUT : fail : Fd[%d] : can't create TransportInternalMsg", 
+																_pclsTransportMgr->m_szName, stEpollEvent.m_pEpollEvents[i].data.fd);
+				}
+			}
+
+			if( stEpollEvent.m_pEpollEvents[i].events & EPOLLIN )
+			{
+				pstTransportMsg = new TransportInternalMsg();
+				if( pstTransportMsg )
+				{
+					pstTransportMsg->m_eTransportInternalMsgType = E_TRANSPORT_INTERNAL_MSG_TYPE_rcvEvent;
+					pstTransportMsg->m_nFd = stEpollEvent.m_pEpollEvents[i].data.fd;
+
+					LogInternal(E_LOG_DEBUG, "TransportMgr[%s] : callbackEpollProcess : EPOLLIN : Fd[%d]", _pclsTransportMgr->m_szName, pstTransportMsg->m_nFd);
+
+					if( !_pclsTransportMgr->put(true, pstTransportMsg) )
+						delete pstTransportMsg;
+				}
+				else
+				{
+					LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackEpollProcess : EPOLLIN : fail : Fd[%d] : can't create TransportInternalMsg", 
+																_pclsTransportMgr->m_szName, stEpollEvent.m_pEpollEvents[i].data.fd);
+				}
+			}
+		}
+	}
+	else if( nResult == -1 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackEpollProcess : fail : %s", _pclsTransportMgr->m_szName, strerror_r(errno, szErr, sizeof(szErr)));
+	}
+	else if( nResult == -2 )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackEpollProcess : fail : internal error of epollWait", _pclsTransportMgr->m_szName);
+	}
+}
+
+void TransportMgr::callbackRcvThreadProcess(TransportInternalMsg * _pstTransportInternalMsg, void * _pObject)
+{
+	ETransportInternalMsgType_t eTransportInternalMsgType =  E_TRANSPORT_INTERNAL_MSG_TYPE_NUM;
+	TransportMgr * pclsTransportMgr = NULL;
+
+	if( !_pObject )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr : callbackRcvThreadProcess : fail : invalid argument 1");
+		return;
+	}
+
+	pclsTransportMgr = (TransportMgr *)_pObject;
+	
+	if( !_pstTransportInternalMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackRcvThreadProcess : fail : invalid argument 2", pclsTransportMgr->getMgrName());
+		return;
+	}
+
+	eTransportInternalMsgType =  _pstTransportInternalMsg->m_eTransportInternalMsgType;
+
+	switch(eTransportInternalMsgType)
+	{
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_addTransport :
+		{
+			pclsTransportMgr->addTransportInternal(_pstTransportInternalMsg->m_stNet5Tuple, _pstTransportInternalMsg->m_stSocketCfg, _pstTransportInternalMsg->m_stTransportCfg, true, -1);
+		}
+		break;
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_delTransportAll :
+		{
+			pclsTransportMgr->delTransportInternalAll(_pstTransportInternalMsg->m_eTransportErr);
+		}
+		break;
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_delTransport :
+		{
+			pclsTransportMgr->delTransportInternal(_pstTransportInternalMsg->m_stNet5Tuple, _pstTransportInternalMsg->m_nFd, _pstTransportInternalMsg->m_eTransportErr);
+		}
+		break;
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_rcvEvent :
+		{
+			pclsTransportMgr->procRcvEpollEvent(_pstTransportInternalMsg->m_nFd);
+		}
+		break;
+		default :
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackRcvThreadProcess : fail : unknown TransportInternalMsgType", pclsTransportMgr->getMgrName());
+		}
+		break;
+	}
+
+	delete _pstTransportInternalMsg;
+	return;
+}
+
+void TransportMgr::callbackSndThreadProcess(TransportInternalMsg * _pstTransportInternalMsg, void * _pObject)
+{
+	ETransportInternalMsgType_t eTransportInternalMsgType =  E_TRANSPORT_INTERNAL_MSG_TYPE_NUM;
+	TransportMgr * pclsTransportMgr = NULL;
+
+	if( !_pObject )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr : callbackSndThreadProcess : fail : invalid argument 1");
+		return;
+	}
+
+	pclsTransportMgr = (TransportMgr *)_pObject;
+	
+	if( !_pstTransportInternalMsg )
+	{
+		LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackSndThreadProcess : fail : invalid argument 2", pclsTransportMgr->getMgrName());
+		return;
+	}
+
+	eTransportInternalMsgType = _pstTransportInternalMsg->m_eTransportInternalMsgType;
+
+	switch(eTransportInternalMsgType)
+	{
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_sndEvent :
+		{
+			pclsTransportMgr->procSndEpollEvent(_pstTransportInternalMsg->m_nFd);
+		}
+		break;
+		case E_TRANSPORT_INTERNAL_MSG_TYPE_sndData :
+		{
+			if( pclsTransportMgr->procAsyncSndData(_pstTransportInternalMsg->m_stNet5Tuple, _pstTransportInternalMsg->m_stSndInfo) )
+			{
+				_pstTransportInternalMsg->m_stSndInfo.m_pSndData = NULL;
+				_pstTransportInternalMsg->m_stSndInfo.m_pSndAppData = NULL;
+			}
+		}
+		break;
+		default :
+		{
+			LogInternal(E_LOG_ERR, "TransportMgr[%s] : callbackSndThreadProcess : fail : unknown TransportInternalMsgType", pclsTransportMgr->getMgrName());
+		}
+		break;
+	}
+
+	delete _pstTransportInternalMsg;
+	return;
+}
+
+}
+

@@ -1,0 +1,34 @@
+11:05:09.108) TID-0xc4c11720) ERR  ) Add DelLog Path=./log/,File=testFlexIf,Limit=0, Ret = 0
+11:05:09.108) TID-0xc4c11720) ERR  ) Delete File> Key : ./log/testFlexIf, Path = ./log/, File=testFlexIf, Limit=0
+
+11:05:09.108) TID-0xc4c0f700) INFO ) QueueThread[LogInst0]. Tid[3391] : process : start
+11:05:09.108) TID-0xc4c11720) DEBUG) FlexIf : construct : category num[3]
+11:05:09.108) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[sip], Key[contact], Value[sip:hdkim1@iok.co.kr] : TotalLen[137]
+11:05:09.108) TID-0xc4c11720) ERR  ) FlexIf : AddItem : fail : Category[sop], Key[From] : can't find Category
+11:05:09.108) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[hdkim], Value[test1] : TotalLen[161]
+11:05:09.108) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[merry], Value[dummy] : TotalLen[185]
+11:05:09.108) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[hdkim], Value[test2] : TotalLen[209]
+11:05:09.109) TID-0xc3c0e700) INFO ) NormalThread[DelLogMgr]. Tid[3392] : process : start
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[key1], Value[value1] : TotalLen[233]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[key2], Value[value2] : TotalLen[257]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[key3], Value[value3] : TotalLen[281]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[custom], Key[key4], Value[value4] : TotalLen[305]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[sip], Key[contact], Value[sip:hdkim2@iok.co.kr] : TotalLen[346]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : AddItem : Category[sipBody], Key[text], Value[1234567890] : TotalLen[374]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[sip], Key[contact], Value[sip:hdkim1@iok.co.kr], ValueLen[20], NextPos[305]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[sip], Key[contact], Value[sip:hdkim2@iok.co.kr], ValueLen[20], NextPos[0]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[custom], Key[hdkim], Value[test1], ValueLen[5], NextPos[161]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[custom], Key[hdkim], Value[test2], ValueLen[5], NextPos[209]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : fail : Category[custom], Key[hdkim] : not found Entity
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[custom], Key[key3], Value[value3], ValueLen[6], NextPos[281]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : fail : Category[custom], Key[key3] : not found Entity
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextItem : Category[custom], Key[key4], Value[value4], ValueLen[6], NextPos[0]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[sip], Key[contact], Value[sip:hdkim1@iok.co.kr], ValueLen[20], NextPos[305]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[sip], Key[contact], Value[sip:hdkim2@iok.co.kr], ValueLen[20], NextPos[0]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[hdkim], Value[test1], ValueLen[5], NextPos[161]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[merry], Value[dummy], ValueLen[5], NextPos[185]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[hdkim], Value[test2], ValueLen[5], NextPos[209]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[key1], Value[value1], ValueLen[6], NextPos[233]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[key2], Value[value2], ValueLen[6], NextPos[257]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[key3], Value[value3], ValueLen[6], NextPos[281]
+11:05:09.109) TID-0xc4c11720) DEBUG) FlexIf : GetNextAnyItem : Category[custom], Key[key4], Value[value4], ValueLen[6], NextPos[0]

@@ -1,0 +1,323 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum
+END
+TestClientRegistration.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientRegistration.hxx
+END
+DumUaAction.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumUaAction.hxx
+END
+ClientPublicationEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ClientPublicationEvent.hxx
+END
+DialogEventExpect.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DialogEventExpect.hxx
+END
+ClientRegistrationEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ClientRegistrationEvent.hxx
+END
+TestServerSubscription.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerSubscription.hxx
+END
+ServerSubscriptionEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ServerSubscriptionEvent.hxx
+END
+DumEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumEvent.cxx
+END
+ClientOutOfDialogReqEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ClientOutOfDialogReqEvent.hxx
+END
+TfdTestSipEndPoint.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TfdTestSipEndPoint.cxx
+END
+DumEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumEvent.hxx
+END
+DumFixture.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumFixture.cxx
+END
+BindHandle.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/BindHandle.hxx
+END
+TfdTestSipEndPoint.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TfdTestSipEndPoint.hxx
+END
+DumFixture.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumFixture.hxx
+END
+ServerPagerMessageEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ServerPagerMessageEvent.hxx
+END
+TfdTcpTransport.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TfdTcpTransport.cxx
+END
+TestDialogEvent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestDialogEvent.cxx
+END
+TestClientPagerMessage.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientPagerMessage.cxx
+END
+TestUserAgent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestUserAgent.hxx
+END
+DumUserAgent.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumUserAgent.cxx
+END
+DialogEventHandlerEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DialogEventHandlerEvent.hxx
+END
+TestDialogEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestDialogEvent.hxx
+END
+TfdTcpTransport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TfdTcpTransport.hxx
+END
+TestClientPagerMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientPagerMessage.hxx
+END
+TestClientPublication.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientPublication.cxx
+END
+DumUserAgent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumUserAgent.hxx
+END
+dumTests.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/dumTests.cxx
+END
+InviteSessionEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/InviteSessionEvent.hxx
+END
+TestServerOutOfDialogReq.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerOutOfDialogReq.cxx
+END
+TestClientPublication.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientPublication.hxx
+END
+TestServerOutOfDialogReq.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerOutOfDialogReq.hxx
+END
+tfdum.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/tfdum.vcproj
+END
+ServerOutOfDialogReqEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ServerOutOfDialogReqEvent.hxx
+END
+TestClientSubscription.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientSubscription.cxx
+END
+TestClientSubscription.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientSubscription.hxx
+END
+ClientSubscriptionEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ClientSubscriptionEvent.hxx
+END
+TestServerPagerMessage.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerPagerMessage.cxx
+END
+DumExpect.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumExpect.cxx
+END
+TestServerPagerMessage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerPagerMessage.hxx
+END
+TestInviteSession.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestInviteSession.cxx
+END
+DumExpect.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumExpect.hxx
+END
+TestUsage.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestUsage.cxx
+END
+TestInviteSession.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestInviteSession.hxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/Makefile.am
+END
+TestClientRegistration.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestClientRegistration.cxx
+END
+ClientPagerMessageEvent.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/ClientPagerMessageEvent.hxx
+END
+DumUaAction.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DumUaAction.cxx
+END
+TestUsage.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestUsage.hxx
+END
+tfdum.sln
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/tfdum.sln
+END
+DialogEventExpect.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/DialogEventExpect.cxx
+END
+TestServerSubscription.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestServerSubscription.cxx
+END
+TestLamba.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/tfm/tfdum/TestLamba.cxx
+END

@@ -1,0 +1,52 @@
+10
+
+dir
+1518
+https://svn.alox.com/repos/vIBC/trunk/src/API/resiprocate-1.9.1/nICEr/src
+https://svn.alox.com/repos/vIBC
+
+
+
+2016-05-12T01:56:04.912895Z
+75
+hdkim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1c93119a-1b73-42c0-9774-7fabd2e416fd
+
+test
+dir
+
+crypto
+dir
+
+ice
+dir
+
+testua
+dir
+
+net
+dir
+
+stun
+dir
+
+make
+dir
+
+util
+dir
+

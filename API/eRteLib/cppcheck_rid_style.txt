@@ -1,0 +1,681 @@
+1:Checking ColumFile.cxx...
+16:[ConfigFile.hxx:41]: (warning) Member variable 'CfgTimerData_t::m_pclsCfg' is not initialized in the constructor.
+17:[ColumFile.hxx:116]: (warning) Member variable 'ColumTimerData_t::m_pclsColum' is not initialized in the constructor.
+18:[ColumFile.cxx:366]: (warning) Member variable 'ColumFile::m_pfnChanged' is not initialized in the constructor.
+19:[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_cKeyword' is not assigned a value in 'ColumFile::operator='.
+20:[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_bReadChange' is not assigned a value in 'ColumFile::operator='.
+21:[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pfnChanged' is not assigned a value in 'ColumFile::operator='.
+22:[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pvUser' is not assigned a value in 'ColumFile::operator='.
+23:[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pszDefComment' is not assigned a value in 'ColumFile::operator='.
+24:Checking ColumFile.cxx: _LINUX_...
+25:1/52 files checked 1% done
+26:Checking ColumFile.hxx...
+28:Checking ColumFile.hxx: _LINUX_...
+29:2/52 files checked 2% done
+30:Checking ConfigFile.cxx...
+36:[ConfigFile.cxx:136] -> [ConfigFile.cxx:137]: (performance) Buffer 'm_szTime' is being written before its old content has been used.
+40:[ConfigFile.cxx:480]: (warning) Member variable 'CfgFile::m_pfnChanged' is not initialized in the constructor.
+41:Checking ConfigFile.cxx: _LINUX_...
+42:3/52 files checked 5% done
+43:Checking ConfigFile.hxx...
+44:Checking ConfigFile.hxx: _LINUX_...
+45:4/52 files checked 6% done
+46:Checking IBCErr2RteErr.hxx...
+48:5/52 files checked 7% done
+49:Checking IBCErrorDef.hxx...
+50:6/52 files checked 8% done
+51:Checking JsonFile.cxx...
+66:Checking JsonFile.cxx: _LINUX_...
+67:7/52 files checked 9% done
+68:Checking JsonFile.hxx...
+69:Checking JsonFile.hxx: _LINUX_...
+70:8/52 files checked 10% done
+71:Checking LOAD...
+72:[LOAD:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=80)
+73:[LOAD:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d0)
+74:[LOAD:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=c0)
+75:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=c0)
+76:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=e5)
+77:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=8a)
+78:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9a)
+79:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ef)
+80:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=82)
+81:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a4)
+82:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=bd)
+83:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a9)
+84:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ba)
+85:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=bf)
+86:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9b)
+87:[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=93)
+88:[LOAD:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=a0)
+89:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=b6)
+90:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=82)
+91:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=97)
+92:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=8e)
+93:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=89)
+94:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=d3)
+95:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=af)
+96:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=a9)
+97:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=92)
+98:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=b4)
+99:[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=c0)
+100:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=83)
+101:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ec)
+102:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e8)
+103:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d3)
+104:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=dd)
+105:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c4)
+106:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c3)
+107:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ff)
+108:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e9)
+109:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e0)
+110:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d0)
+111:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=90)
+112:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=80)
+113:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=fa)
+114:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ed)
+115:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=89)
+116:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d1)
+117:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e2)
+118:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e4)
+119:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=f0)
+120:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c7)
+121:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c0)
+122:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c1)
+123:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=8f)
+124:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=f4)
+125:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=8b)
+126:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=85)
+127:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e5)
+128:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a0)
+129:[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=bb)
+130:[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=8b)
+131:[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=9a)
+132:[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=81)
+133:[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=eb)
+134:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c1)
+135:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=fb)
+136:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=83)
+137:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=eb)
+138:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=d8)
+139:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c0)
+140:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=89)
+141:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=ff)
+142:[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c5)
+143:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=8b)
+144:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=d8)
+145:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=e2)
+146:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c6)
+147:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=83)
+148:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c4)
+149:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c9)
+150:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c3)
+151:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=84)
+152:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=89)
+153:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=e5)
+154:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=b8)
+155:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=85)
+156:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c0)
+157:[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=bf)
+158:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c9)
+159:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ff)
+160:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e0)
+161:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c3)
+162:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=90)
+163:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=89)
+164:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e5)
+165:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=83)
+166:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ec)
+167:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=dc)
+168:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d0)
+169:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=bf)
+170:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e8)
+171:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=95)
+172:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fe)
+173:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=b8)
+174:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e9)
+175:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=8d)
+176:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=8b)
+177:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c0)
+178:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c7)
+179:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=a0)
+180:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f0)
+181:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=eb)
+182:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f8)
+183:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=91)
+184:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ba)
+185:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=be)
+186:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f6)
+187:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fd)
+188:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e2)
+189:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f3)
+190:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=84)
+191:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d8)
+192:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e3)
+193:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c1)
+194:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d7)
+195:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=85)
+196:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ed)
+197:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=db)
+198:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fa)
+199:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ef)
+200:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ea)
+201:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c4)
+202:[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=bb)
+203:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=83)
+204:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=eb)
+205:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=ff)
+206:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=d0)
+207:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=8b)
+208:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=f8)
+209:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=f1)
+210:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c4)
+211:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c9)
+212:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c3)
+213:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=90)
+214:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=ec)
+215:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=e8)
+216:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=cf)
+217:[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=fd)
+218:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=fe)
+219:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=ff)
+220:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=bc)
+221:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=cc)
+222:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=94)
+223:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=90)
+224:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=b4)
+225:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=fd)
+226:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=b8)
+227:[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=86)
+228:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=b3)
+229:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=90)
+230:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=fe)
+231:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=ff)
+232:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=89)
+233:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8c)
+234:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=86)
+235:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=83)
+236:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8f)
+237:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8e)
+238:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8d)
+239:[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=d0)
+240:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=f8)
+241:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=f5)
+242:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=fe)
+243:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=ff)
+244:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=a8)
+245:[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=88)
+246:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=cc)
+247:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=c0)
+248:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=e0)
+249:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=fe)
+250:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=ff)
+251:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=90)
+252:[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=f0)
+253:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=fe)
+254:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=f6)
+255:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=ff)
+256:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=88)
+257:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=a8)
+258:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=cc)
+259:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=90)
+260:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=e0)
+261:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=84)
+262:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=c0)
+263:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=8e)
+264:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=d0)
+265:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=89)
+266:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=e8)
+267:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=94)
+268:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=80)
+269:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=9a)
+270:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=f8)
+271:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=a0)
+272:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=b6)
+273:[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=9c)
+274:[LOAD:25]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=25, character code=c7)
+275:[LOAD:27]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=27, character code=ce)
+276:[LOAD:29]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=29, character code=d3)
+277:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=c0)
+278:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=dc)
+279:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=e1)
+280:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=ea)
+281:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f0)
+282:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f5)
+283:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=cd)
+284:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=fe)
+285:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=a8)
+286:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f8)
+287:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=89)
+288:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=88)
+289:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=90)
+290:[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=e0)
+291:[LOAD:32]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=32, character code=d0)
+292:[LOAD:32]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=32, character code=e8)
+293:[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=80)
+294:[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=f8)
+295:[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=88)
+296:[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=ac)
+297:[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=f1)
+298:[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=ff)
+299:[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=d0)
+300:[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=80)
+301:[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=88)
+302:[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=f1)
+303:[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=ff)
+304:[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=84)
+305:[LOAD:44]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=44, character code=91)
+306:[LOAD:45]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=45, character code=9f)
+307:[LOAD:46]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=46, character code=ab)
+308:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=c0)
+309:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=c1)
+310:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=f1)
+311:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=ff)
+312:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=ca)
+313:[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=e0)
+314:[LOAD:48]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=48, character code=f1)
+315:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=80)
+316:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=8c)
+317:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=9f)
+318:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=f8)
+319:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=a5)
+320:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=c4)
+321:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=d3)
+322:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=e9)
+323:[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=f6)
+324:[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=89)
+325:[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=f1)
+326:[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=ff)
+327:[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=90)
+328:[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=b8)
+329:[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=83)
+330:[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=d0)
+331:[LOAD:13]: (error) No pair for character ("). Can't process file. File is either invalid or unicode, which is currently not supported.
+332:9/52 files checked 10% done
+333:Checking Makefile...
+334:10/52 files checked 11% done
+335:Checking Makefile_exe...
+336:11/52 files checked 11% done
+337:Checking NodeMgr.cxx...
+338:[NodeMgr.cxx:944]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+339:[NodeMgr.cxx:2330]: (warning) Comparison of a boolean with an integer.
+340:[NodeMgr.cxx:2349]: (warning) Comparison of a boolean with an integer.
+341:[NodeMgr.cxx:945] -> [NodeMgr.cxx:946]: (warning) Possible null pointer dereference: pclsRte - otherwise it is redundant to check it against null.
+376:[NodeMgr.cxx:1502] -> [NodeMgr.cxx:1504]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+389:[NodeMgr.cxx:155]: (warning) Member variable 'NodeUserParam::m_pclsOwner' is not initialized in the constructor.
+390:[NodeMgr.cxx:173]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not initialized in the constructor.
+391:[NodeMgr.cxx:175]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not assigned a value in 'NodeUserParams::operator='.
+392:[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsUserObject' is not assigned a value in 'NodeLoc::operator='.
+393:[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsOwner' is not assigned a value in 'NodeLoc::operator='.
+394:[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsUserObject' is not assigned a value in 'NodeRmt::operator='.
+395:[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsOwner' is not assigned a value in 'NodeRmt::operator='.
+396:[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsUserObject' is not assigned a value in 'NodeRte::operator='.
+397:[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsOwner' is not assigned a value in 'NodeRte::operator='.
+398:[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsPrev' is not initialized in the constructor.
+399:[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsNext' is not initialized in the constructor.
+400:Checking NodeMgr.cxx: _LINUX_...
+401:12/52 files checked 21% done
+402:Checking NodeMgr.hxx...
+408:Checking NodeMgr.hxx: _LINUX_...
+409:13/52 files checked 23% done
+410:Checking aaa...
+411:14/52 files checked 24% done
+412:Checking bb...
+413:15/52 files checked 25% done
+414:Checking buffer_check.txt...
+415:[buffer_check.txt:250]: (error) Invalid number of character (() when these macros are defined: ''.
+416:16/52 files checked 29% done
+417:Checking cfg.cmd...
+418:17/52 files checked 29% done
+419:Checking delshm.cpp...
+420:18/52 files checked 29% done
+421:Checking eRte.cxx...
+422:[eRte.cxx:98]: (error) Invalid number of character ({) when these macros are defined: ''.
+423:19/52 files checked 34% done
+424:Checking eSipRte.hxx...
+442:20/52 files checked 37% done
+443:Checking eSipRteApi.cxx...
+450:21/52 files checked 39% done
+451:Checking eSipRteApi.hxx...
+452:22/52 files checked 42% done
+453:Checking eSipRteApi_mmi.cxx...
+454:23/52 files checked 46% done
+455:Checking eSipRteDBHandler.cxx...
+458:24/52 files checked 46% done
+459:Checking eSipRteDBHandler.hxx...
+460:25/52 files checked 46% done
+461:Checking eSipRteDBMgr.cxx...
+462:[eSipRteDBMgr.cxx:3736] -> [eSipRteDBMgr.cxx:3742]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+463:[eSipRteDBMgr.cxx:4055] -> [eSipRteDBMgr.cxx:4065]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+464:[eSipRteDBMgr.cxx:4099] -> [eSipRteDBMgr.cxx:4105]: (warning) Possible null pointer dereference: _pLocal - otherwise it is redundant to check it against null.
+465:[eSipRteDBMgr.cxx:4111] -> [eSipRteDBMgr.cxx:4120]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+466:[eSipRteDBMgr.cxx:3748] -> [eSipRteDBMgr.cxx:3742]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+704:[eSipRteDBMgr.cxx:3442] -> [eSipRteDBMgr.cxx:3454]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+705:[eSipRteDBMgr.cxx:3468] -> [eSipRteDBMgr.cxx:3480]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+706:[eSipRteDBMgr.cxx:3497] -> [eSipRteDBMgr.cxx:3508]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+707:[eSipRteDBMgr.cxx:3524] -> [eSipRteDBMgr.cxx:3531]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+708:[eSipRteDBMgr.cxx:3549] -> [eSipRteDBMgr.cxx:3563]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+709:[eSipRteDBMgr.cxx:3720] -> [eSipRteDBMgr.cxx:3725]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+710:[eSipRteDBMgr.cxx:4095] -> [eSipRteDBMgr.cxx:4100]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+747:[eSipRteDBMgr.cxx:11]: (warning) Member variable 'CSipRteDBMgr::m_pIntMap' is not initialized in the constructor.
+749:26/52 files checked 62% done
+750:Checking eSipRteDBMgr.hxx...
+755:27/52 files checked 64% done
+756:Checking eSipRteData.cxx...
+757:[eSipRteData.cxx:2695]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+758:[eSipRteData.cxx:2697]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+759:[eSipRteData.cxx:2716]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+760:[eSipRteData.cxx:2718]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+761:[eSipRteData.cxx:2720]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+762:[eSipRteData.cxx:2722]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+763:[eSipRteData.cxx:2724]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+764:[eSipRteData.cxx:2726]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+765:[eSipRteData.cxx:2728]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+766:[eSipRteData.cxx:2730]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+767:[eSipRteData.cxx:2732]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+768:[eSipRteData.cxx:2760]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+769:[eSipRteData.cxx:2762]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+770:[eSipRteData.cxx:2764]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+771:[eSipRteData.cxx:2766]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+772:[eSipRteData.cxx:2768]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+773:[eSipRteData.cxx:2770]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+774:[eSipRteData.cxx:2772]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+775:[eSipRteData.cxx:2803]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+776:[eSipRteData.cxx:2805]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+777:[eSipRteData.cxx:2828]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+778:[eSipRteData.cxx:2828]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+779:[eSipRteData.cxx:2831]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+780:[eSipRteData.cxx:2831]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+781:[eSipRteData.cxx:2900]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+782:[eSipRteData.cxx:2902]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+783:[eSipRteData.cxx:2904]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+784:[eSipRteData.cxx:2906]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+785:[eSipRteData.cxx:2908]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+786:[eSipRteData.cxx:2910]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+787:[eSipRteData.cxx:2912]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+788:[eSipRteData.cxx:2914]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+789:[eSipRteData.cxx:2916]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+790:[eSipRteData.cxx:2918]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+791:[eSipRteData.cxx:2920]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+792:[eSipRteData.cxx:2922]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+793:[eSipRteData.cxx:2924]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+794:[eSipRteData.cxx:2926]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+795:[eSipRteData.cxx:2928]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+796:[eSipRteData.cxx:2930]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+797:[eSipRteData.cxx:2939]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+798:[eSipRteData.cxx:2941]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+799:[eSipRteData.cxx:2943]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+800:[eSipRteData.cxx:2945]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+801:[eSipRteData.cxx:2947]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+802:[eSipRteData.cxx:2949]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+803:[eSipRteData.cxx:2951]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+804:[eSipRteData.cxx:2953]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+805:[eSipRteData.cxx:2955]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+806:[eSipRteData.cxx:2957]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+807:[eSipRteData.cxx:2959]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+808:[eSipRteData.cxx:2961]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+809:[eSipRteData.cxx:2963]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+810:[eSipRteData.cxx:2965]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+811:[eSipRteData.cxx:2967]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+812:[eSipRteData.cxx:2969]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+813:[eSipRteData.cxx:2971]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+859:[eSipRteData.cxx:374] -> [eSipRteData.cxx:375]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+860:[eSipRteData.cxx:512] -> [eSipRteData.cxx:513]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+861:[eSipRteData.cxx:704] -> [eSipRteData.cxx:705]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+862:[eSipRteData.cxx:882] -> [eSipRteData.cxx:883]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+863:[eSipRteData.cxx:1001] -> [eSipRteData.cxx:1002]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+864:[eSipRteData.cxx:1085] -> [eSipRteData.cxx:1086]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+865:[eSipRteData.cxx:1200] -> [eSipRteData.cxx:1201]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+866:[eSipRteData.cxx:1296] -> [eSipRteData.cxx:1297]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+867:[eSipRteData.cxx:1504] -> [eSipRteData.cxx:1505]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+868:[eSipRteData.cxx:1616] -> [eSipRteData.cxx:1617]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+869:[eSipRteData.cxx:1769] -> [eSipRteData.cxx:1770]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+870:[eSipRteData.cxx:1858] -> [eSipRteData.cxx:1859]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+885:28/52 files checked 73% done
+886:Checking eSipRteData.hxx...
+887:29/52 files checked 74% done
+888:Checking eSipRteErr.hxx...
+889:30/52 files checked 80% done
+890:Checking eSipRteLoad.hxx...
+891:31/52 files checked 80% done
+892:Checking eSipRteLog.cxx...
+894:32/52 files checked 81% done
+895:Checking eSipRteLog.hxx...
+896:33/52 files checked 81% done
+897:Checking eSipRteMgr.cxx...
+909:[eSipRteMgr.cxx:1011] -> [eSipRteMgr.cxx:1012]: (performance) Variable 'pHandler' is reassigned a value before the old one has been used.
+910:[eSipRteMgr.cxx:1022] -> [eSipRteMgr.cxx:1023]: (performance) Variable 'pRoute' is reassigned a value before the old one has been used.
+918:34/52 files checked 87% done
+919:Checking eSipRteMgr.hxx...
+920:35/52 files checked 88% done
+921:Checking eSipRteQueue.hxx...
+922:36/52 files checked 88% done
+923:Checking eSipRteStatus.cxx...
+924:[eSipRteStatus.cxx:110] -> [eSipRteStatus.cxx:112]: (performance) Variable 'pTmpData1' is reassigned a value before the old one has been used.
+925:[eSipRteStatus.cxx:111] -> [eSipRteStatus.cxx:113]: (performance) Variable 'pTmpData2' is reassigned a value before the old one has been used.
+929:37/52 files checked 89% done
+930:Checking eSipRteStatus.hxx...
+931:38/52 files checked 89% done
+932:Checking eSipRteThread.cxx...
+939:39/52 files checked 89% done
+940:Checking eSipRteThread.hxx...
+941:40/52 files checked 89% done
+942:Checking eSipRteUsrMap.hxx...
+943:41/52 files checked 90% done
+944:Checking eSipRteUtil.cxx...
+945:[eSipRteUtil.cxx:229] -> [eSipRteUtil.cxx:230]: (performance) Variable 'tmpPtr' is reassigned a value before the old one has been used.
+946:[eSipRteUtil.cxx:262] -> [eSipRteUtil.cxx:263]: (performance) Variable 'tmpPtr' is reassigned a value before the old one has been used.
+954:[eSipRteUtil.cxx:348]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+955:[eSipRteUtil.cxx:812]: (warning) scanf without field width limits can crash with huge input data.
+956:[eSipRteUtil.cxx:819]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+957:Checking eSipRteUtil.cxx: LINUX...
+958:42/52 files checked 92% done
+959:Checking eSipRteUtil.hxx...
+960:43/52 files checked 92% done
+961:Checking eSipUriUtil.cxx...
+962:44/52 files checked 93% done
+963:Checking env.sh...
+964:45/52 files checked 93% done
+965:Checking m_nMaintain...
+966:[m_nMaintain:161]: (error) Invalid number of character ({) when these macros are defined: ''.
+967:46/52 files checked 94% done
+968:Checking main.cpp...
+970:[main.cpp:25]: (error) Memory leak: pBuf1
+971:[main.cpp:36]: (error) Memory leak: pBuf
+972:47/52 files checked 94% done
+973:Checking meminfo...
+974:48/52 files checked 94% done
+975:Checking org_eRte.cxx...
+976:[org_eRte.cxx:97]: (error) Invalid number of character ({) when these macros are defined: ''.
+977:49/52 files checked 99% done
+978:Checking rte.log...
+979:[rte.log:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.
+980:50/52 files checked 99% done
+981:Checking ytest...
+982:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c0)
+983:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=94)
+984:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=98)
+985:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e5)
+986:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d4)
+987:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8f)
+988:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c4)
+989:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=95)
+990:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c8)
+991:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=aa)
+992:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d3)
+993:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e9)
+994:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d0)
+995:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ff)
+996:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ed)
+997:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=89)
+998:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d1)
+999:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e2)
+1000:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=83)
+1001:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e4)
+1002:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f0)
+1003:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c7)
+1004:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c1)
+1005:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e0)
+1006:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a4)
+1007:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e8)
+1008:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9f)
+1009:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f4)
+1010:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=90)
+1011:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ec)
+1012:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8b)
+1013:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=85)
+1014:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c3)
+1015:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=80)
+1016:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a0)
+1017:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=bb)
+1018:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=b0)
+1019:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9a)
+1020:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=81)
+1021:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=eb)
+1022:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a8)
+1023:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fb)
+1024:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d8)
+1025:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c5)
+1026:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c6)
+1027:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c9)
+1028:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=84)
+1029:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=b8)
+1030:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=bf)
+1031:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fc)
+1032:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=be)
+1033:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=cc)
+1034:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e6)
+1035:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fe)
+1036:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f3)
+1037:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8d)
+1038:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a3)
+1039:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9c)
+1040:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f8)
+1041:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fd)
+1042:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f6)
+1043:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d7)
+1044:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=db)
+1045:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fa)
+1046:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ef)
+1047:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=dc)
+1048:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ea)
+1049:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f1)
+1050:[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=86)
+1051:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=90)
+1052:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=fe)
+1053:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=ff)
+1054:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=89)
+1055:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8c)
+1056:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=86)
+1057:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=83)
+1058:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8f)
+1059:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8e)
+1060:[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8d)
+1061:[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=a8)
+1062:[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=f5)
+1063:[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=fe)
+1064:[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=ff)
+1065:[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=88)
+1066:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9a)
+1067:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=88)
+1068:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=fe)
+1069:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ff)
+1070:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=c0)
+1071:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f0)
+1072:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b2)
+1073:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=8e)
+1074:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9e)
+1075:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ae)
+1076:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f6)
+1077:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=90)
+1078:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=84)
+1079:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=89)
+1080:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=94)
+1081:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=e8)
+1082:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=a8)
+1083:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=a0)
+1084:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b8)
+1085:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=d4)
+1086:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b6)
+1087:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f8)
+1088:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9c)
+1089:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=98)
+1090:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=c7)
+1091:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ce)
+1092:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=d3)
+1093:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=dc)
+1094:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=80)
+1095:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=e1)
+1096:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ea)
+1097:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=bc)
+1098:[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f5)
+1099:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=fe)
+1100:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=98)
+1101:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=b0)
+1102:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=88)
+1103:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=b2)
+1104:[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=c0)
+1105:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=c0)
+1106:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=a8)
+1107:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=b8)
+1108:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=d4)
+1109:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=f8)
+1110:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=98)
+1111:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=80)
+1112:[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=88)
+1113:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=ec)
+1114:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=f1)
+1115:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=ff)
+1116:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=98)
+1117:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=a8)
+1118:[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=b8)
+1119:[ytest:9]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=9, character code=c0)
+1120:[ytest:9]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=9, character code=c8)
+1121:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=80)
+1122:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=f1)
+1123:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ff)
+1124:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=84)
+1125:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a0)
+1126:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=91)
+1127:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=90)
+1128:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9f)
+1129:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=b8)
+1130:[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ab)
+1131:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=c1)
+1132:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=f1)
+1133:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=ff)
+1134:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=cb)
+1135:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=88)
+1136:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=e1)
+1137:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=94)
+1138:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=f2)
+1139:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=c0)
+1140:[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=b8)
+1141:[ytest:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=d0)
+1142:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c0)
+1143:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a8)
+1144:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=b8)
+1145:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=87)
+1146:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=94)
+1147:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a1)
+1148:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=b0)
+1149:[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ae)
+1150:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=e0)
+1151:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=89)
+1152:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=be)
+1153:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=f1)
+1154:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=ff)
+1155:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=bc)
+1156:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=ca)
+1157:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=d0)
+1158:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=cf)
+1159:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=d6)
+1160:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=98)
+1161:[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=f7)
+1162:[ytest:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=a4)
+1163:[ytest:1]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.
+1164:51/52 files checked 99% done
+1165:Checking ytest.cpp...
+1166:52/52 files checked 100% done
+1167:Checking usage of global functions..
+1367:(information) Cppcheck cannot find all the include files (use --check-config for details)

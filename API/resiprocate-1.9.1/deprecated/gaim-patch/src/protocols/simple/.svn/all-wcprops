@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gaim-patch/src/protocols/simple
+END
+simple.h
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gaim-patch/src/protocols/simple/simple.h
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gaim-patch/src/protocols/simple/Makefile.am
+END
+simple.c
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gaim-patch/src/protocols/simple/simple.c
+END
+Makefile.mingw
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/deprecated/gaim-patch/src/protocols/simple/Makefile.mingw
+END

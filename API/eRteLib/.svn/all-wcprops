@@ -1,0 +1,203 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/repos/vIBC/!svn/ver/1849/trunk/src/API/eRteLib
+END
+eSipUriUtil.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/eSipUriUtil.cxx
+END
+eSipRteUtil.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/723/trunk/src/API/eRteLib/eSipRteUtil.hxx
+END
+eSipRteStatus.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1659/trunk/src/API/eRteLib/eSipRteStatus.cxx
+END
+eSipRteLoad.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1713/trunk/src/API/eRteLib/eSipRteLoad.hxx
+END
+IBCErr2RteErr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/IBCErr2RteErr.hxx
+END
+eSipRteStatus.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/571/trunk/src/API/eRteLib/eSipRteStatus.hxx
+END
+eSipRteErr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1693/trunk/src/API/eRteLib/eSipRteErr.hxx
+END
+env.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/1697/trunk/src/API/eRteLib/env.sh
+END
+eSipRteThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1692/trunk/src/API/eRteLib/eSipRteThread.cxx
+END
+eSipRteData.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1849/trunk/src/API/eRteLib/eSipRteData.cxx
+END
+eSipRteApi_mmi.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/956/trunk/src/API/eRteLib/eSipRteApi_mmi.cxx
+END
+eSipRteThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/eSipRteThread.hxx
+END
+eSipRteData.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/602/trunk/src/API/eRteLib/eSipRteData.hxx
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/repos/vIBC/!svn/ver/723/trunk/src/API/eRteLib/Makefile
+END
+eSipRteLog.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/630/trunk/src/API/eRteLib/eSipRteLog.cxx
+END
+Makefile_exe
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/189/trunk/src/API/eRteLib/Makefile_exe
+END
+eSipRteDBHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/repos/vIBC/!svn/ver/2022/trunk/src/API/eRteLib/eSipRteDBHandler.cxx
+END
+eSipRte.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1629/trunk/src/API/eRteLib/eSipRte.hxx
+END
+eSipRteMgr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1739/trunk/src/API/eRteLib/eSipRteMgr.cxx
+END
+eSipRteLog.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/eSipRteLog.hxx
+END
+eSipRteDBHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/567/trunk/src/API/eRteLib/eSipRteDBHandler.hxx
+END
+eSipRteQueue.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/eSipRteQueue.hxx
+END
+eSipRteMgr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1739/trunk/src/API/eRteLib/eSipRteMgr.hxx
+END
+eSipRteDBMgr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1902/trunk/src/API/eRteLib/eSipRteDBMgr.cxx
+END
+IBCErrorDef.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1677/trunk/src/API/eRteLib/IBCErrorDef.hxx
+END
+eSipRteDBMgr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1747/trunk/src/API/eRteLib/eSipRteDBMgr.hxx
+END
+delshm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/delshm.cpp
+END
+eRte.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/2022/trunk/src/API/eRteLib/eRte.cxx
+END
+cfg.cmd
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/166/trunk/src/API/eRteLib/cfg.cmd
+END
+eSipRteApi.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1747/trunk/src/API/eRteLib/eSipRteApi.cxx
+END
+eSipRteUsrMap.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/73/trunk/src/API/eRteLib/eSipRteUsrMap.hxx
+END
+eSipRteUtil.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/2022/trunk/src/API/eRteLib/eSipRteUtil.cxx
+END
+eSipRteApi.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1739/trunk/src/API/eRteLib/eSipRteApi.hxx
+END

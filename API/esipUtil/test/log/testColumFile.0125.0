@@ -1,0 +1,232 @@
+18:14:58.205) TID-0x832c7720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:14:58.205) TID-0x832c7720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:14:58.205) TID-0x832c5700) INFO ) QueueThread[LogInst0]. Tid[17566] : process : start
+18:14:58.206) TID-0x822c4700) INFO ) NormalThread[DelLogMgr]. Tid[17567] : process : start
+18:14:58.206) TID-0x812c3700) INFO ) NormalThread[ColumFile]. Tid[17568] : process : start
+18:14:58.206) TID-0x832c7720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:15:37.380) TID-0xdaeec720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:15:37.380) TID-0xdaeec720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:15:37.380) TID-0xdaeea700) INFO ) QueueThread[LogInst0]. Tid[19524] : process : start
+18:15:37.380) TID-0xd9ee9700) INFO ) NormalThread[DelLogMgr]. Tid[19525] : process : start
+18:15:37.381) TID-0xd3fff700) INFO ) NormalThread[ColumFile]. Tid[19526] : process : start
+18:15:37.381) TID-0xdaeec720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:15:37.381) TID-0xdaeec720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:25:15.527) TID-0x31e44720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:25:15.527) TID-0x31e44720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:25:15.527) TID-0x31e42700) INFO ) QueueThread[LogInst0]. Tid[15212] : process : start
+18:25:15.527) TID-0x30e41700) INFO ) NormalThread[DelLogMgr]. Tid[15213] : process : start
+18:25:15.528) TID-0x2fe40700) INFO ) NormalThread[ColumFile]. Tid[15214] : process : start
+18:25:15.528) TID-0x31e44720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:25:15.528) TID-0x31e44720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:25:18.302) TID-0xc73d8720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:25:18.302) TID-0xc73d8720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:25:18.302) TID-0xc73d6700) INFO ) QueueThread[LogInst0]. Tid[15325] : process : start
+18:25:18.302) TID-0xc63d5700) INFO ) NormalThread[DelLogMgr]. Tid[15326] : process : start
+18:25:18.303) TID-0xc53d4700) INFO ) NormalThread[ColumFile]. Tid[15327] : process : start
+18:25:18.303) TID-0xc73d8720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:25:18.303) TID-0xc73d8720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:11.177) TID-0x96cb9720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:26:11.177) TID-0x96cb9720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:26:11.178) TID-0x95cb6700) INFO ) NormalThread[DelLogMgr]. Tid[18033] : process : start
+18:26:11.178) TID-0x96cb7700) INFO ) QueueThread[LogInst0]. Tid[18032] : process : start
+18:26:11.179) TID-0x8ffff700) INFO ) NormalThread[ColumFile]. Tid[18034] : process : start
+18:26:11.179) TID-0x96cb9720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:11.179) TID-0x96cb9720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:13.777) TID-0xddea7720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:26:13.777) TID-0xddea7720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:26:13.777) TID-0xddea5700) INFO ) QueueThread[LogInst0]. Tid[18137] : process : start
+18:26:13.777) TID-0xdcea4700) INFO ) NormalThread[DelLogMgr]. Tid[18138] : process : start
+18:26:13.778) TID-0xdbea3700) INFO ) NormalThread[ColumFile]. Tid[18139] : process : start
+18:26:13.778) TID-0xddea7720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:13.778) TID-0xddea7720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:38.751) TID-0xd5c0f720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:26:38.751) TID-0xd5c0f720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:26:38.751) TID-0xd5c0d700) INFO ) QueueThread[LogInst0]. Tid[19372] : process : start
+18:26:38.752) TID-0xd4c0c700) INFO ) NormalThread[DelLogMgr]. Tid[19373] : process : start
+18:26:38.752) TID-0xd3c0b700) INFO ) NormalThread[ColumFile]. Tid[19374] : process : start
+18:26:38.752) TID-0xd5c0f720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:26:38.752) TID-0xd5c0f720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:27:54.398) TID-0xf42db720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:27:54.398) TID-0xf42db720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:27:54.398) TID-0xf32d8700) INFO ) NormalThread[DelLogMgr]. Tid[23078] : process : start
+18:27:54.398) TID-0xf42d9700) INFO ) QueueThread[LogInst0]. Tid[23077] : process : start
+18:27:54.399) TID-0xf22d7700) INFO ) NormalThread[ColumFile]. Tid[23079] : process : start
+18:27:54.399) TID-0xf42db720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:27:54.399) TID-0xf42db720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:36:19.120) TID-0x8fd5f720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:36:19.120) TID-0x8fd5f720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:36:19.121) TID-0x8ed5c700) INFO ) NormalThread[DelLogMgr]. Tid[14870] : process : start
+18:36:19.121) TID-0x8fd5d700) INFO ) QueueThread[LogInst0]. Tid[14869] : process : start
+18:36:19.121) TID-0x8fd5f720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:36:19.121) TID-0x8dd5b700) INFO ) NormalThread[ColumFile]. Tid[14871] : process : start
+18:36:19.121) TID-0x8fd5f720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:40:23.310) TID-0x59b71720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:40:23.310) TID-0x59b71720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:40:23.310) TID-0x59b6f700) INFO ) QueueThread[LogInst0]. Tid[26813] : process : start
+18:40:23.311) TID-0x53fff700) INFO ) NormalThread[DelLogMgr]. Tid[26814] : process : start
+18:40:23.311) TID-0x52ffe700) INFO ) NormalThread[ColumFile]. Tid[26815] : process : start
+18:40:23.311) TID-0x59b71720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:40:23.312) TID-0x59b71720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:45:17.378) TID-0xe4ba0720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:45:17.378) TID-0xe4ba0720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:45:17.378) TID-0xe4b9e700) INFO ) QueueThread[LogInst0]. Tid[8656] : process : start
+18:45:17.378) TID-0xe3b9d700) INFO ) NormalThread[DelLogMgr]. Tid[8657] : process : start
+18:45:17.379) TID-0xe2b9c700) INFO ) NormalThread[ColumFile]. Tid[8658] : process : start
+18:45:17.420) TID-0xe4ba0720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:45:17.420) TID-0xe4ba0720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:52:49.964) TID-0x1d556720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:52:49.964) TID-0x1d556720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:52:49.964) TID-0x1d554700) INFO ) QueueThread[LogInst0]. Tid[30340] : process : start
+18:52:49.965) TID-0x17fff700) INFO ) NormalThread[DelLogMgr]. Tid[30341] : process : start
+18:52:49.966) TID-0x16ffe700) INFO ) NormalThread[ColumFile]. Tid[30342] : process : start
+18:52:49.966) TID-0x1d556720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:52:49.966) TID-0x1d556720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:56:58.075) TID-0xc43a1720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:56:58.075) TID-0xc43a1720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:56:58.075) TID-0xc439f700) INFO ) QueueThread[LogInst0]. Tid[9994] : process : start
+18:56:58.076) TID-0xc339e700) INFO ) NormalThread[DelLogMgr]. Tid[9995] : process : start
+18:56:58.076) TID-0xc239d700) INFO ) NormalThread[ColumFile]. Tid[9996] : process : start
+18:56:58.076) TID-0xc43a1720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:56:58.076) TID-0xc43a1720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:57:05.275) TID-0xc9aab720) ERR  ) Add DelLog Path=./log/,File=testColumFile,Limit=0, Ret = 0
+18:57:05.275) TID-0xc9aab720) ERR  ) Delete File> Key : ./log/testColumFile, Path = ./log/, File=testColumFile, Limit=0
+
+18:57:05.275) TID-0xc9aa9700) INFO ) QueueThread[LogInst0]. Tid[10430] : process : start
+18:57:05.275) TID-0xc8aa8700) INFO ) NormalThread[DelLogMgr]. Tid[10431] : process : start
+18:57:05.276) TID-0xc7aa7700) INFO ) NormalThread[ColumFile]. Tid[10432] : process : start
+18:57:05.276) TID-0xc9aab720) ERR  ) Colum Raw Data
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+
+18:57:05.276) TID-0xc9aab720) DEBUG) ColumFile Parse Info : ./testColumFile.cfg
+# <./testColumFile.cfg> Process Colum Config File
+TID=1, PARAM1=param1-1, PARAM2=param1-2, PARAM3=13
+TID=2, PARAM1=param2-1, PARAM2=param2-2, PARAM3=23
+TID=3, PARAM1=param3-1, PARAM2=param3-2, PARAM3=33
+

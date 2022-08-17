@@ -1,0 +1,1367 @@
+Checking ColumFile.cxx...
+[ConfigFile.hxx:128]: (style) C-style pointer casting
+[ConfigFile.hxx:134]: (style) C-style pointer casting
+[ConfigFile.hxx:140]: (style) C-style pointer casting
+[ColumFile.hxx:71]: (style) C-style pointer casting
+[ColumFile.hxx:72]: (style) C-style pointer casting
+[ColumFile.hxx:163]: (style) C-style pointer casting
+[ColumFile.hxx:165]: (style) C-style pointer casting
+[ColumFile.hxx:166]: (style) C-style pointer casting
+[ColumFile.hxx:167]: (style) C-style pointer casting
+[ColumFile.hxx:168]: (style) C-style pointer casting
+[ColumFile.cxx:215]: (style) C-style pointer casting
+[ColumFile.cxx:341]: (style) C-style pointer casting
+[ColumFile.cxx:342]: (style) C-style pointer casting
+[ColumFile.cxx:159]: (style) The scope of the variable 'pclsNew' can be reduced.
+[ConfigFile.hxx:41]: (warning) Member variable 'CfgTimerData_t::m_pclsCfg' is not initialized in the constructor.
+[ColumFile.hxx:116]: (warning) Member variable 'ColumTimerData_t::m_pclsColum' is not initialized in the constructor.
+[ColumFile.cxx:366]: (warning) Member variable 'ColumFile::m_pfnChanged' is not initialized in the constructor.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_cKeyword' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_bReadChange' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pfnChanged' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pvUser' is not assigned a value in 'ColumFile::operator='.
+[ColumFile.cxx:377]: (warning) Member variable 'ColumFile::m_pszDefComment' is not assigned a value in 'ColumFile::operator='.
+Checking ColumFile.cxx: _LINUX_...
+1/52 files checked 1% done
+Checking ColumFile.hxx...
+[ColumFile.hxx:126]: (style) 'ColumFile::operator=' should return 'ColumFile &'.
+Checking ColumFile.hxx: _LINUX_...
+2/52 files checked 2% done
+Checking ConfigFile.cxx...
+[ConfigFile.cxx:1057]: (style) C-style pointer casting
+[ConfigFile.cxx:1079]: (style) C-style pointer casting
+[ConfigFile.cxx:1080]: (style) C-style pointer casting
+[ConfigFile.cxx:1083]: (style) C-style pointer casting
+[ConfigFile.cxx:1087]: (style) C-style pointer casting
+[ConfigFile.cxx:136] -> [ConfigFile.cxx:137]: (performance) Buffer 'm_szTime' is being written before its old content has been used.
+[ConfigFile.cxx:99]: (style) The scope of the variable 's1' can be reduced.
+[ConfigFile.cxx:99]: (style) The scope of the variable 's2' can be reduced.
+[ConfigFile.cxx:782]: (style) The scope of the variable 'match_temp' can be reduced.
+[ConfigFile.cxx:480]: (warning) Member variable 'CfgFile::m_pfnChanged' is not initialized in the constructor.
+Checking ConfigFile.cxx: _LINUX_...
+3/52 files checked 5% done
+Checking ConfigFile.hxx...
+Checking ConfigFile.hxx: _LINUX_...
+4/52 files checked 6% done
+Checking IBCErr2RteErr.hxx...
+[IBCErr2RteErr.hxx:92]: (style) The scope of the variable 'nETCError' can be reduced.
+5/52 files checked 7% done
+Checking IBCErrorDef.hxx...
+6/52 files checked 8% done
+Checking JsonFile.cxx...
+[JsonFile.cxx:30]: (style) C-style pointer casting
+[JsonFile.cxx:34]: (style) C-style pointer casting
+[JsonFile.cxx:42]: (style) C-style pointer casting
+[JsonFile.cxx:100]: (style) C-style pointer casting
+[JsonFile.cxx:104]: (style) C-style pointer casting
+[JsonFile.cxx:119]: (style) C-style pointer casting
+[JsonFile.cxx:123]: (style) C-style pointer casting
+[JsonFile.cxx:207]: (style) C-style pointer casting
+[JsonFile.cxx:211]: (style) C-style pointer casting
+[JsonFile.cxx:219]: (style) C-style pointer casting
+[JsonFile.cxx:277]: (style) C-style pointer casting
+[JsonFile.cxx:281]: (style) C-style pointer casting
+[JsonFile.cxx:286]: (style) C-style pointer casting
+[JsonFile.cxx:290]: (style) C-style pointer casting
+Checking JsonFile.cxx: _LINUX_...
+7/52 files checked 9% done
+Checking JsonFile.hxx...
+Checking JsonFile.hxx: _LINUX_...
+8/52 files checked 10% done
+Checking LOAD...
+[LOAD:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=80)
+[LOAD:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d0)
+[LOAD:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=c0)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=c0)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=e5)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=8a)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9a)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ef)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=82)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a4)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=bd)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a9)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ba)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=bf)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9b)
+[LOAD:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=93)
+[LOAD:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=a0)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=b6)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=82)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=97)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=8e)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=89)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=d3)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=af)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=a9)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=92)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=b4)
+[LOAD:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=c0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=83)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ec)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e8)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d3)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=dd)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c4)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c3)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ff)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e9)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=90)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=80)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=fa)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ed)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=89)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=d1)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e2)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e4)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=f0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c7)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c1)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=8f)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=f4)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=8b)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=85)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=e5)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a0)
+[LOAD:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=bb)
+[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=8b)
+[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=9a)
+[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=81)
+[LOAD:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=eb)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c1)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=fb)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=83)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=eb)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=d8)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c0)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=89)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=ff)
+[LOAD:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=c5)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=8b)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=d8)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=e2)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c6)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=83)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c4)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c9)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c3)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=84)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=89)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=e5)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=b8)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=85)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=c0)
+[LOAD:16]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=16, character code=bf)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c9)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ff)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e0)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c3)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=90)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=89)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e5)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=83)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ec)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=dc)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d0)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=bf)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e8)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=95)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fe)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=b8)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e9)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=8d)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=8b)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c0)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c7)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=a0)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f0)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=eb)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f8)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=91)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ba)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=be)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f6)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fd)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e2)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=f3)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=84)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d8)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=e3)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c1)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=d7)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=85)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ed)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=db)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=fa)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ef)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=ea)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=c4)
+[LOAD:17]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=17, character code=bb)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=83)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=eb)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=ff)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=d0)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=8b)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=f8)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=f1)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c4)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c9)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=c3)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=90)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=ec)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=e8)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=cf)
+[LOAD:18]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=18, character code=fd)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=fe)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=ff)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=bc)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=cc)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=94)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=90)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=b4)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=fd)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=b8)
+[LOAD:19]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=19, character code=86)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=b3)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=90)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=fe)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=ff)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=89)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8c)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=86)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=83)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8f)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8e)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=8d)
+[LOAD:20]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=20, character code=d0)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=f8)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=f5)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=fe)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=ff)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=a8)
+[LOAD:21]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=21, character code=88)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=cc)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=c0)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=e0)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=fe)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=ff)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=90)
+[LOAD:22]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=22, character code=f0)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=fe)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=f6)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=ff)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=88)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=a8)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=cc)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=90)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=e0)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=84)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=c0)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=8e)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=d0)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=89)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=e8)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=94)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=80)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=9a)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=f8)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=a0)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=b6)
+[LOAD:23]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=23, character code=9c)
+[LOAD:25]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=25, character code=c7)
+[LOAD:27]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=27, character code=ce)
+[LOAD:29]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=29, character code=d3)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=c0)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=dc)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=e1)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=ea)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f0)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f5)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=cd)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=fe)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=a8)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=f8)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=89)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=88)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=90)
+[LOAD:31]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=31, character code=e0)
+[LOAD:32]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=32, character code=d0)
+[LOAD:32]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=32, character code=e8)
+[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=80)
+[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=f8)
+[LOAD:33]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=33, character code=88)
+[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=ac)
+[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=f1)
+[LOAD:38]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=38, character code=ff)
+[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=d0)
+[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=80)
+[LOAD:42]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=42, character code=88)
+[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=f1)
+[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=ff)
+[LOAD:43]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=43, character code=84)
+[LOAD:44]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=44, character code=91)
+[LOAD:45]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=45, character code=9f)
+[LOAD:46]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=46, character code=ab)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=c0)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=c1)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=f1)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=ff)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=ca)
+[LOAD:47]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=47, character code=e0)
+[LOAD:48]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=48, character code=f1)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=80)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=8c)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=9f)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=f8)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=a5)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=c4)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=d3)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=e9)
+[LOAD:53]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=53, character code=f6)
+[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=89)
+[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=f1)
+[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=ff)
+[LOAD:55]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=55, character code=90)
+[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=b8)
+[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=83)
+[LOAD:56]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=56, character code=d0)
+[LOAD:13]: (error) No pair for character ("). Can't process file. File is either invalid or unicode, which is currently not supported.
+9/52 files checked 10% done
+Checking Makefile...
+10/52 files checked 11% done
+Checking Makefile_exe...
+11/52 files checked 11% done
+Checking NodeMgr.cxx...
+[NodeMgr.cxx:944]: (warning) Comparison of a boolean value using relational operator (<, >, <= or >=).
+[NodeMgr.cxx:2330]: (warning) Comparison of a boolean with an integer.
+[NodeMgr.cxx:2349]: (warning) Comparison of a boolean with an integer.
+[NodeMgr.cxx:945] -> [NodeMgr.cxx:946]: (warning) Possible null pointer dereference: pclsRte - otherwise it is redundant to check it against null.
+[NodeMgr.hxx:92]: (style) C-style pointer casting
+[NodeMgr.hxx:93]: (style) C-style pointer casting
+[NodeMgr.hxx:352]: (style) C-style pointer casting
+[NodeMgr.hxx:354]: (style) C-style pointer casting
+[NodeMgr.hxx:356]: (style) C-style pointer casting
+[NodeMgr.hxx:358]: (style) C-style pointer casting
+[NodeMgr.hxx:391]: (style) C-style pointer casting
+[NodeMgr.hxx:392]: (style) C-style pointer casting
+[NodeMgr.hxx:393]: (style) C-style pointer casting
+[NodeMgr.hxx:394]: (style) C-style pointer casting
+[NodeMgr.hxx:396]: (style) C-style pointer casting
+[NodeMgr.hxx:397]: (style) C-style pointer casting
+[NodeMgr.hxx:398]: (style) C-style pointer casting
+[NodeMgr.hxx:399]: (style) C-style pointer casting
+[NodeMgr.hxx:400]: (style) C-style pointer casting
+[NodeMgr.hxx:402]: (style) C-style pointer casting
+[NodeMgr.cxx:178]: (style) C-style pointer casting
+[NodeMgr.cxx:182]: (style) C-style pointer casting
+[NodeMgr.cxx:188]: (style) C-style pointer casting
+[NodeMgr.cxx:211]: (style) C-style pointer casting
+[NodeMgr.cxx:215]: (style) C-style pointer casting
+[NodeMgr.cxx:2534]: (style) C-style pointer casting
+[NodeMgr.cxx:2542]: (style) C-style pointer casting
+[NodeMgr.cxx:2551]: (style) C-style pointer casting
+[NodeMgr.cxx:2573]: (style) C-style pointer casting
+[NodeMgr.cxx:2582]: (style) C-style pointer casting
+[NodeMgr.cxx:2590]: (style) C-style pointer casting
+[NodeMgr.cxx:2600]: (style) C-style pointer casting
+[NodeMgr.cxx:2621]: (style) C-style pointer casting
+[NodeMgr.cxx:2650]: (style) C-style pointer casting
+[NodeMgr.cxx:2657]: (style) C-style pointer casting
+[NodeMgr.cxx:2693]: (style) C-style pointer casting
+[NodeMgr.cxx:2699]: (style) C-style pointer casting
+[NodeMgr.cxx:2885]: (style) C-style pointer casting
+[NodeMgr.cxx:1502] -> [NodeMgr.cxx:1504]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[NodeMgr.cxx:1442]: (style) The scope of the variable 'pclsCon' can be reduced.
+[NodeMgr.cxx:1694]: (style) The scope of the variable 'unRteID' can be reduced.
+[NodeMgr.cxx:1694]: (style) The scope of the variable 'unRate' can be reduced.
+[NodeMgr.cxx:1864]: (style) The scope of the variable 'unRteId' can be reduced.
+[NodeMgr.cxx:1864]: (style) The scope of the variable 'unRatio' can be reduced.
+[NodeMgr.cxx:1898]: (style) The scope of the variable 'pclsConnect' can be reduced.
+[NodeMgr.cxx:1956]: (style) The scope of the variable 'pclsConnect' can be reduced.
+[NodeMgr.cxx:2552]: (style) The scope of the variable 'pclsExtParam' can be reduced.
+[NodeMgr.cxx:2601]: (style) The scope of the variable 'pclsExtParam' can be reduced.
+[NodeMgr.cxx:2889]: (style) The scope of the variable 'pszVmID' can be reduced.
+[NodeMgr.cxx:2900]: (style) The scope of the variable 'pszVmID' can be reduced.
+[NodeMgr.cxx:2923]: (style) The scope of the variable 'szAddr' can be reduced.
+[NodeMgr.cxx:155]: (warning) Member variable 'NodeUserParam::m_pclsOwner' is not initialized in the constructor.
+[NodeMgr.cxx:173]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not initialized in the constructor.
+[NodeMgr.cxx:175]: (warning) Member variable 'NodeUserParams::m_pclsOwner' is not assigned a value in 'NodeUserParams::operator='.
+[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsUserObject' is not assigned a value in 'NodeLoc::operator='.
+[NodeMgr.cxx:226]: (warning) Member variable 'NodeLoc::m_pclsOwner' is not assigned a value in 'NodeLoc::operator='.
+[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsUserObject' is not assigned a value in 'NodeRmt::operator='.
+[NodeMgr.cxx:359]: (warning) Member variable 'NodeRmt::m_pclsOwner' is not assigned a value in 'NodeRmt::operator='.
+[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsUserObject' is not assigned a value in 'NodeRte::operator='.
+[NodeMgr.cxx:488]: (warning) Member variable 'NodeRte::m_pclsOwner' is not assigned a value in 'NodeRte::operator='.
+[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsPrev' is not initialized in the constructor.
+[NodeMgr.cxx:671]: (warning) Member variable 'NodeRatio::m_pclsNext' is not initialized in the constructor.
+Checking NodeMgr.cxx: _LINUX_...
+12/52 files checked 21% done
+Checking NodeMgr.hxx...
+[NodeMgr.hxx:102]: (style) 'NodeLoc::operator=' should return 'NodeLoc &'.
+[NodeMgr.hxx:132]: (style) 'NodeRmt::operator=' should return 'NodeRmt &'.
+[NodeMgr.hxx:161]: (style) 'NodeRte::operator=' should return 'NodeRte &'.
+[NodeMgr.hxx:225]: (style) 'NodeSeq::operator=' should return 'NodeSeq &'.
+[NodeMgr.hxx:313]: (style) 'NodeMgr::operator=' should return 'NodeMgr &'.
+Checking NodeMgr.hxx: _LINUX_...
+13/52 files checked 23% done
+Checking aaa...
+14/52 files checked 24% done
+Checking bb...
+15/52 files checked 25% done
+Checking buffer_check.txt...
+[buffer_check.txt:250]: (error) Invalid number of character (() when these macros are defined: ''.
+16/52 files checked 29% done
+Checking cfg.cmd...
+17/52 files checked 29% done
+Checking delshm.cpp...
+18/52 files checked 29% done
+Checking eRte.cxx...
+[eRte.cxx:98]: (error) Invalid number of character ({) when these macros are defined: ''.
+19/52 files checked 34% done
+Checking eSipRte.hxx...
+[eSipRte.hxx:381]: (style) The scope of the variable 'nTmpLen1' can be reduced.
+[eSipRte.hxx:382]: (style) The scope of the variable 'nTmpLen2' can be reduced.
+[eSipRte.hxx:603]: (style) The scope of the variable 'nStrLen' can be reduced.
+[eSipRte.hxx:604]: (style) The scope of the variable 'nRemainLen' can be reduced.
+[eSipRte.hxx:829]: (style) struct or union member 'SipLocalNodeDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:839]: (style) struct or union member 'SipRemoteNodeDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:849]: (style) struct or union member 'SipRouteGroupDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:860]: (style) struct or union member 'SipRouteDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:870]: (style) struct or union member 'SipRouteSeqDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:877]: (style) struct or union member 'SipSpecialRouteSeqDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:885]: (style) struct or union member 'TrGWDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:888]: (style) struct or union member 'TrGWDataBase_t::m_nCurRATE' is never used.
+[eSipRte.hxx:889]: (style) struct or union member 'TrGWDataBase_t::m_nCurPos' is never used.
+[eSipRte.hxx:896]: (style) struct or union member 'SipReasonCodeDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:904]: (style) struct or union member 'SipTraceDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:912]: (style) struct or union member 'EmergencyCallDataBase_t::m_nNumber' is never used.
+[eSipRte.hxx:938]: (style) struct or union member 'SipRouteManagerDataBase_t::m_szReserved' is never used.
+20/52 files checked 37% done
+Checking eSipRteApi.cxx...
+[eSipRteApi.cxx:569]: (style) Checking if unsigned variable '_uiLID' is less than zero.
+[eSipRteApi.cxx:569]: (style) Checking if unsigned variable '_uiRID' is less than zero.
+[eSipRteApi.cxx:637]: (style) Checking if unsigned variable '_uiRouteID' is less than zero.
+[eSipRteApi.cxx:771]: (style) Checking if unsigned variable '_uiRouteID' is less than zero.
+[eSipRteUsrMap.hxx:36]: (style) 'class CUsrMap' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[eSipRteLoad.hxx:26]: (style) 'class CLoadCalculator' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+21/52 files checked 39% done
+Checking eSipRteApi.hxx...
+22/52 files checked 42% done
+Checking eSipRteApi_mmi.cxx...
+23/52 files checked 46% done
+Checking eSipRteDBHandler.cxx...
+[eSipRteDBHandler.cxx:71]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBHandler.cxx:75]: (style) The scope of the variable 'nMSEC' can be reduced.
+24/52 files checked 46% done
+Checking eSipRteDBHandler.hxx...
+25/52 files checked 46% done
+Checking eSipRteDBMgr.cxx...
+[eSipRteDBMgr.cxx:3736] -> [eSipRteDBMgr.cxx:3742]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+[eSipRteDBMgr.cxx:4055] -> [eSipRteDBMgr.cxx:4065]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+[eSipRteDBMgr.cxx:4099] -> [eSipRteDBMgr.cxx:4105]: (warning) Possible null pointer dereference: _pLocal - otherwise it is redundant to check it against null.
+[eSipRteDBMgr.cxx:4111] -> [eSipRteDBMgr.cxx:4120]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+[eSipRteDBMgr.cxx:3748] -> [eSipRteDBMgr.cxx:3742]: (warning) Possible null pointer dereference: _pRemote - otherwise it is redundant to check it against null.
+[eSipRteDBMgr.cxx:113]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:138]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:204]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:207]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:210]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:213]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:216]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:219]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:222]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:225]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:233]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:236]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:357]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:361]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:365]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:369]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:373]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:377]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:381]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:385]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:394]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:398]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:459]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:467]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:475]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:483]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:491]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:499]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:506]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:513]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:525]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:532]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:554]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:555]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:580]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:581]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:610]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:611]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:634]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:635]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:662]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:663]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:686]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:687]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:714]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:715]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:744]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:745]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:778]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:779]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:802]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:803]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:831]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:832]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:874]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:875]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:924]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:925]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:949]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:950]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:979]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:980]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1004]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1005]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1033]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1034]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1058]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1059]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1088]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1089]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1114]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1115]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1153]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1154]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1178]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1179]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1207]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1208]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1232]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1233]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1380]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1400]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1419]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1434]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1463]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1464]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1468]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1469]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1470]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1471]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1491]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1512]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1596]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1728]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1773]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1780]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1937]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:1945]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2139]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2155]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2158]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2163]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2313]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2415]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2450]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2451]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2452]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2453]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2454]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2458]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2459]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2460]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2461]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2462]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2470]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2475]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2479]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2484]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2486]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2487]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2491]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2496]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2497]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2501]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2506]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2507]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2508]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2509]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2510]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2553]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2557]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2561]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2565]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2569]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2572]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2575]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2578]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2581]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2584]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2753]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2766]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2779]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2788]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:2857]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3016]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3048]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3129]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3318]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3428]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3490]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3593]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3621]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3638]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3639]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3655]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3656]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3753]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3778]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4062]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4071]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4072]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4076]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4117]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4127]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4128]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4133]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4192]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4198]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4204]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4210]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4216]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4222]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4228]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4234]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4247]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4253]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4549]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4553]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4557]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4561]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4565]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4569]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4573]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4578]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4583]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4586]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4590]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4594]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4716]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4720]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4724]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4728]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4732]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4736]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4740]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4744]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4755]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4794]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4796]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4798]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4800]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4802]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4804]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4806]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4808]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4810]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4812]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4814]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4816]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4818]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4820]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4822]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4824]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4831]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4833]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4835]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4837]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4900]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4902]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4911]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4913]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4922]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4924]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4933]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4935]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4944]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4946]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4952]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4954]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4960]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4962]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4968]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4970]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4986]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4988]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4994]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:4996]: (style) C-style pointer casting
+[eSipRteDBMgr.cxx:3442] -> [eSipRteDBMgr.cxx:3454]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:3468] -> [eSipRteDBMgr.cxx:3480]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:3497] -> [eSipRteDBMgr.cxx:3508]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:3524] -> [eSipRteDBMgr.cxx:3531]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:3549] -> [eSipRteDBMgr.cxx:3563]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:3720] -> [eSipRteDBMgr.cxx:3725]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:4095] -> [eSipRteDBMgr.cxx:4100]: (performance) Variable 'bRet' is reassigned a value before the old one has been used.
+[eSipRteDBMgr.cxx:4006]: (style) Statements following return, break, continue, goto or throw will never be executed.
+[eSipRteDBMgr.cxx:454]: (style) The scope of the variable 'uiID' can be reduced.
+[eSipRteDBMgr.cxx:1257]: (style) The scope of the variable 'pRte' can be reduced.
+[eSipRteDBMgr.cxx:1272]: (style) The scope of the variable 'pRte' can be reduced.
+[eSipRteDBMgr.cxx:1289]: (style) The scope of the variable 'pRte' can be reduced.
+[eSipRteDBMgr.cxx:1305]: (style) The scope of the variable 'pRSeq' can be reduced.
+[eSipRteDBMgr.cxx:1332]: (style) The scope of the variable 'pSRSeq' can be reduced.
+[eSipRteDBMgr.cxx:1599]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBMgr.cxx:1729]: (style) The scope of the variable 'pValue' can be reduced.
+[eSipRteDBMgr.cxx:1793]: (style) The scope of the variable 'uiICCnt' can be reduced.
+[eSipRteDBMgr.cxx:1794]: (style) The scope of the variable 'uiOGCnt' can be reduced.
+[eSipRteDBMgr.cxx:1964]: (style) The scope of the variable 'nStatus' can be reduced.
+[eSipRteDBMgr.cxx:2106]: (style) The scope of the variable 'bRet' can be reduced.
+[eSipRteDBMgr.cxx:2232]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBMgr.cxx:2716]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBMgr.cxx:2717]: (style) The scope of the variable 'bRet' can be reduced.
+[eSipRteDBMgr.cxx:3032]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBMgr.cxx:3034]: (style) The scope of the variable 'nIdx' can be reduced.
+[eSipRteDBMgr.cxx:3116]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteDBMgr.cxx:3118]: (style) The scope of the variable 'nIdx' can be reduced.
+[eSipRteDBMgr.cxx:3379]: (style) The scope of the variable 'nRSeq' can be reduced.
+[eSipRteDBMgr.cxx:3695]: (style) The scope of the variable 'pRte' can be reduced.
+[eSipRteDBMgr.cxx:3823]: (style) The scope of the variable 'uiTDiff' can be reduced.
+[eSipRteDBMgr.cxx:4269]: (style) The scope of the variable 'pValue' can be reduced.
+[eSipRteDBMgr.cxx:4397]: (style) The scope of the variable 'nMIN' can be reduced.
+[eSipRteDBMgr.cxx:255]: (style) Variable 'nDummyNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:353]: (style) Variable 'nCurrentNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:315]: (style) Variable 'nDummyNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:451]: (style) Variable 'nCurrentNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:413]: (style) Variable 'nDummyNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:2185]: (style) Variable 'bNoti' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:2184]: (style) Variable 'nNotiStatus' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:3617]: (style) Variable 'szKey' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:4440]: (style) Variable 'nMIN' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:4689]: (style) Variable 'nCurrentNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:4615]: (style) Variable 'nDummyNum' is assigned a value that is never used.
+[eSipRteDBMgr.cxx:11]: (warning) Member variable 'CSipRteDBMgr::m_pIntMap' is not initialized in the constructor.
+[eSipRteDBMgr.hxx:28]: (style) 'class CSipRteDBMgr' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+26/52 files checked 62% done
+Checking eSipRteDBMgr.hxx...
+[eSipRteDBMgr.hxx:33]: (style) struct or union member 'SystemResource_t::m_nNotifyFlag' is never used.
+[eSipRteDBMgr.hxx:34]: (style) struct or union member 'SystemResource_t::m_nCurUsage' is never used.
+[eSipRteDBMgr.hxx:35]: (style) struct or union member 'SystemResource_t::m_nLimitUsage' is never used.
+[eSipRteDBMgr.hxx:41]: (style) struct or union member 'InternalNotify_t::m_szReserved' is never used.
+27/52 files checked 64% done
+Checking eSipRteData.cxx...
+[eSipRteData.cxx:2695]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+[eSipRteData.cxx:2697]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2716]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2718]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2720]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2722]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2724]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2726]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2728]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2730]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2732]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2760]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+[eSipRteData.cxx:2762]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+[eSipRteData.cxx:2764]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+[eSipRteData.cxx:2766]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'short'.
+[eSipRteData.cxx:2768]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2770]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2772]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2803]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2805]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2828]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2828]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2831]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2831]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2900]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2902]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2904]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2906]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2908]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2910]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2912]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2914]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2916]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2918]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2920]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2922]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2924]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2926]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2928]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2930]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2939]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2941]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2943]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2945]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2947]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2949]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2951]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2953]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2955]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2957]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2959]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2961]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2963]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2965]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2967]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2969]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:2971]: (warning) %u in format string (no. 1) requires 'unsigned int' but the argument type is 'int'.
+[eSipRteData.cxx:170]: (style) C-style pointer casting
+[eSipRteData.cxx:172]: (style) C-style pointer casting
+[eSipRteData.cxx:174]: (style) C-style pointer casting
+[eSipRteData.cxx:176]: (style) C-style pointer casting
+[eSipRteData.cxx:178]: (style) C-style pointer casting
+[eSipRteData.cxx:180]: (style) C-style pointer casting
+[eSipRteData.cxx:182]: (style) C-style pointer casting
+[eSipRteData.cxx:184]: (style) C-style pointer casting
+[eSipRteData.cxx:187]: (style) C-style pointer casting
+[eSipRteData.cxx:189]: (style) C-style pointer casting
+[eSipRteData.cxx:191]: (style) C-style pointer casting
+[eSipRteData.cxx:193]: (style) C-style pointer casting
+[eSipRteData.cxx:202]: (style) C-style pointer casting
+[eSipRteData.cxx:204]: (style) C-style pointer casting
+[eSipRteData.cxx:206]: (style) C-style pointer casting
+[eSipRteData.cxx:208]: (style) C-style pointer casting
+[eSipRteData.cxx:210]: (style) C-style pointer casting
+[eSipRteData.cxx:212]: (style) C-style pointer casting
+[eSipRteData.cxx:214]: (style) C-style pointer casting
+[eSipRteData.cxx:216]: (style) C-style pointer casting
+[eSipRteData.cxx:219]: (style) C-style pointer casting
+[eSipRteData.cxx:221]: (style) C-style pointer casting
+[eSipRteData.cxx:223]: (style) C-style pointer casting
+[eSipRteData.cxx:231]: (style) C-style pointer casting
+[eSipRteData.cxx:233]: (style) C-style pointer casting
+[eSipRteData.cxx:235]: (style) C-style pointer casting
+[eSipRteData.cxx:237]: (style) C-style pointer casting
+[eSipRteData.cxx:239]: (style) C-style pointer casting
+[eSipRteData.cxx:241]: (style) C-style pointer casting
+[eSipRteData.cxx:243]: (style) C-style pointer casting
+[eSipRteData.cxx:245]: (style) C-style pointer casting
+[eSipRteData.cxx:248]: (style) C-style pointer casting
+[eSipRteData.cxx:250]: (style) C-style pointer casting
+[eSipRteData.cxx:252]: (style) C-style pointer casting
+[eSipRteData.cxx:261]: (style) C-style pointer casting
+[eSipRteData.cxx:263]: (style) C-style pointer casting
+[eSipRteData.cxx:265]: (style) C-style pointer casting
+[eSipRteData.cxx:267]: (style) C-style pointer casting
+[eSipRteData.cxx:269]: (style) C-style pointer casting
+[eSipRteData.cxx:271]: (style) C-style pointer casting
+[eSipRteData.cxx:273]: (style) C-style pointer casting
+[eSipRteData.cxx:275]: (style) C-style pointer casting
+[eSipRteData.cxx:278]: (style) C-style pointer casting
+[eSipRteData.cxx:280]: (style) C-style pointer casting
+[eSipRteData.cxx:282]: (style) C-style pointer casting
+[eSipRteData.cxx:374] -> [eSipRteData.cxx:375]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:512] -> [eSipRteData.cxx:513]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:704] -> [eSipRteData.cxx:705]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:882] -> [eSipRteData.cxx:883]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1001] -> [eSipRteData.cxx:1002]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1085] -> [eSipRteData.cxx:1086]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1200] -> [eSipRteData.cxx:1201]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1296] -> [eSipRteData.cxx:1297]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1504] -> [eSipRteData.cxx:1505]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1616] -> [eSipRteData.cxx:1617]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1769] -> [eSipRteData.cxx:1770]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:1858] -> [eSipRteData.cxx:1859]: (performance) Variable 'pTmpData' is reassigned a value before the old one has been used.
+[eSipRteData.cxx:370]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:508]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:700]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:878]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:997]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1081]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1196]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1292]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1500]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1612]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1765]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1848]: (style) The scope of the variable 'pTmpData' can be reduced.
+[eSipRteData.cxx:1856]: (style) The scope of the variable 'nTmp' can be reduced.
+[eSipRteData.hxx:29]: (style) 'class CSipRteData' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+28/52 files checked 73% done
+Checking eSipRteData.hxx...
+29/52 files checked 74% done
+Checking eSipRteErr.hxx...
+30/52 files checked 80% done
+Checking eSipRteLoad.hxx...
+31/52 files checked 80% done
+Checking eSipRteLog.cxx...
+[eSipRteLog.cxx:52]: (style) Variable 'pLevel' is assigned a value that is never used.
+32/52 files checked 81% done
+Checking eSipRteLog.hxx...
+33/52 files checked 81% done
+Checking eSipRteMgr.cxx...
+[eSipRteMgr.cxx:626]: (style) C-style pointer casting
+[eSipRteMgr.cxx:642]: (style) C-style pointer casting
+[eSipRteMgr.cxx:804]: (style) C-style pointer casting
+[eSipRteMgr.cxx:812]: (style) C-style pointer casting
+[eSipRteMgr.cxx:869]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1252]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1262]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1272]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1693]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1918]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1919]: (style) C-style pointer casting
+[eSipRteMgr.cxx:1011] -> [eSipRteMgr.cxx:1012]: (performance) Variable 'pHandler' is reassigned a value before the old one has been used.
+[eSipRteMgr.cxx:1022] -> [eSipRteMgr.cxx:1023]: (performance) Variable 'pRoute' is reassigned a value before the old one has been used.
+[eSipRteMgr.cxx:409]: (style) The scope of the variable 'nNum' can be reduced.
+[eSipRteMgr.cxx:601]: (style) The scope of the variable 'nRow' can be reduced.
+[eSipRteMgr.cxx:977]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteMgr.cxx:1019]: (style) The scope of the variable 'pRoute' can be reduced.
+[eSipRteMgr.cxx:1240]: (style) The scope of the variable 'nID' can be reduced.
+[eSipRteMgr.hxx:22]: (style) 'class CSipRteMgr' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[eSipRteMgr.hxx:234]: (style) Class 'CSipRteMgr' is unsafe, 'CSipRteMgr::m_pCB' can leak by wrong usage.
+34/52 files checked 87% done
+Checking eSipRteMgr.hxx...
+35/52 files checked 88% done
+Checking eSipRteQueue.hxx...
+36/52 files checked 88% done
+Checking eSipRteStatus.cxx...
+[eSipRteStatus.cxx:110] -> [eSipRteStatus.cxx:112]: (performance) Variable 'pTmpData1' is reassigned a value before the old one has been used.
+[eSipRteStatus.cxx:111] -> [eSipRteStatus.cxx:113]: (performance) Variable 'pTmpData2' is reassigned a value before the old one has been used.
+[eSipRteStatus.cxx:182]: (style) The scope of the variable 'pRte' can be reduced.
+[eSipRteStatus.cxx:211]: (style) Variable 'nRet' is assigned a value that is never used.
+[eSipRteStatus.hxx:26]: (style) 'class CSipRteStatus' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+37/52 files checked 89% done
+Checking eSipRteStatus.hxx...
+38/52 files checked 89% done
+Checking eSipRteThread.cxx...
+[eSipRteThread.cxx:53]: (style) C-style pointer casting
+[eSipRteThread.cxx:112]: (style) C-style pointer casting
+[eSipRteThread.cxx:56]: (style) The scope of the variable 'bSend' can be reduced.
+[eSipRteThread.cxx:61]: (style) The scope of the variable 'nRet' can be reduced.
+[eSipRteThread.cxx:115]: (style) The scope of the variable 'bSend' can be reduced.
+[eSipRteThread.cxx:101]: (style) Variable 'nRet' is assigned a value that is never used.
+39/52 files checked 89% done
+Checking eSipRteThread.hxx...
+40/52 files checked 89% done
+Checking eSipRteUsrMap.hxx...
+41/52 files checked 90% done
+Checking eSipRteUtil.cxx...
+[eSipRteUtil.cxx:229] -> [eSipRteUtil.cxx:230]: (performance) Variable 'tmpPtr' is reassigned a value before the old one has been used.
+[eSipRteUtil.cxx:262] -> [eSipRteUtil.cxx:263]: (performance) Variable 'tmpPtr' is reassigned a value before the old one has been used.
+[eSipRteUtil.cxx:441]: (style) The scope of the variable 'nOldShmId' can be reduced.
+[eSipRteUtil.cxx:479]: (style) The scope of the variable 'nOldShmId' can be reduced.
+[eSipRteUtil.cxx:890]: (style) The scope of the variable 'tmpPtr' can be reduced.
+[eSipRteUtil.cxx:850]: (style) Checking if unsigned variable 'idle' is less than zero.
+[eSipRteUtil.cxx:48]: (style) Variable 'nLen' is assigned a value that is never used.
+[eSipRteUtil.cxx:460]: (style) Variable 'nOldShmId' is assigned a value that is never used.
+[eSipRteUtil.cxx:497]: (style) Variable 'nOldShmId' is assigned a value that is never used.
+[eSipRteUtil.cxx:348]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[eSipRteUtil.cxx:812]: (warning) scanf without field width limits can crash with huge input data.
+[eSipRteUtil.cxx:819]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+Checking eSipRteUtil.cxx: LINUX...
+42/52 files checked 92% done
+Checking eSipRteUtil.hxx...
+43/52 files checked 92% done
+Checking eSipUriUtil.cxx...
+44/52 files checked 93% done
+Checking env.sh...
+45/52 files checked 93% done
+Checking m_nMaintain...
+[m_nMaintain:161]: (error) Invalid number of character ({) when these macros are defined: ''.
+46/52 files checked 94% done
+Checking main.cpp...
+[main.cpp:23]: (style) Variable 'pBuf1' is allocated memory that is never used.
+[main.cpp:25]: (error) Memory leak: pBuf1
+[main.cpp:36]: (error) Memory leak: pBuf
+47/52 files checked 94% done
+Checking meminfo...
+48/52 files checked 94% done
+Checking org_eRte.cxx...
+[org_eRte.cxx:97]: (error) Invalid number of character ({) when these macros are defined: ''.
+49/52 files checked 99% done
+Checking rte.log...
+[rte.log:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.
+50/52 files checked 99% done
+Checking ytest...
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=94)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=98)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e5)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d4)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8f)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c4)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=95)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=aa)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d3)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e9)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ff)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ed)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=89)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d1)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e2)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=83)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e4)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c7)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c1)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a4)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9f)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f4)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=90)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ec)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8b)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=85)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c3)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=80)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=bb)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=b0)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9a)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=81)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=eb)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fb)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c5)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c6)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=c9)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=84)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=b8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=bf)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fc)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=be)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=cc)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=e6)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fe)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f3)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=8d)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=a3)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=9c)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f8)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fd)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f6)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=d7)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=db)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=fa)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ef)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=dc)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=ea)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=f1)
+[ytest:1]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=1, character code=86)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=90)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=fe)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=ff)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=89)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8c)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=86)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=83)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8f)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8e)
+[ytest:2]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=2, character code=8d)
+[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=a8)
+[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=f5)
+[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=fe)
+[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=ff)
+[ytest:3]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=3, character code=88)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9a)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=88)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=fe)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ff)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=c0)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f0)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b2)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=8e)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9e)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ae)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f6)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=90)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=84)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=89)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=94)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=e8)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=a8)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=a0)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b8)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=d4)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=b6)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f8)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=9c)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=98)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=c7)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ce)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=d3)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=dc)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=80)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=e1)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=ea)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=bc)
+[ytest:4]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=4, character code=f5)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=fe)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=98)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=b0)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=88)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=b2)
+[ytest:5]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=5, character code=c0)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=c0)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=a8)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=b8)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=d4)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=f8)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=98)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=80)
+[ytest:7]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=7, character code=88)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=ec)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=f1)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=ff)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=98)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=a8)
+[ytest:8]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=8, character code=b8)
+[ytest:9]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=9, character code=c0)
+[ytest:9]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=9, character code=c8)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=80)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=f1)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ff)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=84)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=a0)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=91)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=90)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=9f)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=b8)
+[ytest:10]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=10, character code=ab)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=c1)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=f1)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=ff)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=cb)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=88)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=e1)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=94)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=f2)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=c0)
+[ytest:11]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=11, character code=b8)
+[ytest:12]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=12, character code=d0)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=c0)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a8)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=b8)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=87)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=94)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=a1)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=b0)
+[ytest:13]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=13, character code=ae)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=e0)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=89)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=be)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=f1)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=ff)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=bc)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=ca)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=d0)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=cf)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=d6)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=98)
+[ytest:14]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=14, character code=f7)
+[ytest:15]: (error) The code contains characters that are unhandled. Neither unicode nor extended ASCII are supported. (line=15, character code=a4)
+[ytest:1]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.
+51/52 files checked 99% done
+Checking ytest.cpp...
+52/52 files checked 100% done
+Checking usage of global functions..
+[eSipRteQueue.hxx:192]: (style) The function 'Get' is never used.
+[eSipRteQueue.hxx:140]: (style) The function 'GetLength' is never used.
+[eSipUriUtil.cxx:38]: (style) The function 'GetMINFromURI' is never used.
+[eSipRteUtil.cxx:372]: (style) The function 'GetMinuteByCurrentTime' is never used.
+[eSipRteUtil.cxx:364]: (style) The function 'GetMinuteByTimeval' is never used.
+[eSipRteUtil.cxx:382]: (style) The function 'GetStrCurrentDate2' is never used.
+[eSipRteUtil.cxx:305]: (style) The function 'GetStrCurrentDateTime' is never used.
+[eSipRteUtil.cxx:280]: (style) The function 'GetStrCurrentTime' is never used.
+[eSipRteUtil.cxx:394]: (style) The function 'GetStrCurrentTime2' is never used.
+[eSipRteUtil.cxx:293]: (style) The function 'GetStrCurrentTimeMs' is never used.
+[eSipRteUtil.cxx:406]: (style) The function 'GetStrDate2' is never used.
+[eSipRteUtil.cxx:321]: (style) The function 'GetStrDateTime' is never used.
+[eSipRteUtil.cxx:333]: (style) The function 'GetStrTime' is never used.
+[eSipRteUtil.cxx:415]: (style) The function 'GetStrTime2' is never used.
+[eSipRteUtil.cxx:343]: (style) The function 'GetTimeFromStr' is never used.
+[eSipRteApi_mmi.cxx:310]: (style) The function 'IfESipRteApi_AddEmer' is never used.
+[eSipRteApi_mmi.cxx:3]: (style) The function 'IfESipRteApi_AddLocal' is never used.
+[eSipRteApi_mmi.cxx:274]: (style) The function 'IfESipRteApi_AddReason' is never used.
+[eSipRteApi_mmi.cxx:41]: (style) The function 'IfESipRteApi_AddRemote' is never used.
+[eSipRteApi_mmi.cxx:116]: (style) The function 'IfESipRteApi_AddRoute' is never used.
+[eSipRteApi_mmi.cxx:80]: (style) The function 'IfESipRteApi_AddRouteGroup' is never used.
+[eSipRteApi_mmi.cxx:161]: (style) The function 'IfESipRteApi_AddRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:198]: (style) The function 'IfESipRteApi_AddSpecialRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:233]: (style) The function 'IfESipRteApi_AddTrGW' is never used.
+[eSipRteApi.cxx:804]: (style) The function 'IfESipRteApi_ChangeHAStandby2Active' is never used.
+[eSipRteApi.cxx:107]: (style) The function 'IfESipRteApi_ChangeLocalNode' is never used.
+[eSipRteApi.cxx:22]: (style) The function 'IfESipRteApi_ChangeLogLevelApi2Resip' is never used.
+[eSipRteApi.cxx:6]: (style) The function 'IfESipRteApi_ChangeLogLevelResip2Api' is never used.
+[eSipRteApi.cxx:823]: (style) The function 'IfESipRteApi_CheckMSGSize' is never used.
+[eSipRteApi.cxx:688]: (style) The function 'IfESipRteApi_CheckTPSByRouteID' is never used.
+[eSipRteApi.cxx:654]: (style) The function 'IfESipRteApi_CheckTPSByTransport' is never used.
+[eSipRteApi.cxx:812]: (style) The function 'IfESipRteApi_CheckTrace' is never used.
+[eSipRteApi_mmi.cxx:507]: (style) The function 'IfESipRteApi_Control_AllRoute' is never used.
+[eSipRteApi.cxx:833]: (style) The function 'IfESipRteApi_DeCrease1RouteCount' is never used.
+[eSipRteApi.cxx:851]: (style) The function 'IfESipRteApi_DeCrease1SesCount' is never used.
+[eSipRteApi.cxx:292]: (style) The function 'IfESipRteApi_DecisionTargetByRouteSeq' is never used.
+[eSipRteApi.cxx:368]: (style) The function 'IfESipRteApi_DecisionTargetBySpecialRouteSeq' is never used.
+[eSipRteApi.cxx:132]: (style) The function 'IfESipRteApi_DecisionTrGW' is never used.
+[eSipRteApi.cxx:214]: (style) The function 'IfESipRteApi_DecreaseCrease1TrGW' is never used.
+[eSipRteApi_mmi.cxx:1254]: (style) The function 'IfESipRteApi_DelEmer' is never used.
+[eSipRteApi_mmi.cxx:1115]: (style) The function 'IfESipRteApi_DelLocal' is never used.
+[eSipRteApi_mmi.cxx:1237]: (style) The function 'IfESipRteApi_DelReason' is never used.
+[eSipRteApi_mmi.cxx:1132]: (style) The function 'IfESipRteApi_DelRemote' is never used.
+[eSipRteApi_mmi.cxx:1167]: (style) The function 'IfESipRteApi_DelRoute' is never used.
+[eSipRteApi_mmi.cxx:1149]: (style) The function 'IfESipRteApi_DelRouteGroup' is never used.
+[eSipRteApi_mmi.cxx:1185]: (style) The function 'IfESipRteApi_DelRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:1202]: (style) The function 'IfESipRteApi_DelSpecialRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:1219]: (style) The function 'IfESipRteApi_DelTrGW' is never used.
+[eSipRteApi_mmi.cxx:1090]: (style) The function 'IfESipRteApi_FindEmer' is never used.
+[eSipRteApi_mmi.cxx:1020]: (style) The function 'IfESipRteApi_FindEnv' is never used.
+[eSipRteApi_mmi.cxx:1043]: (style) The function 'IfESipRteApi_FindEnv_LB' is never used.
+[eSipRteApi_mmi.cxx:836]: (style) The function 'IfESipRteApi_FindLocal' is never used.
+[eSipRteApi_mmi.cxx:997]: (style) The function 'IfESipRteApi_FindReason' is never used.
+[eSipRteApi_mmi.cxx:859]: (style) The function 'IfESipRteApi_FindRemote' is never used.
+[eSipRteApi_mmi.cxx:882]: (style) The function 'IfESipRteApi_FindRoute' is never used.
+[eSipRteApi_mmi.cxx:905]: (style) The function 'IfESipRteApi_FindRouteGroup' is never used.
+[eSipRteApi_mmi.cxx:928]: (style) The function 'IfESipRteApi_FindRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:951]: (style) The function 'IfESipRteApi_FindSpecialRouteSeq' is never used.
+[eSipRteApi.cxx:790]: (style) The function 'IfESipRteApi_FindTCPRoute' is never used.
+[eSipRteApi_mmi.cxx:1066]: (style) The function 'IfESipRteApi_FindTimer' is never used.
+[eSipRteApi_mmi.cxx:974]: (style) The function 'IfESipRteApi_FindTrGW' is never used.
+[eSipRteApi_mmi.cxx:1359]: (style) The function 'IfESipRteApi_GetAllEmer' is never used.
+[eSipRteApi_mmi.cxx:1331]: (style) The function 'IfESipRteApi_GetAllEnv' is never used.
+[eSipRteApi_mmi.cxx:1338]: (style) The function 'IfESipRteApi_GetAllEnv_LB' is never used.
+[eSipRteApi_mmi.cxx:1273]: (style) The function 'IfESipRteApi_GetAllLocal' is never used.
+[eSipRteApi_mmi.cxx:1323]: (style) The function 'IfESipRteApi_GetAllReason' is never used.
+[eSipRteApi_mmi.cxx:1281]: (style) The function 'IfESipRteApi_GetAllRemote' is never used.
+[eSipRteApi_mmi.cxx:1295]: (style) The function 'IfESipRteApi_GetAllRoute' is never used.
+[eSipRteApi_mmi.cxx:1288]: (style) The function 'IfESipRteApi_GetAllRouteGroup' is never used.
+[eSipRteApi_mmi.cxx:1302]: (style) The function 'IfESipRteApi_GetAllRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:1309]: (style) The function 'IfESipRteApi_GetAllSpecialRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:1345]: (style) The function 'IfESipRteApi_GetAllTimer' is never used.
+[eSipRteApi_mmi.cxx:1316]: (style) The function 'IfESipRteApi_GetAllTrGW' is never used.
+[eSipRteApi_mmi.cxx:1352]: (style) The function 'IfESipRteApi_GetAllTrace' is never used.
+[eSipRteApi.cxx:487]: (style) The function 'IfESipRteApi_GetLocalByTransport' is never used.
+[eSipRteApi.cxx:760]: (style) The function 'IfESipRteApi_GetReasonByRouteID' is never used.
+[eSipRteApi.cxx:536]: (style) The function 'IfESipRteApi_GetRemoteByTransport' is never used.
+[eSipRteApi.cxx:560]: (style) The function 'IfESipRteApi_GetRouteByLIDAndRID' is never used.
+[eSipRteApi.cxx:451]: (style) The function 'IfESipRteApi_GetRouteByTransport' is never used.
+[eSipRteApi.cxx:829]: (style) The function 'IfESipRteApi_InCrease1RouteCount' is never used.
+[eSipRteApi.cxx:847]: (style) The function 'IfESipRteApi_InCrease1SesCount' is never used.
+[eSipRteApi.cxx:188]: (style) The function 'IfESipRteApi_InCrease1TrGW' is never used.
+[eSipRteApi.cxx:39]: (style) The function 'IfESipRteApi_Init' is never used.
+[eSipRteApi.cxx:46]: (style) The function 'IfESipRteApi_InitForOnlyDisplay' is never used.
+[eSipRteApi.cxx:797]: (style) The function 'IfESipRteApi_IsNormalSysLoad' is never used.
+[eSipRteApi_mmi.cxx:798]: (style) The function 'IfESipRteApi_ModEmer' is never used.
+[eSipRteApi_mmi.cxx:690]: (style) The function 'IfESipRteApi_ModEnv' is never used.
+[eSipRteApi_mmi.cxx:726]: (style) The function 'IfESipRteApi_ModEnv_LB' is never used.
+[eSipRteApi_mmi.cxx:348]: (style) The function 'IfESipRteApi_ModLocal' is never used.
+[eSipRteApi_mmi.cxx:654]: (style) The function 'IfESipRteApi_ModReason' is never used.
+[eSipRteApi_mmi.cxx:385]: (style) The function 'IfESipRteApi_ModRemote' is never used.
+[eSipRteApi_mmi.cxx:457]: (style) The function 'IfESipRteApi_ModRoute' is never used.
+[eSipRteApi_mmi.cxx:420]: (style) The function 'IfESipRteApi_ModRouteGroup' is never used.
+[eSipRteApi_mmi.cxx:545]: (style) The function 'IfESipRteApi_ModRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:581]: (style) The function 'IfESipRteApi_ModSpecialRouteSeq' is never used.
+[eSipRteApi_mmi.cxx:762]: (style) The function 'IfESipRteApi_ModTimer' is never used.
+[eSipRteApi_mmi.cxx:617]: (style) The function 'IfESipRteApi_ModTrGW' is never used.
+[eSipRteApi.cxx:98]: (style) The function 'IfESipRteApi_NotifyTrGWStatus' is never used.
+[eSipRteApi.cxx:116]: (style) The function 'IfESipRteApi_PrintLog' is never used.
+[eSipRteApi.cxx:625]: (style) The function 'IfESipRteApi_RecvInitMsgByRouteID' is never used.
+[eSipRteApi.cxx:587]: (style) The function 'IfESipRteApi_RecvInitMsgByTransport' is never used.
+[eSipRteApi.cxx:283]: (style) The function 'IfESipRteApi_RecvOption' is never used.
+[eSipRteApi.cxx:269]: (style) The function 'IfESipRteApi_RecvOption200OK' is never used.
+[eSipRteApi.cxx:241]: (style) The function 'IfESipRteApi_SetCountTrGW' is never used.
+[eSipRteApi.cxx:75]: (style) The function 'IfESipRteApi_SetHAStatus' is never used.
+[eSipRteApi.cxx:511]: (style) The function 'IfESipRteApi_SetLocalStatusByTransport' is never used.
+[eSipRteApi.cxx:125]: (style) The function 'IfESipRteApi_SetLogLevel' is never used.
+[eSipRteApi.cxx:714]: (style) The function 'IfESipRteApi_SetRouteStatusByRouteID' is never used.
+[eSipRteApi.cxx:736]: (style) The function 'IfESipRteApi_SetRouteStatusByTransport' is never used.
+[eSipRteApi.cxx:859]: (style) The function 'IfESipRteApi_SetSesCount' is never used.
+[eSipRteApi.cxx:160]: (style) The function 'IfESipRteApi_SetTrGWStatus' is never used.
+[eSipRteApi.cxx:89]: (style) The function 'IfESipRteApi_SetUpNotifyChangeRouteStatus' is never used.
+[eSipRteApi.cxx:66]: (style) The function 'IfESipRteApi_SetUpSendOption' is never used.
+[eSipRteApi.cxx:80]: (style) The function 'IfESipRteApi_SetUpSendUpdate' is never used.
+[eSipRteApi.cxx:837]: (style) The function 'IfESipRteApi_SetZeroRouteCount' is never used.
+[eSipRteApi.cxx:841]: (style) The function 'IfESipRteApi_SetZeroRouteCount_All' is never used.
+[eSipRteApi.cxx:855]: (style) The function 'IfESipRteApi_SetZeroSesCount' is never used.
+[eSipRteQueue.hxx:132]: (style) The function 'IsEmpty' is never used.
+[eSipRteQueue.hxx:124]: (style) The function 'IsFull' is never used.
+[eSipRteUtil.cxx:72]: (style) The function 'MicroSleep' is never used.
+[eSipRteThread.cxx:110]: (style) The function 'SendUpdate' is never used.
+[eSipRteQueue.hxx:53]: (style) The function 'Signal' is never used.
+[eSipRteQueue.hxx:50]: (style) The function 'Wait' is never used.
+[eSipRteQueue.hxx:55]: (style) The function 'WillBlock' is never used.
+[NodeMgr.cxx:2939]: (style) The function 'g_fnAddNodeLoc' is never used.
+[NodeMgr.cxx:2977]: (style) The function 'g_fnAddNodeRmt' is never used.
+[NodeMgr.cxx:3015]: (style) The function 'g_fnAddNodeRte' is never used.
+[NodeMgr.cxx:3078]: (style) The function 'g_fnAddNodeSeq' is never used.
+[NodeMgr.cxx:3037]: (style) The function 'g_fnBlockNodeRte' is never used.
+[NodeMgr.cxx:2962]: (style) The function 'g_fnDelNodeLoc' is never used.
+[NodeMgr.cxx:2999]: (style) The function 'g_fnDelNodeRmt' is never used.
+[NodeMgr.cxx:3062]: (style) The function 'g_fnDelNodeRte' is never used.
+[NodeMgr.cxx:3106]: (style) The function 'g_fnDelNodeSeq' is never used.
+[NodeMgr.cxx:3121]: (style) The function 'g_fnModNodeSeq' is never used.
+[JsonFile.cxx:93]: (style) The function 'm_fnAddItem' is never used.
+[JsonFile.cxx:102]: (style) The function 'm_fnAddObject' is never used.
+[NodeMgr.cxx:2690]: (style) The function 'm_fnAutoRegiFromConInfo' is never used.
+[NodeMgr.cxx:2686]: (style) The function 'm_fnAutoRegisterNode' is never used.
+[NodeMgr.cxx:2843]: (style) The function 'm_fnAutoRemoveNode' is never used.
+[ConfigFile.cxx:1081]: (style) The function 'm_fnBeginCate' is never used.
+[JsonFile.cxx:184]: (style) The function 'm_fnBuildFile' is never used.
+[NodeMgr.cxx:2360]: (style) The function 'm_fnChangeConnectivity' is never used.
+[ConfigFile.cxx:256]: (style) The function 'm_fnChangeLastTime' is never used.
+[NodeMgr.cxx:2322]: (style) The function 'm_fnChangeMBlock' is never used.
+[ColumFile.cxx:42]: (style) The function 'm_fnChangeParamKeyword' is never used.
+[NodeMgr.cxx:2315]: (style) The function 'm_fnChangeSeqRate' is never used.
+[eSipRteUtil.cxx:1070]: (style) The function 'm_fnCheckSum' is never used.
+[NodeMgr.cxx:626]: (style) The function 'm_fnChgExtParam' is never used.
+[NodeMgr.cxx:2285]: (style) The function 'm_fnCountingRte' is never used.
+[eSipRteDBMgr.cxx:3329]: (style) The function 'm_fnDecisionRSeqBySpecialRSeq' is never used.
+[JsonFile.cxx:106]: (style) The function 'm_fnDel' is never used.
+[eSipRteUtil.cxx:513]: (style) The function 'm_fnDestroyShm' is never used.
+[ColumFile.cxx:301]: (style) The function 'm_fnE_PARSE_PARAMS' is never used.
+[ColumFile.cxx:281]: (style) The function 'm_fnE_PARSE_PARAMS_NONE' is never used.
+[ColumFile.cxx:106]: (style) The function 'm_fnE_PARSE_PARAM_NONE' is never used.
+[ColumFile.cxx:135]: (style) The function 'm_fnE_PARSE_PARAM_VAL' is never used.
+[eSipRteDBMgr.cxx:1372]: (style) The function 'm_fnEmerDelCheck' is never used.
+[eSipRteDBMgr.cxx:1360]: (style) The function 'm_fnEnvDelCheck' is never used.
+[NodeMgr.cxx:1317]: (style) The function 'm_fnGetCfgPath' is never used.
+[ConfigFile.cxx:634]: (style) The function 'm_fnGetComVal' is never used.
+[NodeMgr.hxx:416]: (style) The function 'm_fnGetNodeString' is never used.
+[NodeMgr.cxx:2303]: (style) The function 'm_fnGetRteCnt' is never used.
+[NodeMgr.cxx:2373]: (style) The function 'm_fnGetRteStatus' is never used.
+[NodeMgr.hxx:365]: (style) The function 'm_fnGetStatusNums' is never used.
+[NodeMgr.cxx:1322]: (style) The function 'm_fnGetStatusPath' is never used.
+[NodeMgr.cxx:2529]: (style) The function 'm_fnGetStatusString' is never used.
+[JsonFile.cxx:107]: (style) The function 'm_fnGetType' is never used.
+[ColumFile.hxx:139]: (style) The function 'm_fnGetUser' is never used.
+[NodeMgr.cxx:2025]: (style) The function 'm_fnIsChangedConfig' is never used.
+[ColumFile.cxx:549]: (style) The function 'm_fnIsChangedFile' is never used.
+[NodeMgr.cxx:2048]: (style) The function 'm_fnIsChangedStatus' is never used.
+[eSipRteUtil.cxx:756]: (style) The function 'm_fnIsNodeStatus' is never used.
+[eSipRteUtil.cxx:769]: (style) The function 'm_fnIsSipProtcolType' is never used.
+[NodeMgr.cxx:1440]: (style) The function 'm_fnLoadStatus' is never used.
+[eSipRte.hxx:137]: (style) The function 'm_fnMakeMod_Init' is never used.
+[ConfigFile.cxx:1085]: (style) The function 'm_fnNextCate' is never used.
+[eSipRteDBMgr.cxx:3818]: (style) The function 'm_fnNotifyAlarmSystemLoad' is never used.
+[eSipRteDBMgr.cxx:4473]: (style) The function 'm_fnPrint' is never used.
+[eSipRteDBMgr.cxx:258]: (style) The function 'm_fnPrintMap' is never used.
+[eSipRteDBMgr.cxx:1356]: (style) The function 'm_fnReasonDelCheck' is never used.
+[NodeMgr.cxx:2077]: (style) The function 'm_fnRefreshConnection' is never used.
+[NodeMgr.cxx:1509]: (style) The function 'm_fnReloadStatus' is never used.
+[ColumFile.cxx:230]: (style) The function 'm_fnRemoveParam' is never used.
+[NodeMgr.cxx:1315]: (style) The function 'm_fnSetJson' is never used.
+[NodeMgr.cxx:2013]: (style) The function 'm_fnSetNotifyChangedFileJson' is never used.
+[NodeMgr.cxx:2017]: (style) The function 'm_fnSetNotifyChangedFileStatus' is never used.
+[NodeMgr.cxx:2021]: (style) The function 'm_fnSetNotifyChangedFileStatusJson' is never used.
+[ColumFile.hxx:137]: (style) The function 'm_fnSetUser' is never used.
+[NodeMgr.cxx:339]: (style) The function 'm_fnSetUserObject' is never used.
+[eSipRteDBHandler.cxx:61]: (style) The function 'm_fnStop' is never used.
+[eSipRteDBMgr.cxx:1364]: (style) The function 'm_fnTimerDelCheck' is never used.
+[ConfigFile.cxx:815]: (style) The function 'm_fnTokenizeP' is never used.
+[ConfigFile.cxx:779]: (style) The function 'm_fnTokenizeS' is never used.
+[eSipRteDBMgr.cxx:1352]: (style) The function 'm_fnTrGWDelCheck' is never used.
+[eSipRteDBMgr.cxx:1368]: (style) The function 'm_fnTraceDelCheck' is never used.
+[eSipRteMgr.cxx:280]: (style) The function 'm_fnUpdateTrace' is never used.
+[NodeMgr.cxx:2061]: (style) The function 'm_fnWriteConfig' is never used.
+[eSipRteUtil.cxx:425]: (style) The function 'nAddrToszAddr' is never used.
+[eSipRteDBHandler.cxx:67]: (style) The function 'thread' is never used.
+(information) Cppcheck cannot find all the include files (use --check-config for details)

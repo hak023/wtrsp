@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/repos/vIBC/!svn/ver/1565/trunk/src/build
+END
+lndir.sh
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/repos/vIBC/!svn/ver/6/trunk/src/build/lndir.sh
+END
+BuildSystem.txt
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/6/trunk/src/build/BuildSystem.txt
+END
+hacksol
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/repos/vIBC/!svn/ver/6/trunk/src/build/hacksol
+END
+Makefile.all
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/repos/vIBC/!svn/ver/6/trunk/src/build/Makefile.all
+END
+mkbuildpaths
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/repos/vIBC/!svn/ver/6/trunk/src/build/mkbuildpaths
+END
+mkbuildlinks
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/repos/vIBC/!svn/ver/6/trunk/src/build/mkbuildlinks
+END
+contrib-tarball.sh
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/6/trunk/src/build/contrib-tarball.sh
+END
+Makefile.osarch
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/6/trunk/src/build/Makefile.osarch
+END
+Makefile.pkg
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/1565/trunk/src/build/Makefile.pkg
+END
+Makefile.post
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/557/trunk/src/build/Makefile.post
+END
+Makefile.pre
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/repos/vIBC/!svn/ver/6/trunk/src/build/Makefile.pre
+END
+release-tarball.sh
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/6/trunk/src/build/release-tarball.sh
+END
+Makefile.buildpaths
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/6/trunk/src/build/Makefile.buildpaths
+END
+vovida2bsd.sh
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/repos/vIBC/!svn/ver/6/trunk/src/build/vovida2bsd.sh
+END
+Makefile.tools
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/repos/vIBC/!svn/ver/6/trunk/src/build/Makefile.tools
+END
+fakepre
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/repos/vIBC/!svn/ver/6/trunk/src/build/fakepre
+END

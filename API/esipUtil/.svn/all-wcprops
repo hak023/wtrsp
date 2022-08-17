@@ -1,0 +1,707 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/repos/vIBC/!svn/ver/1977/trunk/src/API/esipUtil
+END
+bufferControl.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/760/trunk/src/API/esipUtil/bufferControl.hxx
+END
+KForking.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/694/trunk/src/API/esipUtil/KForking.hxx
+END
+fileControl.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1941/trunk/src/API/esipUtil/fileControl.cxx
+END
+ePoll.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/136/trunk/src/API/esipUtil/ePoll.hxx
+END
+transportDef.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/611/trunk/src/API/esipUtil/transportDef.hxx
+END
+ColumFile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/ColumFile.hxx
+END
+JsonK.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/JsonK.cxx
+END
+condition.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/condition.cxx
+END
+TreeCli.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1967/trunk/src/API/esipUtil/TreeCli.cxx
+END
+shm.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/1018/trunk/src/API/esipUtil/shm.cxx
+END
+NodeMgr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/NodeMgr.cxx
+END
+queueMonitor.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1389/trunk/src/API/esipUtil/queueMonitor.cxx
+END
+lock.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/lock.hxx
+END
+timerTable.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/timerTable.hxx
+END
+StlMap.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1104/trunk/src/API/esipUtil/StlMap.cxx
+END
+KSdpParse.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/670/trunk/src/API/esipUtil/KSdpParse.hxx
+END
+KSipParse.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/834/trunk/src/API/esipUtil/KSipParse.cxx
+END
+NodeMgr_MMI.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/173/trunk/src/API/esipUtil/NodeMgr_MMI.hxx
+END
+tcpTransport.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/611/trunk/src/API/esipUtil/tcpTransport.cxx
+END
+ConfigFile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/ConfigFile.cxx
+END
+DelLog.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1035/trunk/src/API/esipUtil/DelLog.cxx
+END
+thread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1460/trunk/src/API/esipUtil/thread.cxx
+END
+transportMgr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1458/trunk/src/API/esipUtil/transportMgr.hxx
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/1564/trunk/src/API/esipUtil/Makefile
+END
+queueThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1460/trunk/src/API/esipUtil/queueThread.cxx
+END
+flexIf.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1407/trunk/src/API/esipUtil/flexIf.cxx
+END
+HangDefine.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/1460/trunk/src/API/esipUtil/HangDefine.h
+END
+Cdr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/repos/vIBC/!svn/ver/662/trunk/src/API/esipUtil/Cdr.hxx
+END
+dataFile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/1114/trunk/src/API/esipUtil/dataFile.hxx
+END
+mem.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/mem.cxx
+END
+queue_Shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1029/trunk/src/API/esipUtil/queue_Shm.h
+END
+log.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/1790/trunk/src/API/esipUtil/log.cxx
+END
+TrafficCounter.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/TrafficCounter.hxx
+END
+TimeWheel.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/TimeWheel.cxx
+END
+json_debug.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_debug.hxx
+END
+idManager.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/158/trunk/src/API/esipUtil/idManager.cxx
+END
+KPacket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/652/trunk/src/API/esipUtil/KPacket.hxx
+END
+KSdpAttrParse.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/834/trunk/src/API/esipUtil/KSdpAttrParse.cxx
+END
+json_printbuf.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_printbuf.hxx
+END
+queue.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/1476/trunk/src/API/esipUtil/queue.hxx
+END
+define.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/131/trunk/src/API/esipUtil/define.cxx
+END
+json_linkhash.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_linkhash.cxx
+END
+ColumnStr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/761/trunk/src/API/esipUtil/ColumnStr.hxx
+END
+Tbb.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/1481/trunk/src/API/esipUtil/Tbb.h
+END
+SocketCom.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1123/trunk/src/API/esipUtil/SocketCom.hxx
+END
+timeUtil.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/695/trunk/src/API/esipUtil/timeUtil.cxx
+END
+socket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/socket.hxx
+END
+json_object_private.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_object_private.hxx
+END
+json_bits.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_bits.hxx
+END
+json_object.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_object.cxx
+END
+json_arraylist.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_arraylist.cxx
+END
+Directory.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1569/trunk/src/API/esipUtil/Directory.cxx
+END
+json_tokener.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_tokener.hxx
+END
+transportErr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/190/trunk/src/API/esipUtil/transportErr.cxx
+END
+udpTransport.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/190/trunk/src/API/esipUtil/udpTransport.cxx
+END
+string.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/string.cxx
+END
+SampleCli.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/647/trunk/src/API/esipUtil/SampleCli.cxx
+END
+bufferControl.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/760/trunk/src/API/esipUtil/bufferControl.cxx
+END
+KForking.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/694/trunk/src/API/esipUtil/KForking.cxx
+END
+ePoll.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/136/trunk/src/API/esipUtil/ePoll.cxx
+END
+json_util.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_util.hxx
+END
+JsonFile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/JsonFile.hxx
+END
+ColumFile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/ColumFile.cxx
+END
+ruleMgr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1788/trunk/src/API/esipUtil/ruleMgr.hxx
+END
+fileControl.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1523/trunk/src/API/esipUtil/fileControl.hxx
+END
+make.sh
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/1564/trunk/src/API/esipUtil/make.sh
+END
+lock.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/lock.cxx
+END
+JsonK.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/JsonK.hxx
+END
+condition.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/condition.hxx
+END
+TreeCli.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1976/trunk/src/API/esipUtil/TreeCli.hxx
+END
+KSdpParse.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/834/trunk/src/API/esipUtil/KSdpParse.cxx
+END
+shm.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/1018/trunk/src/API/esipUtil/shm.hxx
+END
+static.sh
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/1564/trunk/src/API/esipUtil/static.sh
+END
+NodeMgr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1868/trunk/src/API/esipUtil/NodeMgr.hxx
+END
+queueMonitor.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1029/trunk/src/API/esipUtil/queueMonitor.hxx
+END
+transportMgr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/1502/trunk/src/API/esipUtil/transportMgr.cxx
+END
+StlMap.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1104/trunk/src/API/esipUtil/StlMap.hxx
+END
+KSipParse.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/695/trunk/src/API/esipUtil/KSipParse.hxx
+END
+Cdr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/repos/vIBC/!svn/ver/791/trunk/src/API/esipUtil/Cdr.cxx
+END
+tcpTransport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/611/trunk/src/API/esipUtil/tcpTransport.hxx
+END
+dataFile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/1114/trunk/src/API/esipUtil/dataFile.cxx
+END
+ConfigFile.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/ConfigFile.hxx
+END
+DelLog.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/DelLog.hxx
+END
+thread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1460/trunk/src/API/esipUtil/thread.hxx
+END
+json.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json.hxx
+END
+TrafficCounter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/TrafficCounter.cxx
+END
+json_debug.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_debug.cxx
+END
+queueThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1867/trunk/src/API/esipUtil/queueThread.hxx
+END
+flexIf.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1407/trunk/src/API/esipUtil/flexIf.hxx
+END
+KPacket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/834/trunk/src/API/esipUtil/KPacket.cxx
+END
+json_printbuf.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_printbuf.cxx
+END
+mem.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/mem.hxx
+END
+ColumnStr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1094/trunk/src/API/esipUtil/ColumnStr.cxx
+END
+log.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/repos/vIBC/!svn/ver/1789/trunk/src/API/esipUtil/log.hxx
+END
+SocketCom.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/repos/vIBC/!svn/ver/1333/trunk/src/API/esipUtil/SocketCom.cxx
+END
+TimeWheel.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/73/trunk/src/API/esipUtil/TimeWheel.hxx
+END
+socket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/653/trunk/src/API/esipUtil/socket.cxx
+END
+clean.sh
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/repos/vIBC/!svn/ver/1422/trunk/src/API/esipUtil/clean.sh
+END
+idManager.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/158/trunk/src/API/esipUtil/idManager.hxx
+END
+KSdpAttrParse.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/834/trunk/src/API/esipUtil/KSdpAttrParse.hxx
+END
+define.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1510/trunk/src/API/esipUtil/define.hxx
+END
+json_linkhash.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_linkhash.hxx
+END
+json_tokener.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_tokener.cxx
+END
+timeUtil.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/683/trunk/src/API/esipUtil/timeUtil.hxx
+END
+transport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/190/trunk/src/API/esipUtil/transport.hxx
+END
+Makefile.static
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/1564/trunk/src/API/esipUtil/Makefile.static
+END
+json_config.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_config.hxx
+END
+json_object.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_object.hxx
+END
+json_util.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_util.cxx
+END
+json_arraylist.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/repos/vIBC/!svn/ver/664/trunk/src/API/esipUtil/json_arraylist.hxx
+END
+JsonFile.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/1923/trunk/src/API/esipUtil/JsonFile.cxx
+END
+Directory.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/repos/vIBC/!svn/ver/790/trunk/src/API/esipUtil/Directory.hxx
+END
+transportErr.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/190/trunk/src/API/esipUtil/transportErr.hxx
+END
+udpTransport.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/repos/vIBC/!svn/ver/190/trunk/src/API/esipUtil/udpTransport.hxx
+END
+string.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/repos/vIBC/!svn/ver/1341/trunk/src/API/esipUtil/string.hxx
+END
+FxData.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/652/trunk/src/API/esipUtil/FxData.hxx
+END
+ruleMgr.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/repos/vIBC/!svn/ver/1977/trunk/src/API/esipUtil/ruleMgr.cxx
+END

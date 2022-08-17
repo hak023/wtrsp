@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DllPlugInTester
+END
+DllPlugInTester.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DllPlugInTester/DllPlugInTester.cpp
+END
+DllPlugInTester.dsp
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DllPlugInTester/DllPlugInTester.dsp
+END
+.cvsignore
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/src/msvc6/DllPlugInTester/.cvsignore
+END

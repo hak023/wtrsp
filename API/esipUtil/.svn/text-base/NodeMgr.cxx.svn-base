@@ -1,0 +1,3124 @@
+#include <signal.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <sys/wait.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+#include "NodeMgr.hxx"
+
+namespace eSipUtil
+{
+char g_szDefNodeJson[]=
+"{                                                                                                                       \r\n"
+"	\"COMMENT\": \"TYPE=udp(0)/tcp(1)/tls(2)  MOD=server(0)/client(1)/accepted(2)\",                                 \r\n"  
+"	\"LOC\":                                                                                                         \r\n"
+"	[                                                                                                                \r\n"
+"		{\"ID\": \"1\",\"NAME\": \"iok_loc\",\"IP\": \"0.0.0.0\",\"PORT\": \"1\",\"TYPE\": \"0\",\"MOD\": \"0\"},\r\n"
+"	],                                                                                                               \r\n"
+"	\"RMT\":                                                                                                         \r\n"
+"	[                                                                                                                \r\n"
+"		{\"ID\": \"1\",\"NAME\": \"iok_rmt\",\"IP\": \"0.0.0.0\",\"PORT\": \"1\",\"TYPE\": \"0\"},               \r\n"
+"	],                                                                                                               \r\n"
+"	\"RTE\":                                                                                                         \r\n"
+"	[                                                                                                                \r\n"
+"		{\"ID\": \"1\",\"NAME\": \"iok_rte\",\"LOC\": \"1\",\"RMT\": \"1\",\"MBLK\": \"0\"},                     \r\n"
+"	],                                                                                                               \r\n"
+"	\"SEQ\":                                                                                                         \r\n"
+"	[                                                                                                                \r\n"
+"		{\"ID\": \"1\",\"NAME\": \"rte_cm\",\"RATIO\":[{\"RTE_ID\": \"1\",\"RATE\": \"2\"}]},                    \r\n"
+"	],                                                                                                               \r\n"
+"}                                                                                                                       \r\n";
+char g_szDefNodeStJson[]=
+"{                                                                                                    \r\n"
+"	\"COMMENT\": \"TYPE=udp(0)/tcp(1)/tls(2)  MOD=server(0)/client(1)/accepted(2)\",              \r\n"
+"	\"SAMPLE_LIST\":                                                                              \r\n"
+"	[                                                                                             \r\n"
+"		{                                                                                     \r\n"
+"			\"LIP\": \"0.0.0.0\",\"LPORT\": \"1\",\"RIP\": \"0.0.0.0\",\"RPORT\": \"1\",  \r\n"
+"			\"TYPE\": \"1\",\"FBLK\": \"0\",\"CNT\": \"0\",                               \r\n"
+"			\"CT\": \"0-0-0-0-0-0-0\",\"DT\": \"0-0-0-0-0-0-0\",                          \r\n"
+"			\"FSYNC\": \"1\",\"VM_ID\": \"SAMPLE01\",\"VM_TYPE\": \"SAMPLE\"              \r\n"
+"		},                                                                                    \r\n"
+"	],                                                                                            \r\n"
+"	\"CONNECTION_LIST\":                                                                          \r\n"
+"	[                                                                                             \r\n"
+"                                                                                                     \r\n"
+"	]                                                                                             \r\n"
+"}                                                                                                    \r\n";
+
+char g_szDefNode[]=
+"\r\n[LOC]\r\n"
+"# <LOC Category Sample>\r\n"
+"# TYPE = udp(0), tcp(1), tls(2)/  MOD= server(0), client(1), accepted(2)\r\n"
+"# ID=1, NAME=iok_loc, IP=x.x.x.x, PORT=5060, TYPE=0, MOD=0\r\n"
+"\r\n[RMT]\r\n"
+"# <RMT Category Sample>\r\n"
+"# TYPE = udp(0), tcp(1), tls(2)\r\n"
+"# ID=10, NAME=iok_rmt, IP=x.x.x.x, PORT=6000, TYPE=0\r\n"
+"\r\n[RTE]\r\n"
+"# <RTE Category Sample>\r\n"
+"# ID=100, NAME=iok_rte, LOC=1, RMT=10, MBLK=0\r\n"
+"\r\n[SEQ]\r\n"
+"# <SEQ Category Sample>\r\n"
+"# ID=1000, NAME=rte_cm, RATIO=100-2;101-5;[rte_id]-[rate];[rte_id]-[rate];...\r\n";
+char g_szDefNodeSt[]=
+"\r\n"
+"# <RTE Status Info>\r\n"
+"# TYPE = udp(0), tcp(1), tls(2)\r\n"
+"# LIP=0.0.0.0, LPORT=5060, RIP=0.0.0.0, RPORT=5070, TYPE=1, FBLK=0, CNT=998,"\
+" CT=2016-10-31-18-22-45, DT=2016-10-31-18-22-42\r\n"
+"\r\n";
+
+const char * s_arrNodeMgrErr[E_NODE_API_ERROR_MAX+1]=
+{
+	"E_NODE_API_ERROR_NONE",
+	"E_NODE_API_ERROR_INVALID_FILE",
+	"E_NODE_API_ERROR_INVALID_PARAM",
+	"E_NODE_API_ERROR_ADD_LOC_DUP",
+	"E_NODE_API_ERROR_ADD_RMT_DUP",
+	"E_NODE_API_ERROR_ADD_RTE_DUP",
+	"E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_LOC",
+	"E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_RMT",
+	"E_NODE_API_ERROR_ADD_SEQ_DUP",
+	"E_NODE_API_ERROR_ADD_SEQ_NOT_EXIST_RTE",
+	"E_NODE_API_ERROR_ADD_SEQ_DUP_RATIO",
+	"E_NODE_API_ERROR_DEL_LOC_NOT_EXIST",
+	"E_NODE_API_ERROR_DEL_RMT_NOT_EXIST",
+	"E_NODE_API_ERROR_DEL_RTE_NOT_EXIST",
+	"E_NODE_API_ERROR_DEL_SEQ_NOT_EXIST",
+	"E_NODE_API_ERROR_DEL_LOC_USING",
+	"E_NODE_API_ERROR_DEL_RMT_USING",
+	"E_NODE_API_ERROR_DEL_RTE_USING",
+	"E_NODE_API_ERROR_MOD_SEQ_NOT_EXIST",
+	"E_NODE_API_ERROR_MOD_SEQ_NOT_EXIST_RTE",
+	"E_NODE_API_ERROR_DECISION_NOT_FOUND_NODE",
+	"E_NODE_API_ERROR_DECISION_ALL_UNAVAILABLE",
+	"E_NODE_API_ERROR_DECISION_INTERNAL",
+	"E_NODE_API_ERROR_MAX"
+};
+const char * g_fnGetStringNodeErr(unsigned int _eT)
+{
+	if(_eT >= E_NODE_API_ERROR_NONE && _eT <= E_NODE_API_ERROR_MAX)
+		return s_arrNodeMgrErr[_eT];
+	return "Unknown_NodeErr";
+}
+static unsigned int s_fnGetNextRmtID(NodeMgr * _pclsMgr)
+{
+	ListItr_t clsItor; unsigned int unReturnID = 1;
+	NodeRmt * pclsRmt = _pclsMgr->m_fnBeginRmt(clsItor);
+	while(pclsRmt)
+	{
+		if(pclsRmt->m_unID >= unReturnID)
+			unReturnID = pclsRmt->m_unID;
+		pclsRmt = _pclsMgr->m_fnNextRmt(clsItor);
+	}
+	if(unReturnID + 1 == 0) return unReturnID +2;
+	return unReturnID+1;
+}
+static unsigned int s_fnGetNextRteID(NodeMgr * _pclsMgr)
+{
+	ListItr_t clsItor; unsigned int unReturnID = 1;
+	NodeRte * pclsRte = _pclsMgr->m_fnBeginRte(clsItor);
+	while(pclsRte)
+	{
+		if(pclsRte->m_unID >= unReturnID)
+			unReturnID = pclsRte->m_unID;
+		pclsRte =_pclsMgr->m_fnNextRte(clsItor);
+	}
+	if(unReturnID + 1 == 0) return unReturnID +2;
+	return unReturnID+1;
+}
+ static unsigned int s_fnGetNextSeqID(NodeMgr * _pclsMgr)
+{
+	ListItr_t clsItor; unsigned int unReturnID = 1;
+	NodeSeq * pclsSeq = _pclsMgr->m_fnBeginSeq(clsItor);
+	while(pclsSeq)
+	{
+		if(pclsSeq->m_unID >= unReturnID)
+			unReturnID = pclsSeq->m_unID;
+		pclsSeq = _pclsMgr->m_fnNextSeq(clsItor);
+	}
+	if(unReturnID + 1 == 0) return unReturnID +2;
+	return unReturnID+1;
+}
+ static void s_fnCatDepth(KString &_rclsBuff,unsigned int _unDepth)
+{
+	for(unsigned int i=0;i<_unDepth;i++)  _rclsBuff<<'\t';
+}
+/****************************** User Config Param ****************************************/
+NodeUserParam::NodeUserParam(){}
+NodeUserParam::~NodeUserParam(){}
+void NodeUserParam::m_fnBuild(KString & _rclsBuild, unsigned int _unDepth)
+{
+	if(m_clsKey.m_unRealLen > 0)
+	{
+		if(m_pclsOwner && m_pclsOwner->m_fnIsJson())
+		{
+			_rclsBuild<<"\""<<m_clsKey<<"\":\""<<m_clsVal<<"\"";
+		}
+		else
+		{
+			_rclsBuild<<(KCSTR)m_clsKey;
+			if(m_clsVal.m_unRealLen > 0) _rclsBuild<<"="<<(KCSTR)m_clsVal;
+		}
+	}
+}
+/***************************** User Config Param List **************************************/
+NodeUserParams::NodeUserParams(){}
+NodeUserParams::~NodeUserParams(){}
+NodeUserParams & NodeUserParams::operator=(NodeUserParams & _rclsSrc)
+{
+	m_listParams.m_fnClear();
+	ListItr_t stItor;NodeUserParam * pclsParam = (NodeUserParam*)_rclsSrc.m_listParams.m_fnBegin(stItor);
+	while(pclsParam)
+	{
+		m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+		pclsParam = (NodeUserParam*)_rclsSrc.m_listParams.m_fnNext(stItor);
+	}
+	return *this;
+}
+NodeUserParam * NodeUserParams::m_fnFind(const char * _pszKey)
+{
+	return (NodeUserParam*)m_listParams.m_fnFindNode(_pszKey);
+}
+const char * NodeUserParams::m_fnFindVal(const char * _pszKey)
+{
+	NodeUserParam * pclsParam = m_fnFind(_pszKey);
+	if(pclsParam==NULL) return NULL;
+	return (KCSTR)pclsParam->m_clsVal;
+}
+bool NodeUserParams::m_fnAdd(const char * _pszKey, const char * _pszVal)
+{
+	if(KString::m_fnStrLen(_pszKey)==0) return false;
+	NodeUserParam * pclsNew = new NodeUserParam;
+	pclsNew->m_pclsOwner = m_pclsOwner;
+	pclsNew->m_fnSetKey(_pszKey);
+	pclsNew->m_clsKey = _pszKey; pclsNew->m_clsVal = _pszVal;
+	return m_listParams.m_fnPushBack(pclsNew,true);
+}
+bool NodeUserParams::m_fnDel(const char * _pszKey)
+{
+	return m_listParams.m_fnDelNode(_pszKey);
+}
+void NodeUserParams::m_fnBuild(KString & _rclsBuild,unsigned int _unDepth)
+{
+	ListItr_t rclsItor;NodeUserParam * pclsFind = (NodeUserParam*)m_listParams.m_fnBegin(rclsItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(_rclsBuild,_unDepth);
+		pclsFind = (NodeUserParam*)m_listParams.m_fnNext(rclsItor);
+		if(pclsFind) _rclsBuild<<(KCSTR)", ";
+	}
+}
+/*********************************** LOC **********************************************/
+NodeLoc::NodeLoc(NodeMgr * _pclsOwner)
+{
+	m_unID=0;m_unPort=0;m_eType=0;m_eMod=0;m_pclsUserObject=NULL;m_pclsOwner=_pclsOwner;
+	m_clsUserParams.m_pclsOwner = _pclsOwner;
+}
+NodeLoc::~NodeLoc(){if(m_pclsUserObject) delete m_pclsUserObject;}
+NodeLoc & NodeLoc::operator=(NodeLoc & _rclsSrc)
+{
+	m_unID = _rclsSrc.m_unID;
+	m_clsName = _rclsSrc.m_clsName;
+	m_clsIP = _rclsSrc.m_clsIP;
+	m_unPort = _rclsSrc.m_unPort;
+	m_eType = _rclsSrc.m_eType;   
+	m_eMod = _rclsSrc.m_eMod;     
+	m_clsUserParams = _rclsSrc.m_clsUserParams; 
+	//m_pclsUserObject = _rclsSrc.m_pclsUserObject;
+	//_rclsSrc.m_pclsUserObject = NULL;
+	//m_pclsOwner = _rclsSrc.m_pclsOwner;
+	return *this;
+}
+bool NodeLoc::operator==(NodeLoc & _rclsSrc)
+{
+	if(m_unID == _rclsSrc.m_unID) return true;
+	else if(m_clsName == _rclsSrc.m_clsName) return true;
+	else if(m_clsIP == _rclsSrc.m_clsIP && m_unPort == _rclsSrc.m_unPort
+		   && m_eType == _rclsSrc.m_eType) return true;
+	return false;
+}
+bool NodeLoc::operator==(Net5Tuple & _rclsSrc)
+{
+	if((m_clsIP == (KCSTR)&_rclsSrc.m_szLocalIp[0]) && 
+		(m_unPort == (unsigned int)_rclsSrc.m_nLocalPort) &&
+		(m_eType == (unsigned int)_rclsSrc.m_eTransportType)) return true;
+	return false;
+}
+void NodeLoc::m_fnCopyStruct(NodeMgrLocReq_t & _rstReq)
+{
+	_rstReq.m_nID = m_unID;
+	strncpy(_rstReq.m_szName,(KSTR)m_clsName,NodeMgrLocReq_t::E_NAME_SZ-1);
+	strncpy(_rstReq.m_szIp,(KSTR)m_clsIP,NodeMgrLocReq_t::E_IP_SZ-1);
+	_rstReq.m_nPort = m_unPort;
+	_rstReq.m_eProto = m_eType;
+	_rstReq.m_eMode = m_eMod;
+}
+void NodeLoc::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCSTR)"[LOC] ID: "<<(KUINT)m_unID<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Name: "<<(KCSTR)m_clsName<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"IP: "<<(KCSTR)m_clsIP<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Port: "<<(KUINT)m_unPort<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Type: "<<(KUINT)m_eType<<(KCSTR)", ";
+	if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+	_rclsDebug<<(KCSTR)"Mod: "<<(KUINT)m_eMod<<(KCSTR)"\r\n";
+	else
+	{
+		_rclsDebug<<(KCSTR)"Mod: "<<(KUINT)m_eMod<<(KCSTR)", ";
+		m_clsUserParams.m_fnBuild(_rclsDebug);
+		_rclsDebug<<(KCSTR)"\r\n";
+	}
+}
+void NodeLoc::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		s_fnCatDepth(_rclsBuild, _unDepth); 
+		_rclsBuild<<"{";
+		JsonK::m_fnBuildItem(_rclsBuild,"ID",m_unID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"NAME",m_clsName);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"IP",m_clsIP);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"PORT",m_unPort);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"TYPE",m_eType);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"MOD",m_eMod);
+		if(m_clsUserParams.m_listParams.m_fnGetSize() > 0)
+		{
+			_rclsBuild<<", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild,_unDepth);
+		}
+		_rclsBuild<<"}";
+	}
+	else
+	{
+		_rclsBuild<<(KCSTR)"ID="<<(KUINT)m_unID<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"NAME="<<(KCSTR)m_clsName<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"IP="<<(KCSTR)m_clsIP<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"PORT="<<(KUINT)m_unPort<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"TYPE="<<(KUINT)m_eType<<(KCSTR)", ";
+		if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+		_rclsBuild<<(KCSTR)"MOD= "<<(KUINT)m_eMod<<(KCSTR)"\r\n";
+		else
+		{
+			_rclsBuild<<(KCSTR)"MOD= "<<(KUINT)m_eMod<<(KCSTR)", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild,_unDepth);
+			_rclsBuild<<(KCSTR)"\r\n";
+		}
+	}
+}
+bool NodeLoc::m_fnValid(ENodeMgrApiError_t * _peError)
+{
+	if(m_unID==0 || m_clsName.m_unRealLen==0|| m_clsIP.m_unRealLen==0 || m_unPort==0 || m_eType > 2 ||
+		m_eMod > 2 || m_pclsOwner == NULL)
+	{
+		if(_peError) * _peError = E_NODE_API_ERROR_INVALID_PARAM;
+		return false;
+	}
+	else
+	{	
+		ListItr_t itrFind; NodeLoc * pclsFind = m_pclsOwner->m_fnBeginLoc(itrFind);
+		while(pclsFind)
+		{
+			if(*this == *pclsFind)
+			{
+				if(_peError) * _peError = E_NODE_API_ERROR_ADD_LOC_DUP;
+				return false;
+			}
+			pclsFind = m_pclsOwner->m_fnNextLoc(itrFind);
+		}
+	}
+	return true;
+}
+void NodeLoc::m_fnSetUserObject(StlObject * _pclsNewUserObj) 
+{
+	if(m_pclsUserObject) delete m_pclsUserObject;
+	m_pclsUserObject = _pclsNewUserObj;
+}
+bool NodeLoc::m_fnAddExtParam(const char * _pszKey, KString _clsVal)
+{
+	return m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+}
+const char * NodeLoc::m_fnFindExtParam(const char * _pszKey)
+{
+	return m_clsUserParams.m_fnFindVal(_pszKey);
+}
+/*********************************** RMT ***********************************************/
+NodeRmt::NodeRmt(NodeMgr * _pclsOwner)
+{
+	m_unID=0;m_unPort=0;m_eType=0;m_pclsUserObject = NULL;m_pclsOwner=_pclsOwner;
+	m_clsUserParams.m_pclsOwner = _pclsOwner;
+}
+NodeRmt::~NodeRmt(){if(m_pclsUserObject) delete m_pclsUserObject;}
+NodeRmt & NodeRmt::operator=(NodeRmt & _rclsSrc)
+{
+	m_unID = _rclsSrc.m_unID;
+	m_clsName = (KCSTR)_rclsSrc.m_clsName;
+	m_clsIP = (KCSTR)_rclsSrc.m_clsIP;
+	m_unPort = _rclsSrc.m_unPort;
+	m_eType = _rclsSrc.m_eType;    
+	m_clsUserParams = _rclsSrc.m_clsUserParams;
+	//m_pclsUserObject = _rclsSrc.m_pclsUserObject;
+	//_rclsSrc.m_pclsUserObject = NULL;
+	//m_pclsOwner = _rclsSrc.m_pclsOwner;
+	return *this;
+}
+bool NodeRmt::operator==(NodeRmt & _rclsSrc)
+{
+	if(m_unID == _rclsSrc.m_unID) return true;
+	else if(m_clsName == _rclsSrc.m_clsName) return true;
+	else if(m_clsIP == _rclsSrc.m_clsIP && m_unPort == _rclsSrc.m_unPort
+		   && m_eType == _rclsSrc.m_eType) return true;
+	return false;
+}
+bool NodeRmt::operator==(Net5Tuple & _rclsSrc)
+{
+	if((m_clsIP == (KCSTR)&_rclsSrc.m_szRemoteIp[0]) && 
+		(m_unPort == (unsigned int)_rclsSrc.m_nRemotePort) &&
+		(m_eType == (unsigned int)_rclsSrc.m_eTransportType)) return true;
+	return false;
+}
+void NodeRmt::m_fnCopyStruct(NodeMgrRmtReq_t & _rstReq)
+{
+	_rstReq.m_nID = m_unID;
+	strncpy(_rstReq.m_szName,(KSTR)m_clsName,NodeMgrRmtReq_t::E_NAME_SZ-1);
+	strncpy(_rstReq.m_szIp,(KSTR)m_clsIP,NodeMgrRmtReq_t::E_IP_SZ-1);
+	_rstReq.m_nPort = m_unPort;
+	_rstReq.m_eProto = m_eType;
+}
+void NodeRmt::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCSTR)"[RMT] ID: "<<(KUINT)m_unID<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Name: "<<(KCSTR)m_clsName<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"IP: "<<(KCSTR)m_clsIP<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Port: "<<(KUINT)m_unPort<<(KCSTR)", ";
+	if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+	_rclsDebug<<(KCSTR)"Type: "<<(KUINT)m_eType<<(KCSTR)"\r\n";
+	else
+	{
+		_rclsDebug<<(KCSTR)"Type: "<<(KUINT)m_eType<<(KCSTR)", ";
+		m_clsUserParams.m_fnBuild(_rclsDebug);
+		_rclsDebug<<(KCSTR)"\r\n";
+	}
+}
+void NodeRmt::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		s_fnCatDepth(_rclsBuild, _unDepth);
+		_rclsBuild<<"{";
+		JsonK::m_fnBuildItem(_rclsBuild,"ID",m_unID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"NAME",m_clsName);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"IP",m_clsIP);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"PORT",m_unPort);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"TYPE",m_eType);
+		if(m_clsUserParams.m_listParams.m_fnGetSize() > 0)
+		{
+			_rclsBuild<<", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild,_unDepth+1);
+		}
+		_rclsBuild<<"}";
+	}
+	else
+	{
+		_rclsBuild<<(KCSTR)"ID="<<(KUINT)m_unID<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"NAME="<<(KCSTR)m_clsName<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"IP="<<(KCSTR)m_clsIP<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"PORT="<<(KUINT)m_unPort<<(KCSTR)", ";
+		if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+		_rclsBuild<<(KCSTR)"TYPE="<<(KUINT)m_eType<<(KCSTR)"\r\n";
+		else
+		{
+			_rclsBuild<<(KCSTR)"TYPE="<<(KUINT)m_eType<<(KCSTR)", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild);
+			_rclsBuild<<(KCSTR)"\r\n";
+		}
+	}
+}
+bool NodeRmt::m_fnValid(ENodeMgrApiError_t * _peError)
+{
+	if(m_unID==0 || m_clsName.m_unRealLen==0 || m_clsIP.m_unRealLen==0 || m_unPort==0 || m_eType > 2
+		|| m_pclsOwner == NULL)
+	{
+		if(_peError) * _peError = E_NODE_API_ERROR_INVALID_PARAM;
+		return false;
+	}
+	else
+	{	
+		ListItr_t itrFind; NodeRmt * pclsFind = m_pclsOwner->m_fnBeginRmt(itrFind);
+		while(pclsFind)
+		{
+			if(*this == *pclsFind)
+			{
+				if(_peError) * _peError = E_NODE_API_ERROR_ADD_RMT_DUP;
+				return false;
+			}
+			pclsFind = m_pclsOwner->m_fnNextRmt(itrFind);
+		}
+	}
+	return true;
+}
+void NodeRmt::m_fnSetUserObject(StlObject * _pclsNewUserObj) 
+{
+	if(m_pclsUserObject) delete m_pclsUserObject;
+	m_pclsUserObject = _pclsNewUserObj;
+}
+bool NodeRmt::m_fnAddExtParam(const char * _pszKey, KString _clsVal)
+{
+	return m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+}
+const char * NodeRmt::m_fnFindExtParam(const char * _pszKey)
+{
+	return m_clsUserParams.m_fnFindVal(_pszKey);
+}
+/*********************************** RTE ***********************************************/
+NodeRte::NodeRte(NodeMgr * _pclsOwner)
+{
+	m_unID=0;m_unLocID=0;m_unRmtID=0;m_unMBlock = 1;m_pclsUserObject = NULL;
+	m_pclsOwner=_pclsOwner;m_unRegiTime=0;
+	m_clsUserParams.m_pclsOwner = _pclsOwner;
+}
+NodeRte::~NodeRte(){if(m_pclsUserObject) delete m_pclsUserObject;}
+NodeRte & NodeRte::operator=(NodeRte & _rclsSrc)
+{
+	m_unID = _rclsSrc.m_unID;
+	m_clsName = (KCSTR)_rclsSrc.m_clsName;
+	m_unLocID = _rclsSrc.m_unLocID;
+	m_unRmtID = _rclsSrc.m_unRmtID;
+	m_unMBlock = _rclsSrc.m_unMBlock;                        
+	m_clsUserParams = _rclsSrc.m_clsUserParams;           
+	//m_pclsUserObject = _rclsSrc.m_pclsUserObject;                 
+	//_rclsSrc.m_pclsUserObject = NULL;
+	m_unRegiTime = _rclsSrc.m_unRegiTime;
+	m_stAddr = _rclsSrc.m_stAddr;
+	//m_pclsOwner = _rclsSrc.m_pclsOwner;
+	return *this;
+}
+bool NodeRte::operator==(NodeRte & _rclsSrc)
+{
+	if(m_unID == _rclsSrc.m_unID) return true;
+	else if(m_clsName == _rclsSrc.m_clsName) return true;
+	return false;
+}
+void NodeRte::m_fnCopyStruct(NodeMgrRteReq_t & _rstReq)
+{
+	_rstReq.m_nID = m_unID;
+	strncpy(_rstReq.m_szName,(KSTR)m_clsName,NodeMgrRmtReq_t::E_NAME_SZ-1);
+	_rstReq.m_nLocID = m_unLocID;
+	_rstReq.m_nRmtID = m_unRmtID;
+	_rstReq.m_nMBlock = m_unMBlock;
+	_rstReq.m_nFBlock = m_fnGetFBlock();
+	_rstReq.m_nCnt = m_fnGetCnt();
+}
+void NodeRte::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCSTR)"[RTE] ID: "<<(KUINT)m_unID<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Name: "<<(KCSTR)m_clsName<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"LOC: "<<(KUINT)m_unLocID<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"RMT: "<<(KUINT)m_unRmtID<<(KCSTR)", ";
+	if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+		_rclsDebug<<(KCSTR)"MBLK: "<<(KUINT)m_unMBlock<<(KCSTR)"\r\n";
+	else
+	{
+		_rclsDebug<<(KCSTR)"MBLK: "<<(KUINT)m_unMBlock<<(KCSTR)", ";
+		m_clsUserParams.m_fnBuild(_rclsDebug);
+		_rclsDebug<<(KCSTR)"\r\n";
+	}
+}
+void NodeRte::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		s_fnCatDepth(_rclsBuild, _unDepth);
+		_rclsBuild<<"{";
+		JsonK::m_fnBuildItem(_rclsBuild,"ID",m_unID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"NAME",m_clsName);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"LOC",m_unLocID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"RMT",m_unRmtID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"MBLK",m_unMBlock);
+		if(m_clsUserParams.m_listParams.m_fnGetSize() > 0)
+		{
+			_rclsBuild<<", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild,_unDepth+1);
+		}
+		_rclsBuild<<"}";
+	}
+	else
+	{
+		_rclsBuild<<(KCSTR)"ID="<<(KUINT)m_unID<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"NAME="<<(KCSTR)m_clsName<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"LOC="<<(KUINT)m_unLocID<<(KCSTR)", ";
+		_rclsBuild<<(KCSTR)"RMT="<<(KUINT)m_unRmtID<<(KCSTR)", ";
+		if(m_clsUserParams.m_listParams.m_fnGetSize() == 0)
+		{
+			_rclsBuild<<(KCSTR)"MBLK="<<(KUINT)m_unMBlock<<(KCSTR)"\r\n";
+		}
+		else
+		{
+			_rclsBuild<<(KCSTR)"MBLK="<<(KUINT)m_unMBlock<<(KCSTR)", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild);
+			_rclsBuild<<(KCSTR)"\r\n";
+		}
+	}
+}
+unsigned int NodeRte::m_fnGetFBlock()
+{
+	if(m_pclsOwner == NULL) return 0;
+	NodeConnection *pclsCon = m_pclsOwner->m_fnFindConnection(m_stAddr);
+	if(pclsCon == NULL) return 1;
+	return pclsCon->m_unFBlock;
+}
+unsigned int NodeRte::m_fnGetCnt()
+{
+	if(m_pclsOwner == NULL) return 0;
+	NodeConnection *pclsCon = m_pclsOwner->m_fnFindConnection(m_stAddr);
+	if(pclsCon == NULL) return 0;
+	return pclsCon->m_unCurrentCnt;
+}
+bool NodeRte::m_fnValid(ENodeMgrApiError_t * _peError)
+{
+	if(m_pclsOwner==NULL) return false;
+	if(m_unID==0 || m_clsName.m_unRealLen == 0|| m_unLocID==0 || m_unRmtID==0)
+	{
+		if(_peError) * _peError = E_NODE_API_ERROR_INVALID_PARAM;
+		return false;
+	}
+	else if(m_pclsOwner->m_fnFindRmt(m_unRmtID)==NULL)
+	{
+		if(_peError) * _peError = E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_RMT;
+		return false;
+	}
+	else if(m_pclsOwner->m_fnFindLoc(m_unLocID)==NULL)
+	{
+		if(_peError) * _peError = E_NODE_API_ERROR_ADD_RTE_NOT_EXIST_LOC;
+		return false;
+	}
+	else
+	{	
+		ListItr_t itrFind; NodeRte * pclsFind = m_pclsOwner->m_fnBeginRte(itrFind);
+		while(pclsFind)
+		{
+			if(*this == *pclsFind)
+			{
+				if(_peError) * _peError = E_NODE_API_ERROR_ADD_RTE_DUP;
+				return false;
+			}
+			pclsFind = m_pclsOwner->m_fnNextRte(itrFind);
+		}
+	}
+	return true;
+}
+void NodeRte::m_fnSetUserObject(StlObject * _pclsNewUserObj) 
+{
+	if(m_pclsUserObject) delete m_pclsUserObject;
+	m_pclsUserObject = _pclsNewUserObj;
+}
+bool NodeRte::m_fnAddExtParam(const char * _pszKey, KString _clsVal)
+{
+	return m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+}
+bool NodeRte::m_fnChgExtParam(const char * _pszKey, KString _clsVal)
+{
+	NodeUserParam * pclsParam = m_clsUserParams.m_fnFind(_pszKey);
+	if(pclsParam)
+	{
+		if(pclsParam->m_clsVal == _clsVal)
+		{
+			return false;
+		}
+		else
+		{
+			pclsParam->m_clsVal = _clsVal; return true;
+		}
+	}
+	else
+	{
+		if(KString::m_fnStrCmp(_pszKey,DEF_VM_ID)==0)
+		{
+			if(m_pclsOwner)
+			{
+				NodeRte * pclsRte = m_pclsOwner->m_fnFindRteFromVmID((KCSTR)_clsVal);
+				if(pclsRte)
+				{
+					ENodeMgrApiError_t eError; 
+					m_pclsOwner->m_fnDelRte(pclsRte->m_unID,&eError);
+					LogInternal(E_LOG_INFO,"Remove Dup Rte, %s, %s",(KCSTR)_clsVal, 
+															g_fnGetStringNodeErr(eError));
+				}
+			}
+			if(m_fnFindExtParam(DEF_VM_ID)==NULL)
+			{
+				m_unRegiTime = (unsigned int)time(NULL);char szTime[20];
+				memset(szTime,0x00,20);
+				CfgFileInfo::m_fnGetTimeString(m_unRegiTime, szTime);
+				m_clsUserParams.m_fnAdd(DEF_VM_TIME,szTime);
+			}
+		}
+		return m_fnAddExtParam(_pszKey,(KCSTR)_clsVal);
+	}
+}
+const char * NodeRte::m_fnFindExtParam(const char * _pszKey)
+{
+	return m_clsUserParams.m_fnFindVal(_pszKey);
+}
+/*********************************** RATE **********************************************/
+NodeRatio::NodeRatio(NodeMgr * _pclsOwner)
+{
+	m_unRteID=0;m_unRate=0;m_unToken=0;m_pclsRte=NULL;
+	m_pclsOwner = _pclsOwner;
+}
+NodeRatio::~NodeRatio(){}
+bool NodeRatio::m_fnIsMax()
+{
+	Lock clsAuto(m_clsLock,Lock::E_LOCK_TYPE_READ);
+	if(m_unRate == m_unToken) return true;
+	else return false;
+}
+void NodeRatio::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KUINT)m_unRteID<<(KCSTR)"-"<<(KUINT)m_unRate<<(KCSTR)";";
+}
+void NodeRatio::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		_rclsBuild<<"{\"RTE_ID\":\""<<(KUINT)m_unRteID<<"\", ";
+		_rclsBuild<<"\"RATE\":\""<<(KUINT)m_unRate<<"\"}";
+	}
+	else
+	{
+		_rclsBuild<<(KUINT)m_unRteID<<(KCSTR)"-"<<(KUINT)m_unRate<<(KCSTR)";";
+	}
+}
+/*********************************** SEQ ***********************************************/
+NodeSeq::NodeSeq(NodeMgr * _pclsOwner)
+{
+	m_unID=0;m_pclsHead = NULL;m_pclsTail = NULL;m_pclsCurrent = NULL;m_unCnt=0;
+	m_pclsUserObject = NULL;m_pclsOwner=_pclsOwner;
+	m_clsUserParams.m_pclsOwner = _pclsOwner;
+}
+NodeSeq::~NodeSeq(){m_fnClear();}
+NodeSeq & NodeSeq::operator=(NodeSeq & _rclsSrc)
+{
+	m_fnClear();
+	m_unID = _rclsSrc.m_unID;
+	m_clsName = (KCSTR)_rclsSrc.m_clsName;
+	m_clsUserParams = _rclsSrc.m_clsUserParams; // additional user config params
+	//m_pclsUserObject = _rclsSrc.m_pclsUserObject;
+	//_rclsSrc.m_pclsUserObject = NULL;	
+	//m_pclsOwner = _rclsSrc.m_pclsOwner;
+	NodeRatio * pclsFind = _rclsSrc.m_pclsHead; ENodeMgrApiError_t eError;
+	for(unsigned int i=0;i<_rclsSrc.m_unCnt;i++)
+	{
+		if(pclsFind)
+		{
+			if(!m_fnAddRatio(pclsFind->m_unRteID,pclsFind->m_unRate, &eError))
+			{
+				LogInternal(E_LOG_ERR,"[%s] NodeSeq Copy Fail %s",__func__,g_fnGetStringNodeErr(eError));
+			}
+			pclsFind = pclsFind->m_pclsNext;
+		}
+	}
+	return *this;
+}
+void NodeSeq::m_fnClear()
+{
+	if(m_pclsHead)
+	{
+		NodeRatio * pclsDel = m_pclsHead;
+		NodeRatio * pclsNext=m_pclsHead;
+		for(unsigned int i=0;i<m_unCnt;i++)
+		{
+			pclsNext = pclsDel->m_pclsNext;
+			delete pclsDel;
+			pclsDel = pclsNext;
+		}
+	}
+	m_pclsHead = NULL; m_pclsTail=NULL;m_pclsCurrent=NULL;m_unCnt=0;
+	if(m_pclsUserObject) {delete m_pclsUserObject; m_pclsUserObject=NULL;}
+}
+bool NodeSeq::operator==(NodeSeq & _rclsSrc)
+{
+	if(m_unID == _rclsSrc.m_unID) return true;
+	else if(m_clsName == _rclsSrc.m_clsName) return true;
+	return false;
+}
+void NodeSeq::m_fnCopyStruct(NodeMgrSeqReq_t & _rstReq)
+{
+	_rstReq.m_nID = m_unID;
+	strncpy(_rstReq.m_szName,(KSTR)m_clsName,NodeMgrSeqReq_t::E_NAME_SZ-1);
+	_rstReq.m_nRatioNum = m_unCnt;
+	NodeRatio * pclsFind = m_pclsHead; 
+	if(pclsFind == NULL) return;
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind == NULL) break;
+		if(NodeMgrSeqReq_t::E_RATE_NUMS >= i) break;
+		_rstReq.m_arrRatio[i].m_nRteID = pclsFind->m_unRteID;
+		_rstReq.m_arrRatio[i].m_nRatio = pclsFind->m_unRate;
+		pclsFind = pclsFind->m_pclsNext;
+	}
+}
+bool NodeSeq::m_fnAddRatio(unsigned int _unRteID, unsigned int _unRate,
+								ENodeMgrApiError_t * _peError)
+{
+	if(m_pclsOwner==NULL)return false;
+	NodeRte * pclsRte = m_pclsOwner->m_fnFindRte(_unRteID);
+	if(pclsRte==NULL)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_ADD_SEQ_NOT_EXIST_RTE;
+		return false;
+	}
+	NodeRatio * pclsNew = m_fnAddList(_unRteID);
+	if(pclsNew == NULL)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_ADD_SEQ_DUP_RATIO;
+		return false;
+	}
+	pclsNew->m_unRteID = _unRteID; pclsNew->m_unRate = _unRate;pclsNew->m_fnSetKey(_unRteID);
+	pclsNew->m_pclsRte = pclsRte;
+	return true;
+}
+NodeRatio * NodeSeq::m_fnAddList(unsigned int _unRteID)
+{
+	if(m_pclsHead == NULL)
+	{
+		m_pclsHead = new NodeRatio(m_pclsOwner); m_pclsTail = m_pclsHead;
+		m_pclsHead->m_pclsPrev = m_pclsTail;
+		m_pclsHead->m_pclsNext = m_pclsTail;
+		m_pclsTail->m_pclsPrev = m_pclsHead;
+		m_pclsTail->m_pclsNext = m_pclsHead;
+		m_clsLock.m_fnWriteLock();
+		m_pclsCurrent = m_pclsHead;
+		m_clsLock.m_fnUnlock();
+		m_unCnt++;
+		return m_pclsHead;
+	}
+	else
+	{
+		if(m_fnFindList(_unRteID)) return NULL;
+		NodeRatio * pclsNew = new NodeRatio(m_pclsOwner);
+		m_pclsTail->m_pclsNext = pclsNew;
+		pclsNew->m_pclsPrev = m_pclsTail;
+		pclsNew->m_pclsNext = m_pclsHead;
+		m_pclsHead->m_pclsPrev = pclsNew;
+		m_pclsTail = pclsNew;
+		m_clsLock.m_fnWriteLock();
+		m_pclsCurrent = m_pclsHead;
+		m_clsLock.m_fnUnlock();
+		m_unCnt++;
+		return pclsNew;
+	}
+}
+NodeRatio * NodeSeq::m_fnFindList(unsigned int _unRteID)
+{
+	if(m_pclsHead==NULL) return NULL;
+	NodeRatio * pclsFind = m_pclsHead; 
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind->m_unRteID == _unRteID) return pclsFind;
+		pclsFind = pclsFind->m_pclsNext;
+	}
+	return NULL;
+}
+bool NodeSeq::m_fnDelList(unsigned int _unRteID)
+{
+	if(m_unCnt == 0) return false;
+	else if(m_unCnt == 1)
+	{
+		if(m_pclsHead->m_unRteID != _unRteID) return false;
+		delete m_pclsHead;
+		m_pclsHead = NULL; m_pclsTail = NULL;m_pclsCurrent = NULL;m_unCnt = 0;
+	}
+	else if(m_unCnt == 2)
+	{
+		if(m_pclsHead->m_unRteID == _unRteID)      // header case
+		{
+			delete m_pclsHead;
+			m_unCnt = 1;
+			m_pclsHead = m_pclsTail;
+			m_pclsHead->m_pclsPrev = m_pclsTail;
+			m_pclsHead->m_pclsNext = m_pclsTail;
+			m_pclsTail->m_pclsPrev = m_pclsHead;
+			m_pclsTail->m_pclsNext = m_pclsHead;
+			m_clsLock.m_fnWriteLock();
+			m_pclsCurrent = m_pclsHead;
+			m_clsLock.m_fnUnlock();
+		}
+		else if (m_pclsTail->m_unRteID == _unRteID)    // tail case
+		{
+			delete m_pclsTail;
+			m_unCnt = 1;
+			m_pclsTail = m_pclsHead;
+			m_pclsHead->m_pclsPrev = m_pclsTail;
+			m_pclsHead->m_pclsNext = m_pclsTail;
+			m_pclsTail->m_pclsPrev = m_pclsHead;
+			m_pclsTail->m_pclsNext = m_pclsHead;
+			m_clsLock.m_fnWriteLock();
+			m_pclsCurrent = m_pclsHead;
+			m_clsLock.m_fnUnlock();
+		}
+		else return false;
+	}
+	else
+	{
+		NodeRatio * pclsDel = NULL;	NodeRatio * pclsPrev = NULL;
+		NodeRatio * pclsNext = NULL;
+		if(m_pclsHead->m_unRteID == _unRteID)     // head case
+		{
+			pclsDel = m_pclsHead;
+			pclsPrev = m_pclsHead->m_pclsPrev;
+			pclsNext = m_pclsHead->m_pclsNext;
+			pclsPrev->m_pclsNext = pclsNext;
+			pclsNext->m_pclsPrev = pclsPrev;
+			m_pclsHead = pclsNext;
+			m_pclsTail = pclsPrev;
+			m_clsLock.m_fnWriteLock();
+			m_pclsCurrent = m_pclsHead;
+			m_clsLock.m_fnUnlock();
+			delete pclsDel;
+			m_unCnt--;
+		}
+		else if(m_pclsTail->m_unRteID == _unRteID)     // tail case
+		{
+			pclsDel = m_pclsTail;
+			pclsPrev = m_pclsTail->m_pclsPrev;
+			pclsNext = m_pclsTail->m_pclsNext;
+			pclsPrev->m_pclsNext = pclsNext;
+			pclsNext->m_pclsPrev = pclsPrev;
+			m_pclsHead = pclsNext;
+			m_pclsTail = pclsPrev;
+			m_clsLock.m_fnWriteLock();
+			m_pclsCurrent = m_pclsHead;
+			m_clsLock.m_fnUnlock();
+			delete pclsDel;
+			m_unCnt--;
+		}
+		else                                                            // center case
+		{
+			pclsDel = m_fnFindList(_unRteID);
+			if(pclsDel == NULL) return false;
+			pclsPrev = pclsDel->m_pclsPrev;
+			pclsNext = pclsDel->m_pclsNext;
+			pclsPrev->m_pclsNext = pclsNext;
+			pclsNext->m_pclsPrev = pclsPrev;
+			m_clsLock.m_fnWriteLock();
+			m_pclsCurrent = m_pclsHead;
+			m_clsLock.m_fnUnlock();
+			delete pclsDel;
+			m_unCnt--;
+		}
+	}
+	return true;
+}
+unsigned int NodeSeq::m_fnDecisionRteID(Net5Tuple & _rstResult, ENodeMgrApiError_t * _peErr)
+{
+	unsigned int unDecRteID = 0;
+	m_clsLock.m_fnWriteLock();
+	if(m_pclsCurrent==NULL || m_pclsOwner == NULL)
+	{
+		LogInternal(E_LOG_ERR,"[%s] Current Ratio is Null, Owner = %p",__func__,m_pclsOwner);
+		m_clsLock.m_fnUnlock();
+		if(_peErr) *_peErr = E_NODE_API_ERROR_DECISION_INTERNAL;
+		return 0;
+	}
+	else
+	{
+		NodeRatio * pclsRate = m_pclsCurrent;
+		NodeRte * pclsRte = NULL; 
+		for(unsigned int i=0;i<m_unCnt;i++)
+		{
+			if(pclsRate)
+			{
+				pclsRte = pclsRate->m_pclsRte;
+				LogInternal(E_LOG_INFO,"Rte[%u], Rate[%u], Tok[%u], FBLK[%s], MBLK[%s]",
+								pclsRate->m_unRteID,
+								pclsRate->m_unRate,
+								pclsRate->m_unToken,
+								DEF_CFG_TRUE_SELECT(pclsRte->m_fnGetFBlock()==0,"Unblock","Block"),
+								DEF_CFG_TRUE_SELECT(pclsRte->m_unMBlock==0,"Unblock","Block"));
+				if(pclsRte==NULL)
+				{
+					LogInternal(E_LOG_ERR,"[%s] Illegal Ratio Configure..",__func__);
+					goto Jump_Next_Route;
+				}
+				else if(pclsRate->m_fnIsMax()               // circle token is fulled
+						||pclsRate->m_unRate == 0     // ratio is zero
+						|| pclsRte->m_unMBlock == 1   // manual block is true
+						|| pclsRte->m_fnGetFBlock()== 1)   // status is fault block)
+				{
+					goto Jump_Next_Route;
+				}
+				else
+				{
+					m_pclsOwner->m_fnGetAddressFromRteID(pclsRate->m_unRteID,_rstResult);
+					unDecRteID = pclsRate->m_unRteID;
+					pclsRate->m_fnIncre();
+					if(pclsRate->m_fnIsMax())
+					{
+						pclsRate = pclsRate->m_pclsNext;
+						pclsRate->m_fnClearTok();	
+						m_pclsCurrent = pclsRate;
+					}
+					LogInternal(E_LOG_INFO,"Decision Result : %u",unDecRteID);
+					m_clsLock.m_fnUnlock();
+					if(_peErr) *_peErr = E_NODE_API_ERROR_NONE;
+					return unDecRteID;
+				}
+				Jump_Next_Route:
+				pclsRate = pclsRate->m_pclsNext;
+				if(pclsRate==NULL)
+				{
+					LogInternal(E_LOG_ERR,"[%s] Circle List Flagmented.",__func__);return 0;
+				}
+				pclsRate->m_fnClearTok();	
+				m_pclsCurrent = pclsRate;
+			}
+		}
+		if(unDecRteID ==0)
+		{
+			LogInternal(E_LOG_ERR,"[%s] All Unavailable",__func__);
+			if(_peErr) *_peErr = E_NODE_API_ERROR_DECISION_ALL_UNAVAILABLE;
+		}
+	}
+	m_clsLock.m_fnUnlock();
+	if(_peErr) *_peErr = E_NODE_API_ERROR_DECISION_ALL_UNAVAILABLE;
+	return 0;
+}
+bool NodeSeq::m_fnIsEixstRte(unsigned int _unRte)
+{
+	NodeRatio * pclsFind = m_pclsHead; 
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind)
+		{
+			if(pclsFind->m_unRteID == _unRte) return true;
+			pclsFind = pclsFind->m_pclsNext;
+		}
+	}
+	return false;
+}
+bool NodeSeq::m_fnIsEixstLoc(unsigned int _unLoc)
+{
+	if(m_pclsOwner == NULL) return false;
+	NodeRatio * pclsFind = m_pclsHead; 
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind)
+		{
+			NodeRte * pclsRte = m_pclsOwner->m_fnFindRte(pclsFind->m_unRteID);
+			if(pclsRte)
+			{
+				if(pclsRte->m_unLocID == _unLoc) return true;
+			}
+			pclsFind = pclsFind->m_pclsNext;
+		}
+	}
+	return false;
+}
+void NodeSeq::m_fnDebug(KString &_rclsDebug)
+{
+	if(m_pclsHead==NULL) return;
+	_rclsDebug<<(KCSTR)"[SEQ] ID: "<<(KUINT)m_unID<<(KCSTR)", ";
+	_rclsDebug<<(KCSTR)"Name: "<<(KCSTR)m_clsName<<(KCSTR)", ";
+	NodeRatio * pclsFind = m_pclsHead; 
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind)
+		{
+			pclsFind->m_fnDebug(_rclsDebug);
+			pclsFind = pclsFind->m_pclsNext;
+		}
+	}
+	if(m_clsUserParams.m_listParams.m_fnGetSize() > 0)
+	{
+		_rclsDebug<<(KCSTR)", ";
+		m_clsUserParams.m_fnBuild(_rclsDebug);
+		
+	}
+	_rclsDebug<<(KCSTR)"\r\n";
+}
+void NodeSeq::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsHead==NULL) return;
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		s_fnCatDepth(_rclsBuild,_unDepth); 
+		_rclsBuild<<"{";
+		JsonK::m_fnBuildItem(_rclsBuild,"ID",m_unID);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"NAME",m_clsName);_rclsBuild<<", ";
+		_rclsBuild<<(KCSTR)"\"RATIO\":[";
+		NodeRatio * pclsFind = m_pclsHead; 
+		for(unsigned int i=0;i<m_unCnt;i++)
+		{
+			if(pclsFind)
+			{
+				pclsFind->m_fnBuild(_rclsBuild,_unDepth+1);
+				pclsFind = pclsFind->m_pclsNext;
+				if(i < m_unCnt-1) _rclsBuild<<", ";
+			}
+		}
+		_rclsBuild<<"]}";
+	}
+	else
+	{
+		_rclsBuild<<(KCSTR)"ID="<<(KUINT)m_unID<<", ";
+		_rclsBuild<<(KCSTR)"NAME="<<(KCSTR)m_clsName<<", ";
+		_rclsBuild<<(KCSTR)"RATIO=";
+		NodeRatio * pclsFind = m_pclsHead; 
+		for(unsigned int i=0;i<m_unCnt;i++)
+		{
+			if(pclsFind)
+			{
+				pclsFind->m_fnBuild(_rclsBuild);
+				pclsFind = pclsFind->m_pclsNext;
+			}
+		}
+		if(m_clsUserParams.m_listParams.m_fnGetSize() > 0)
+		{
+			_rclsBuild<<(KCSTR)", ";
+			m_clsUserParams.m_fnBuild(_rclsBuild);
+			
+		}
+		_rclsBuild<<(KCSTR)"\r\n";
+	}
+}
+bool NodeSeq::m_fnValid(ENodeMgrApiError_t * _peError)
+{
+	if(m_pclsOwner == NULL) return false;
+	NodeRatio * pclsFind = m_pclsHead; 
+	for(unsigned int i=0;i<m_unCnt;i++)
+	{
+		if(pclsFind)
+		{
+			if(pclsFind->m_unRteID==0)
+			{
+				if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+				return false;
+			}
+			if(m_pclsOwner->m_fnFindRte(pclsFind->m_unRteID)==NULL)
+			{
+				if(_peError) *_peError = E_NODE_API_ERROR_ADD_SEQ_NOT_EXIST_RTE;
+				return false;
+			}
+			pclsFind = pclsFind->m_pclsNext;
+		}
+	}
+	ListItr_t itrFind;NodeSeq * pclsSeq = m_pclsOwner->m_fnBeginSeq(itrFind);
+	while(pclsSeq)
+	{
+		if(*this == *pclsSeq)
+		{
+			if(_peError) *_peError = E_NODE_API_ERROR_ADD_SEQ_DUP;
+			return false;
+		}
+		pclsSeq = m_pclsOwner->m_fnNextSeq(itrFind);
+	}
+	return true;
+}
+void NodeSeq::m_fnSetUserObject(StlObject * _pclsNewUserObj) 
+{
+	if(m_pclsUserObject) delete m_pclsUserObject;
+	m_pclsUserObject = _pclsNewUserObj;
+}
+bool NodeSeq::m_fnAddExtParam(const char * _pszKey,KString _clsVal)
+{
+	return m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+}
+const char * NodeSeq::m_fnFindExtParam(const char * _pszKey)
+{
+	return m_clsUserParams.m_fnFindVal(_pszKey);
+}
+/*********************************** Connection Info **************************************/
+NodeConnection::NodeConnection(NodeMgr * _pclsOwner)
+{
+	m_pclsOwner = _pclsOwner;m_unFBlock = 0;m_unCurrentCnt=0;
+	m_unLastConnectedTime=0;m_unLastDisconnectedTime=0;
+	memset(m_szLastConnectedTime,0x00,20);memset(m_szLastDisconnectedTime,0x00,20);
+	m_pclsUserObject = NULL;m_bInit = false;
+	m_clsUserParams.m_pclsOwner = _pclsOwner;
+}
+NodeConnection::~NodeConnection(){if(m_pclsUserObject) delete m_pclsUserObject;}
+void NodeConnection::m_fnBuild(KString &_rclsBuild,unsigned int _unDepth)
+{
+	if(m_pclsOwner==NULL) return;
+	if(m_pclsOwner->m_fnIsJson())
+	{
+		s_fnCatDepth(_rclsBuild,_unDepth); _rclsBuild<<"{\r\n";
+		s_fnCatDepth(_rclsBuild,_unDepth+1);
+		if(m_stAddr.m_szLocalIp[0] == 0)
+		{
+			JsonK::m_fnBuildItem(_rclsBuild,"LIP","0.0.0.0");_rclsBuild<<", ";
+		}
+		else
+		{
+			JsonK::m_fnBuildItem(_rclsBuild,"LIP",m_stAddr.m_szLocalIp);_rclsBuild<<", ";
+		}
+		JsonK::m_fnBuildItem(_rclsBuild,"LPORT",m_stAddr.m_nLocalPort);_rclsBuild<<", ";
+		if(m_stAddr.m_szRemoteIp[0] == 0)
+		{
+			JsonK::m_fnBuildItem(_rclsBuild,"RIP","0.0.0.0");_rclsBuild<<", ";
+		}
+		else
+		{
+			JsonK::m_fnBuildItem(_rclsBuild,"RIP",m_stAddr.m_szRemoteIp);_rclsBuild<<", ";
+		}
+		JsonK::m_fnBuildItem(_rclsBuild,"RPORT",m_stAddr.m_nRemotePort);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"TYPE",m_stAddr.m_eTransportType);_rclsBuild<<",\r\n";
+		if(m_szLastConnectedTime[0] != 0)
+		{
+			s_fnCatDepth(_rclsBuild,_unDepth+1);
+			JsonK::m_fnBuildItem(_rclsBuild,"CT",m_szLastConnectedTime);_rclsBuild<<",\r\n";
+		}
+		if(m_szLastDisconnectedTime[0] != 0)
+		{
+			s_fnCatDepth(_rclsBuild,_unDepth+1);
+			JsonK::m_fnBuildItem(_rclsBuild,"DT",m_szLastDisconnectedTime);_rclsBuild<<",\r\n";
+		}
+		s_fnCatDepth(_rclsBuild,_unDepth+1);
+		JsonK::m_fnBuildItem(_rclsBuild,"FBLK",m_unFBlock);_rclsBuild<<", ";
+		JsonK::m_fnBuildItem(_rclsBuild,"CNT",m_unCurrentCnt);
+		if(m_clsUserParams.m_listParams.m_fnGetSize()==0)
+		{
+			_rclsBuild<<"\r\n";
+		}
+		else
+		{
+			_rclsBuild<<",\r\n";
+			s_fnCatDepth(_rclsBuild,_unDepth+1);
+			m_clsUserParams.m_fnBuild(_rclsBuild, _unDepth+1);
+			_rclsBuild<<"\r\n";
+		}
+		s_fnCatDepth(_rclsBuild,_unDepth); _rclsBuild<<"}";
+	}
+}
+void NodeConnection::m_fnSetConnectivity(bool _bConnect,bool * _pbChanged)
+{
+	char szAddr[256];
+	if(_bConnect)
+	{
+		if(m_unFBlock)
+		{
+			m_unFBlock = 0;
+			m_unLastConnectedTime = (unsigned int)time(NULL);
+			memset(m_szLastConnectedTime,0x00,20);
+			CfgFileInfo::m_fnGetTimeString(m_unLastConnectedTime, m_szLastConnectedTime);
+			LogInternal(E_LOG_INFO,"[%s] Connection UnBlock %s",__func__,m_stAddr.getStr(szAddr, 256,true));
+			if(_pbChanged) * _pbChanged = true;
+		}
+		else
+		{
+			if(m_bInit == false)
+			{
+				m_unLastConnectedTime = (unsigned int)time(NULL);
+				memset(m_szLastConnectedTime,0x00,20);
+				CfgFileInfo::m_fnGetTimeString(m_unLastConnectedTime, m_szLastConnectedTime);
+				LogInternal(E_LOG_INFO,"[%s] Init Connection UnBlock %s",__func__,m_stAddr.getStr(szAddr, 256,true));
+				if(_pbChanged) * _pbChanged = true;
+			}
+			else
+			{
+				if(_pbChanged) * _pbChanged = false;
+			}
+		}
+	}
+	else
+	{
+		if(m_unFBlock==0)
+		{
+			m_unFBlock = 1;
+			m_unLastDisconnectedTime = (unsigned int)time(NULL);
+			memset(m_szLastDisconnectedTime,0x00,20);
+			CfgFileInfo::m_fnGetTimeString(m_unLastDisconnectedTime, m_szLastDisconnectedTime);
+			if(m_bInit == false)
+				LogInternal(E_LOG_INFO,"[%s] Init Connection Block %s",__func__,m_stAddr.getStr(szAddr, 256,true));
+			else
+				LogInternal(E_LOG_INFO,"[%s] Connection Block %s",__func__,m_stAddr.getStr(szAddr, 256,true));
+			if(_pbChanged) * _pbChanged = true;
+		}
+		else
+		{
+			if(_pbChanged) * _pbChanged = false;
+		}
+	}
+	if(m_bInit == false) m_bInit = true;
+}
+bool NodeConnection::m_fnAddExtParam(const char * _pszKey, KString _clsVal)
+{
+	NodeUserParam * pclsParam = m_clsUserParams.m_fnFind(_pszKey);
+	if(pclsParam)
+	{
+		return false;
+	}
+	else
+	{
+		bool bRet = m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+		if(m_pclsOwner)
+		{
+			m_pclsOwner->m_fnWriteNodeStatus();
+		}
+		return bRet;
+	}
+}
+void NodeConnection::m_fnChgExtParam(const char * _pszKey, KString _clsVal)
+{
+	NodeUserParam * pclsParam = m_clsUserParams.m_fnFind(_pszKey);
+	if(pclsParam)
+	{
+		if(pclsParam->m_clsVal == _clsVal)
+		{
+			// No Changed
+		}
+		else
+		{
+			pclsParam->m_clsVal = _clsVal;
+			if(m_pclsOwner) m_pclsOwner->m_fnWriteNodeStatus();
+		}
+	}
+	else
+	{
+		if(KString::m_fnStrCmp(_pszKey,DEF_VM_ID)==0)
+		{
+			if(m_pclsOwner)
+			{
+				NodeConnection * pclsCon = m_pclsOwner->m_fnFindConnectionFromVmID((KCSTR)_clsVal);
+				if(pclsCon)
+				{
+					Net5Tuple stAddr = pclsCon->m_stAddr;
+					m_pclsOwner->m_fnDelCon(stAddr);
+					char szAddr[256];
+					LogInternal(E_LOG_INFO,"Remove Dup ID %s, %s",(KCSTR)_clsVal, stAddr.getStr(szAddr,256,true));
+				}
+			}
+		}
+		m_clsUserParams.m_fnAdd(_pszKey,(KCSTR)_clsVal);
+		if(m_pclsOwner) m_pclsOwner->m_fnWriteNodeStatus();
+	}
+}
+const char * NodeConnection::m_fnFindExtParam(const char * _pszKey)
+{
+	return m_clsUserParams.m_fnFindVal(_pszKey);
+}
+/*********************************** Node MGR ******************************************/
+NodeMgr::NodeMgr(){m_bJson = false;}
+NodeMgr::NodeMgr(NodeMgr & _rclsSrc)
+{
+	m_fnStoreFully(_rclsSrc);
+}
+NodeMgr::~NodeMgr(){}
+void NodeMgr::m_fnSetJson(){m_bJson = true;}
+bool NodeMgr::m_fnIsJson(){return m_bJson;}
+const char * NodeMgr::m_fnGetCfgPath()
+{
+	if(m_fnIsJson()) return (KCSTR)m_clsJsonCfg.m_clsFileName;
+	return (KCSTR)m_clsColumFile.m_clsPath;
+}
+const char * NodeMgr::m_fnGetStatusPath()
+{
+	if(m_fnIsJson()) return (KCSTR)m_clsJsonStatus.m_clsFileName;
+	return (KCSTR)m_clsStatus.m_clsPath;
+}
+NodeMgr & NodeMgr::operator=(NodeMgr & _rclsSrc)
+{
+	m_fnStoreFully(_rclsSrc);
+	return *this;
+}
+void NodeMgr::m_fnStoreFully(NodeMgr & _rclsSrc)
+{
+	m_fnClearAll();
+	LogInternal(E_LOG_INFO,"NodeMgr Copy");
+	ENodeMgrApiError_t eError;
+	ListItr_t itrLoc;NodeLoc * pclsLoc = _rclsSrc.m_fnBeginLoc(itrLoc);
+	while(pclsLoc)
+	{
+		NodeLoc * pclsNewLoc = new NodeLoc(this);*pclsNewLoc = *pclsLoc;
+		pclsNewLoc->m_pclsOwner = this; pclsNewLoc->m_pclsOwner = this;
+		if(!m_fnAddLoc(pclsNewLoc,&eError)) 
+			LogInternal(E_LOG_ERR,"Node Mgr LOC Copy Error : %s",g_fnGetStringNodeErr(eError));
+		pclsLoc = _rclsSrc.m_fnNextLoc(itrLoc);
+	}
+	ListItr_t itrRmt;NodeRmt * pclsRmt = _rclsSrc.m_fnBeginRmt(itrRmt);
+	while(pclsRmt)
+	{
+		NodeRmt * pclsNewRmt = new NodeRmt(this);*pclsNewRmt = *pclsRmt;
+		pclsNewRmt->m_pclsOwner = this;pclsNewRmt->m_pclsOwner = this;
+		if(!m_fnAddRmt(pclsNewRmt,&eError)) 
+			LogInternal(E_LOG_ERR,"Node Mgr RMT Copy Error : %s",g_fnGetStringNodeErr(eError));
+		pclsRmt = _rclsSrc.m_fnNextRmt(itrRmt);
+	}
+	ListItr_t itrRte;NodeRte * pclsRte = _rclsSrc.m_fnBeginRte(itrRte);
+	while(pclsRte)
+	{
+		NodeRte * pclsNewRte = new NodeRte(this);*pclsNewRte = *pclsRte;
+		pclsNewRte->m_pclsOwner = this;pclsNewRte->m_pclsOwner = this;
+		if(!m_fnAddRte(pclsNewRte,&eError)) 
+			LogInternal(E_LOG_ERR,"Node Mgr RTE Copy Error : %s",g_fnGetStringNodeErr(eError));
+		pclsRte = _rclsSrc.m_fnNextRte(itrRte);
+	}
+	ListItr_t itrSeq;NodeSeq * pclsSeq = _rclsSrc.m_fnBeginSeq(itrSeq);
+	while(pclsSeq)
+	{
+		NodeSeq * pclsNewSeq = new NodeSeq(this);*pclsNewSeq = *pclsSeq;
+		pclsNewSeq->m_pclsOwner = this;
+		if(!m_fnAddSeq(pclsNewSeq,&eError)) 
+			LogInternal(E_LOG_ERR,"Node Mgr SEQ Copy Error : %s",g_fnGetStringNodeErr(eError));
+		pclsSeq = _rclsSrc.m_fnNextSeq(itrSeq);
+	}
+}
+bool NodeMgr::m_fnLoadConfig(const char * _pszPath,ENodeMgrApiError_t * _peError)
+{
+	if(m_fnIsJson())
+	{
+		if(m_clsJsonCfg.m_fnLoadFile(_pszPath,g_szDefNodeJson))
+		{
+			if(m_fnLoadDB(_peError))
+			{
+				KString clsDebug; m_fnDebug(clsDebug);
+				LogInternal(E_LOG_ERR, "Node Mgr load Info : %s\r\n%s",_pszPath,(KCSTR)clsDebug);
+				return true;
+			}
+			return false;
+		}
+		LogInternal(E_LOG_ERR, "Node Mgr Loading Fail, [%s]",_pszPath);
+		if(_peError) *_peError = E_NODE_API_ERROR_INVALID_FILE;
+	}
+	else
+	{
+		if(m_clsColumFile.m_fnLoadConfig(_pszPath,g_szDefNode))
+		{
+			if(m_fnLoadDB(_peError))
+			{
+				KString clsDebug; m_fnDebug(clsDebug);
+				LogInternal(E_LOG_ERR, "Node Mgr load Info : %s\r\n%s",_pszPath,(KCSTR)clsDebug);
+				KString clsStatusPath; clsStatusPath<<(KCSTR)_pszPath<<(KCSTR)"_status";
+				m_clsStatus.m_clsPath = (KCSTR)clsStatusPath;
+				return true;
+			}
+			return false;
+		}
+		LogInternal(E_LOG_ERR, "Node Mgr Loading Fail, [%s]",_pszPath);
+		if(_peError) *_peError = E_NODE_API_ERROR_INVALID_FILE;
+	}
+	return false;
+}
+bool NodeMgr::m_fnReLoadConfig(ENodeMgrApiError_t * _peError)
+{
+	m_fnClearAll();
+	if(m_fnIsJson())
+	{
+		if(m_fnLoadDB(_peError))
+		{
+			KString clsDebug; m_fnDebug(clsDebug);
+			LogInternal(E_LOG_ERR, "Node Mgr load Info : %s\r\n%s",
+												(KCSTR)m_clsJsonCfg.m_clsFileName,(KCSTR)clsDebug);
+			return true;
+		}
+		LogInternal(E_LOG_ERR, "Node Mgr ReLoading Fail. Empty Path");
+		if(_peError) *_peError = E_NODE_API_ERROR_INVALID_FILE;
+		return false;
+	}
+	else
+	{
+		if(m_fnLoadDB(_peError))
+		{
+			KString clsDebug; m_fnDebug(clsDebug);
+			LogInternal(E_LOG_ERR, "Node Mgr Reload Info \r\n%s",(KCSTR)clsDebug);
+			return true;
+		}
+		LogInternal(E_LOG_ERR, "Node Mgr ReLoading Fail. Empty Path");
+		if(_peError) *_peError = E_NODE_API_ERROR_INVALID_FILE;
+		return false;
+	}
+	return false;
+}
+bool NodeMgr::m_fnLoadStatus(const char * _pszPath,ENodeStatusAction _eAction)
+{
+	NodeConnection * pclsCon = NULL;MapStrItr_t stItor; bool bRet = false;
+	if(_eAction == E_NODE_STATUS_ACTION_APPLY)
+	{
+		if(m_fnIsJson())
+		{
+			bRet = m_clsJsonStatus.m_fnLoadFile(_pszPath,g_szDefNodeStJson);
+		}
+		else
+			bRet = m_clsStatus.m_fnLoadConfig(_pszPath, g_szDefNodeSt);
+		bRet |= m_fnLoadStatusDB();
+		pclsCon = m_fnBeginConnection(stItor);
+		while(pclsCon)
+		{
+			pclsCon->m_unFBlock = 1;
+			if(pclsCon->m_unLastDisconnectedTime==0)
+			{
+				pclsCon->m_unLastDisconnectedTime = (unsigned int)time(NULL);
+				memset(pclsCon->m_szLastDisconnectedTime,0x00,20);
+				CfgFileInfo::m_fnGetTimeString(pclsCon->m_unLastDisconnectedTime,
+													pclsCon->m_szLastDisconnectedTime);
+			}
+			pclsCon = m_fnNextConnection(stItor);
+		}
+		m_fnWriteNodeStatus();
+	}
+	else if(_eAction == E_NODE_STATUS_ACTION_CLEAR)
+	{
+		if(m_fnIsJson())
+		{
+			bRet = m_clsJsonStatus.m_fnLoadFile(_pszPath,g_szDefNodeStJson);
+			m_clsJsonStatus.m_fnClear();m_mapConnections.m_fnClear();
+			bRet |= m_clsJsonStatus.m_fnWriteFile(g_szDefNodeStJson);
+		}
+		else
+		{
+			bRet = m_clsStatus.m_fnLoadConfig(_pszPath, g_szDefNodeSt);
+			m_clsStatus.m_fnClearLine();m_mapConnections.m_fnClear();
+			bRet |= m_clsStatus.m_fnWriteFile(g_szDefNodeSt);
+		}
+	}
+	else if(_eAction == E_NODE_STATUS_ACTION_READONLY)
+	{
+		if(m_fnIsJson())
+		{
+			bRet = m_clsJsonStatus.m_fnLoadFile(_pszPath,g_szDefNodeStJson);
+		}
+		else
+			bRet = m_clsStatus.m_fnLoadConfig(_pszPath, g_szDefNodeSt);
+		bRet |= m_fnLoadStatusDB();
+	}
+	else
+	{
+		if(m_fnIsJson())
+		{
+			bRet = m_clsJsonStatus.m_fnLoadFile(_pszPath,g_szDefNodeStJson);
+			m_clsJsonStatus.m_fnClear();m_mapConnections.m_fnClear();
+			bRet |= m_clsJsonStatus.m_fnWriteFile(g_szDefNodeStJson);
+		}
+		else
+		{
+			bRet = m_clsStatus.m_fnLoadConfig(_pszPath, g_szDefNodeSt);
+			m_clsStatus.m_fnClearLine();m_mapConnections.m_fnClear();
+			bRet = m_clsStatus.m_fnWriteFile(g_szDefNodeSt);
+		}
+	}
+	return bRet;
+}
+bool NodeMgr::m_fnReloadStatus()
+{
+	bool bRet = false;
+	if(m_fnIsJson())
+	{
+		bRet = m_clsJsonStatus.m_fnReLoadFile(g_szDefNodeStJson);
+	}
+	else	bRet = m_clsStatus.m_fnReLoadingConfig(g_szDefNodeSt);
+	bRet |= m_fnLoadStatusDB();
+	return bRet;
+}
+bool NodeMgr::m_fnLoadDB(ENodeMgrApiError_t * _peError)
+{
+	if(m_fnIsJson())
+	{
+		ListItr_t stItor;ListItr_t stItor2;ListItr_t stItor3; bool bFound = false;unsigned int unParamCnt = 0;
+		//------> LOC Group
+		JsonFileObject * pclsParams = NULL; JsonFileObject * pclsParam = NULL;
+		JsonFileObject * pclsLocGrp = m_clsJsonCfg.m_fnGetObject("LOC");
+		if(pclsLocGrp == NULL)
+		{
+			LogInternal(E_LOG_ERR,"Not Found LOC->LIST Object");
+			//if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+			//return false;
+		}
+		if(pclsLocGrp)
+		{
+			pclsParams = pclsLocGrp->m_fnBeginItor(stItor);
+			while(pclsParams)
+			{
+				NodeLoc * pclsLoc = new NodeLoc(this); unParamCnt= 0;
+				pclsParam = pclsParams->m_fnBeginItor(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsJKey == (KCSTR)"ID") 
+						{pclsLoc->m_unID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"NAME")
+						{pclsLoc->m_clsName = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"IP")
+						{pclsLoc->m_clsIP = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"PORT")
+						{pclsLoc->m_unPort = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"TYPE")
+						{pclsLoc->m_eType = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"MOD")
+						{pclsLoc->m_eMod = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else
+						pclsLoc->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsJKey,(KCSTR)pclsParam->m_clsJData);
+					pclsParam = pclsParam->m_fnNextItor(stItor2);
+				}
+				if(unParamCnt < 6)
+				{
+					delete pclsLoc;
+					LogInternal(E_LOG_ERR,"Loc E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddLoc(pclsLoc,_peError) == false) return false;
+				pclsParams = pclsLocGrp->m_fnNextItor(stItor);
+			}
+		}
+		//------> RMT Group
+		JsonFileObject * pclsRmtGrp = m_clsJsonCfg.m_fnGetObject("RMT");
+		if(pclsRmtGrp==NULL)
+		{
+			LogInternal(E_LOG_ERR,"Not Found RMT->LIST Object");
+			//if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+			//return false;
+		}
+		if(pclsRmtGrp)
+		{	
+			pclsParams = pclsRmtGrp->m_fnBeginItor(stItor);
+			while(pclsParams)
+			{
+				NodeRmt * pclsRmt = new NodeRmt(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBeginItor(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsJKey == (KCSTR)"ID") 
+						{pclsRmt->m_unID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"NAME")
+						{pclsRmt->m_clsName = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"IP")
+						{pclsRmt->m_clsIP = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"PORT")
+						{pclsRmt->m_unPort = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"TYPE")
+						{pclsRmt->m_eType = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else
+						pclsRmt->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsJKey,(KCSTR)pclsParam->m_clsJData);
+					pclsParam = pclsParams->m_fnNextItor(stItor2);
+				}
+				if(unParamCnt < 5)
+				{
+					delete pclsRmt;
+					LogInternal(E_LOG_ERR,"Rmt E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddRmt(pclsRmt,_peError) == false) return false;
+				pclsParams = pclsRmtGrp->m_fnNextItor(stItor);
+			}
+		}
+		//------> RTE Group
+		JsonFileObject * pclsRteGrp = m_clsJsonCfg.m_fnGetObject("RTE");
+		if(pclsRteGrp==NULL)
+		{
+			LogInternal(E_LOG_ERR,"Not Found RTE->LIST Object");
+			//if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+			//return false;
+		}
+		if(pclsRteGrp)
+		{		
+			pclsParams = pclsRteGrp->m_fnBeginItor(stItor);
+			while(pclsParams)
+			{
+				NodeRte * pclsRte = new NodeRte(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBeginItor(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsJKey == (KCSTR)"ID") 
+						{pclsRte->m_unID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"NAME")
+						{pclsRte->m_clsName = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"LOC")
+						{pclsRte->m_unLocID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"RMT")
+						{pclsRte->m_unRmtID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"MBLK")
+						{pclsRte->m_unMBlock= (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else
+					{
+						if(pclsParam->m_clsJKey == (KCSTR)DEF_VM_TIME)
+						{
+							pclsRte->m_unRegiTime = CfgFileInfo::m_fnGetTimeInt((KSTR)pclsParam->m_clsJData);
+						}
+						pclsRte->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsJKey,(KCSTR)pclsParam->m_clsJData);
+					}
+					pclsParam = pclsParams->m_fnNextItor(stItor2);
+				}
+				if(unParamCnt < 5)
+				{
+					delete pclsRte;
+					LogInternal(E_LOG_ERR,"Rte E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddRte(pclsRte,_peError) == false) return false;
+				pclsParams = pclsRteGrp->m_fnNextItor(stItor);
+			}
+			
+		}
+		//------> SEQ Group
+		JsonFileObject * pclsSeqGrp = m_clsJsonCfg.m_fnGetObject("SEQ");
+		if(pclsSeqGrp == NULL)
+		{
+			LogInternal(E_LOG_ERR,"Not Found SEQ->LIST Object");
+			//if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+			//return false;
+		}
+		if(pclsSeqGrp)
+		{
+			pclsParams = pclsSeqGrp->m_fnBeginItor(stItor);
+			while(pclsParams)
+			{
+				NodeSeq * pclsSeq = new NodeSeq(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBeginItor(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsJKey == (KCSTR)"ID") 
+						{pclsSeq->m_unID = (KUINT)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"NAME")
+						{pclsSeq->m_clsName = (KCSTR)pclsParam->m_clsJData;unParamCnt++;}
+					else if(pclsParam->m_clsJKey == (KCSTR)"RATIO")
+					{
+						unParamCnt++;
+						JsonFileObject * pclsRatio = pclsParam->m_fnBeginItor(stItor3);
+						unsigned int unRteID = 0;unsigned int unRate=0;
+						while(pclsRatio)
+						{
+							unRteID = (KUINT)pclsRatio->m_fnGetVal("RTE_ID",&bFound);
+							unRate = (KUINT)pclsRatio->m_fnGetVal("RATE",&bFound);
+							if(pclsSeq->m_fnAddRatio(unRteID, unRate,_peError)==false) return false;
+							pclsRatio = pclsParam->m_fnNextItor(stItor3);
+						}
+					}
+					else
+						pclsSeq->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsJKey,(KCSTR)pclsParam->m_clsJData);
+					pclsParam = pclsParams->m_fnNextItor(stItor2);
+				}
+				if(unParamCnt < 3)
+				{
+					delete pclsSeq;
+					LogInternal(E_LOG_ERR,"Seq E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddSeq(pclsSeq,_peError) == false) return false;
+				pclsParams = pclsSeqGrp->m_fnNextItor(stItor);
+			}
+			
+		}
+	}
+	else
+	{
+		ListItr_t stItor; ColumParams * pclsParams = NULL; 
+		ListItr_t stItor2;ColumParam * pclsParam = NULL;unsigned int unParamCnt = 0;
+		//------> LOC Group
+		ColumGroup *pclsLocGrp = m_clsColumFile.m_fnFindGroup("LOC");
+		if(pclsLocGrp)
+		{
+			pclsParams = pclsLocGrp->m_fnBegin(stItor);
+			while(pclsParams)
+			{
+				NodeLoc * pclsLoc = new NodeLoc(this); unParamCnt= 0;
+				pclsParam = pclsParams->m_fnBegin(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsKey == (KCSTR)"ID") 
+						{pclsLoc->m_unID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"NAME")
+						{pclsLoc->m_clsName = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"IP")
+						{pclsLoc->m_clsIP = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"PORT")
+						{pclsLoc->m_unPort = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"TYPE")
+						{pclsLoc->m_eType = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"MOD")
+						{pclsLoc->m_eMod = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else
+						pclsLoc->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+					pclsParam = pclsParams->m_fnNext(stItor2);
+				}
+				if(unParamCnt < 6)
+				{
+					delete pclsLoc;
+					LogInternal(E_LOG_ERR,"Loc E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddLoc(pclsLoc,_peError) == false) return false;
+				pclsParams = pclsLocGrp->m_fnNext(stItor);
+			}
+		}
+		//------> RMT Group
+		ColumGroup *pclsRmtGrp = m_clsColumFile.m_fnFindGroup("RMT");
+		if(pclsRmtGrp)
+		{	
+			pclsParams = pclsRmtGrp->m_fnBegin(stItor);
+			while(pclsParams)
+			{
+				NodeRmt * pclsRmt = new NodeRmt(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBegin(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsKey == (KCSTR)"ID") 
+						{pclsRmt->m_unID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"NAME")
+						{pclsRmt->m_clsName = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"IP")
+						{pclsRmt->m_clsIP = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"PORT")
+						{pclsRmt->m_unPort = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"TYPE")
+						{pclsRmt->m_eType = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else
+						pclsRmt->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+					pclsParam = pclsParams->m_fnNext(stItor2);
+				}
+				if(unParamCnt < 5)
+				{
+					delete pclsRmt;
+					LogInternal(E_LOG_ERR,"Rmt E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddRmt(pclsRmt,_peError) == false) return false;
+				pclsParams = pclsRmtGrp->m_fnNext(stItor);
+			}
+			
+		}
+		//------> RTE Group
+		ColumGroup *pclsRteGrp = m_clsColumFile.m_fnFindGroup("RTE");
+		if(pclsRteGrp)
+		{		
+			pclsParams = pclsRteGrp->m_fnBegin(stItor);
+			while(pclsParams)
+			{
+				NodeRte * pclsRte = new NodeRte(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBegin(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsKey == (KCSTR)"ID") 
+						{pclsRte->m_unID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"NAME")
+						{pclsRte->m_clsName = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"LOC")
+						{pclsRte->m_unLocID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"RMT")
+						{pclsRte->m_unRmtID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"MBLK")
+						{pclsRte->m_unMBlock= (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else
+					{
+						if(pclsParam->m_clsKey == (KCSTR)DEF_VM_TIME)
+						{
+							pclsRte->m_unRegiTime = CfgFileInfo::m_fnGetTimeInt((KSTR)pclsParam->m_clsVal);
+						}
+						pclsRte->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+					}
+					pclsParam = pclsParams->m_fnNext(stItor2);
+				}
+				if(unParamCnt < 5)
+				{
+					delete pclsRte;
+					LogInternal(E_LOG_ERR,"Rte E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddRte(pclsRte,_peError) == false) return false;
+				pclsParams = pclsRteGrp->m_fnNext(stItor);
+			}
+			
+		}
+		//------> SEQ Group
+		ColumGroup *pclsSeqGrp = m_clsColumFile.m_fnFindGroup("SEQ");
+		if(pclsSeqGrp)
+		{
+			pclsParams = pclsSeqGrp->m_fnBegin(stItor);
+			while(pclsParams)
+			{
+				NodeSeq * pclsSeq = new NodeSeq(this);unParamCnt=0;
+				pclsParam = pclsParams->m_fnBegin(stItor2);
+				while(pclsParam)
+				{
+					if(pclsParam->m_clsKey == (KCSTR)"ID") 
+						{pclsSeq->m_unID = (KUINT)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"NAME")
+						{pclsSeq->m_clsName = (KCSTR)pclsParam->m_clsVal;unParamCnt++;}
+					else if(pclsParam->m_clsKey == (KCSTR)"RATIO")
+					{
+						unParamCnt++;
+						char * pszRatio = (KSTR)pclsParam->m_clsVal;
+						CfgParseLineStrings clsArrRatio; ListItr_t itrFind;
+						CfgFile::m_fnTokenizeC(pszRatio,"; ", clsArrRatio);
+						char * pszElem = clsArrRatio.m_fnBegin(itrFind);
+						unsigned int unRteId = 0; unsigned int unRatio = 0;
+						while(pszElem)
+						{
+							unRteId =KString::m_fnAtoi(pszElem);
+							char * pszRatio = KString::m_fnStrStr(pszElem,"-");
+							pszRatio = KString::m_fnSkipString(pszRatio, "- ");
+							unRatio = KString::m_fnAtoi(pszRatio);
+							if(pclsSeq->m_fnAddRatio(unRteId, unRatio,_peError)==false) return false;
+							pszElem = clsArrRatio.m_fnNext(itrFind);
+						}
+					}
+					else
+						pclsSeq->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+					pclsParam = pclsParams->m_fnNext(stItor2);
+				}
+				if(unParamCnt < 3)
+				{
+					delete pclsSeq;
+					LogInternal(E_LOG_ERR,"Seq E_NODE_API_ERROR_INVALID_PARAM");
+					if(_peError) *_peError = E_NODE_API_ERROR_INVALID_PARAM;
+					return false;
+				}
+				if(m_fnAddSeq(pclsSeq,_peError) == false) return false;
+				pclsParams = pclsSeqGrp->m_fnNext(stItor);
+			}
+			
+		}
+	}
+	return true;
+}
+bool NodeMgr::m_fnLoadStatusDB()
+{
+	if(m_fnIsJson())
+	{
+		NodeConnection * pclsConnect = NULL; m_mapConnections.m_fnClear();
+		Net5Tuple stAddr;ListItr_t itrFind; bool bFound = false;
+		JsonFileObject * pclsList = m_clsJsonStatus.m_fnGetObject("CONNECTION_LIST");
+		if(pclsList)
+		{
+			JsonFileObject * pclsFind = pclsList->m_fnBeginItor(itrFind);
+			JsonFileObject * pclsParam = NULL; ListItr_t stParamItor;
+			while(pclsFind)
+			{
+				stAddr.m_fnSetLocalIp((KCSTR)pclsFind->m_fnGetVal("LIP",&bFound));
+				stAddr.m_fnSetLocalPort((KUINT)pclsFind->m_fnGetVal("LPORT",&bFound));
+				stAddr.m_fnSetRemoteIp((KCSTR)pclsFind->m_fnGetVal("RIP",&bFound));
+				stAddr.m_fnSetRemotePort((KUINT)pclsFind->m_fnGetVal("RPORT",&bFound));
+				stAddr.m_fnSetTransportType((ETransportType_t)(KUINT)pclsFind->m_fnGetVal("TYPE",&bFound));
+				pclsConnect = m_fnFindConnection(stAddr);
+				if(pclsConnect == NULL)
+					pclsConnect = m_fnAddConnection(stAddr);
+				if(pclsConnect==NULL)
+				{
+					LogInternal(E_LOG_ERR,"[%s] Insert Connect DB Fail",__func__);
+					return false;
+				}
+				if(pclsConnect)
+				{
+					pclsConnect->m_unFBlock= (KUINT)pclsFind->m_fnGetVal("FBLK",&bFound);
+					pclsConnect->m_unCurrentCnt = (KUINT)pclsFind->m_fnGetVal("CNT",&bFound);
+					if(pclsFind->m_fnGetVal("CT",&bFound).m_unRealLen > 0)
+					{
+						strncpy(pclsConnect->m_szLastConnectedTime,(KSTR)pclsFind->m_fnGetVal("CT",&bFound),19);
+						pclsConnect->m_unLastConnectedTime = CfgFileInfo::m_fnGetTimeInt\
+														((KSTR)pclsFind->m_fnGetVal("CT",&bFound));
+					}
+					if(pclsFind->m_fnGetVal("DT",&bFound).m_unRealLen > 0)
+					{
+						strncpy(pclsConnect->m_szLastDisconnectedTime,(KSTR)pclsFind->m_fnGetVal("DT",&bFound),19);
+						pclsConnect->m_unLastDisconnectedTime = CfgFileInfo::m_fnGetTimeInt\
+														((KSTR)pclsFind->m_fnGetVal("DT",&bFound));
+					}
+					pclsParam = pclsFind->m_fnBeginItor(stParamItor); 
+					while(pclsParam)
+					{
+						if(!((pclsParam->m_clsJKey == (KCSTR)"LIP") || (pclsParam->m_clsJKey == (KCSTR)"LPORT") ||
+							(pclsParam->m_clsJKey == (KCSTR)"RIP") || (pclsParam->m_clsJKey == (KCSTR)"RPORT") ||
+							(pclsParam->m_clsJKey == (KCSTR)"TYPE") || (pclsParam->m_clsJKey == (KCSTR)"FBLK") ||
+							(pclsParam->m_clsJKey == (KCSTR)"CNT") || (pclsParam->m_clsJKey == (KCSTR)"CT") ||
+							(pclsParam->m_clsJKey == (KCSTR)"DT")))
+						{
+							pclsConnect->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsJKey,(KCSTR)pclsParam->m_clsJData);
+						}
+						pclsParam = pclsFind->m_fnNextItor(stParamItor);
+					}
+				}
+				pclsFind = pclsList->m_fnNextItor(itrFind);		
+			}
+		}
+	}
+	else
+	{
+		NodeConnection * pclsConnect = NULL; m_mapConnections.m_fnClear();
+		Net5Tuple stAddr;ListItr_t itrFind;ColumParams * pclsFind = m_clsStatus.m_fnBegin(itrFind);
+		ColumParam * pclsParam = NULL; ListItr_t stParamItor;
+		while(pclsFind)
+		{
+			stAddr.m_fnSetLocalIp((KCSTR)pclsFind->m_fnGetParam("LIP"));
+			stAddr.m_fnSetLocalPort((KUINT)pclsFind->m_fnGetParam("LPORT"));
+			stAddr.m_fnSetRemoteIp((KCSTR)pclsFind->m_fnGetParam("RIP"));
+			stAddr.m_fnSetRemotePort((KUINT)pclsFind->m_fnGetParam("RPORT"));
+			stAddr.m_fnSetTransportType((ETransportType_t)(KUINT)pclsFind->m_fnGetParam("TYPE"));
+			pclsConnect = m_fnFindConnection(stAddr);
+			if(pclsConnect == NULL)
+				pclsConnect = m_fnAddConnection(stAddr);
+			if(pclsConnect==NULL)
+			{
+				LogInternal(E_LOG_ERR,"[%s] Insert Connect DB Fail",__func__);
+				return false;
+			}
+			if(pclsConnect)
+			{
+				pclsConnect->m_unFBlock= (KUINT)pclsFind->m_fnGetParam("FBLK");
+				pclsConnect->m_unCurrentCnt = (KUINT)pclsFind->m_fnGetParam("CNT");
+				if(pclsFind->m_fnGetParam("CT").m_clsVal.m_unRealLen > 0)
+				{
+					strncpy(pclsConnect->m_szLastConnectedTime,(KSTR)pclsFind->m_fnGetParam("CT"),19);
+					pclsConnect->m_unLastConnectedTime = CfgFileInfo::m_fnGetTimeInt\
+													((KSTR)pclsFind->m_fnGetParam("CT"));
+				}
+				if(pclsFind->m_fnGetParam("DT").m_clsVal.m_unRealLen > 0)
+				{
+					strncpy(pclsConnect->m_szLastDisconnectedTime,(KSTR)pclsFind->m_fnGetParam("DT"),19);
+					pclsConnect->m_unLastDisconnectedTime = CfgFileInfo::m_fnGetTimeInt\
+													((KSTR)pclsFind->m_fnGetParam("DT"));
+				}
+				pclsParam = pclsFind->m_fnBegin(stParamItor); 
+				while(pclsParam)
+				{
+					if(!((pclsParam->m_clsKey == (KCSTR)"LIP") || (pclsParam->m_clsKey == (KCSTR)"LPORT") ||
+						(pclsParam->m_clsKey == (KCSTR)"RIP") || (pclsParam->m_clsKey == (KCSTR)"RPORT") ||
+						(pclsParam->m_clsKey == (KCSTR)"TYPE") || (pclsParam->m_clsKey == (KCSTR)"FBLK") ||
+						(pclsParam->m_clsKey == (KCSTR)"CNT") || (pclsParam->m_clsKey == (KCSTR)"CT") ||
+						(pclsParam->m_clsKey == (KCSTR)"DT")))
+					{
+						pclsConnect->m_clsUserParams.m_fnAdd((KCSTR)pclsParam->m_clsKey,(KCSTR)pclsParam->m_clsVal);
+					}
+					pclsParam = pclsFind->m_fnNext(stParamItor);
+				}
+			}
+			pclsFind = m_clsStatus.m_fnNext(itrFind);		
+		}
+	}
+	return true;
+}
+void NodeMgr::m_fnSetNotifyChangedFile(PFuncColumChanged_t _pfnChanged,void * _pvUser)
+{
+	m_clsColumFile.m_fnSetNotifyChangedFileWithRead(_pfnChanged,true,_pvUser);
+}
+void NodeMgr::m_fnSetNotifyChangedFileJson(PFuncJsonChanged_t _pfnChanged,void * _pvUser)
+{
+	m_clsJsonCfg.m_fnSetNotifyChangedFileWithRead(_pfnChanged,true,_pvUser);
+}
+void NodeMgr::m_fnSetNotifyChangedFileStatus(PFuncColumChanged_t _pfnChanged,void * _pvUser)
+{
+	m_clsStatus.m_fnSetNotifyChangedFile(_pfnChanged,true,_pvUser);
+}
+void NodeMgr::m_fnSetNotifyChangedFileStatusJson(PFuncJsonChanged_t _pfnChanged,void * _pvUser)
+{
+	m_clsJsonStatus.m_fnSetNotifyChangedFile(_pfnChanged,true,_pvUser);
+}
+bool NodeMgr::m_fnWriteConfig(const char * _pszPath)
+{
+	if(KString::m_fnStrLen(_pszPath) > 0)
+	{
+		m_clsColumFile.m_clsPath = (KCSTR)_pszPath;
+	}
+	KString clsBuild; m_fnBuild(clsBuild);
+	if(m_fnIsJson())
+	{
+		return m_clsJsonCfg.m_fnWriteFile((KCSTR)clsBuild);
+	}
+	else
+	{
+		return m_clsColumFile.m_fnWriteFile((KCSTR)clsBuild);
+	}
+}
+void NodeMgr::m_fnRefreshConnection()
+{
+	MapStrItr_t stItor; Net5Tuple stAddr; bool bChanged = false;
+	Jump_Restart:
+	NodeConnection * pclsCon = m_fnBeginConnection(stItor);
+	while(pclsCon)
+	{
+		if(!m_fnFindRmtFrom5Tuple(pclsCon->m_stAddr))
+		{
+			memset(&stAddr,0x00,sizeof(Net5Tuple_t));
+			memcpy(&stAddr,&pclsCon->m_stAddr,sizeof(Net5Tuple_t));
+			m_fnDelCon(stAddr); bChanged |= true;
+			goto Jump_Restart;
+		}
+		pclsCon = m_fnNextConnection(stItor);
+	}
+	if(bChanged)
+	{
+		m_fnWriteNodeStatus();
+	}
+}
+void NodeMgr::m_fnClearAll()
+{
+	m_listLoc.m_fnClear();
+	m_listRmt.m_fnClear();
+	m_listRte.m_fnClear();
+	m_listSeq.m_fnClear();
+	m_mapLocAddr.m_fnClear();
+	m_mapRmtAddr.m_fnClear();
+}
+bool NodeMgr::m_fnAddLoc(NodeLoc * _pclsNew,ENodeMgrApiError_t * _peError)   //put new instance
+{
+	
+	if(_pclsNew==NULL) return false;
+	if(_pclsNew->m_fnValid(_peError) == false) {delete _pclsNew;return false;}
+	_pclsNew->m_fnSetKey(_pclsNew->m_unID);
+	m_fnAddLocAddr(_pclsNew); 
+	return m_listLoc.m_fnPushBack(_pclsNew);
+}
+bool NodeMgr::m_fnAddRmt(NodeRmt * _pclsNew,ENodeMgrApiError_t * _peError)   //put new instance
+{
+	if(_pclsNew==NULL) return false;
+	if(_pclsNew->m_fnValid(_peError) == false) {delete _pclsNew;return false;}
+	_pclsNew->m_fnSetKey(_pclsNew->m_unID);
+	m_fnAddRmtAddr(_pclsNew);
+	return m_listRmt.m_fnPushBack(_pclsNew);
+}
+bool NodeMgr::m_fnAddRte(NodeRte * _pclsNew,ENodeMgrApiError_t * _peError)   //put new instance
+{
+	if(_pclsNew==NULL) return false;
+	if(_pclsNew->m_fnValid(_peError) == false) {delete _pclsNew;return false;}
+	_pclsNew->m_fnSetKey(_pclsNew->m_unID);
+	if(_pclsNew->m_stAddr.m_szLocalIp[0]==0)
+	{
+		NodeLoc * pclsLoc = m_fnFindLoc(_pclsNew->m_unLocID);
+		NodeRmt * pclsRmt = m_fnFindRmt(_pclsNew->m_unRmtID);
+		_pclsNew->m_stAddr.m_fnSetLocalIp((KCSTR)pclsLoc->m_clsIP);
+		_pclsNew->m_stAddr.m_fnSetLocalPort(pclsLoc->m_unPort);
+		_pclsNew->m_stAddr.m_fnSetRemoteIp((KCSTR)pclsRmt->m_clsIP);
+		_pclsNew->m_stAddr.m_fnSetRemotePort(pclsRmt->m_unPort);
+		_pclsNew->m_stAddr.m_fnSetTransportType((ETransportType_t)pclsLoc->m_eType);
+	}
+	return m_listRte.m_fnPushBack(_pclsNew);
+}
+bool NodeMgr::m_fnAddSeq(NodeSeq * _pclsNew, ENodeMgrApiError_t * _peError)  // put new instance
+{
+	if(_pclsNew==NULL) return false;
+	if(_pclsNew->m_fnValid(_peError) == false) {delete _pclsNew;return false;}
+	_pclsNew->m_fnSetKey(_pclsNew->m_unID);
+	return m_listSeq.m_fnPushBack(_pclsNew);
+}
+NodeLoc * NodeMgr::m_fnFindLocFrom5Tuple(const Net5Tuple &_rclsAddr)
+{
+	NodeAddresInfo * pclsLocInfo = m_fnFindLocFromAddr(_rclsAddr.m_szLocalIp,
+														_rclsAddr.m_nLocalPort,
+														_rclsAddr.m_eTransportType);
+	if(pclsLocInfo==NULL) return NULL;
+	return m_fnFindLoc(pclsLocInfo->m_unNodeID);
+}
+NodeRmt * NodeMgr::m_fnFindRmtFrom5Tuple(const Net5Tuple &_rclsAddr)
+{
+	NodeAddresInfo * pclsRmtInfo = m_fnFindRmtFromAddr(_rclsAddr.m_szRemoteIp,
+														_rclsAddr.m_nRemotePort,
+														_rclsAddr.m_eTransportType);
+	if(pclsRmtInfo==NULL) return NULL;
+	return m_fnFindRmt(pclsRmtInfo->m_unNodeID);
+}
+bool NodeMgr::m_fnDelLoc(unsigned int _unID,ENodeMgrApiError_t * _peError)
+{
+	ListItr_t ritrRte; NodeRte * pclsFind = m_fnBeginRte(ritrRte);
+	while(pclsFind)
+	{
+		if(pclsFind->m_unLocID == _unID)
+		{
+			if(_peError) *_peError = E_NODE_API_ERROR_DEL_LOC_USING;
+			return false;
+		}
+		pclsFind = m_fnNextRte(ritrRte);
+	}
+	m_fnDelLocAddr(_unID);
+	bool bRet =  m_listLoc.m_fnDelNode(_unID);
+	if(bRet==false)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_DEL_LOC_NOT_EXIST;
+	}
+	return bRet;
+}
+bool NodeMgr::m_fnDelRmt(unsigned int _unID,ENodeMgrApiError_t * _peError)
+{
+	
+	ListItr_t ritrRte; NodeRte * pclsFind = m_fnBeginRte(ritrRte);
+	while(pclsFind)
+	{
+		if(pclsFind->m_unRmtID == _unID)
+		{
+			//ELOG(_INFO,"%s Exist %d",__func__,_unID);
+			if(_peError) *_peError = E_NODE_API_ERROR_DEL_RMT_USING;
+			return false;
+		}
+		pclsFind = m_fnNextRte(ritrRte);
+	}
+	m_fnDelRmtAddr(_unID);
+	bool bRet = m_listRmt.m_fnDelNode(_unID);
+	if(bRet==false)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_DEL_RMT_NOT_EXIST;
+	}
+	return bRet;
+}
+bool NodeMgr::m_fnDelRte(unsigned int _unID,ENodeMgrApiError_t * _peError)
+{
+	ListItr_t ritrSeq; NodeSeq * pclsFindSeq = m_fnBeginSeq(ritrSeq);
+	ListItr_t ritrRate; NodeRatio * pclsFindRate = NULL;
+	while(pclsFindSeq)
+	{
+		if(pclsFindSeq->m_pclsHead)
+		{
+			pclsFindRate = pclsFindSeq->m_pclsHead;
+			for(unsigned int i=0;i<pclsFindSeq->m_unCnt;i++)
+			{
+				if(pclsFindRate->m_unRteID == _unID)
+				{
+					//ELOG(_INFO,"%s Exist %d",__func__,_unID);
+					if(_peError) *_peError = E_NODE_API_ERROR_DEL_RTE_USING;
+					return false;
+				}
+				pclsFindRate = pclsFindRate->m_pclsNext;
+			}
+		}
+		pclsFindSeq = m_fnNextSeq(ritrSeq);
+	}
+	bool bRet = m_listRte.m_fnDelNode(_unID);
+	if(bRet==false)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_DEL_RTE_NOT_EXIST;
+	}
+	return bRet;
+}
+bool NodeMgr::m_fnDelSeq(unsigned int _unID,ENodeMgrApiError_t * _peError)
+{
+	bool bRet = m_listSeq.m_fnDelNode(_unID);
+	if(bRet==false)
+	{
+		if(_peError) *_peError = E_NODE_API_ERROR_DEL_SEQ_NOT_EXIST;
+	}
+	return bRet;
+}
+bool NodeMgr::m_fnDelCon(const Net5Tuple & _rstAddr)
+{
+	KString clsKey;
+	clsKey<<(KCSTR)_rstAddr.m_szLocalIp<<(KUINT)_rstAddr.m_nLocalPort;
+	clsKey<<(KCSTR)_rstAddr.m_szRemoteIp<<(KUINT)_rstAddr.m_nRemotePort;
+	return m_mapConnections.m_fnDelMap((KCSTR)clsKey);
+}
+bool NodeMgr::m_fnGetAddressFromRteID(unsigned int _unRteID, Net5Tuple & _rstResult)
+{
+	NodeRte * pclsFind = m_fnFindRte(_unRteID);
+	if(pclsFind == NULL) return false;
+	NodeLoc * pclsLoc = m_fnFindLoc(pclsFind->m_unLocID);
+	NodeRmt * pclsRmt = m_fnFindRmt(pclsFind->m_unRmtID);
+	if(pclsLoc==NULL || pclsRmt == NULL) return false;
+	N5Tuple_t * pAddr = (N5Tuple_t*)&_rstResult;
+	pAddr->m_fnSet(pclsLoc->m_clsIP,pclsLoc->m_unPort,
+						pclsRmt->m_clsIP,pclsRmt->m_unPort, (ETransportType_t)pclsLoc->m_eType);
+	return true;
+}
+NodeRte * NodeMgr::m_fnFindRteFrom5Tuple(const Net5Tuple &_rclsAddr)
+{
+	NodeAddresInfo * pclsLocInfo = m_fnFindLocFromAddr(_rclsAddr.m_szLocalIp,
+														_rclsAddr.m_nLocalPort,
+														_rclsAddr.m_eTransportType);
+	NodeAddresInfo * pclsRmtInfo = m_fnFindRmtFromAddr(_rclsAddr.m_szRemoteIp,
+														_rclsAddr.m_nRemotePort,
+														_rclsAddr.m_eTransportType);
+	if(pclsLocInfo==NULL || pclsRmtInfo==NULL) return NULL;
+	return m_fnFindRteFromAddr(pclsLocInfo->m_unNodeID,pclsRmtInfo->m_unNodeID);
+}
+unsigned int NodeMgr::m_fnDecisionRteID(unsigned int _unSeqID, Net5Tuple & _rstResult, ENodeMgrApiError_t * _peErr)
+{
+	NodeSeq * pclsFind = m_fnFindSeq(_unSeqID);
+	if(pclsFind == NULL)
+	{
+		LogInternal(E_LOG_ERR,"[%s] %u Sequence is Not Found",__func__,_unSeqID);
+		if(_peErr) *_peErr = E_NODE_API_ERROR_DECISION_NOT_FOUND_NODE;
+		return 0;
+	}
+	return pclsFind->m_fnDecisionRteID(_rstResult,_peErr);
+}
+bool NodeMgr::m_fnCountingRte(unsigned int _unRteID, unsigned int _unCnt)
+{
+	NodeRte * pclsFind = m_fnFindRte(_unRteID);bool bChanged = false;
+	if(pclsFind==NULL) return false;
+	NodeConnection *pclsCon = m_fnFindConnection(pclsFind->m_stAddr);
+	if(pclsCon->m_unCurrentCnt != _unCnt) bChanged = true;
+	pclsCon->m_unCurrentCnt = _unCnt;
+	if(bChanged) m_fnWriteNodeStatus();
+	return true;
+}
+bool NodeMgr::m_fnCountingRte(const Net5Tuple & _rstAddr, unsigned int _unCnt)
+{
+	NodeConnection *pclsCon = m_fnFindConnection(_rstAddr); bool bChanged = false;
+	if(pclsCon->m_unCurrentCnt != _unCnt) bChanged = true;
+	pclsCon->m_unCurrentCnt = _unCnt;
+	if(bChanged) m_fnWriteNodeStatus();
+	return true;
+}
+unsigned int NodeMgr::m_fnGetRteCnt(unsigned int _unRteID)
+{
+	NodeRte * pclsFind = m_fnFindRte(_unRteID);
+	if(pclsFind==NULL) return 0;
+	return pclsFind->m_fnGetCnt();
+}
+unsigned int NodeMgr::m_fnGetRteCnt(const Net5Tuple & _rstAddr)
+{
+	NodeRte * pclsFind = m_fnFindRteFrom5Tuple(_rstAddr);
+	if(pclsFind==NULL) return 0;
+	return pclsFind->m_fnGetCnt();
+}
+bool NodeMgr::m_fnChangeSeqRate(unsigned int _unSeqID,unsigned int _unRteID, unsigned int _unRate)
+{	
+	NodeSeq * pclsSeq = m_fnFindSeq(_unSeqID);if(pclsSeq==NULL) return false;
+	NodeRatio * pclsRate = pclsSeq->m_fnFindList(_unRteID);if(pclsRate==NULL) return false;
+	pclsRate->m_unRate = _unRate;
+	return true;
+}
+bool NodeMgr::m_fnChangeMBlock(unsigned int _unRteID, bool _bBlock,bool * _pbChanged)
+{
+	NodeRte * pclsFind = m_fnFindRte(_unRteID);
+	if(pclsFind==NULL)
+	{
+		LogInternal(E_LOG_ERR,"[%s] Not Found RTE",__func__);
+		return false;
+	}
+	if(pclsFind->m_unMBlock != _bBlock)
+	{
+		if(_pbChanged) *_pbChanged = true;
+	}
+	else
+	{
+		if(_pbChanged) *_pbChanged = false;
+	}
+	pclsFind->m_unMBlock = _bBlock;
+	return true;
+}
+bool NodeMgr::m_fnChangeMBlock(const Net5Tuple & _rstAddr, bool _bBlock,bool * _pbChanged)
+{
+	NodeRte * pclsFind = m_fnFindRteFrom5Tuple(_rstAddr);
+	if(pclsFind==NULL)
+	{
+		LogInternal(E_LOG_ERR,"[%s] Not Found RTE",__func__);
+		return false;
+	}
+	if(pclsFind->m_unMBlock != _bBlock)
+	{
+		if(_pbChanged) *_pbChanged = true;
+	}
+	else
+	{
+		if(_pbChanged) *_pbChanged = false;
+	}
+	pclsFind->m_unMBlock = _bBlock;
+	return true;
+}
+NodeConnection * NodeMgr::m_fnChangeConnectivity(const Net5Tuple & _rstAddr, bool _bConnected)
+{
+	bool bChanged = false;
+	NodeConnection * pclsCon = m_fnConnectionProc(_rstAddr,_bConnected,&bChanged);
+	if(bChanged) m_fnWriteNodeStatus();
+	return pclsCon;
+}
+void NodeMgr::m_fnChangeConnectivity(NodeConnection & _rclsCon, bool _bConnected)
+{
+	bool bChanged = false;
+	_rclsCon.m_fnSetConnectivity(_bConnected, &bChanged);
+	if( bChanged ) m_fnWriteNodeStatus();
+}
+bool NodeMgr::m_fnGetRteStatus(const Net5Tuple & _rstAddr)
+{
+	NodeRte * pclsRte = m_fnFindRteFrom5Tuple(_rstAddr);
+	if(pclsRte==NULL) return false;
+	if(pclsRte->m_fnGetFBlock()== 1) return false;
+	if(pclsRte->m_unMBlock == 1) return false;
+	return true;
+}
+bool NodeMgr::m_fnGetRteStatus(unsigned int _unRteID)
+{
+	NodeRte * pclsRte = m_fnFindRte(_unRteID);
+	if(pclsRte==NULL) return false;
+	if(pclsRte->m_fnGetFBlock() == 1) return false;
+	if(pclsRte->m_unMBlock == 1) return false;
+	return true;
+}
+void NodeMgr::m_fnDebug(KString &_rclsDebug)
+{
+	ListItr_t itrLoc;NodeLoc * pclsLoc = m_fnBeginLoc(itrLoc);
+	while(pclsLoc)
+	{
+		pclsLoc->m_fnDebug(_rclsDebug);
+		pclsLoc = m_fnNextLoc(itrLoc);
+	}
+	ListItr_t itrRmt;NodeRmt * pclsRmt = m_fnBeginRmt(itrRmt);
+	while(pclsRmt)
+	{
+		pclsRmt->m_fnDebug(_rclsDebug);
+		pclsRmt = m_fnNextRmt(itrRmt);
+	}
+	ListItr_t itrRte;NodeRte * pclsRte = m_fnBeginRte(itrRte);
+	while(pclsRte)
+	{
+		pclsRte->m_fnDebug(_rclsDebug);
+		pclsRte = m_fnNextRte(itrRte);
+	}
+	ListItr_t itrSeq;NodeSeq * pclsSeq = m_fnBeginSeq(itrSeq);
+	while(pclsSeq)
+	{
+		pclsSeq->m_fnDebug(_rclsDebug);
+		pclsSeq = m_fnNextSeq(itrSeq);
+	}
+}
+void NodeMgr::m_fnBuild(KString &_rclsBuild)
+{
+	if(m_fnIsJson())
+	{
+		_rclsBuild<<"{\r\n";
+		s_fnCatDepth(_rclsBuild,1);
+		JsonK::m_fnBuildItem(_rclsBuild,"COMMENT","TYPE=udp(0)/tcp(1)/tls(2)  MOD=server(0)/client(1)/accepted(2)");
+		_rclsBuild<<",\r\n";
+		//==========> LOC
+		if(m_fnGetLocNums() > 0)
+		{
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"\"LOC\":\r\n";
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"[\r\n";
+			ListItr_t itrLoc;NodeLoc * pclsLoc = m_fnBeginLoc(itrLoc);
+			while(pclsLoc)
+			{
+				pclsLoc->m_fnBuild(_rclsBuild,2);
+				pclsLoc = m_fnNextLoc(itrLoc);
+				if(pclsLoc) _rclsBuild<<",\r\n";
+				else _rclsBuild<<"\r\n";
+			}
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"],\r\n";
+		}
+		//==========> RMT
+		if(m_fnGetRmtNums() > 0)
+		{
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"\"RMT\":\r\n";
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"[\r\n";
+			ListItr_t itrRmt;NodeRmt * pclsRmt = m_fnBeginRmt(itrRmt);
+			while(pclsRmt)
+			{
+				pclsRmt->m_fnBuild(_rclsBuild,2);
+				pclsRmt = m_fnNextRmt(itrRmt);
+				if(pclsRmt) _rclsBuild<<",\r\n";
+				else _rclsBuild<<"\r\n";
+			}
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"],\r\n";
+		}
+		//==========> RTE
+		if(m_fnGetRteNums() > 0)
+		{
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"\"RTE\":\r\n";
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"[\r\n";
+			ListItr_t itrRte;NodeRte * pclsRte = m_fnBeginRte(itrRte);
+			while(pclsRte)
+			{
+				pclsRte->m_fnBuild(_rclsBuild,2);
+				pclsRte = m_fnNextRte(itrRte);
+				if(pclsRte) _rclsBuild<<",\r\n";
+				else _rclsBuild<<"\r\n";
+			}
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"],\r\n";
+		}
+		//==========> SEQ
+		if(m_fnGetSeqNums() > 0)
+		{
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"\"SEQ\":\r\n";
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"[\r\n";
+			ListItr_t itrSeq;NodeSeq * pclsSeq = m_fnBeginSeq(itrSeq);
+			while(pclsSeq)
+			{
+				pclsSeq->m_fnBuild(_rclsBuild,2);
+				pclsSeq = m_fnNextSeq(itrSeq);
+				if(pclsSeq) _rclsBuild<<",\r\n";
+				else _rclsBuild<<"\r\n";
+			}
+			s_fnCatDepth(_rclsBuild,1);_rclsBuild<<"]\r\n";
+		}
+		_rclsBuild<<"}\r\n";
+	}
+	else
+	{
+		_rclsBuild<<(KCSTR)"\r\n[LOC]\r\n";
+		_rclsBuild<<(KCSTR)"# <LOC Category Sample>\r\n";
+		_rclsBuild<<(KCSTR)"# TYPE = udp(0), tcp(1), tls(2)/  MOD= server(0), client(1), accepted(2)\r\n";
+		_rclsBuild<<(KCSTR)"# ID=1, NAME=iok_loc, IP=x.x.x.x, PORT=5060, TYPE=0, MOD=0\r\n";
+		ListItr_t itrLoc;NodeLoc * pclsLoc = m_fnBeginLoc(itrLoc);
+		while(pclsLoc)
+		{
+			pclsLoc->m_fnBuild(_rclsBuild);
+			pclsLoc = m_fnNextLoc(itrLoc);
+		}
+		_rclsBuild<<(KCSTR)"\r\n[RMT]\r\n";
+		_rclsBuild<<(KCSTR)"# <RMT Category Sample>\r\n";
+		_rclsBuild<<(KCSTR)"# TYPE = udp(0), tcp(1), tls(2)\r\n";
+		_rclsBuild<<(KCSTR)"# ID=10, NAME=iok_rmt, IP=x.x.x.x, PORT=6000, TYPE=0\r\n";
+		ListItr_t itrRmt;NodeRmt * pclsRmt = m_fnBeginRmt(itrRmt);
+		while(pclsRmt)
+		{
+			pclsRmt->m_fnBuild(_rclsBuild);
+			pclsRmt = m_fnNextRmt(itrRmt);
+		}
+		_rclsBuild<<(KCSTR)"\r\n[RTE]\r\n";
+		_rclsBuild<<(KCSTR)"# <RTE Category Sample>\r\n";
+		_rclsBuild<<(KCSTR)"# ID=100, NAME=iok_rte, LOC=1, RMT=10, MBLK = 0\r\n";
+		ListItr_t itrRte;NodeRte * pclsRte = m_fnBeginRte(itrRte);
+		while(pclsRte)
+		{
+			pclsRte->m_fnBuild(_rclsBuild);
+			pclsRte = m_fnNextRte(itrRte);
+		}
+		_rclsBuild<<(KCSTR)"\r\n[SEQ]\r\n";
+		_rclsBuild<<(KCSTR)"# <SEQ Category Sample>\r\n";
+		_rclsBuild<<(KCSTR)"# ID=1000, NAME=rte_cm, RATIO=100-2;101-5;[rte_id]-[rate];[rte_id]-[rate]...\r\n";
+		ListItr_t itrSeq;NodeSeq * pclsSeq = m_fnBeginSeq(itrSeq);
+		while(pclsSeq)
+		{
+			pclsSeq->m_fnBuild(_rclsBuild);
+			pclsSeq = m_fnNextSeq(itrSeq);
+		}
+		_rclsBuild<<(KCSTR)"\r\n";
+	}
+}
+void NodeMgr::m_fnGetStatusString(KString & _rclsResult)
+{
+	if(m_fnIsJson())
+	{
+		MapStrItr_t rclsItem; 
+		NodeConnection * pclsCon = (NodeConnection*)m_mapConnections.m_fnBeginS(rclsItem);
+		_rclsResult<<"{\r\n";s_fnCatDepth(_rclsResult,1); 
+		JsonK::m_fnBuildItem(_rclsResult, "COMMENT", "TYPE=udp(0)/tcp(1)/tls(2)  MOD=server(0)/client(1)/accepted(2)");
+		_rclsResult<<",\r\n";
+		_rclsResult<<"\t\"CONNECTION_LIST\":\r\n";_rclsResult<<"\t[\r\n";
+		while(pclsCon)
+		{
+			pclsCon->m_fnBuild(_rclsResult,2);
+			pclsCon = (NodeConnection*)m_mapConnections.m_fnNextS(rclsItem);
+			if(pclsCon) _rclsResult<<",\r\n";
+			else _rclsResult<<"\r\n";
+		}
+		_rclsResult<<"\t]\r\n";	_rclsResult<<"}\r\n";
+	}
+	else
+	{
+		MapStrItr_t rclsItem;
+		NodeConnection * pclsCon = (NodeConnection*)m_mapConnections.m_fnBeginS(rclsItem);
+		NodeUserParam * pclsExtParam = NULL; ListItr_t stItor;
+		while(pclsCon)
+		{
+			_rclsResult<<(KCSTR)"LIP="<<pclsCon->m_stAddr.m_szLocalIp<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"LPORT="<<pclsCon->m_stAddr.m_nLocalPort<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"RIP="<<pclsCon->m_stAddr.m_szRemoteIp<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"RPORT="<<pclsCon->m_stAddr.m_nRemotePort<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"TYPE="<<pclsCon->m_stAddr.m_eTransportType<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"FBLK="<<pclsCon->m_unFBlock<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"CNT="<<pclsCon->m_unCurrentCnt<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"CT="<<pclsCon->m_szLastConnectedTime<<(KCSTR)", ";
+			_rclsResult<<(KCSTR)"DT="<<pclsCon->m_szLastDisconnectedTime;
+			pclsExtParam = pclsCon->m_fnExtBegin(stItor);
+			if(pclsExtParam) _rclsResult<<(KCSTR)", ";
+			while(pclsExtParam)
+			{
+				pclsExtParam->m_fnBuild(_rclsResult);
+				pclsExtParam = pclsCon->m_fnExtNext(stItor);
+				if(pclsExtParam) _rclsResult<<(KCSTR)", ";
+			}
+			_rclsResult<<(KCSTR)"\r\n";
+			pclsCon = (NodeConnection*)m_mapConnections.m_fnNextS(rclsItem);
+		}
+	}
+}
+void NodeMgr::m_fnWriteNodeStatus()
+{
+	if(m_fnIsJson())
+	{
+		MapStrItr_t rclsItem; 
+		NodeConnection * pclsCon = (NodeConnection*)m_mapConnections.m_fnBeginS(rclsItem);
+		KString clsBuild;clsBuild<<"{\r\n";s_fnCatDepth(clsBuild,1); 
+		JsonK::m_fnBuildItem(clsBuild, "COMMENT", "TYPE=udp(0)/tcp(1)/tls(2)  MOD=server(0)/client(1)/accepted(2)");
+		clsBuild<<",\r\n";
+		clsBuild<<"\t\"CONNECTION_LIST\":\r\n";clsBuild<<"\t[\r\n";
+		while(pclsCon)
+		{
+			pclsCon->m_fnBuild(clsBuild,2);
+			pclsCon = (NodeConnection*)m_mapConnections.m_fnNextS(rclsItem);
+			if(pclsCon) clsBuild<<",\r\n";
+			else clsBuild<<"\r\n";
+		}
+		clsBuild<<"\t]\r\n";	clsBuild<<"}\r\n";
+		m_clsJsonStatus.m_fnWriteFile((KCSTR)clsBuild);
+	}
+	else
+	{
+		m_clsStatus.m_fnClearLine();MapStrItr_t rclsItem;
+		NodeConnection * pclsCon = (NodeConnection*)m_mapConnections.m_fnBeginS(rclsItem);
+		NodeUserParam * pclsExtParam = NULL; ListItr_t stItor;
+		while(pclsCon)
+		{
+			ColumParams * pclsNew = new ColumParams;
+			pclsNew->m_fnAddParam("LIP",pclsCon->m_stAddr.m_szLocalIp);
+			pclsNew->m_fnAddParam("LPORT",pclsCon->m_stAddr.m_nLocalPort);
+			pclsNew->m_fnAddParam("RIP",pclsCon->m_stAddr.m_szRemoteIp);
+			pclsNew->m_fnAddParam("RPORT",pclsCon->m_stAddr.m_nRemotePort);
+			pclsNew->m_fnAddParam("TYPE",pclsCon->m_stAddr.m_eTransportType);
+			pclsNew->m_fnAddParam("FBLK",pclsCon->m_unFBlock);
+			pclsNew->m_fnAddParam("CNT",pclsCon->m_unCurrentCnt);
+			pclsNew->m_fnAddParam("CT",pclsCon->m_szLastConnectedTime);
+			pclsNew->m_fnAddParam("DT",pclsCon->m_szLastDisconnectedTime);
+			m_clsStatus.m_fnAddParams(pclsNew);
+			pclsExtParam = pclsCon->m_fnExtBegin(stItor);
+			while(pclsExtParam)
+			{
+				pclsNew->m_fnAddParam((KCSTR)pclsExtParam->m_clsKey,(KCSTR)pclsExtParam->m_clsVal);
+				pclsExtParam = pclsCon->m_fnExtNext(stItor);
+			}
+			pclsCon = (NodeConnection*)m_mapConnections.m_fnNextS(rclsItem);
+		}
+		LogInternal(E_LOG_INFO,"[%s] Connection Status Write.",__func__);
+		m_clsStatus.m_fnWriteFile();
+	}
+}
+bool NodeMgr::m_fnAddLocAddr(NodeLoc * _pclsNew)
+{
+	NodeAddresInfo * pclsNew = new NodeAddresInfo;
+	KString clsAddr; clsAddr<<(KSTR)_pclsNew->m_clsIP<<(KUINT)(_pclsNew->m_unPort);
+						clsAddr<<(KUINT)(_pclsNew->m_eType);
+	pclsNew->m_unNodeID = _pclsNew->m_unID;
+	pclsNew->m_fnSetKey((KSTR)clsAddr);
+	return m_mapLocAddr.m_fnSetMap((KSTR)clsAddr,pclsNew);
+}
+bool NodeMgr::m_fnAddRmtAddr(NodeRmt * _pclsNew)
+{
+	NodeAddresInfo * pclsNew = new NodeAddresInfo;
+	KString clsAddr; clsAddr<<(KSTR)_pclsNew->m_clsIP<<(KUINT)(_pclsNew->m_unPort);
+						clsAddr<<(KUINT)(_pclsNew->m_eType);
+	pclsNew->m_unNodeID = _pclsNew->m_unID;
+	pclsNew->m_fnSetKey((KSTR)clsAddr);
+	return m_mapRmtAddr.m_fnSetMap((KSTR)clsAddr,pclsNew);
+}
+NodeAddresInfo *NodeMgr::m_fnFindLocFromAddr(const char * _pszIP, unsigned int _unPort,
+																unsigned int _eTransType)  // tcp/udp/tls
+{
+	KString clsAddr; clsAddr<<_pszIP<<(KUINT)(_unPort);
+						clsAddr<<(KUINT)(_eTransType);
+	return (NodeAddresInfo *)m_mapLocAddr.m_fnFindMap((KSTR)clsAddr);
+}
+NodeAddresInfo *NodeMgr::m_fnFindRmtFromAddr(const char * _pszIP, unsigned int _unPort,
+																unsigned int _eTransType)  // tcp/udp/tls
+{
+	KString clsAddr; clsAddr<<_pszIP<<(KUINT)(_unPort);
+						clsAddr<<(KUINT)(_eTransType);
+	return (NodeAddresInfo *)m_mapRmtAddr.m_fnFindMap((KSTR)clsAddr);
+}
+bool NodeMgr::m_fnDelLocAddr(unsigned int _unID)
+{
+	NodeLoc * pclsFind = m_fnFindLoc(_unID); if(pclsFind==NULL) return false;
+	KString clsAddr; clsAddr<<(KSTR)pclsFind->m_clsIP<<(KUINT)(pclsFind->m_unPort);
+						clsAddr<<(KUINT)(pclsFind->m_eType);
+	return m_mapLocAddr.m_fnDelMap((KSTR)clsAddr);
+}
+bool NodeMgr::m_fnDelRmtAddr(unsigned int _unID)
+{
+	NodeRmt * pclsFind = m_fnFindRmt(_unID); if(pclsFind==NULL) return false;
+	KString clsAddr; clsAddr<<(KSTR)pclsFind->m_clsIP<<(KUINT)(pclsFind->m_unPort);
+						clsAddr<<(KUINT)(pclsFind->m_eType);
+	return m_mapRmtAddr.m_fnDelMap((KSTR)clsAddr);
+}
+NodeRte * NodeMgr::m_fnFindRteFromAddr(unsigned int _unLocID, unsigned int _unRmtID)
+{
+	ListItr_t itrRte;NodeRte * pclsFind = m_fnBeginRte(itrRte);
+	while(pclsFind)
+	{
+		if(pclsFind->m_unLocID == _unLocID && pclsFind->m_unRmtID == _unRmtID)
+		{
+			return pclsFind;
+		}
+		pclsFind = m_fnNextRte(itrRte);
+	}
+	return NULL;
+}
+NodeSeq * NodeMgr::m_fnAutoRegisterNode(const char * _pszPrefix,Net5Tuple & _rstAddr,bool * _pbChanged)
+{
+	return m_fnAutoRegisterSeq(_pszPrefix,_rstAddr,_pbChanged);
+}
+bool NodeMgr::m_fnAutoRegiFromConInfo(const char * _pszPrefix)
+{
+	MapStrItr_t stItor; bool bChanged = false; bool bRet = false;
+	NodeConnection * pclsCon = (NodeConnection*)m_mapConnections.m_fnBeginS(stItor);
+	while(pclsCon)
+	{
+		bChanged = false;
+		m_fnAutoRegisterSeq(_pszPrefix, pclsCon->m_stAddr,&bChanged);
+		bRet |= bChanged;
+		pclsCon = (NodeConnection*)m_mapConnections.m_fnNextS(stItor);
+	}
+	return bRet;
+}
+NodeRmt * NodeMgr::m_fnAutoRegisterRmt(const char * _pszPrefix,Net5Tuple &_rstAddr,bool * _pbChanged)
+{
+	ListItr_t clsItor;NodeRmt * pclsRmt = m_fnBeginRmt(clsItor);
+	if(pclsRmt==NULL)
+	{
+		goto AutoRegiRmt;
+	}
+	while(pclsRmt)
+	{
+		if(*pclsRmt == _rstAddr)
+		{
+			char szErr[128];
+			LogInternal(E_LOG_ERR,"[%s] %s Already Exit Rmt, %s",__func__,_pszPrefix,_rstAddr.getStr(szErr,128,true));
+			return pclsRmt;
+		}
+		pclsRmt = m_fnNextRmt(clsItor);
+	}
+	AutoRegiRmt:
+	if(_pbChanged) *_pbChanged = true;
+	ENodeMgrApiError_t eErr;
+	NodeRmt *pclsNewRmt = new NodeRmt(this) ;pclsNewRmt->m_unID=s_fnGetNextRmtID(this);
+	pclsNewRmt->m_fnSetKey(pclsNewRmt->m_unID);
+	KString clsTmp; 
+	if(_pszPrefix) clsTmp<<_pszPrefix<<(KUINT)pclsNewRmt->m_unID;
+	else clsTmp<<(KSTR)"AddRmt"<<(KUINT)pclsNewRmt->m_unID;
+	pclsNewRmt->m_clsName = (KSTR)clsTmp;
+	pclsNewRmt->m_clsIP = _rstAddr.m_szRemoteIp;
+	pclsNewRmt->m_unPort = _rstAddr.m_nRemotePort;
+	pclsNewRmt->m_eType = _rstAddr.m_eTransportType;
+	if(!m_fnAddRmt(pclsNewRmt,&eErr))
+	{
+		LogInternal(E_LOG_ERR," %s Auto Add Rmt Error : %u(%s)",_pszPrefix,eErr,g_fnGetStringNodeErr(eErr));
+		return NULL;
+	}
+	return pclsNewRmt;
+}
+NodeRte * NodeMgr::m_fnAutoRegisterRte(const char * _pszPrefix,Net5Tuple & _rstAddr,
+													NodeLoc **_ppclsLoc, NodeRmt ** _ppclsRmt,
+													bool * _pbChanged)
+{
+	NodeLoc * pclsLoc = m_fnFindLocFrom5Tuple(_rstAddr); bool bChangedRmt = false;
+	if(pclsLoc == NULL)
+	{
+		char szErr[128];
+		LogInternal(E_LOG_ERR,"[%s] %s Loc Not Found, %s",__func__,_pszPrefix,_rstAddr.getStr(szErr,128,true));
+		return NULL;
+	}
+	if(_ppclsLoc) *_ppclsLoc = pclsLoc;
+	NodeRmt * pclsRmt = m_fnAutoRegisterRmt((KCSTR)pclsLoc->m_clsName,_rstAddr,&bChangedRmt);
+	if(pclsRmt == NULL) return NULL;
+	if(_ppclsRmt) *_ppclsRmt = pclsRmt;
+	ListItr_t clsItor;NodeRte * pclsRte = m_fnBeginRte(clsItor);
+	NodeLoc * pclsFindLoc = NULL;NodeRmt * pclsFindRmt = NULL;
+	if(pclsRte == NULL)
+	{
+		goto AutoRegiRte;
+	}
+	while(pclsRte)
+	{
+		pclsFindLoc = m_fnFindLoc(pclsRte->m_unLocID);
+		pclsFindRmt = m_fnFindRmt(pclsRte->m_unRmtID);
+		if(pclsFindLoc==NULL || pclsFindRmt == NULL){pclsRte = m_fnNextRte(clsItor);continue;}
+		if((*pclsFindLoc == _rstAddr) && (*pclsFindRmt == _rstAddr))
+		{
+			char szErr[128];
+			LogInternal(E_LOG_ERR,"[%s] %s Already Exit Rte, %s",__func__,_pszPrefix,_rstAddr.getStr(szErr,128,true));
+			if(bChangedRmt && _pbChanged) * _pbChanged = true;
+			return pclsRte;
+		}
+		pclsRte = m_fnNextRte(clsItor);
+	}
+	AutoRegiRte:
+	NodeRte * pclsNewRte = new NodeRte(this);
+	pclsNewRte->m_stAddr = _rstAddr;
+	pclsNewRte->m_unID = s_fnGetNextRteID(this);
+	pclsNewRte->m_fnSetKey(pclsNewRte->m_unID);
+	KString clsTmpRte; clsTmpRte<<(KSTR)pclsLoc->m_clsName<<(KUINT)pclsNewRte->m_unID;
+	pclsNewRte->m_clsName = (KSTR)clsTmpRte;	
+	pclsNewRte->m_unLocID = pclsLoc->m_unID;
+	pclsNewRte->m_unRmtID = pclsRmt->m_unID;
+	pclsNewRte->m_unMBlock = 0;
+	ENodeMgrApiError_t eErrRte;
+	if(!m_fnAddRte(pclsNewRte,&eErrRte))
+	{
+		LogInternal(E_LOG_ERR,"%s Auto Add Rte Error : %u(%s)",_pszPrefix,eErrRte,
+												g_fnGetStringNodeErr(eErrRte));
+		return NULL;
+	}
+	if(_pbChanged) * _pbChanged = true;
+	return pclsNewRte;	
+}
+NodeSeq * NodeMgr::m_fnAutoRegisterSeq(const char * _pszPrefix,Net5Tuple & _rstAddr,bool * _pbChanged)
+{
+	char szaddr[256];if(_pbChanged) *_pbChanged = false;
+	LogInternal(E_LOG_INFO,"[%s] %s",__func__,_rstAddr.getStr(szaddr,256,true));
+	NodeLoc * pclsLoc = NULL;NodeRmt * pclsRmt = NULL;bool bChangedRte = false;
+	NodeRte * pclsRte = m_fnAutoRegisterRte(_pszPrefix,_rstAddr,&pclsLoc,&pclsRmt,&bChangedRte);
+	if(pclsRte == NULL) return NULL;
+	ListItr_t clsItor;NodeSeq * pclsSeq = m_fnBeginSeq(clsItor);
+	if(pclsSeq == NULL)
+	{
+		goto AutoRegiSeq;
+	}
+	ENodeMgrApiError_t eErrSeq;
+	while(pclsSeq)
+	{
+		if(pclsSeq->m_fnIsEixstLoc(pclsLoc->m_unID))
+		{
+			if(!pclsSeq->m_fnAddRatio(pclsRte->m_unID,1, &eErrSeq))
+			{
+				LogInternal(E_LOG_ERR," 1 Auto %s Seq Ratio Error %u(%s)",_pszPrefix,eErrSeq,
+											g_fnGetStringNodeErr(eErrSeq));
+			}
+			if(bChangedRte && _pbChanged) *_pbChanged = true;
+			return pclsSeq;
+		}
+		pclsSeq = m_fnNextSeq(clsItor);
+	}
+	AutoRegiSeq:
+	NodeSeq * pclsNewSeq = new NodeSeq(this);
+	pclsNewSeq->m_unID = s_fnGetNextSeqID(this);
+	pclsNewSeq->m_fnSetKey(pclsNewSeq->m_unID);
+	pclsNewSeq->m_clsName = (KCSTR)pclsLoc->m_clsName;
+	if(!pclsNewSeq->m_fnAddRatio(pclsRte->m_unID,1, &eErrSeq))
+	{
+		LogInternal(E_LOG_ERR," 2 Auto %s Seq Ratio Error %u(%s)",_pszPrefix,eErrSeq,
+									g_fnGetStringNodeErr(eErrSeq));
+		delete pclsNewSeq;
+		return NULL;
+	}
+	ENodeMgrApiError_t eErrRte;
+	if(!m_fnAddSeq(pclsNewSeq,&eErrRte))
+	{
+		LogInternal(E_LOG_ERR," 3 Auto Add %s Seq Error : %u(%s)",_pszPrefix,eErrRte,
+												g_fnGetStringNodeErr(eErrRte));
+		return NULL;
+	}
+	if(_pbChanged) * _pbChanged = true;
+	return pclsNewSeq;
+}
+bool NodeMgr::m_fnAutoRemoveNode(const char * _pszPrefix, Net5Tuple & _rstAddr)
+{
+	char szaddr[256];_rstAddr.getStr(szaddr,256,true);
+	LogInternal(E_LOG_DEBUG,"[%s] %s",__func__,szaddr);
+	ListItr_t stItor; NodeRte * pclsRte = m_fnFindRteFrom5Tuple(_rstAddr); 
+	unsigned int unRteID = 0;unsigned int unRmtID = 0; unsigned int unLocID = 0;
+	if(pclsRte == NULL) 
+	{
+		LogInternal(E_LOG_DEBUG,"[%s] %s Not Found Rte %s", __func__,_pszPrefix,szaddr);
+		return false;
+	}
+	ENodeMgrApiError_t eErr;
+	unRteID = pclsRte->m_unID; unLocID = pclsRte->m_unLocID; unRmtID = pclsRte->m_unRmtID;
+	NodeSeq * pclsSeq = m_fnBeginSeq(stItor);
+	while(pclsSeq)
+	{
+		if(pclsSeq->m_fnIsEixstRte(unRteID))
+		{
+			pclsSeq->m_fnDelList(unRteID);
+			LogInternal(E_LOG_INFO,"[%s] %s Del Seq Ratio Success: %s",__func__,_pszPrefix,szaddr);
+		}
+		pclsSeq = m_fnNextSeq(stItor);
+	}
+	if(!m_fnDelRte(unRteID,&eErr))
+		LogInternal(E_LOG_DEBUG,"[%s] %s Del Rte Err: %s",__func__,_pszPrefix,g_fnGetStringNodeErr(eErr));
+	else
+		LogInternal(E_LOG_INFO,"[%s] %s Del Rte Success: %s",__func__,_pszPrefix,szaddr);
+	if(!m_fnDelRmt(unRmtID,&eErr))
+		LogInternal(E_LOG_DEBUG,"[%s] %s Del Rmt  Err: %s",__func__,_pszPrefix,g_fnGetStringNodeErr(eErr));
+	else
+		LogInternal(E_LOG_INFO,"[%s] %s Del Rmt Success: %s",__func__,_pszPrefix,szaddr);
+	if(!m_fnDelLoc(unLocID,&eErr)) 
+		LogInternal(E_LOG_DEBUG,"[%s] %s Del Loc  Err: %s",__func__,_pszPrefix,g_fnGetStringNodeErr(eErr));
+	else
+		LogInternal(E_LOG_INFO,"[%s] %s Del Loc Success: %s",__func__,_pszPrefix,szaddr);
+	return true;
+}
+NodeConnection * NodeMgr::m_fnFindConnection(const Net5Tuple & _rstAddr)
+{
+	KString clsKey; 
+	clsKey<<(KCSTR)_rstAddr.m_szLocalIp<<(KUINT)_rstAddr.m_nLocalPort;
+	clsKey<<(KCSTR)_rstAddr.m_szRemoteIp<<(KUINT)_rstAddr.m_nRemotePort;
+	return (NodeConnection *)m_mapConnections.m_fnFindMap((KCSTR)clsKey);
+}
+NodeConnection * NodeMgr::m_fnFindConnectionFromVmID(const char * _pszVmID)
+{
+	MapStrItr_t stItor;NodeConnection * pclsCon = m_fnBeginConnection(stItor); const char * pszVmID = NULL;
+	while(pclsCon)
+	{
+		pszVmID = pclsCon->m_fnFindExtParam(DEF_VM_ID);
+		if(KString::m_fnStrCmp(_pszVmID,pszVmID)==0) return pclsCon;
+		pclsCon = m_fnNextConnection(stItor);
+	}
+	return NULL;
+}
+NodeRte * NodeMgr::m_fnFindRteFromVmID(const char * _pszVmID)
+{
+	ListItr_t stItor;NodeRte * pclsRte = m_fnBeginRte(stItor); const char * pszVmID = NULL;
+	while(pclsRte)
+	{
+		pszVmID = pclsRte->m_fnFindExtParam(DEF_VM_ID);
+		if(KString::m_fnStrCmp(_pszVmID,pszVmID)==0) return pclsRte;
+		pclsRte = m_fnNextRte(stItor);
+	}
+	return NULL;
+}
+NodeConnection * NodeMgr::m_fnAddConnection(const Net5Tuple & _rstAddr)
+{
+	KString clsKey;
+	clsKey<<(KCSTR)_rstAddr.m_szLocalIp<<(KUINT)_rstAddr.m_nLocalPort;
+	clsKey<<(KCSTR)_rstAddr.m_szRemoteIp<<(KUINT)_rstAddr.m_nRemotePort;
+	NodeConnection * pclsNew = new NodeConnection(this);
+	pclsNew->m_fnSetKey((KCSTR)clsKey);
+	memcpy(&pclsNew->m_stAddr,&_rstAddr,sizeof(Net5Tuple));
+	if(m_mapConnections.m_fnSetMap((KCSTR)clsKey,pclsNew)) return pclsNew;
+	return NULL;
+}
+NodeConnection * NodeMgr::m_fnConnectionProc(const Net5Tuple & _rstAddr, bool _bConnect,bool * _pbChanged)
+{
+	NodeConnection * pclsCon = m_fnFindConnection(_rstAddr);
+	char szAddr[256]; 
+	if(pclsCon == NULL)
+	{
+		_rstAddr.getStr(szAddr,256,true);
+		LogInternal(E_LOG_INFO,"[%s] Add Node Connection %s",__func__,szAddr);
+		pclsCon = m_fnAddConnection(_rstAddr);
+		if(pclsCon==NULL)
+		{
+			LogInternal(E_LOG_ERR,"[%s] Connection Set Err %s",__func__,szAddr);
+			return NULL;
+		}
+	}
+	pclsCon->m_fnSetConnectivity(_bConnect,_pbChanged);
+	return pclsCon;
+}
+/********************************* MMI ************************************************/
+bool g_fnAddNodeLoc(NodeMgr * _pclsMgr,NodeMgrAddLocReq_t &_rstLoc,NodeMgrAddLocRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstLoc);
+	if(_rstLoc.m_nID == -1 || _rstLoc.m_szName[0]==0 || _rstLoc.m_szIp[0]==0 ||
+		_rstLoc.m_nPort == -1 || _rstLoc.m_eProto == -1 || _rstLoc.m_eMode == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	NodeLoc * pclsNew = new NodeLoc(_pclsMgr);
+	pclsNew->m_unID = _rstLoc.m_nID;
+	pclsNew->m_clsName = _rstLoc.m_szName;
+	pclsNew->m_clsIP = _rstLoc.m_szIp;
+	pclsNew->m_unPort = _rstLoc.m_nPort;
+	pclsNew->m_eType = _rstLoc.m_eProto;
+	pclsNew->m_eMod = _rstLoc.m_eMode;
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet =  _pclsMgr->m_fnAddLoc(pclsNew,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnDelNodeLoc(NodeMgr * _pclsMgr,NodeMgrDelLocReq_t &_rstLoc,NodeMgrDelLocRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstLoc);
+	if(_rstLoc.m_nID == -1 || _rstLoc.m_szName[0]==0 || _rstLoc.m_szIp[0]==0 ||
+		_rstLoc.m_nPort == -1 || _rstLoc.m_eProto == -1 || _rstLoc.m_eMode == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	bRet = _pclsMgr->m_fnDelLoc(_rstLoc.m_nID,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnAddNodeRmt(NodeMgr * _pclsMgr,NodeMgrAddRmtReq_t &_rstRmt, NodeMgrAddRmtRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstRmt);
+	if(_rstRmt.m_nID == -1 || _rstRmt.m_szName[0]==0 || _rstRmt.m_szIp[0]==0 ||
+		_rstRmt.m_nPort == -1 || _rstRmt.m_eProto == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	NodeRmt * pclsNew = new NodeRmt(_pclsMgr);
+	pclsNew->m_unID = _rstRmt.m_nID;
+	pclsNew->m_clsName = _rstRmt.m_szName;
+	pclsNew->m_clsIP = _rstRmt.m_szIp;
+	pclsNew->m_unPort = _rstRmt.m_nPort;
+	pclsNew->m_eType = _rstRmt.m_eProto;
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet =  _pclsMgr->m_fnAddRmt(pclsNew,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnDelNodeRmt(NodeMgr * _pclsMgr,NodeMgrDelRmtReq_t &_rstRmt, NodeMgrDelRmtRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstRmt);
+	if(_rstRmt.m_nID == -1 || _rstRmt.m_szName[0]==0 || _rstRmt.m_szIp[0]==0 ||
+		_rstRmt.m_nPort == -1 || _rstRmt.m_eProto == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet =  _pclsMgr->m_fnDelRmt(_rstRmt.m_nID,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnAddNodeRte(NodeMgr * _pclsMgr,NodeMgrAddRteReq_t &_rstRte,NodeMgrAddRteRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstRte);
+	if(_rstRte.m_nID == -1 || _rstRte.m_szName[0]==0 || _rstRte.m_nLocID == -1||
+		_rstRte.m_nRmtID == -1 || _rstRte.m_nMBlock == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	NodeRte * pclsNew = new NodeRte(_pclsMgr);
+	pclsNew->m_unID = _rstRte.m_nID;
+	pclsNew->m_clsName = _rstRte.m_szName;
+	pclsNew->m_unLocID = _rstRte.m_nLocID;
+	pclsNew->m_unRmtID = _rstRte.m_nRmtID;
+	pclsNew->m_unMBlock = _rstRte.m_nMBlock;
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet =  _pclsMgr->m_fnAddRte(pclsNew,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnBlockNodeRte(NodeMgr * _pclsMgr,NodeMgrBlockRteReq_t &_rstRte,NodeMgrBlockRteRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	
+	if(_rstRte.m_nID == -1 || _rstRte.m_nMBlock == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnCopyReq(&_rstRte);
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	NodeRte * pclsRte =  _pclsMgr->m_fnFindRte(_rstRte.m_nID);
+	if(pclsRte == NULL)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnCopyReq(&_rstRte);
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	pclsRte->m_unMBlock = _rstRte.m_nMBlock;
+	pclsRte->m_fnCopyStruct(_rstRsp.m_stRte);
+	_rstRsp.m_fnSetRsp(true, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnDelNodeRte(NodeMgr * _pclsMgr,NodeMgrDelRteReq_t &_rstRte, NodeMgrDelRteRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstRte);
+	if(_rstRte.m_nID == -1 || _rstRte.m_szName[0]==0 || _rstRte.m_nLocID == -1||
+		_rstRte.m_nRmtID == -1 || _rstRte.m_nMBlock == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet =  _pclsMgr->m_fnDelRte(_rstRte.m_nID,&eError);
+	_rstRsp.m_fnSetRsp(bRet, eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnAddNodeSeq(NodeMgr * _pclsMgr,NodeMgrAddSeqReq_t &_rstSeq, NodeMgrAddSeqRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstSeq);
+	if(_rstSeq.m_nID == -1 || _rstSeq.m_szName[0]==0 || _rstSeq.m_nRatioNum == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	NodeSeq * pclsNew = new NodeSeq(_pclsMgr);
+	pclsNew->m_unID = _rstSeq.m_nID;
+	pclsNew->m_clsName = _rstSeq.m_szName;
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	for(int i=0;i<_rstSeq.m_nRatioNum;i++)
+	{
+		if(pclsNew->m_fnAddRatio(_rstSeq.m_arrRatio[i].m_nRteID,_rstSeq.m_arrRatio[i].m_nRatio,
+								&eError) == false)
+		{
+			delete pclsNew;
+			_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+			return false;
+		}
+	}
+	bRet =  _pclsMgr->m_fnAddSeq(pclsNew,&eError);
+	_rstRsp.m_fnSetRsp(bRet,eError,g_fnGetStringNodeErr(eError));
+	return true;
+}
+bool g_fnDelNodeSeq(NodeMgr * _pclsMgr,NodeMgrDelSeqReq_t &_rstSeq, NodeMgrDelSeqRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; bool bRet = false;
+	_rstRsp.m_fnCopyReq(&_rstSeq);
+	if(_rstSeq.m_nID == -1 || _rstSeq.m_szName[0]==0 || _rstSeq.m_nRatioNum == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	bRet = _pclsMgr->m_fnDelSeq(_rstSeq.m_nID,&eError);
+	_rstRsp.m_fnSetRsp(bRet,eError,g_fnGetStringNodeErr(eError));
+	return bRet;
+}
+bool g_fnModNodeSeq(NodeMgr * _pclsMgr,NodeMgrModSeqReq_t &_rstSeq,NodeMgrModSeqRsp_t &_rstRsp)
+{
+	ENodeMgrApiError_t eError = E_NODE_API_ERROR_NONE; 
+	_rstRsp.m_fnCopyReq(&_rstSeq);
+	if(_rstSeq.m_nID == -1)
+	{
+		eError = E_NODE_API_ERROR_INVALID_PARAM;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	AUTOWLOCK(_pclsMgr->m_fnGetLock());
+	NodeSeq * pclsFind = _pclsMgr->m_fnFindSeq(_rstSeq.m_nID);
+	if(pclsFind==NULL)
+	{
+		eError = E_NODE_API_ERROR_MOD_SEQ_NOT_EXIST;
+		_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+		return false;
+	}
+	if(_rstSeq.m_szName[0] != 0) pclsFind->m_clsName = _rstSeq.m_szName;
+	if(_rstSeq.m_nRatioNum != -1)
+	{
+		NodeSeq * pclsNew = new NodeSeq(_pclsMgr);
+		pclsNew->m_unID = pclsFind->m_unID;
+		pclsNew->m_clsName = pclsFind->m_clsName;
+		for(int i=0;i<_rstSeq.m_nRatioNum;i++)
+		{
+			if(pclsNew->m_fnAddRatio(_rstSeq.m_arrRatio[i].m_nRteID,_rstSeq.m_arrRatio[i].m_nRatio,
+									&eError) == false)
+			{
+				delete pclsNew;
+				_rstRsp.m_fnSetRsp(false, eError,g_fnGetStringNodeErr(eError));
+				return false;
+			}
+		}
+		pclsFind->m_fnClear();
+		for(int i=0;i<_rstSeq.m_nRatioNum;i++)
+		{
+			pclsFind->m_fnAddRatio(_rstSeq.m_arrRatio[i].m_nRteID,
+										_rstSeq.m_arrRatio[i].m_nRatio,
+										NULL);
+		}
+		delete pclsNew;
+	}
+	_rstRsp.m_fnSetRsp(true, eError,g_fnGetStringNodeErr(eError));
+	return true;
+}
+}
+

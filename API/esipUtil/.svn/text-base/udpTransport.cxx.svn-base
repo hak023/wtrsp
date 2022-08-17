@@ -1,0 +1,299 @@
+
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "udpTransport.hxx"
+#include "transportMgr.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+#define LOCK_SND(this) \
+	do \
+	{ \
+		if( !this->m_rclsTransportMgr.isUseSndThread() ) \
+			this->m_clsSndMutex.m_fnLock(); \
+	}while(false)
+
+#define UNLOCK_SND(this) \
+	do \
+	{ \
+		if( !this->m_rclsTransportMgr.isUseSndThread() ) \
+			this->m_clsSndMutex.m_fnUnlock(); \
+	}while(false)
+
+UdpTransport::UdpTransport(TransportMgr & _rclsTransportMgr, Epoll & _rclsEpoll, const Net5Tuple_t & _rstNet5Tuple, const SocketCfg & _rstSocketCfg, const TransportConfig & _rstTransportCfg)
+	: Transport(_rclsTransportMgr, _rclsEpoll, _rstNet5Tuple, _rstSocketCfg, _rstTransportCfg), m_pRcvBuffer(NULL)
+{
+	if( m_stTransportCfg.m_unRcvBufferSize > 0 )
+		m_unRcvBufferMaxLen = m_stTransportCfg.m_unRcvBufferSize;
+	else
+		m_unRcvBufferMaxLen = TransportConfig::E_CONST_DFT_RCV_BUFFER_SIZE;
+}
+
+UdpTransport::~UdpTransport()
+{
+	free(m_pRcvBuffer);
+}
+
+ETransportErr_t UdpTransport::init(int _nFd)
+{
+	if( m_nFd >= 0 )
+	{
+		LogInternal(E_LOG_ERR, "UdpTransport : init : already init : %s", m_szDesc);
+		return E_TRSP_ERR_TRSP_ALREADY_INIT;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+
+	/*==== create Socket ====*/
+	m_nFd = Socket::createSocket(m_nIpVersion, E_TRANSPORT_TYPE_udp, m_stSocketCfg);
+	if( m_nFd >= 0 )
+	{
+		if( Socket::bindSocket(m_nFd, m_stNet5Tuple.m_szLocalIp, m_stNet5Tuple.m_nLocalPort, m_nIpVersion) != 0 )
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : init : fail : can't bind : LocalIp[%s], LocalPort[%d]", m_stNet5Tuple.m_szLocalIp, m_stNet5Tuple.m_nLocalPort);
+			eErr = E_TRSP_ERR_FAIL_BIND_SOCKET;
+			goto ERR_UDP_INIT;
+		}
+	}
+	else
+	{
+		LogInternal(E_LOG_ERR, "UdpTransport : init : fail : can't create socket : LocalIp[%s], LocalPort[%d]", m_stNet5Tuple.m_szLocalIp, m_stNet5Tuple.m_nLocalPort);
+		eErr = E_TRSP_ERR_FAIL_CREATE_SOCKET;
+		goto ERR_UDP_INIT;
+	}
+
+	m_szDesc[0] = 0x00;
+	strncat(m_szDesc, E_CONST_MAX_STR_LEN-1, "Transport(%d, ", m_nFd);
+	m_stNet5Tuple.getKeyStr(m_szDesc, E_CONST_MAX_STR_LEN-1, false);
+	strncat(m_szDesc, E_CONST_MAX_STR_LEN-1, ")");
+
+	LogInternal(E_LOG_DEBUG, "UdpTransport : init : %s", m_szDesc);
+	
+	return E_TRSP_ERR_NONE;
+	
+ERR_UDP_INIT:
+	freeRsc();
+	
+	return eErr;
+}
+
+ETransportErr_t UdpTransport::start()
+{
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "UdpTransport : start : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		return E_TRSP_ERR_TRSP_NOT_INIT;
+	}
+
+	m_rclsEpoll.addFD(m_nFd, EPOLLIN|EPOLLET);
+
+	LogInternal(E_LOG_DEBUG, "UdpTransport : start : %s", m_szDesc);
+	
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t UdpTransport::recvEventProcess()
+{
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "UdpTransport : recvEventProcess : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		return E_TRSP_ERR_TRSP_NOT_INIT;
+	}
+
+	int nRcvRet = -1;
+	unsigned int unTotalRcvLen = 0;
+	unsigned int unIntrCnt = 0;
+	Net5Tuple_t stNet5Tuple;
+
+	while( 1 )
+	{
+		if( !m_pRcvBuffer )
+			m_pRcvBuffer = (char *)malloc(m_unRcvBufferMaxLen);
+
+		if( m_pRcvBuffer )
+		{
+			stNet5Tuple.reset();
+			nRcvRet = Socket::recvFromSocket(m_nFd, m_pRcvBuffer, m_unRcvBufferMaxLen-1, 0, m_nIpVersion, stNet5Tuple.m_szRemoteIp, Net5Tuple_t::E_CONST_MAX_IPADDR_LEN, &(stNet5Tuple.m_nRemotePort));
+			if( nRcvRet > 0 )
+			{
+				unTotalRcvLen += nRcvRet;
+				if( m_stTransportCfg.m_pfnRcvProcCb )
+				{
+					LogInternal(E_LOG_DEBUG, "UdpTransport : recvEventProcess : execute RcvProc callback : %s, RemoteIp[%s], RemotePort[%d], RcvLen[%d], TotalRcvLen[%u]", 
+																	m_szDesc, stNet5Tuple.m_szRemoteIp, stNet5Tuple.m_nRemotePort, nRcvRet, unTotalRcvLen);
+					stNet5Tuple.m_fnSetLocalIp(m_stNet5Tuple.m_szLocalIp);
+					stNet5Tuple.m_fnSetLocalPort(m_stNet5Tuple.m_nLocalPort);
+					stNet5Tuple.m_fnSetTransportType(E_TRANSPORT_TYPE_udp);
+					stNet5Tuple.m_fnSetAppKey(m_stNet5Tuple.m_nAppKey);
+					
+					m_pRcvBuffer[nRcvRet] = 0x00;
+					m_stTransportCfg.m_pfnRcvProcCb(m_rclsTransportMgr, m_pRcvBuffer, nRcvRet, stNet5Tuple);
+					m_pRcvBuffer = NULL;
+				}
+			}
+			else if( nRcvRet == -1 )
+			{
+				LogInternal(E_LOG_ERR, "UdpTransport : recvEventProcess : fail : recvFromSocket(). Ret[%d] : %s", nRcvRet, m_szDesc);
+				return E_TRSP_ERR_FAIL_RECV_SOCKET;
+			}
+			else if( nRcvRet == -2 || nRcvRet == 0 )
+			{
+				LogInternal(E_LOG_DEBUG, "UdpTransport : recvEventProcess : no read data : %s", m_szDesc);
+				break;
+			}
+			else if( nRcvRet == -3 )
+			{
+				LogInternal(E_LOG_ERR, "UdpTransport : recvEventProcess : fail : recvFromSocket(). Ret[%d] : %s", nRcvRet, m_szDesc);
+				++unIntrCnt;
+				if( unIntrCnt < 5 )
+					continue;
+				else
+					break;
+			}
+			else
+			{
+				LogInternal(E_LOG_ERR, "UdpTransport : recvEventProcess : fail : recvFromSocket(). Ret[%d] : %s", nRcvRet, m_szDesc);
+				return E_TRSP_ERR_INTERNAL_ERR;
+			}
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : recvEventProcess : fail : can't create buffer : %s", m_szDesc);
+			return E_TRSP_ERR_FAIL_CREATE_RCV_BUFFER;
+		}
+	}
+
+	return E_TRSP_ERR_NONE;
+}
+
+ETransportErr_t UdpTransport::sndEventProcess()
+{
+	//Udp doesn't have send-event of epoll
+	return E_TRSP_ERR_NONE;
+}
+
+int UdpTransport::sndData(char * _pSndData, unsigned int _unSndLen, const char * _pszRemoteIp, int _nRemotePort, void * _pSndAppData, ETransportErr_t * _peTransportErr)
+{
+	if( !_pSndData || _unSndLen <= 0 || !_pszRemoteIp || strlen(_pszRemoteIp) <= 0 || _nRemotePort < 0 || _nRemotePort > 65535 )
+	{
+		LogInternal(E_LOG_ERR, "TcpTransport : sndData : fail : invalid argument : SndData[%p], SndLen[%u], _pszRemoteIp[%p], _nRemotePort[%d] : %s", 
+									_pSndData, _unSndLen, _pszRemoteIp, _nRemotePort, m_szDesc);
+		if( _peTransportErr )
+			*_peTransportErr = E_TRSP_ERR_INVALID_ARG;
+		return -1;
+	}
+
+	if( m_nFd < 0 )
+	{
+		LogInternal(E_LOG_ERR, "UdpTransport : sndData : fail : not Init. Fd[%d] : %s", m_nFd, m_szDesc);
+		if( _peTransportErr )
+			*_peTransportErr = E_TRSP_ERR_TRSP_NOT_INIT;
+		return -1;
+	}
+
+	ETransportErr_t eErr = E_TRSP_ERR_NONE;
+	int nSndRet = -1;
+	unsigned int unRemaindSndLen = _unSndLen;
+	unsigned int unSndingLen = 0, unTotalSndLen = 0;
+	unsigned int unIntrCnt = 0;
+
+	LOCK_SND(this);
+
+	if( m_stTransportCfg.m_pfnSndPrevProcCb )
+	{
+		LogInternal(E_LOG_DEBUG, "UdpTransport : sndData : execute SndProc callback : %s", m_szDesc);	
+		Net5Tuple_t stNet5Tuple;
+		stNet5Tuple.m_fnSetLocalIp(m_stNet5Tuple.m_szLocalIp);
+		stNet5Tuple.m_fnSetLocalPort(m_stNet5Tuple.m_nLocalPort);
+		stNet5Tuple.m_fnSetRemoteIp(_pszRemoteIp);
+		stNet5Tuple.m_fnSetRemotePort(_nRemotePort);
+		stNet5Tuple.m_fnSetTransportType(E_TRANSPORT_TYPE_udp);
+		stNet5Tuple.m_fnSetAppKey(m_stNet5Tuple.m_nAppKey);
+
+		m_stTransportCfg.m_pfnSndPrevProcCb(m_rclsTransportMgr, _pSndData, _unSndLen, stNet5Tuple, _pSndAppData);
+	}
+
+	while( unRemaindSndLen > 0 )
+	{
+		if( unRemaindSndLen > 65000 )
+		{
+			unSndingLen = 65000;
+			unRemaindSndLen -= 65000;
+		}
+		else
+		{
+			unSndingLen = unRemaindSndLen;
+			unRemaindSndLen = 0;
+		}
+
+		nSndRet = Socket::sendToSocket(m_nFd, _pSndData, unSndingLen, 0, _pszRemoteIp, _nRemotePort);
+		if( nSndRet > 0 )
+		{
+			unTotalSndLen += nSndRet;
+			LogInternal(E_LOG_DEBUG, "UdpTransport : sndData : Sending Len[%d], TotalSndLen[%u] : %s", nSndRet, unTotalSndLen, m_szDesc);
+		}
+		else if( nSndRet == -2 || nSndRet == 0 )
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : sndData : fail : Sending Buffer is full : %s", m_szDesc);
+			eErr = E_TRSP_ERR_SEND_BUFFER_FULL;
+			goto ERR_SND_DATA;
+		}
+		else if( nSndRet == -1 )
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : sndData : fail : sendToSocket(). Ret[%d] : %s", nSndRet, m_szDesc);
+			eErr = E_TRSP_ERR_FAIL_SEND_SOCKET;
+			goto ERR_SND_DATA;
+		}
+		else if( nSndRet == -3 )
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : sndData : fail : sendToSocket(). Ret[%d] : %s", nSndRet, m_szDesc);
+			++unIntrCnt;
+			if( unIntrCnt < 5 )
+				continue;
+			else
+			{
+				eErr = E_TRSP_ERR_INTERRUPT;
+				goto ERR_SND_DATA;
+			}
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR, "UdpTransport : sndData : fail : sendToSocket(). Ret[%d] : %s", nSndRet, m_szDesc);
+			eErr = E_TRSP_ERR_INTERNAL_ERR;
+			goto ERR_SND_DATA;
+		}
+	}
+
+	if( m_stTransportCfg.m_pfnSndAfterProcCb )
+	{
+		LogInternal(E_LOG_DEBUG, "UdpTransport : sndData : execute SndSuccProc callback : %s, SndLen[%u]", m_szDesc, unTotalSndLen);
+		Net5Tuple_t stNet5Tuple;
+		stNet5Tuple.m_fnSetLocalIp(m_stNet5Tuple.m_szLocalIp);
+		stNet5Tuple.m_fnSetLocalPort(m_stNet5Tuple.m_nLocalPort);
+		stNet5Tuple.m_fnSetRemoteIp(_pszRemoteIp);
+		stNet5Tuple.m_fnSetRemotePort(_nRemotePort);
+		stNet5Tuple.m_fnSetTransportType(E_TRANSPORT_TYPE_udp);
+		stNet5Tuple.m_fnSetAppKey(m_stNet5Tuple.m_nAppKey);
+		m_stTransportCfg.m_pfnSndAfterProcCb(m_rclsTransportMgr, _pSndData, unTotalSndLen, stNet5Tuple, _pSndAppData);
+	}
+
+	UNLOCK_SND(this);
+
+	free(_pSndAppData);
+	free(_pSndData);
+
+	return unTotalSndLen;	
+
+ERR_SND_DATA :
+	UNLOCK_SND(this);
+
+	if( _peTransportErr )
+		*_peTransportErr = eErr;
+
+	return -1;
+}
+
+}		

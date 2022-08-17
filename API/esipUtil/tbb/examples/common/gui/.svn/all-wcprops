@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui
+END
+xvideo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/xvideo.cpp
+END
+Makefile.gmake
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/Makefile.gmake
+END
+d2dvideo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/d2dvideo.cpp
+END
+convideo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/convideo.cpp
+END
+macvideo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/macvideo.cpp
+END
+Makefile.win
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/Makefile.win
+END
+winvideo.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/winvideo.h
+END
+gdivideo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/gdivideo.cpp
+END
+video.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/video.h
+END
+dxcheck.bat
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/common/gui/dxcheck.bat
+END

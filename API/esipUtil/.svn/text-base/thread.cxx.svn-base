@@ -1,0 +1,406 @@
+
+#include <time.h>
+#include <string.h>
+#include <stdio.h>
+
+#include "thread.hxx"
+#include "define.hxx"
+#include "log.hxx"
+#include "ConfigFile.hxx"
+#include <errno.h>
+
+namespace eSipUtil
+{
+ThreadMonInfo::ThreadMonInfo(ThreadMon * _pclsOwner){m_fnReset();m_pclsOwner = _pclsOwner;}
+ThreadMonInfo::~ThreadMonInfo(){}
+void ThreadMonInfo::m_fnReset()
+{
+	m_unState = 0;
+	m_stThreadID = 0;
+	m_unStartEvSec = 0;
+	m_unStartEvMsec = 0;
+	m_unFinishEvSec = 0;
+	m_unFinishEvMsec = 0;
+	m_unDiffSec = 0;
+	m_unDiffMsec = 0;
+	m_szName = KNULL;
+}
+//==========> Set Functions
+void ThreadMonInfo::m_fnSetThreadID(){m_stThreadID = pthread_self();}
+void ThreadMonInfo::m_fnSetThreadID(unsigned int _unID){ m_stThreadID = (pthread_t)_unID;}
+void ThreadMonInfo::m_fnSetStartEvTime()
+{
+	if(m_pclsOwner)
+	{
+		if(m_pclsOwner->m_bOn==false) return;
+	}
+	m_unState  = 1;
+	struct timespec stCurrentTs;
+	clock_gettime(CLOCK_REALTIME, &stCurrentTs);
+	m_unStartEvSec = (unsigned int)(stCurrentTs.tv_sec);
+	m_unStartEvMsec = (unsigned int)(stCurrentTs.tv_nsec/1000000);
+}
+void ThreadMonInfo::m_fnSetFinishEvTime()
+{
+	if(m_pclsOwner)
+	{
+		if(m_pclsOwner->m_bOn==false) return;
+	}
+	m_unState = 0;
+	struct timespec stCurrentTs;
+	clock_gettime(CLOCK_REALTIME, &stCurrentTs);
+	m_unFinishEvSec = (unsigned int)(stCurrentTs.tv_sec);
+	m_unFinishEvMsec = (unsigned int)(stCurrentTs.tv_nsec/1000000);
+	unsigned long ulStart = m_unStartEvSec*1000 + m_unStartEvMsec;
+	unsigned long ulFinish = m_unFinishEvSec*1000 + m_unFinishEvMsec;
+	unsigned long ulDiff = ulFinish - ulStart; 
+	m_unDiffSec = (unsigned int)(ulDiff/1000);
+	m_unDiffMsec = (unsigned int)(ulDiff%1000);
+}
+void ThreadMonInfo::m_fnSetName(const char * _pszName)
+{
+	m_szName = _pszName;
+}
+//==========> Get Functions
+unsigned int ThreadMonInfo::m_fnGetThreadID(){return (unsigned int)m_stThreadID;}
+unsigned int ThreadMonInfo::m_fnGetStartSec(){return m_unStartEvSec;}
+unsigned int ThreadMonInfo::m_fnGetStartMsec(){return m_unStartEvMsec;}
+unsigned int ThreadMonInfo::m_fnGetFinishSec(){return m_unFinishEvSec;}
+unsigned int ThreadMonInfo::m_fnGetFinishMsec(){return m_unFinishEvMsec;}
+unsigned int ThreadMonInfo::m_fnGetDiffSec(){return m_unDiffSec;}
+unsigned int ThreadMonInfo::m_fnGetDiffMsec(){return m_unDiffMsec;}
+char * ThreadMonInfo::m_fnGetName(){return m_szName;}	
+void ThreadMonInfo::m_fnBuild(KString & _rclsBuild)
+{
+	KString clsTmp; clsTmp.m_fnReSize(3072);
+	struct timespec stCurrentTs;
+	clock_gettime(CLOCK_REALTIME, &stCurrentTs);
+	unsigned long ulStart = m_unStartEvSec*1000 + m_unStartEvMsec;
+	unsigned int unCurEvSec = (unsigned int)(stCurrentTs.tv_sec);
+	unsigned int unCurEvMsec = (unsigned int)(stCurrentTs.tv_nsec/1000000);
+	unsigned long ulCur = unCurEvSec*1000 + unCurEvMsec;
+	unsigned long ulDiff = ulCur - ulStart;
+	KString::m_fnStrnCat((KSTR)clsTmp,3072,
+				"ID=%08x,Name=%-30s,State=%s,ST=%010u.%03u,ET=%010u.%03u,"\
+				"WDiff=%010u.%03u,SDiff=%010u.%03u",
+								m_fnGetThreadID(),
+								m_fnGetName(),
+								DEF_CFG_TRUE_SELECT(m_unState==0,"IDLE","WORK"),
+								m_fnGetStartSec(), m_fnGetStartMsec(),
+								m_fnGetFinishSec(), m_fnGetFinishMsec(),
+								m_fnGetDiffSec(),
+								m_fnGetDiffMsec(),
+								DEF_CFG_TRUE_SELECT(m_unState==0,0,(unsigned int)ulDiff/1000),
+								DEF_CFG_TRUE_SELECT(m_unState==0,0,(unsigned int)ulDiff%1000));
+	_rclsBuild<<clsTmp;
+}
+ThreadMon * g_pclsThMon = NULL;
+NormalThread< ThreadMon >  * g_pclsThreadChecker = NULL;
+ThreadMon::ThreadMon(){memset(m_szProcName,0x00,DEF_E_MAX_TH_NAME);m_bOn = false;}
+ThreadMon::~ThreadMon()
+{
+	if(g_pclsThreadChecker)
+	{
+		g_pclsThreadChecker->shutdown();
+		g_pclsThreadChecker->join();
+		delete g_pclsThreadChecker;
+	}
+}
+ThreadMon * ThreadMon::m_fnGetInstance(const char * _pszProcName)
+{
+	if(g_pclsThMon==NULL) 
+	{
+		g_pclsThMon = new ThreadMon;
+		if(KString::m_fnStrLen(_pszProcName) > 0)
+		{
+			strncpy(g_pclsThMon->m_szProcName,_pszProcName,DEF_E_MAX_TH_NAME-1);
+			if(g_pclsThreadChecker == NULL)
+			{
+				g_pclsThreadChecker = new NormalThread<ThreadMon>("ThreadMon");
+				g_pclsThreadChecker->setProcessCb(m_CbkProc);
+				g_pclsThreadChecker->setObject(g_pclsThMon);
+				g_pclsThreadChecker->run_(-1,-1,false);
+			}
+		}
+	}
+	else
+	{
+		if(KString::m_fnStrLen(_pszProcName) > 0)
+		{
+			if(g_pclsThMon->m_szProcName[0] == 0) 
+			{
+				strncpy(g_pclsThMon->m_szProcName,_pszProcName,DEF_E_MAX_TH_NAME-1);
+				if(g_pclsThreadChecker == NULL)
+				{
+					g_pclsThreadChecker = new NormalThread<ThreadMon>("ThreadMon");
+					g_pclsThreadChecker->setProcessCb(m_CbkProc);
+					g_pclsThreadChecker->setObject(g_pclsThMon);
+					g_pclsThreadChecker->run_(-1,-1,false);
+				}
+			}
+		}
+	}
+	return g_pclsThMon;
+}
+
+void ThreadMon::m_fnOnOff(bool _bOn)
+{
+	m_bOn = _bOn;
+}
+void ThreadMon::m_CbkProc(ThreadMon * _pclsObj)
+{
+	sleep(1);
+	if(_pclsObj->m_bOn==false) return;
+	_pclsObj->m_clsLock.m_fnReadLock();
+	KString clsPath; clsPath<<"./"<<_pclsObj->m_szProcName<<".thread";
+	KString clsBuild; CfgFileInfo clsFile; clsFile.m_fnInit((KCSTR)clsPath);
+	ListItr_t stItor; ThreadMonInfo * pclsFind = (ThreadMonInfo*)_pclsObj->m_listInfo.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(clsBuild); clsBuild<<"\r\n";
+		pclsFind = (ThreadMonInfo*)_pclsObj->m_listInfo.m_fnNext(stItor);
+	}
+	_pclsObj->m_clsLock.m_fnUnlock();
+	clsFile.m_fnWriteFile((KSTR)clsBuild,clsBuild.m_unRealLen);
+}
+ThreadMonInfo * ThreadMon::m_fnAdd(const char * _pszName,unsigned int _unThreadID)
+{
+	ThreadMonInfo * pclsRet = new ThreadMonInfo(this);  bool bAdd = false;
+	pclsRet->m_fnSetName(_pszName);
+	if(_unThreadID == 0)
+		pclsRet->m_fnSetThreadID();
+	else
+		pclsRet->m_fnSetThreadID(_unThreadID);
+	pclsRet->m_fnSetStartEvTime();
+	pclsRet->m_fnSetFinishEvTime();
+	m_clsLock.m_fnWriteLock();
+	bAdd = m_listInfo.m_fnPushBack(pclsRet);
+	m_clsLock.m_fnUnlock();
+	if(bAdd == false) return NULL;
+	return pclsRet;
+}
+void ThreadMon::m_fnDebug()
+{
+	if(m_bOn==false) return;
+	KString clsDebug; clsDebug.m_fnReSize(10240); char * pszTmp = (KSTR)clsDebug;
+	m_clsLock.m_fnReadLock();
+	KString::m_fnStrnCat(pszTmp,10240,"\r\n=================> Thread Monitor <======================\r\n");
+	KString::m_fnStrnCat(pszTmp,10240,"Total Num = %u\r\n",m_listInfo.m_fnGetSize());
+	ListItr_t stItor; ThreadMonInfo * pclsFind = (ThreadMonInfo*)m_listInfo.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		struct timespec stCurrentTs;
+		clock_gettime(CLOCK_REALTIME, &stCurrentTs);
+		unsigned long ulStart = pclsFind->m_unStartEvSec*1000 + pclsFind->m_unStartEvMsec;
+		unsigned int unCurEvSec = (unsigned int)(stCurrentTs.tv_sec);
+		unsigned int unCurEvMsec = (unsigned int)(stCurrentTs.tv_nsec/1000000);
+		unsigned long ulCur = unCurEvSec*1000 + unCurEvMsec;
+		unsigned long ulDiff = ulCur - ulStart;
+		KString::m_fnStrnCat(pszTmp,10240,
+				"(TID=%08x,Name=%-30s,St=%s,EvT=<%010u.%03u:%010u.%03u>,"\
+				"WDiff=%s%010u.%03u,SDiff=%010u.%03u)\r\n",
+								pclsFind->m_fnGetThreadID(),
+								pclsFind->m_fnGetName(),
+								DEF_CFG_TRUE_SELECT(pclsFind->m_unState==0,"IDLE","WORK"),
+								pclsFind->m_fnGetStartSec(), pclsFind->m_fnGetStartMsec(),
+								pclsFind->m_fnGetFinishSec(), pclsFind->m_fnGetFinishMsec(),
+								pclsFind->m_fnGetDiffSec(),
+								pclsFind->m_fnGetDiffMsec(),
+								DEF_CFG_TRUE_SELECT(pclsFind->m_unState==0,0,(unsigned int)ulDiff/1000),
+								DEF_CFG_TRUE_SELECT(pclsFind->m_unState==0,0,(unsigned int)ulDiff%1000));
+		pclsFind = (ThreadMonInfo*)m_listInfo.m_fnNext(stItor);
+	}
+	KString::m_fnStrnCat(pszTmp,10240,
+		"\r\n=========================================================\r\n");
+	m_clsLock.m_fnUnlock();
+	LogInternal(E_LOG_ERR,(KCSTR)clsDebug);
+}
+void * BaseThread::threadWrapper(void * _data)
+{
+	BaseThread * pclsThread = (BaseThread *)_data;
+	if( pclsThread )
+		pclsThread->process();
+
+	return NULL;
+}
+
+BaseThread::BaseThread(const char * _pszThreadName)
+	: m_threadId(0), m_nKernelTid(-1), m_bShutdown(true)
+{
+	m_pclsInfo = NULL;
+	m_szThreadName[0] = 0x00;
+	if( _pszThreadName )
+	{
+		strncpy(m_szThreadName, _pszThreadName, sizeof(m_szThreadName)-1);
+		m_szThreadName[sizeof(m_szThreadName)-1] = 0x00;
+	}
+	pthread_mutex_init(&m_shutdownMutex, NULL);
+	pthread_cond_init(&m_shutdownCondition, NULL);
+	m_pclsInfo = ThreadMon::m_fnGetInstance()->m_fnAdd(m_szThreadName,1);
+}
+
+BaseThread::~BaseThread()
+{
+	pthread_cond_destroy(&m_shutdownCondition);
+    pthread_mutex_destroy(&m_shutdownMutex);
+}
+
+bool BaseThread::run()
+{
+	if( !m_bShutdown )
+	{
+		LogInternal(E_LOG_DEBUG, "Thread[%s] : run : already running", m_szThreadName);
+		return true;
+	}
+	m_bShutdown = false;
+	int nResult = pthread_create(&m_threadId, 0, threadWrapper, this);
+	if( nResult != 0 )
+	{
+		LogInternal(E_LOG_ERR, "Thread[%s] : run : fail : %d", m_szThreadName, nResult);
+		m_threadId = 0;
+		m_bShutdown = true;
+		if(m_pclsInfo) m_pclsInfo->m_fnSetThreadID((unsigned int)m_threadId);
+		return false;
+	}
+	else
+	{
+		m_bShutdown = false;
+		if(m_pclsInfo) m_pclsInfo->m_fnSetThreadID((unsigned int)m_threadId);
+		return true;
+	}
+}
+bool BaseThread::run_(int _nCoreID, int _nStackSize, bool _bDetached)
+{
+	pthread_attr_t tattr;
+	pthread_attr_init(&tattr);
+	if(_nStackSize > 0) pthread_attr_setstacksize(&tattr, _nStackSize);
+	if (_bDetached)
+		pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_DETACHED);
+	int nResult = pthread_create(&m_threadId,&tattr,threadWrapper,this);
+	if( nResult != 0 )
+	{
+		LogInternal(E_LOG_ERR, "Thread[%s] : run : fail : %d", m_szThreadName, nResult);
+		m_threadId = 0;
+		m_bShutdown = true;
+		pthread_attr_destroy(&tattr);
+		if(m_pclsInfo) m_pclsInfo->m_fnSetThreadID((unsigned int)m_threadId);
+		return false;
+	}
+	else
+	{
+		m_bShutdown = false;
+		m_fnSetCore(_nCoreID);
+		if(m_pclsInfo) m_pclsInfo->m_fnSetThreadID((unsigned int)m_threadId);
+		pthread_attr_destroy(&tattr);
+		return true;
+	}
+}
+void BaseThread::shutdown()
+{
+	pthread_mutex_lock(&m_shutdownMutex);
+	
+	if( !m_bShutdown )
+	{
+		m_bShutdown = true;
+		pthread_cond_signal(&m_shutdownCondition);
+	}
+
+	pthread_mutex_unlock(&m_shutdownMutex);
+}
+
+bool BaseThread::waitForShutdown(int _nMs) const
+{
+	if( m_bShutdown == 0 )
+		return true;
+	
+	pthread_mutex_lock(&m_shutdownMutex);
+	
+	if( !m_bShutdown )
+	{
+		struct timespec ts;
+		clock_gettime(CLOCK_REALTIME, &ts);
+		ts.tv_sec += _nMs / 1000;
+		ts.tv_nsec += (_nMs % 1000)*1000*1000;
+		ts.tv_sec += ts.tv_nsec / (1000*1000*1000);
+		ts.tv_nsec = ts.tv_nsec % (1000*1000*1000);
+		pthread_cond_timedwait(&m_shutdownCondition, &m_shutdownMutex, &ts);
+	}
+
+	pthread_mutex_unlock(&m_shutdownMutex);
+	
+	return m_bShutdown;
+}
+
+void BaseThread::join()
+{
+	if( m_threadId == 0 )
+	{
+		LogInternal(E_LOG_DEBUG, "Thread[%s] : join : fail : m_threadId is 0", m_szThreadName);
+		return;
+	}
+
+	if( m_threadId != pthread_self() )
+	{
+		int nResult = pthread_join(m_threadId , NULL);
+		if( nResult != 0 )
+			LogInternal(E_LOG_DEBUG, "Thread[%s] : join : fail : %d", m_szThreadName, nResult);
+	}
+}
+
+void BaseThread::detach()
+{
+	if( m_threadId == 0 )
+	{
+		LogInternal(E_LOG_DEBUG, "Thread[%s] : detach : fail : m_threadId is 0", m_szThreadName);
+		return;
+	}
+
+	pthread_detach(m_threadId);
+}
+
+bool BaseThread::isShutdown() const
+{
+	return m_bShutdown;
+}
+
+void BaseThread::setName(const char * _pszThreadName)
+{
+	if( _pszThreadName )
+	{
+		strncpy(m_szThreadName, _pszThreadName, sizeof(m_szThreadName)-1);
+		m_szThreadName[sizeof(m_szThreadName)-1] = 0x00;
+		if(m_pclsInfo) m_pclsInfo->m_fnSetName(_pszThreadName);
+	}
+}
+
+const char * BaseThread::getName() const
+{
+	return m_szThreadName;
+}
+
+unsigned long BaseThread::getId()
+{
+	return (unsigned long)m_threadId;
+}
+
+int BaseThread::getKernelTid() const
+{
+	return m_nKernelTid;
+}
+
+int BaseThread::m_fnSetCore(int _nCoreID)
+{
+	if(_nCoreID < 0) return -1;
+	int num_cores = sysconf(_SC_NPROCESSORS_ONLN);   
+	if (_nCoreID >= num_cores)  // core_id = 0, 1, ... n-1 if system has n cores                          		
+	return EINVAL;                                                                                    	
+	cpu_set_t cpuset;                                                                                    
+	CPU_ZERO(&cpuset);                                                                                   	
+	CPU_SET(_nCoreID, &cpuset);                                                                           	
+	//pthread_t current_thread = pthread_self();                                                           	
+	//return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);                           
+	return pthread_setaffinity_np(m_threadId, sizeof(cpu_set_t), &cpuset);                           
+}
+}
+
+

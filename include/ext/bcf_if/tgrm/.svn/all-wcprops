@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/tgrm
+END
+tr_msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tgrm/tr_msg.h
+END
+tr_err.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/repos/vIBC/!svn/ver/237/trunk/src/include/ext/bcf_if/tgrm/tr_err.h
+END
+tgrm_shm.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/764/trunk/src/include/ext/bcf_if/tgrm/tgrm_shm.h
+END

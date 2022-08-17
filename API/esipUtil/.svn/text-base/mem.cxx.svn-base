@@ -1,0 +1,123 @@
+
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+#include "mem.hxx"
+
+namespace eSipUtil
+{
+
+const char * memstr(const char * _pSrcData, const char * _pszFindStr, int _nSrcDataLen)
+{
+	if( !_pSrcData || !_pszFindStr || _nSrcDataLen == 0 )
+		return NULL;
+
+	const char * p;
+	char nFindStrLen = strlen(_pszFindStr);
+	for( p = _pSrcData; p <= (_pSrcData-nFindStrLen+_nSrcDataLen); ++p )
+	{
+		if( memcmp(p, _pszFindStr, nFindStrLen) == 0)
+			return p;
+	}
+	
+	return NULL;
+}
+
+const char * memstr4Reverse(const char * _pSrcData, const char * _pszFindStr, int _nSrcDataLen)
+{
+	if( !_pSrcData || !_pszFindStr || _nSrcDataLen == 0 )
+		return NULL;
+
+	char nFindStrLen = strlen(_pszFindStr);
+	if( nFindStrLen > _nSrcDataLen )
+		return NULL;
+
+	const char * p;
+	for( p = _pSrcData+_nSrcDataLen-nFindStrLen; p >= _pSrcData; --p )
+	{
+		if( memcmp(p, _pszFindStr, nFindStrLen) == 0)
+			return p;
+	}
+	
+	return NULL;
+}
+
+const char * memistr(const char * _pSrcData, const char * _pszFindStr, int _nSrcDataLen)
+{
+	if( !_pSrcData || !_pszFindStr || _nSrcDataLen == 0 )
+		return NULL;
+
+	const char * pptr;
+	const char * sptr, * pStart, * pEnd;
+
+	pStart = _pSrcData;
+	pEnd = _pSrcData + _nSrcDataLen;
+
+	for( ; pStart < pEnd; ++pStart )
+	{
+		/* find start of pattern in string */
+		for( ; (pStart < pEnd) && (toupper(*pStart) != toupper(*_pszFindStr)); ++pStart )
+			;
+		if( pStart >= pEnd )
+			return NULL;
+
+		pptr = _pszFindStr;
+		sptr = pStart;
+
+		while (toupper(*sptr) == toupper(*pptr))
+		{
+			sptr++;
+			pptr++;
+
+			/* if end of pattern then pattern was found */
+			if( !*pptr )
+				return pStart;
+		}
+	}
+	
+	return NULL;
+}
+
+const char * memistr4Reverse(const char * _pSrcData, const char * _pszFindStr, int _nSrcDataLen)
+{
+	if( !_pSrcData || !_pszFindStr || _nSrcDataLen == 0 )
+		return NULL;
+
+	char nFindStrLen = strlen(_pszFindStr);
+	if( nFindStrLen > _nSrcDataLen )
+		return NULL;
+
+	const char * pptr;
+	const char * sptr, * pStart, * pEnd;
+
+	pStart = _pSrcData;
+	pEnd = _pSrcData + _nSrcDataLen - nFindStrLen;
+
+	for( ; pEnd >= pStart; --pEnd )
+	{
+		/* find start of pattern in string */
+		for( ; (pEnd >= pStart) && (toupper(*pEnd) != toupper(*_pszFindStr)); --pEnd )
+			;
+		if( pEnd < pStart )
+			return NULL;
+
+		pptr = _pszFindStr;
+		sptr = pEnd;
+
+		while (toupper(*sptr) == toupper(*pptr))
+		{
+			sptr++;
+			pptr++;
+
+			/* if end of pattern then pattern was found */
+			if( !*pptr )
+				return pEnd;
+		}
+	}
+	
+	return NULL;
+}
+
+}
+

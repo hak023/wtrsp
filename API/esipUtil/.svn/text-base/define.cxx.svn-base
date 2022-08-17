@@ -1,0 +1,153 @@
+
+#include "define.hxx"
+
+namespace eSipUtil
+{
+
+static const char * s_pszBlankStr = "";
+
+const char * getBlankStr()
+{
+	return s_pszBlankStr;
+}
+
+bool isIpv6(const char * _pszIpAddr)
+{
+	if( _pszIpAddr && strchr(_pszIpAddr, ':') )
+		return true;
+	else
+		return false;
+}
+
+struct TransportTypeInfo
+{
+	ETransportType_t m_eTransportType;
+	const char * m_pszDesc;
+};
+
+static TransportTypeInfo s_arrTransportMsgTypeInfo[E_TRANSPORT_TYPE_NUM] =
+{
+	{E_TRANSPORT_TYPE_udp, 		"UDP"},
+	{E_TRANSPORT_TYPE_tcp, 		"TCP"},
+	{E_TRANSPORT_TYPE_tls, 		"TLS"},
+};
+
+const char * getTransportTypeStr(ETransportType_t _eTransportType)
+{
+	static const char * pszUnknown = "Unknown_TransportType";
+		
+	if( _eTransportType >= 0 && _eTransportType < E_TRANSPORT_TYPE_NUM )
+		return s_arrTransportMsgTypeInfo[_eTransportType].m_pszDesc;
+	else
+		return pszUnknown;
+}
+
+void Net5Tuple::reset()
+{
+	m_szLocalIp[0] = 0x00;
+	m_nLocalPort = -1;
+	m_nClientRealLocalPort = -1;
+	m_szRemoteIp[0] = 0x00;
+	m_nRemotePort = -1;
+	m_eTransportType = E_TRANSPORT_TYPE_NUM;
+
+	m_nAppKey = -1;
+}
+
+bool Net5Tuple::operator==(const Net5Tuple & _rstNet5Tuple) const
+{
+	if( strcmp(m_szLocalIp, _rstNet5Tuple.m_szLocalIp) == 0
+		&& m_nLocalPort == _rstNet5Tuple.m_nLocalPort
+		&& strcmp(m_szRemoteIp, _rstNet5Tuple.m_szRemoteIp) == 0
+		&& m_nRemotePort == _rstNet5Tuple.m_nRemotePort
+		&& m_eTransportType == _rstNet5Tuple.m_eTransportType )
+	{
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Net5Tuple::checkSame4Transport(const Net5Tuple & _rstNet5Tuple) const
+{
+	if( m_eTransportType != _rstNet5Tuple.m_eTransportType )
+		return false;
+
+	if( strcmp(m_szLocalIp, _rstNet5Tuple.m_szLocalIp) == 0 && m_nLocalPort == _rstNet5Tuple.m_nLocalPort )
+	{
+		if( m_eTransportType == E_TRANSPORT_TYPE_udp )
+		{
+			return true;
+		}
+		else
+		{
+			if( strcmp(m_szRemoteIp, _rstNet5Tuple.m_szRemoteIp) == 0 && m_nRemotePort == _rstNet5Tuple.m_nRemotePort )
+				return true;
+			else
+				return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+const char * Net5Tuple::getKeyStr(char * _pszOutStr, unsigned int _unMaxStrLen, bool _bInitial) const
+{
+	if( !_pszOutStr || _unMaxStrLen == 0 )
+		return getBlankStr();
+
+	if( _bInitial )
+		_pszOutStr[0] = 0x00;
+
+	if( m_eTransportType == E_TRANSPORT_TYPE_udp )
+		strncat(_pszOutStr, _unMaxStrLen-1, "%s_%d:%s", m_szLocalIp, m_nLocalPort, getTransportTypeStr(m_eTransportType));
+	else
+		strncat(_pszOutStr, _unMaxStrLen-1, "%s_%d^%s_%d:%s", m_szLocalIp, m_nLocalPort, m_szRemoteIp, m_nRemotePort, getTransportTypeStr(m_eTransportType));
+
+	return _pszOutStr;
+}
+
+const char * Net5Tuple::getStr(char * _pszOutStr, unsigned int _unMaxStrLen, bool _bInitial) const
+{
+	if( !_pszOutStr || _unMaxStrLen == 0 )
+		return getBlankStr();
+
+	if( _bInitial )
+		_pszOutStr[0] = 0x00;
+
+	int nLocalPort = -1;
+	if( m_nClientRealLocalPort >= 0 )
+		nLocalPort = m_nClientRealLocalPort;
+	else
+		nLocalPort = m_nLocalPort;
+
+	strncat(_pszOutStr, _unMaxStrLen-1, "Tuple(Local:%s/%d, Remote:%s/%d, %s)", m_szLocalIp, nLocalPort, m_szRemoteIp, m_nRemotePort, getTransportTypeStr(m_eTransportType));
+
+	return _pszOutStr;
+}
+
+const char * Net5Tuple::getStrDir(char * _pszOutStr, unsigned int _unMaxStrLen, bool _bRcv, bool _bInitial) const
+{
+	if( !_pszOutStr || _unMaxStrLen == 0 )
+		return getBlankStr();
+
+	if( _bInitial )
+		_pszOutStr[0] = 0x00;
+
+	int nLocalPort = -1;
+	if( m_nClientRealLocalPort >= 0 )
+		nLocalPort = m_nClientRealLocalPort;
+	else
+		nLocalPort = m_nLocalPort;
+
+	if( _bRcv )
+		strncat(_pszOutStr, _unMaxStrLen-1, "Rcv(Remote:%s/%d ===> Local:%s/%d, %s)", m_szRemoteIp, m_nRemotePort, m_szLocalIp, nLocalPort, getTransportTypeStr(m_eTransportType));
+	else
+		strncat(_pszOutStr, _unMaxStrLen-1, "Snd(Local:%s/%d ===> Remote:%s/%d, %s)", m_szLocalIp, nLocalPort, m_szRemoteIp, m_nRemotePort, getTransportTypeStr(m_eTransportType));
+
+	return _pszOutStr;
+}
+
+}

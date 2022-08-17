@@ -1,0 +1,277 @@
+
+#include <string.h>
+
+#include "bufferControl.hxx"
+#include "mem.hxx"
+
+namespace eSipUtil
+{
+
+static const char s_szWhitespace[3] = " \t";
+
+BufferControl::BufferControl()
+	: m_pStartPos(NULL), m_pEndPos(NULL)
+{
+}
+
+BufferControl::BufferControl(const char * _pBuffer, unsigned int _unBufferLen)
+{
+	setBuffer(_pBuffer, _unBufferLen);
+}
+
+BufferControl::~BufferControl()
+{
+}
+
+void BufferControl::setBuffer(const char * _pBuffer, unsigned int _unBufferLen)
+{
+	m_pStartPos = _pBuffer;
+	m_pEndPos = _pBuffer + _unBufferLen;
+}
+
+void BufferControl::setStartPos(const char * _pPos)
+{
+	m_pStartPos = _pPos;
+}
+
+void BufferControl::setEndPos(const char * _pPos)
+{
+	m_pEndPos = _pPos;
+}
+
+bool BufferControl::move(unsigned int _nMoveByte, bool _bReverse)
+{
+	if( _bReverse )
+		m_pEndPos -= _nMoveByte;
+	else
+		m_pStartPos += _nMoveByte;
+
+	return !eof();
+}
+
+bool BufferControl::isChar(char _c, bool _bReverse)
+{
+	if( eof() )
+		return false;
+
+	const char * pTmp;
+	if( _bReverse )
+	{
+		pTmp = m_pEndPos;
+		--pTmp;
+	}
+	else
+	{
+		pTmp = m_pStartPos;
+	}
+
+	if( *pTmp == _c )
+		return true;
+	else
+		return false;
+}
+
+bool BufferControl::isChars(const char * _pChars, bool _bReverse)
+{
+	if( eof() )
+		return false;
+
+	const char * pTmp;
+	if( _bReverse )
+	{
+		pTmp = m_pEndPos;
+		--pTmp;
+	}
+	else
+	{
+		pTmp = m_pStartPos;
+	}
+
+	int nCharsSize = strlen(_pChars);
+	int i;
+	for( i = 0; i < nCharsSize; ++i )
+	{
+		if( *pTmp == _pChars[i] )
+			break;
+	}
+	
+	if( i < nCharsSize )
+		return true;
+	else
+		return false;
+}
+
+bool BufferControl::isWhitespace(bool _bReverse)
+{
+	return isChars(s_szWhitespace, _bReverse);
+}
+
+bool BufferControl::isStr(const char * _pszStr)
+{
+	if( eof() )
+		return false;
+
+	if( (unsigned int)(m_pEndPos - m_pStartPos) >= strlen(_pszStr) )
+	{
+		if( memcmp(m_pStartPos, _pszStr, strlen(_pszStr)) == 0 )
+			return true;
+	}
+	return false;
+}
+
+const char * BufferControl::findChar(char _c, bool _bReverse)
+{
+	const char * pTmpPos;
+
+	if( _bReverse )
+	{
+		pTmpPos = m_pEndPos - 1;
+		while( m_pStartPos <= pTmpPos )
+		{
+			if( *pTmpPos == _c )
+				return pTmpPos;
+			else
+				--pTmpPos;
+		}
+		return NULL;
+	}
+	else
+	{
+		pTmpPos = m_pStartPos;
+		while( m_pEndPos > pTmpPos )
+		{
+			if( *pTmpPos == _c )
+				return pTmpPos;
+			else
+				++pTmpPos;
+		}
+		return NULL;
+	}
+}
+
+const char * BufferControl::findChars(const char * _pChars, bool _bReverse)
+{
+	int nCharsSize = strlen(_pChars);
+	const char * pTmpPos;
+
+	if( _bReverse )
+	{
+		pTmpPos = m_pEndPos - 1;
+		while( m_pStartPos <= pTmpPos )
+		{
+			for( int i = 0; i < nCharsSize; ++i )
+			{
+				if( *pTmpPos == _pChars[i] )
+					return pTmpPos;
+			}
+			--pTmpPos;
+		}
+		return NULL;
+	}
+	else
+	{
+		pTmpPos = m_pStartPos;
+		while( m_pEndPos > pTmpPos )
+		{
+			for( int i = 0; i < nCharsSize; ++i )
+			{
+				if( *pTmpPos == _pChars[i] )
+					return pTmpPos;
+			}
+			++pTmpPos;
+		}
+		return NULL;
+	}
+}
+
+const char * BufferControl::findWhitespace(bool _bReverse)
+{
+	return findChars(s_szWhitespace, _bReverse);
+}
+
+const char * BufferControl::findStr(const char * _pszStr, bool _bReverse)
+{
+	if( eof() )
+		return NULL;
+
+	if( _bReverse )
+		return memistr4Reverse(m_pStartPos, _pszStr, m_pEndPos - m_pStartPos);
+	else
+		return memistr(m_pStartPos, _pszStr, m_pEndPos - m_pStartPos);
+}
+
+void BufferControl::skipChar(char _c, bool _bReverse)
+{
+	if( _bReverse )
+	{
+		const char * pTmp;
+		while( !eof() )
+		{
+			pTmp = m_pEndPos;
+			--pTmp;
+			if( *pTmp == _c )
+				--m_pEndPos;
+			else
+				return;
+		}
+	}
+	else
+	{
+		while( !eof() )
+		{
+			if( *m_pStartPos == _c )
+				++m_pStartPos;
+			else
+				return;
+		}
+	}
+}
+
+void BufferControl::skipChars(const char * _pChars, bool _bReverse)
+{
+	int nCharsSize = strlen(_pChars);
+
+	if( _bReverse )
+	{
+		const char * pTmp;
+		while( !eof() )
+		{
+			pTmp = m_pEndPos;
+			--pTmp;
+			int i;
+			for( i = 0; i < nCharsSize; ++i )
+			{
+				if( *pTmp == _pChars[i] )
+					break;
+			}
+			if( i < nCharsSize )
+				--m_pEndPos;
+			else
+				return;
+		}
+	}
+	else
+	{
+		while( !eof() )
+		{
+			int i;
+			for( i = 0; i < nCharsSize; ++i )
+			{
+				if( *m_pStartPos == _pChars[i] )
+					break;
+			}
+			if( i < nCharsSize )
+				++m_pStartPos;
+			else
+				return;
+		}
+	}
+}
+
+void BufferControl::skipWhitespace(bool _bReverse)
+{
+	skipChars(s_szWhitespace, _bReverse);
+}
+
+}
+

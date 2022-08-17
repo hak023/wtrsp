@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes
+END
+primes.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes/primes.cpp
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes/main.cpp
+END
+primes.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes/primes.h
+END
+index.html
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes/index.html
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/parallel_reduce/primes/Makefile
+END

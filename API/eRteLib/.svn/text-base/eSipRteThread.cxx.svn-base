@@ -1,0 +1,166 @@
+#include "eSipRteThread.hxx"
+#include "eSipRteMgr.hxx"
+namespace eSIP
+{
+
+
+CSipRteThread* CSipRteThread::m_pIns=NULL;
+
+
+CSipRteThread::CSipRteThread()
+   : m_pOpt(new SipOptMgr_t[SipRouteDataBase_t::E_MAXNUM]),
+     m_bRun(false)
+{
+}
+
+CSipRteThread::~CSipRteThread()
+{
+}
+CSipRteThread* CSipRteThread::m_fnGetInstance()
+{
+   if( m_pIns == NULL){
+      m_pIns=new CSipRteThread;
+   }
+   return m_pIns;
+}
+
+int CSipRteThread::m_fnInit( )
+{
+   m_bRun=false;
+   memset(m_pOpt, 0x00, sizeof(SipOptMgr_t)*SipRouteDataBase_t::E_MAXNUM);
+   resip::ThreadIf::run();
+   return 0;
+}
+
+void CSipRteThread::m_fnStop()
+{
+   m_bRun=false;
+   resip::ThreadIf::shutdown();
+}
+
+void CSipRteThread::thread()
+{
+   m_bRun=true;
+   while( m_bRun ){
+      CSipRteUtil::MilliSleep(20);
+      SendOption();
+      //SendUpdate();
+   } 
+}
+
+void CSipRteThread::SendOption()
+{
+   SipRoute_t* pRte=(SipRoute_t*)THESIPDBMGR->m_fnGetRecord(CSipRteData::E_SIPRTE_RTE);
+  
+   unsigned int uiDiff=0; 
+   bool bSend=false;
+   void* pvLocalRecord=NULL;
+   void* pvRmtRecord=NULL;
+   int nLID=0;
+   int nRID=0;
+   int nRet=0;
+   SipRoute_t stRoute;
+   SipNodeLocal_t stLocal;
+   SipNodeRemote_t stRemote;
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i ++ ){
+      bSend=false;
+      //unused
+      if( (pRte+i)->m_ucUsed == 0 ) continue;
+      //opt action
+      if( (pRte+i)->m_sOptAction != SipRoute_t::E_MANAGE_ACT ) continue;
+      //opt interval
+      if( (pRte+i)->m_sOptTime == 0 ) continue;
+      //the first
+      if( (m_pOpt+i)->m_stOptTDiff.timev_s.tv_sec == 0 ){
+         //set current time
+         CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stOptTDiff),true);
+         bSend=true;
+      }else{
+         //compare time
+         uiDiff=CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stOptTDiff),false);
+         if( (uiDiff/1000) >= (unsigned int)((pRte+i)->m_sOptTime) ){
+            bSend=true;
+            //start time -> curtime
+            CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stOptTDiff),true);
+         }
+      }
+      if( bSend && THESIPRTECB->m_pfuncESipRteApiSendOption ){
+         nLID=(int)(pRte+i)->m_uiLID;
+         nRID=(int)(pRte+i)->m_uiRID;
+         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_LN, nLID, pvLocalRecord) < 0){
+            continue;
+         }
+         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,nRID, pvRmtRecord) < 0){
+            continue;
+         }
+         //copy
+         memcpy(&stRoute,(pRte+i),sizeof(stRoute));
+         memcpy(&stLocal,pvLocalRecord,sizeof(stLocal));
+         memcpy(&stRemote,pvRmtRecord,sizeof(stRemote));
+         //invoke callback
+         nRet=THESIPRTECB->m_pfuncESipRteApiSendOption(&stRoute,&stLocal,&stRemote);
+         //@vibc
+         //if(nRet == 0 ){
+         THESIPDBMGR->m_fnSentOption((pRte+i));
+         //}
+      }
+   }
+
+}
+void CSipRteThread::SendUpdate()
+{
+   SipRoute_t* pRte=(SipRoute_t*)THESIPDBMGR->m_fnGetRecord(CSipRteData::E_SIPRTE_RTE);
+  
+   unsigned int uiDiff=0; 
+   bool bSend=false;
+   void* pvLocalRecord=NULL;
+   void* pvRmtRecord=NULL;
+   int nLID=0;
+   int nRID=0;
+   SipRoute_t stRoute;
+   SipNodeLocal_t stLocal;
+   SipNodeRemote_t stRemote;
+   //send update
+   for( int i = 0 ; i < SipRouteDataBase_t::E_MAXNUM ; i ++ ){
+      bSend=false;
+      //unused
+      if( (pRte+i)->m_ucUsed == 0 ) continue;
+      //session refresh time
+      if( (pRte+i)->m_sSesRefreshTime <= 0 ) continue;
+
+      //the first
+      if( (m_pOpt+i)->m_stUptTDiff.timev_s.tv_sec == 0 ){
+         //set current time
+         CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stUptTDiff),true);
+         bSend=true;
+      }else{
+         //compare time
+         uiDiff=CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stUptTDiff),false);
+         if( (uiDiff/1000) >= (unsigned int)((pRte+i)->m_sSesRefreshTime) ){
+            bSend=true;
+            //start time -> curtime
+            CSipRteUtil::GetTimeDiff(&((m_pOpt+i)->m_stUptTDiff),true);
+         }
+      }
+      if( bSend && THESIPRTECB->m_pfuncESipRteApiSendUpdate ){
+         nLID=(int)(pRte+i)->m_uiLID;
+         nRID=(int)(pRte+i)->m_uiRID;
+         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_LN, nLID, pvLocalRecord) < 0){
+            continue;
+         }
+         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,nRID, pvRmtRecord) < 0){
+            continue;
+         }
+         //copy
+         memcpy(&stRoute,(pRte+i),sizeof(stRoute));
+         memcpy(&stLocal,pvLocalRecord,sizeof(stLocal));
+         memcpy(&stRemote,pvRmtRecord,sizeof(stRemote));
+         //invoke callback
+         THESIPRTECB->m_pfuncESipRteApiSendUpdate(&stRoute,&stLocal,&stRemote);
+      }
+   }
+
+}
+
+} /*end namespace */
+

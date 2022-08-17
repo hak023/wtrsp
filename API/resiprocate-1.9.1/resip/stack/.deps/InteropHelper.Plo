@@ -1,0 +1,6 @@
+InteropHelper.lo: InteropHelper.cxx /usr/include/stdc-predef.h \
+ ../../resip/stack/InteropHelper.hxx
+
+/usr/include/stdc-predef.h:
+
+../../resip/stack/InteropHelper.hxx:

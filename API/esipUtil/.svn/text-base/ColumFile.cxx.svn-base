@@ -1,0 +1,595 @@
+#include <sys/stat.h>
+#include <utime.h>
+#include <sys/types.h>
+
+#include "StlMap.hxx"
+#include "timerTable.hxx"
+#include "ColumFile.hxx"
+#include "log.hxx"
+#include "fileControl.hxx"
+
+namespace eSipUtil
+{
+/************************ Static Colum File Check Timer ***************************************/
+TimerTable<ColumTimerData_t> * g_pclsColumTimer = NULL;
+static void s_fnSetColumTimer(ColumFile * _pclsCfg)
+{
+	if(g_pclsColumTimer == NULL) return;
+	ColumTimerData_t * pstTime = new ColumTimerData_t;
+	pstTime->m_pclsColum = _pclsCfg;
+	g_pclsColumTimer->setTimer(pstTime,100);
+}
+static void s_fnCbkColumTimerOut(ColumTimerData_t * _pstData)
+{
+	if(_pstData==NULL) return;
+	if(g_pclsColumTimer == NULL){delete _pstData;return;}
+	ColumTimerData_t * pstTime = new ColumTimerData_t;
+	pstTime->m_pclsColum = _pstData->m_pclsColum;
+	_pstData->m_pclsColum->m_fnTimerCheckProc();	
+	g_pclsColumTimer->setTimer(pstTime,100);
+	delete _pstData;
+}
+/************************ Common Param **************************************************/
+ColumParam::PFuncParseState ColumParam::m_pfnParseHandle[ColumParam::E_PARSE_PARAM_VAL+1]=
+{
+	ColumParam::m_fnE_PARSE_PARAM_NONE,
+	ColumParam::m_fnE_PARSE_PARAM_KEY,
+	ColumParam::m_fnE_PARSE_PARAM_KEY_SP,
+	ColumParam::m_fnE_PARSE_PARAM_VAL
+};
+ColumParam::ColumParam(){m_eSt = E_PARSE_PARAM_NONE;m_bTrim = false;m_cKeyword= '=';}
+ColumParam::~ColumParam(){}
+void ColumParam::m_fnChangeParamKeyword(const char _cKeyword)
+{
+	m_cKeyword = _cKeyword;
+}
+ColumParam & ColumParam::operator=(ColumParam & _rclsSrc)
+{
+	m_clsKey = _rclsSrc.m_clsKey;
+	m_fnSetKey((KSTR)_rclsSrc.m_clsKey);
+	m_clsVal = _rclsSrc.m_clsVal;
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool ColumParam::operator==(ColumParam & _rclsSrc)
+{
+	m_fnTrimTailing();
+	if(m_clsKey == (KCSTR)_rclsSrc.m_clsKey && m_clsVal == (KCSTR)_rclsSrc.m_clsVal) return true;
+	return false;
+}
+bool ColumParam::operator==(KSTR _pszInput)
+{
+	m_fnTrimTailing();
+	if(m_clsVal == (const char *)_pszInput) return true;
+	return false;
+}
+bool ColumParam::operator==(KCSTR _pszInput)
+{
+	m_fnTrimTailing();
+	if(m_clsVal == (const char *)_pszInput) return true;
+	return false;
+}
+bool ColumParam::operator==(KUINT _unInput)
+{
+	m_fnTrimTailing();
+	if((unsigned int)KString::m_fnAtoi((KCSTR)m_clsVal) == _unInput) return true;
+	return false;
+}
+bool ColumParam::m_fnParse(const char _cInput)
+{
+	return m_pfnParseHandle[m_eSt](this,_cInput);
+}
+void ColumParam::m_fnDebug(KString &_rclsDebug)
+{
+	m_fnTrimTailing();
+	_rclsDebug<<(KCSTR)"    ["<<(KSTR)m_clsKey<<(KCSTR)"] ["<<(KSTR)m_clsVal<<(KCSTR)"]\r\n";
+}
+void ColumParam::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		KString::m_fnTrimTailString((KSTR)m_clsKey," ");
+		KString::m_fnTrimTailString((KSTR)m_clsVal," ");
+	}
+}
+void ColumParam::m_fnBuild(KString &_rclsBuild)
+{
+	m_fnTrimTailing();
+	if(KString::m_fnStrLen((KSTR)m_clsKey) != 0)
+	{
+		if(KString::m_fnStrLen((KSTR)m_clsVal) != 0) 
+			_rclsBuild<<(KSTR)m_clsKey<<(KCHR)m_cKeyword<<(KSTR)m_clsVal;
+		else _rclsBuild<<(KSTR)m_clsKey;
+	}
+}
+bool ColumParam::m_fnE_PARSE_PARAM_NONE(ColumParam *_pclsObj,const char _cInput)
+{
+	if(_cInput != ',' && _cInput != ' ')
+	{
+		_pclsObj->m_clsKey<<(KCHR)_cInput;
+		_pclsObj->m_eSt = E_PARSE_PARAM_KEY;
+	}
+	return true;
+}
+bool ColumParam::m_fnE_PARSE_PARAM_KEY(ColumParam *_pclsObj,const char _cInput)
+{
+	if(_cInput == _pclsObj->m_cKeyword)
+	{
+		_pclsObj->m_eSt = E_PARSE_PARAM_KEY_SP;
+		KString::m_fnTrimTailString((KSTR)_pclsObj->m_clsKey," ");
+		_pclsObj->m_fnSetKey((KSTR)_pclsObj->m_clsKey);
+	}
+	else _pclsObj->m_clsKey<<(KCHR)_cInput;
+	return true;
+}
+bool ColumParam::m_fnE_PARSE_PARAM_KEY_SP(ColumParam *_pclsObj,const char _cInput)
+{
+	if(_cInput != _pclsObj->m_cKeyword && _cInput != ' ')
+	{
+		_pclsObj->m_clsVal<<(KCHR)_cInput;
+		_pclsObj->m_eSt = E_PARSE_PARAM_VAL;
+	}
+	return true;
+}
+bool ColumParam::m_fnE_PARSE_PARAM_VAL(ColumParam *_pclsObj,const char _cInput)
+{
+	_pclsObj->m_clsVal<<(KCHR)_cInput;
+	return true;
+}
+/************************ Common Param List ***********************************************/
+ColumParams::PFuncParseState ColumParams::m_pfnParseHandle[ColumParams::E_PARSE_PARAMS+1]=
+{
+	ColumParams::m_fnE_PARSE_PARAMS_NONE,
+	ColumParams::m_fnE_PARSE_PARAMS_SP,
+	ColumParams::m_fnE_PARSE_PARAMS
+};
+ColumParams::ColumParams(){m_eSt = E_PARSE_PARAMS_NONE;m_pclsCurrentParam=NULL;m_bTrim = false;m_cKeyword='=';}
+ColumParams::~ColumParams(){}
+void ColumParams::m_fnChangeParamKeyword(const char _cKeyword)
+{
+	m_cKeyword = _cKeyword;
+}
+ColumParams & ColumParams::operator=(ColumParams &_rclsSrc)
+{
+	m_pclsCurrentParam = NULL;
+	m_listParams.m_fnClear();
+	ListItr_t itrFind;
+	ColumParam * pclsTmp = _rclsSrc.m_fnBegin(itrFind);
+	ColumParam * pclsNew = NULL;
+	while(pclsTmp)
+	{
+		pclsNew = new ColumParam; *pclsNew = *pclsTmp;
+		m_listParams.m_fnPushBack(pclsNew);
+		pclsTmp = _rclsSrc.m_fnNext(itrFind);
+	}
+	m_bTrim = _rclsSrc.m_bTrim;
+	return *this;
+}
+bool ColumParams::operator==(ColumParams &_rclsSrc)
+{
+	if(m_listParams.m_fnGetSize() != _rclsSrc.m_listParams.m_fnGetSize()) return false;
+	ListItr_t itrOther;ColumParam * pclsOther = _rclsSrc.m_fnBegin(itrOther);
+	ListItr_t itrMy;ColumParam * pclsMy = m_fnBegin(itrMy);
+	while(pclsOther)
+	{
+		if(*pclsMy == *pclsOther){}
+		else return false;
+		pclsOther= _rclsSrc.m_fnNext(itrOther);
+		pclsMy = m_fnNext(itrMy);
+	}
+	return true;
+}
+void ColumParams::m_fnParseParams(const char * _pszLine)
+{
+	for(int i=0;i<KString::m_fnStrLen(_pszLine);i++)
+		m_fnParse(_pszLine[i]);
+	m_fnTrimTailing();
+}
+bool ColumParams::m_fnParse(char _cInput)
+{
+	m_pfnParseHandle[m_eSt](this,_cInput);
+	return true;
+}
+void ColumParams::m_fnDebug(KString &_rclsDebug)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor;ColumParam * pclsTmp = m_fnBegin(clsItor);
+	_rclsDebug<<(KCSTR)"<Line>\r\n";
+	while(pclsTmp)
+	{
+		pclsTmp->m_fnDebug(_rclsDebug);
+		pclsTmp = m_fnNext(clsItor);
+	}
+	_rclsDebug<<(KCSTR)"</Line>\r\n\r\n";
+}
+ColumParam & ColumParams::m_fnGetParam(const char * _pszParam)
+{
+	ColumParam * pclsFind = m_fnFindParam(_pszParam);
+	if(pclsFind==NULL) return m_clsExp;
+	return *pclsFind;
+}
+ColumParam * ColumParams::m_fnFindParam(const char * _pszParam)
+{
+	m_fnKeyReinit();
+	return (ColumParam*)m_listParams.m_fnFindNode(_pszParam);
+}
+ColumParam * ColumParams::m_fnAddParam(const char * _pszKey, KString _clsVal)
+{
+	ColumParam * pclsNew = m_fnFindParam(_pszKey);
+	if(pclsNew)
+	{
+		pclsNew->m_clsVal = _clsVal;
+		return pclsNew;
+	}
+	pclsNew = new ColumParam; pclsNew->m_fnSetKey(_pszKey); 
+	pclsNew->m_cKeyword = m_cKeyword;
+	pclsNew->m_clsKey = _pszKey;pclsNew->m_clsVal = _clsVal;
+	m_listParams.m_fnPushBack(pclsNew);return pclsNew;
+}
+bool ColumParams::m_fnRemoveParam(const char * _pszKey)
+{
+	m_fnKeyReinit();
+	while(m_listParams.m_fnDelNode(_pszKey));
+	return true;
+}
+void ColumParams::m_fnTrimTailing()
+{
+	if(m_bTrim == false)
+	{
+		m_bTrim = true;
+		ListItr_t clsItor;
+		ColumParam *pclsFind = m_fnBegin(clsItor);
+		while(pclsFind)
+		{
+			pclsFind->m_fnTrimTailing();
+			pclsFind = m_fnNext(clsItor);
+		}
+	}
+}
+void ColumParams::m_fnAddParseParam()
+{
+	m_pclsCurrentParam = new ColumParam; m_pclsCurrentParam->m_cKeyword = m_cKeyword;
+	m_listParams.m_fnPushBack(m_pclsCurrentParam);
+}
+void ColumParams::m_fnKeyReinit()
+{
+	ListItr_t clsItor;ColumParam * pFind = m_fnBegin(clsItor);
+	while(pFind)
+	{
+		if(pFind->m_pszKey == NULL)
+		{
+			KString::m_fnTrimTailString((KSTR)pFind->m_clsKey," ");
+			KString::m_fnTrimTailString((KSTR)pFind->m_clsVal," ");
+			pFind->m_fnSetKey((KSTR)pFind->m_clsKey);
+		}
+		pFind = m_fnNext(clsItor);
+	}
+	m_bTrim = true;
+}
+void ColumParams::m_fnBuild(KString &_rclsBuild)
+{
+	m_fnTrimTailing();
+	ListItr_t clsItor; ColumParam *pclsFind = m_fnBegin(clsItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(_rclsBuild);
+		pclsFind = m_fnNext(clsItor);
+		if(pclsFind) _rclsBuild<<(KCSTR)", ";
+	}
+}
+bool ColumParams::m_fnE_PARSE_PARAMS_NONE(ColumParams *_pclsObj,const char _cInput)
+{
+	if(_cInput != ',' && _cInput != ' ')
+	{
+		_pclsObj->m_fnAddParseParam();
+		_pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+		_pclsObj->m_eSt =  E_PARSE_PARAMS;
+	}
+	return true;
+}
+bool ColumParams::m_fnE_PARSE_PARAMS_SP(ColumParams *_pclsObj,const char _cInput)
+{
+	if(_cInput != ',' && _cInput !=' ')
+	{
+		_pclsObj->m_fnAddParseParam();
+		_pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+		_pclsObj->m_eSt = E_PARSE_PARAMS;
+	}
+	return true;
+}
+bool ColumParams::m_fnE_PARSE_PARAMS(ColumParams *_pclsObj,const char _cInput)
+{
+	if(_cInput == ',') _pclsObj->m_eSt = E_PARSE_PARAMS_SP;
+	else _pclsObj->m_pclsCurrentParam->m_fnParse(_cInput);
+	return true;
+}
+/***************************** Colum Group ***********************************************/
+ColumGroup::ColumGroup(){}
+ColumGroup::~ColumGroup(){}
+ColumGroup & ColumGroup::operator=(ColumGroup & _rclsSrc)
+{
+	m_listParams.m_fnClear();
+	ListItr_t stItor; ColumParams * pclsFind = _rclsSrc.m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		ColumParams * pclsNew = new ColumParams;
+		*pclsNew = *pclsFind;
+		m_fnAddParams(pclsNew);
+		pclsFind = _rclsSrc.m_fnNext(stItor);
+	}
+	m_clsName = (KCSTR)_rclsSrc.m_clsName;
+	m_fnSetKey((KCSTR)m_clsName);
+	return *this;
+}
+bool ColumGroup::operator==(ColumGroup & _rclsSrc)
+{
+	if(m_fnGetNums() != _rclsSrc.m_fnGetNums()) return false;
+	ListItr_t stItorMy; ColumParams * pclsMy = m_fnBegin(stItorMy);
+	ListItr_t stItorOther; ColumParams * pclsOther = _rclsSrc.m_fnBegin(stItorOther);
+	while(pclsOther)
+	{
+		if(*pclsMy == *pclsOther){}
+		else return false;
+		pclsOther = _rclsSrc.m_fnNext(stItorOther);
+		pclsMy = m_fnNext(stItorMy);
+	}
+	return true;
+}
+unsigned int ColumGroup::m_fnGetNums(){return m_listParams.m_fnGetSize();}
+bool ColumGroup::m_fnAddParams(ColumParams * _pclsNew){return m_listParams.m_fnPushBack(_pclsNew);}
+ColumParams * ColumGroup::m_fnBegin(ListItr_t &_ritrItem){return(ColumParams*)m_listParams.m_fnBegin(_ritrItem);}
+ColumParams * ColumGroup::m_fnNext(ListItr_t &_ritrItem){return(ColumParams*)m_listParams.m_fnNext(_ritrItem);}
+void ColumGroup::m_fnBuild(KString &_rclsBuild)
+{
+	_rclsBuild<<(KCHR)'['<<(KCSTR)m_clsName<<(KCSTR)"]\r\n";
+	ListItr_t stItor; ColumParams * pclsFind = m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(_rclsBuild);_rclsBuild<<(KCSTR)"\r\n";
+		pclsFind = m_fnNext(stItor);
+	}
+	_rclsBuild<<(KCSTR)"\r\n";
+}
+void ColumGroup::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCHR)'['<<(KCSTR)m_clsName<<(KCSTR)"]\r\n";
+	ListItr_t stItor; ColumParams * pclsFind = m_fnBegin(stItor);
+	while(pclsFind)
+	{
+		pclsFind->m_fnDebug(_rclsDebug);_rclsDebug<<(KCSTR)"\r\n";
+		pclsFind = m_fnNext(stItor);
+	}
+	_rclsDebug<<(KCSTR)"\r\n";
+}
+/********************************** Colum Config *****************************************/
+ColumFile::ColumFile()
+{
+	m_pvUser=NULL;m_pszDefComment=NULL;m_cKeyword='='; m_bReadChange = false;
+	if(g_pclsColumTimer == NULL)
+		g_pclsColumTimer = new TimerTable<ColumTimerData_t>(s_fnCbkColumTimerOut,"ColumFile");
+}
+ColumFile::~ColumFile(){}
+void ColumFile::m_fnChangeParamKeyword(const char _cKeyword)
+{
+	m_cKeyword = _cKeyword;
+}
+ColumFile & ColumFile::operator=(ColumFile & _rclsSrc)
+{
+	m_fnClearLine();
+	ListItr_t itrFind; ColumParams * pclsFind = _rclsSrc.m_fnBegin(itrFind);
+	while(pclsFind)
+	{
+		ColumParams * pclsNew = new ColumParams;
+		*pclsNew = *pclsFind;
+		m_fnAddParams(pclsNew);
+		pclsFind = _rclsSrc.m_fnNext(itrFind);
+	}
+	ColumGroup * pclsGrp = _rclsSrc.m_fnBeginGroup(itrFind);
+	while(pclsGrp)
+	{
+		ColumGroup * pclsNewGrp = new ColumGroup;
+		*pclsNewGrp = *pclsGrp;
+		m_fnAddGroup(pclsNewGrp);
+		pclsGrp = _rclsSrc.m_fnNextGroup(itrFind);
+	}
+	m_clsPath = (KCSTR)_rclsSrc.m_clsPath;
+	m_clsFileInfo.m_clsPath = (KCSTR)_rclsSrc.m_clsPath;
+	return *this;
+}
+bool ColumFile::operator==(ColumFile & _rclsSrc)
+{
+	if(m_fnGetNums() != _rclsSrc.m_fnGetNums()) return false;
+	ListItr_t itrFindMy; ColumParams * pclsMy = m_fnBegin(itrFindMy);
+	ListItr_t itrFindOther; ColumParams * pclsOther = _rclsSrc.m_fnBegin(itrFindOther);
+	while(pclsOther)
+	{
+		if(*pclsMy == *pclsOther){}
+		else return false;
+		pclsOther = _rclsSrc.m_fnNext(itrFindOther);
+		pclsMy = m_fnNext(itrFindMy);
+	}
+	ColumGroup * pclsGrpMy = m_fnBeginGroup(itrFindMy);
+	ColumGroup * pclsGrpOther = _rclsSrc.m_fnBeginGroup(itrFindOther);
+	while(pclsGrpOther)
+	{
+		if(*pclsGrpMy == *pclsGrpOther){}
+		else return false;
+		pclsGrpOther = _rclsSrc.m_fnNextGroup(itrFindOther);
+		pclsGrpMy = m_fnNextGroup(itrFindMy);
+	}
+	return true;
+}
+bool ColumFile::m_fnLoadConfig(const char * _pszPath,const char * _pszDefaultComment)
+{
+	if(KString::m_fnStrLen(_pszPath)==0)
+	{
+		LogInternal(E_LOG_ERR,"Colum File Load Failed, Empty Path, [%s]",_pszPath);
+		return false;
+	}
+	CfgFile::m_fnCreateDirExeptFile(_pszPath);
+	m_clsPath = _pszPath;	m_clsFileInfo.m_fnInit(_pszPath);
+	return m_fnReLoadingConfig(_pszDefaultComment);
+}
+bool ColumFile::m_fnReLoadingConfig(const char * _pszDefaultComment)
+{
+	FILE *fp = NULL;
+	CfgFile::m_fnCreateDirExeptFile((KCSTR)m_clsPath); chmod((KCSTR)m_clsPath,0755);
+	if ((fp = fopen((KCSTR)m_clsPath, "r")) == NULL) 
+	{
+		fp = fopen((const char*)(KSTR)m_clsPath,(char*)"a");
+		if(fp == NULL)
+		{
+			LogInternal(E_LOG_ERR,"[%s-%s-%u] File Open Fail (%s)",
+													__FILE__,__func__,__LINE__,(KCSTR)m_clsPath);
+			return false;
+		}
+		if(KString::m_fnStrLen(_pszDefaultComment) > 0)
+		{
+			fputs(_pszDefaultComment,fp);
+		}
+		else
+		{
+			KString clsComment(256); 
+			clsComment<<(KCSTR)"# <"<<(KCSTR)m_clsPath<<(KCSTR)"> Process Colum Config File\r\n";
+			fwrite((KCSTR)clsComment,strlen((KCSTR)clsComment),1,fp);
+		}
+		fflush(fp);fclose(fp);
+		chmod((KCSTR)m_clsPath,0755);
+		LogInternal(E_LOG_ERR,"[%s] File is Empty",(KCSTR)m_clsPath);
+		LogInternal(E_LOG_ERR,"[%s] Default File Write & Check Timer Reset",(KCSTR)m_clsPath);
+		m_clsFileInfo.m_unCurrentModiTime = 1;
+		return false;
+	}
+	m_clsFileInfo.m_fnUpdateTime();m_clsFileInfo.m_fnUpdateCRC();
+	if(m_clsFileInfo.m_unReadSz ==0)
+	{
+		LogInternal(E_LOG_ERR,"[%s] Read Size is Zero",(KCSTR)m_clsPath);
+		fclose(fp);
+		return false;
+	}
+	LogInternal(E_LOG_ERR,"Colum Raw Data\r\n%s",m_clsFileInfo.m_pszRawData);
+	fclose(fp);
+	return m_fnParse(m_clsFileInfo.m_pszRawData);
+}
+bool ColumFile::m_fnParse(char  * _pszSrc)
+{
+	if(KString::m_fnStrLen(_pszSrc) ==0) return false;
+	m_fnClearLine();CfgParseLineStrings clsArray;
+	CfgFile::m_fnTokenizeC(_pszSrc,"\r\n", clsArray);
+	ListItr_t itrLine;char *pszLine = clsArray.m_fnBegin(itrLine);
+	ColumParams clsParams; char * pszRealLine = NULL;
+	ColumGroup * pclsCurrentGrp = NULL;
+	while(pszLine)
+	{
+		pszRealLine = KString::m_fnGetOptimizeString(pszLine," ");
+		if(KString::m_fnStrLen(pszRealLine) > 0)
+		{
+			if(pszRealLine[0] == '[')   // Category Line
+			{
+				pszRealLine = KString::m_fnGetOptimizeString(pszRealLine,"[]");
+				if(KString::m_fnStrLen(pszRealLine) > 0)
+				{
+					pclsCurrentGrp = new ColumGroup; pclsCurrentGrp->m_fnSetKey(pszRealLine);
+					pclsCurrentGrp->m_clsName = pszRealLine;
+					if(!m_fnAddGroup(pclsCurrentGrp))
+					{
+						LogInternal(E_LOG_ERR,"[ColumFile] Duplicate Category Name : %s",pszRealLine);
+						return false;
+					}
+				}
+			}
+			else if(pszRealLine[0] != '#')
+			{
+				ColumParams * pclsNew = new ColumParams; pclsNew->m_cKeyword = m_cKeyword;
+				pclsNew->m_fnParseParams(pszRealLine);
+				if(pclsCurrentGrp==NULL) m_fnAddParams(pclsNew);
+				else pclsCurrentGrp->m_fnAddParams(pclsNew);
+			}
+		}
+		pszLine = clsArray.m_fnNext(itrLine);
+	}
+	if(AsyncFileLog::m_fnCheckLogLevel(0, 0,E_LOG_DEBUG))
+	{
+		KString clsDebug; m_fnBuild(clsDebug);
+		LogInternal(E_LOG_DEBUG,"ColumFile Parse Info : %s\r\n%s",(KCSTR)m_clsPath,(KCSTR)clsDebug);
+	}
+	return true;
+}
+bool ColumFile::m_fnWriteFile(const char * _pszRaw)
+{
+	if(KString::m_fnStrLen((KCSTR)m_clsPath)==0) return false;
+	#if 0  // cwkim Default Create Dir
+	CfgFile::m_fnCreateDirExeptFile((KCSTR)m_clsPath);
+	chmod((KCSTR)m_clsPath,0755); 
+	#endif
+	bool bRet = false;
+	if(KString::m_fnStrLen(_pszRaw) > 0)
+	{		
+		bRet = FileControl::m_fnWrite((KCSTR)m_clsPath, _pszRaw,KString::m_fnStrLen(_pszRaw));
+	}
+	else
+	{
+		KString clsBuild; clsBuild.m_fnReSize(DEF_CFG_1M);m_fnBuild(clsBuild);
+		bRet = FileControl::m_fnWrite((KCSTR)m_clsPath, (KCSTR)clsBuild,clsBuild.m_unRealLen);
+	}
+	if(bRet == false) LogInternal(E_LOG_DEBUG,"Write ColumFile Fail : %s",(KCSTR)m_clsPath);
+	return bRet;
+}
+void ColumFile::m_fnSetNotifyChangedFile(PFuncColumChanged_t _pFn, bool _bEnhanced,void * _pvUser)
+{
+	m_pfnChanged = _pFn;m_pvUser = _pvUser;m_clsFileInfo.m_fnEnableCheckChanged(_bEnhanced);
+	s_fnSetColumTimer(this);	
+}
+void ColumFile::m_fnSetNotifyChangedFileWithRead(PFuncColumChanged_t _pFn, bool _bEnhanced,void * _pvUser)
+{
+	m_bReadChange = true; m_pfnChanged = _pFn;m_pvUser = _pvUser;
+	m_clsFileInfo.m_fnEnableCheckChanged(_bEnhanced);s_fnSetColumTimer(this);	
+}
+bool ColumFile::m_fnTimerCheckProc()
+{
+	bool bRet = m_clsFileInfo.m_fnCheckChanged();
+	if(bRet)
+	{
+		if(m_pfnChanged)
+		{
+			if(m_bReadChange) m_fnReLoadingConfig(NULL);
+			m_pfnChanged(this);
+		}
+	}
+	return bRet;
+}
+void ColumFile::m_fnBuild(KString &_rclsBuild)
+{
+	_rclsBuild<<(KCSTR)"# <"<<(KCSTR)m_clsPath<<(KCSTR)"> Process Colum Config File\r\n";
+	ListItr_t itrFind; ColumParams * pclsFind = m_fnBegin(itrFind);
+	while(pclsFind)
+	{
+		pclsFind->m_fnBuild(_rclsBuild);
+		_rclsBuild<<(KCSTR)"\r\n";
+		pclsFind = m_fnNext(itrFind);
+	}
+	ColumGroup * pclsGrp = m_fnBeginGroup(itrFind);
+	while(pclsGrp)
+	{
+		pclsGrp->m_fnBuild(_rclsBuild);
+		pclsGrp = m_fnNextGroup(itrFind);
+	}
+}
+void ColumFile::m_fnDebug(KString &_rclsDebug)
+{
+	ListItr_t itrFind; ColumParams * pclsFind = m_fnBegin(itrFind);
+	while(pclsFind)
+	{
+		pclsFind->m_fnDebug(_rclsDebug);
+		_rclsDebug<<(KCSTR)"\r\n";
+		pclsFind = m_fnNext(itrFind);
+	}
+	ColumGroup * pclsGrp = m_fnBeginGroup(itrFind);
+	while(pclsGrp)
+	{
+		pclsGrp->m_fnDebug(_rclsDebug);
+		pclsGrp = m_fnNextGroup(itrFind);
+	}
+}
+}

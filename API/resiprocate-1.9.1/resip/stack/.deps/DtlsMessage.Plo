@@ -1,0 +1,8 @@
+DtlsMessage.lo: DtlsMessage.cxx /usr/include/stdc-predef.h ../../config.h \
+ ../../resip/stack/DtlsMessage.hxx
+
+/usr/include/stdc-predef.h:
+
+../../config.h:
+
+../../resip/stack/DtlsMessage.hxx:

@@ -1,0 +1,161 @@
+eRte.cxx:141:  THESIPDBMGR->m_fnPrint(9);
+eRte.cxx:145:  THESIPDBMGR->m_fnPrint(9);
+eRte.cxx:151:      THESIPDBMGR->m_fnPrint(9);
+eRte.cxx:157:      THESIPDBMGR->m_fnPrint(5);
+eRte.cxx:164:         THESIPDBMGR->m_fnPrint(8);
+eRte.cxx:176:      THESIPDBMGR->m_fnPrint(3);
+eRte.cxx:178:      THESIPDBMGR->m_fnPrintMap();
+eRte.cxx:182:      THESIPDBMGR->m_fnPrint(i);
+eRte.cxx:228:   THESIPDBMGR->m_fnPrint(6);
+eRte.cxx:282:   THESIPDBMGR->m_fnPrint(6);
+eRte.cxx:308:  THESIPDBMGR->m_fnPrint(5);
+eRte.cxx:424:   THESIPDBMGR->m_fnPrint(3);
+eRte.cxx:460:   THESIPDBMGR->m_fnPrint(3);
+eRte.cxx:478:   //THESIPDBMGR->m_fnPrint(3);
+eRte.cxx:495:   //THESIPDBMGR->m_fnPrint(3);
+eRte.cxx:592:      //THESIPDBMGR->m_fnPrint(5);
+eRte.cxx:616:   //THESIPDBMGR->m_fnPrint(8);
+eRte.cxx:633:   THESIPDBMGR->m_fnPrint(2);
+eRte.cxx:634:   //THESIPDBMGR->m_fnPrint(CSipRteData::E_SIPRTE_RTE);
+eRte.cxx:663:   THESIPDBMGR->m_fnPrint(9);
+eRte.cxx:1550:   THESIPDBMGR->m_fnPrint(6);
+eRte.cxx:1589:      THESIPDBMGR->m_fnPrint(4);
+eSipRteApi.cxx:801:   return THESIPDBMGR->m_fnIsNormalSysLoad(_rnCurCPU,_rnMaxCPU,_rnCurMEM,_rnMaxMEM);
+eSipRteApi.cxx:807:   THESIPDBMGR->m_nMaintain=1;
+eSipRteApi.cxx:809:   THESIPDBMGR->m_nMaintain=0;
+eSipRteApi_mmi.cxx:1277:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_LN,(void*)_pstData);
+eSipRteApi_mmi.cxx:1285:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RMT,(void*)_pstData);
+eSipRteApi_mmi.cxx:1292:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_GRTE,(void*)_pstData);
+eSipRteApi_mmi.cxx:1299:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RTE,(void*)_pstData);
+eSipRteApi_mmi.cxx:1306:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RSEQ,(void*)_pstData);
+eSipRteApi_mmi.cxx:1313:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_SSEQ,(void*)_pstData);
+eSipRteApi_mmi.cxx:1320:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TRGW,(void*)_pstData);
+eSipRteApi_mmi.cxx:1327:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_RSN,(void*)_pstData);
+eSipRteApi_mmi.cxx:1335:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_ENV,(void*)_pstData);
+eSipRteApi_mmi.cxx:1342:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_ENV_LB,(void*)_pstData);
+eSipRteApi_mmi.cxx:1349:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TIME,(void*)_pstData);
+eSipRteApi_mmi.cxx:1356:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_TRC,(void*)_pstData);
+eSipRteApi_mmi.cxx:1363:   THESIPDBMGR->m_fnGetAllRecord(eSIP::CSipRteData::E_SIPRTE_EMER,(void*)_pstData);
+eSipRteDBHandler.cxx:88:            THESIPDBMGR->m_fnCalculateCurrentCPS();
+eSipRteDBHandler.cxx:115:   THESIPDBMGR->m_fnBuffer2WriteDB(_nIndex);
+eSipRteDBHandler.cxx:148:      THESIPDBMGR->m_fnSetSystemLoad(nAveCPU,nAveMEM);
+eSipRteDBMgr.cxx:3014:   nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+eSipRteDBMgr.cxx:3046:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+eSipRteDBMgr.cxx:3127:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nGroupID,pvRecord);
+eSipRteMgr.cxx:123:      nRet=THESIPDBMGR->m_fnInit2(false,true); //CM, LB
+eSipRteMgr.cxx:126:         nRet=THESIPDBMGR->m_fnInit2(true,false); //LM
+eSipRteMgr.cxx:128:         nRet=THESIPDBMGR->m_fnInit2(false,false); //LM, only CM Only display
+eSipRteMgr.cxx:187:   nRet=THESIPDBMGR->m_fnInit(false); 
+eSipRteMgr.cxx:208:      THESIPDBMGR->m_fnClearInternal(i);
+eSipRteMgr.cxx:216:      THESIPDBMGR->m_fnClearInternalMap(i);
+eSipRteMgr.cxx:229:         THESIPDBMGR->m_fnUpdate_RouteStatus();
+eSipRteMgr.cxx:245:      THESIPDBMGR->m_fnClear(i);
+eSipRteMgr.cxx:260:      THESIPDBMGR->m_fnClear(i);
+eSipRteMgr.cxx:285:   THESIPDBMGR->m_fnClear(i);
+eSipRteMgr.cxx:423:      nRet=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:444:         nRet=THESIPDBMGR->m_fnLocalNodeValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:446:         nRet=THESIPDBMGR->m_fnRemoteNodeValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:448:         nRet=THESIPDBMGR->m_fnRouteGroupValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:450:         nRet=THESIPDBMGR->m_fnRouteValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:452:         nRet=THESIPDBMGR->m_fnRouteSeqValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:454:         nRet=THESIPDBMGR->m_fnSpecialRouteSeqValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:456:         nRet=THESIPDBMGR->m_fnTrGWValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:458:         nRet=THESIPDBMGR->m_fnReasonValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:461:         nRet=THESIPDBMGR->m_fnEnvValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:463:         nRet=THESIPDBMGR->m_fnTimerValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:465:         nRet=THESIPDBMGR->m_fnTraceValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:467:         nRet=THESIPDBMGR->m_fnEmerValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:473:      nNum=THESIPDBMGR->m_fnFindEmptyRecord(_nIndex);
+eSipRteMgr.cxx:489:      nRet=THESIPDBMGR->m_fnAddRecordByIndex(_nIndex,nNum,_pvData);
+eSipRteMgr.cxx:538:   nRet=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:543:         nRet=THESIPDBMGR->m_fnFindRecord_SHM(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:606:      nRow=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID, pvRecord);
+eSipRteMgr.cxx:623:         nRet=THESIPDBMGR->m_fnLocalNodeDelCheck((unsigned int)_nID,_pError);
+eSipRteMgr.cxx:632:         nRet=THESIPDBMGR->m_fnRemoteNodeDelCheck((unsigned int)_nID,_pError);
+eSipRteMgr.cxx:634:         nRet=THESIPDBMGR->m_fnRouteGroupDelCheck((unsigned int)_nID,_pError);
+eSipRteMgr.cxx:636:         nRet=THESIPDBMGR->m_fnRouteDelCheck((unsigned int)_nID,_pError);
+eSipRteMgr.cxx:638:         nRet=THESIPDBMGR->m_fnRouteSeqDelCheck((unsigned int)_nID,_pError);
+eSipRteMgr.cxx:660:      THESIPDBMGR->m_fnDelRecordByIndex(_nIndex,nRow);
+eSipRteMgr.cxx:712:      nRet=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:791:         nRet=THESIPDBMGR->m_fnLocalNodeValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:793:         nRet=THESIPDBMGR->m_fnRemoteNodeValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:795:         nRet=THESIPDBMGR->m_fnRouteGroupValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:797:         nRet=THESIPDBMGR->m_fnRouteValidCheck(pvAttach,_pError,true);
+eSipRteMgr.cxx:799:         nRet=THESIPDBMGR->m_fnRouteSeqValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:801:         nRet=THESIPDBMGR->m_fnSpecialRouteSeqValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:805:         nRet=THESIPDBMGR->m_fnTrGWValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:807:         nRet=THESIPDBMGR->m_fnReasonValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:810:         nRet=THESIPDBMGR->m_fnEnvValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:813:         nRet=THESIPDBMGR->m_fnTimerValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:815:         nRet=THESIPDBMGR->m_fnTraceValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:817:         nRet=THESIPDBMGR->m_fnEmerValidCheck(pvAttach,_pError);
+eSipRteMgr.cxx:823:         nRet=THESIPDBMGR->m_fnSetModRecord_LocalNode(pvRecord,pvAttach);
+eSipRteMgr.cxx:825:         nRet=THESIPDBMGR->m_fnSetModRecord_RemoteNode(pvRecord,pvAttach);
+eSipRteMgr.cxx:827:         nRet=THESIPDBMGR->m_fnSetModRecord_RouteGroup(pvRecord,pvAttach);
+eSipRteMgr.cxx:829:         nRet=THESIPDBMGR->m_fnSetModRecord_Route(pvRecord,pvAttach);
+eSipRteMgr.cxx:831:         nRet=THESIPDBMGR->m_fnSetModRecord_RouteSeq(pvRecord,pvAttach);
+eSipRteMgr.cxx:833:         nRet=THESIPDBMGR->m_fnSetModRecord_SRouteSeq(pvRecord,pvAttach);
+eSipRteMgr.cxx:835:         nRet=THESIPDBMGR->m_fnSetModRecord_TrGW(pvRecord,pvAttach);
+eSipRteMgr.cxx:837:         nRet=THESIPDBMGR->m_fnSetModRecord_Reason(pvRecord,pvAttach);
+eSipRteMgr.cxx:840:         nRet=THESIPDBMGR->m_fnSetModRecord_Env(pvRecord,pvAttach,_nIndex);
+eSipRteMgr.cxx:842:         nRet=THESIPDBMGR->m_fnSetModRecord_Timer(pvRecord,pvAttach);
+eSipRteMgr.cxx:844:         nRet=THESIPDBMGR->m_fnSetModRecord_Trace(pvRecord,pvAttach);
+eSipRteMgr.cxx:846:         nRet=THESIPDBMGR->m_fnSetModRecord_Emer(pvRecord,pvAttach);
+eSipRteMgr.cxx:869:            THESIPDBMGR->m_fnNotifyTrGWStatus((TrGWRoute_t*)pvRecord);
+eSipRteMgr.cxx:897:      nRet=THESIPDBMGR->m_fnSpecialRouteSeqValidCheck(_pvData,_pError);
+eSipRteMgr.cxx:923:         nRet=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:934:           THESIPDBMGR->m_fnSetCompareModRecord(_nIndex,pvRecord,_pvData);
+eSipRteMgr.cxx:951:         nRet=THESIPDBMGR->m_fnFindRecord(_nIndex,_nID,pvRecord);
+eSipRteMgr.cxx:957:            THESIPDBMGR->m_fnSetCompareModRecord(_nIndex,pvRecord,_pvData);
+eSipRteMgr.cxx:988:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,_nGroupID,pvRecord);
+eSipRteMgr.cxx:998:   SipRouteManagerDataBase_t* pDB=THESIPDBMGR->m_fnGetDB();
+eSipRteMgr.cxx:1044:      THESIPDBMGR->m_fnChangeRouteStatus(false,pRoute,true,_nACTFlag,false,0,0);
+eSipRteMgr.cxx:1078:   nRet=THESIPDBMGR->m_fnDecisionTrGW(_pstTrGW,bFind,_pError); 
+eSipRteMgr.cxx:1084:      nRet=THESIPDBMGR->m_fnDecisionTrGW(_pstTrGW,bFind,_pError); 
+eSipRteMgr.cxx:1109:   if( THESIPDBMGR->m_fnFindTrGW(szSvrIP,nSvrPort,szTrGWIP,nTrGWPort,pValue) == false ||
+eSipRteMgr.cxx:1118:   THESIPDBMGR->m_fnChangeTrGWStatus(pValue,bIsConnect);
+eSipRteMgr.cxx:1142:   if( THESIPDBMGR->m_fnFindTrGW(szSvrIP,nSvrPort,szTrGWIP,nTrGWPort,pValue) == false){
+eSipRteMgr.cxx:1173:   if( THESIPDBMGR->m_fnFindTrGW(szSvrIP,nSvrPort,szTrGWIP,nTrGWPort,pValue) == false){
+eSipRteMgr.cxx:1206:   if( THESIPDBMGR->m_fnFindTrGW(szSvrIP,nSvrPort,szTrGWIP,nTrGWPort,pValue) == false){
+eSipRteMgr.cxx:1246:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,(int)_uiRouteID,pvRecord);
+eSipRteMgr.cxx:1256:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_GRTE,nID,pvRecord);
+eSipRteMgr.cxx:1266:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RSN,nID,pvRecord);
+eSipRteMgr.cxx:1311:   nRet=THESIPDBMGR->m_fnDecisionTargetByRSeq(_uiRSeqID,_pstICLocal,_pstICRemote,_pstICRoute,
+eSipRteMgr.cxx:1339:   nRet=THESIPDBMGR->m_fnGetOGRouteByRSeq(_uiRSeqID,_pstOGLocal,_pstOGRemote,_pstOGRoute,_pError,_bOnlyTCP); 
+eSipRteMgr.cxx:1390:   nRet=THESIPDBMGR->m_fnDecisionRouteBySpecialRSeq(_uiSRSeqID,_pstOGLocal,_pstOGRemote,
+eSipRteMgr.cxx:1399:   nRet=THESIPDBMGR->m_fnDecisionRSeqBySpecialRSeq(_uiSRSeqID,uiRSeqID,nCnt,_pError);
+eSipRteMgr.cxx:1412:      nRet=THESIPDBMGR->m_fnDecisionRSeqBySpecialRSeq(_uiSRSeqID,uiRSeqID,nTmpCnt,_pError);
+eSipRteMgr.cxx:1445:   nRet=THESIPDBMGR->m_fnGetICRoute(_pstLocal,_pstRemote,_pstRoute,pRoute,_bCheckRouteStatus,_pError);
+eSipRteMgr.cxx:1468:   nRet=THESIPDBMGR->m_fnGetLocal(_pstLocal,_pError);
+eSipRteMgr.cxx:1492:   nRet=THESIPDBMGR->m_fnSetLocalStatus(_pstLocal,_nStatus,_pError);
+eSipRteMgr.cxx:1515:   nRet=THESIPDBMGR->m_fnGetRemote(_pstRemote,_pError);
+eSipRteMgr.cxx:1540:   nRet=THESIPDBMGR->m_fnGetRouteByLIDAndRID(_uiLID,_uiRID,_pstRoute,_pError);
+eSipRteMgr.cxx:1567:   nRet=THESIPDBMGR->m_fnSetRouteStatus(_pstICLocal,_pstICRemote,_nRouteID,
+eSipRteMgr.cxx:1600:   nRet=THESIPDBMGR->m_fnCheckCPSByTransport(_pstLocal,_pstRemote,_pstRoute,_rnCurCPS,_rnMaxCPS,
+eSipRteMgr.cxx:1629:   nRet=THESIPDBMGR->m_fnCheckCPSByRouteID(_uiRouteID,_rnCurCPS,_rnMaxCPS,
+eSipRteMgr.cxx:1658:   nRet=THESIPDBMGR->m_fnCheckTPSByTransport(_pstLocal,_pstRemote,
+eSipRteMgr.cxx:1688:         nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RTE,(int)_uiID,pvRecord);
+eSipRteMgr.cxx:1698:      nRet=THESIPDBMGR->m_fnCheckTPSByTransport(nGroupID,_rnCurTPS,_rnMaxTPS,_pError); 
+eSipRteMgr.cxx:1718:   nRet=THESIPDBMGR->m_fnFindTCPRoute(_pLocal,_pRemote,_pRoute);
+eSipRteMgr.cxx:1740:   bRet=THESIPDBMGR->m_fnCheckTrace(_pszCaller,_pszCallee,_nRemoteID,_rnCnt,_pstTrace);
+eSipRteMgr.cxx:1755:   //THESIPDBMGR->m_fnRecvOption200OK(_pLocal,_pRemote,_bOKRsp);
+eSipRteMgr.cxx:1756:   THESIPDBMGR->m_fnRecvOption200OK(_pLocal,_pRemote,_bOKRsp,_nResponseCode);
+eSipRteMgr.cxx:1766:   return THESIPDBMGR->m_fnRecvOption(_pLocal,_pRemote);
+eSipRteMgr.cxx:1778:   THESIPDBMGR->m_fnCtrolRouteCount_SetZeroAll();
+eSipRteMgr.cxx:1791:   THESIPDBMGR->m_fnCtrolRouteCount(_uiID,_bIC,true,false);
+eSipRteMgr.cxx:1804:   THESIPDBMGR->m_fnCtrolRouteCount(_uiID,_bIC,false,false);
+eSipRteMgr.cxx:1816:   THESIPDBMGR->m_fnCtrolRouteCount(_uiID,true,false,true);
+eSipRteMgr.cxx:1834:   THESIPDBMGR->m_fnInCrease1SesCount();
+eSipRteMgr.cxx:1852:   THESIPDBMGR->m_fnDeCrease1SesCount();
+eSipRteMgr.cxx:1869:   THESIPDBMGR->m_fnSetZeroSesCount();
+eSipRteMgr.cxx:1887:   THESIPDBMGR->m_fnSetSesCount(nSes);
+eSipRteMgr.cxx:1908:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_ENV_LB,0,pvRecord);
+eSipRteMgr.cxx:1910:      nRet=THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_ENV,0,pvRecord);
+eSipRteStatus.cxx:167:   SipRouteManagerDataBase_t* pDB=THESIPDBMGR->m_fnGetDB();
+eSipRteThread.cxx:53:   SipRoute_t* pRte=(SipRoute_t*)THESIPDBMGR->m_fnGetRecord(CSipRteData::E_SIPRTE_RTE);
+eSipRteThread.cxx:90:         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_LN, nLID, pvLocalRecord) < 0){
+eSipRteThread.cxx:93:         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,nRID, pvRmtRecord) < 0){
+eSipRteThread.cxx:104:         THESIPDBMGR->m_fnSentOption((pRte+i));
+eSipRteThread.cxx:112:   SipRoute_t* pRte=(SipRoute_t*)THESIPDBMGR->m_fnGetRecord(CSipRteData::E_SIPRTE_RTE);
+eSipRteThread.cxx:148:         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_LN, nLID, pvLocalRecord) < 0){
+eSipRteThread.cxx:151:         if( THESIPDBMGR->m_fnFindRecord(CSipRteData::E_SIPRTE_RMT,nRID, pvRmtRecord) < 0){

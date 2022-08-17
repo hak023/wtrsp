@@ -1,0 +1,266 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/ioctl.h>
+
+#include "shm.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+#define SHM_FTOK_ID  			'n'
+#define SHM_MODE 				0666
+
+void * createShmAuto(const char * _pszPathName, size_t _uSize, int & _nShmId)
+{
+	void * pShmMem = NULL;
+
+	if( (pShmMem = createShm(_pszPathName, _uSize, false, _nShmId)) )
+		return pShmMem;
+	else
+	{
+		destroyShm(_pszPathName, NULL);
+		return createShm(_pszPathName, _uSize, false, _nShmId);
+	}
+}
+
+void * createShmAuto(int _nShmKey, size_t _uSize, int & _nShmId)
+{
+	void * pShmMem = NULL;
+
+	if( (pShmMem = createShm(_nShmKey, _uSize, false, _nShmId)) )
+		return pShmMem;
+	else
+	{
+		destroyShm(_nShmKey, NULL);
+		return createShm(_nShmKey, _uSize, false, _nShmId);
+	}
+}
+
+void * createShm(const char * _pszPathName, size_t _uSize, bool _bReadOnly, int & _nShmId)
+{
+	key_t key;
+	int nOldShmId, nShmId;
+	void * pShm;
+
+	if( !_pszPathName || (_uSize <= 0 && !_bReadOnly) )
+	{
+		LogInternal(E_LOG_ERR, "createShm_path : fail : invalid argument");
+		return NULL;
+	}
+
+	if( (key = ftok(_pszPathName, SHM_FTOK_ID)) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : ftok() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+		return NULL;
+	}
+
+	if( (nShmId = shmget(key, 0, 0)) < 0 )
+	{
+		if( errno != ENOENT )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : shmget() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+			return NULL;
+		}
+
+		if( _bReadOnly )
+		{
+			LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : shmget() : can't get for ReadOnly", _pszPathName);
+			return NULL;
+		}
+		
+		if( (nShmId = shmget(key, _uSize, SHM_MODE | IPC_CREAT | IPC_EXCL)) < 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : cannot create shm : size[%lu] : %s", _pszPathName, _uSize, strerror_r(errno, szErr, sizeof(szErr)));
+			return NULL;
+		}
+	}
+	else
+	{
+		if( !_bReadOnly || _uSize > 0 )
+		{
+			nOldShmId = nShmId;
+			if( (nShmId = shmget(key, _uSize, SHM_MODE)) < 0 )
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : %lu is bigger than oldId[%d] : %s", _pszPathName, _uSize, nOldShmId, strerror_r(errno, szErr, sizeof(szErr)));
+				return NULL;
+			}
+		}
+	}
+
+	if( _bReadOnly )
+		pShm = shmat(nShmId, 0, SHM_RDONLY);
+	else
+		pShm = shmat(nShmId, 0, 0);
+	
+	if( (long)pShm == -1 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "createShm_path[%s] : fail : cannot attach shm[%d] : %s", _pszPathName, nShmId, strerror_r(errno, szErr, sizeof(szErr)));
+		return NULL;
+	}
+
+	_nShmId = nShmId;
+
+	LogInternal(E_LOG_INFO, "createShm_path[%s] : success : shm[%d] : size[%lu]", _pszPathName, nShmId, _uSize);
+
+	return pShm;
+}
+
+void * createShm(int _nShmKey, size_t _uSize, bool _bReadOnly, int & _nShmId)
+{
+	key_t key;
+	int nOldShmId, nShmId;
+	void * pShm;
+
+	if( _uSize <= 0 && !_bReadOnly )
+	{
+		LogInternal(E_LOG_ERR, "createShm_key : fail : invalid argument");
+		return NULL;
+	}
+
+	key = (key_t)_nShmKey;
+
+	if( (nShmId = shmget(key, 0, 0)) < 0 )
+	{
+		if( errno != ENOENT )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "createShm_key[0x%x] : fail : shmget() : %s", _nShmKey, strerror_r(errno, szErr, sizeof(szErr)));
+			return NULL;
+		}
+
+		if( _bReadOnly )
+		{
+			LogInternal(E_LOG_ERR, "createShm_key[0x%x] : fail : shmget() : can't get for ReadOnly", _nShmKey);
+			return NULL;
+		}
+		
+		if( (nShmId = shmget(key, _uSize, SHM_MODE | IPC_CREAT | IPC_EXCL)) < 0 )
+		{
+			char szErr[64];
+			LogInternal(E_LOG_ERR, "createShm_key[0x%x] : fail : cannot create shm : size[%lu] : %s", _nShmKey, _uSize, strerror_r(errno, szErr, sizeof(szErr)));
+			return NULL;
+		}
+	}
+	else
+	{
+		if( !_bReadOnly || _uSize > 0 )
+		{
+			nOldShmId = nShmId;
+			if( (nShmId = shmget(key, _uSize, SHM_MODE)) < 0 )
+			{
+				char szErr[64];
+				LogInternal(E_LOG_ERR, "createShm_key[0x%x] : fail : %lu is bigger than oldId[%d] : %s", _nShmKey, _uSize, nOldShmId, strerror_r(errno, szErr, sizeof(szErr)));
+				return NULL;
+			}
+		}
+	}
+
+	if( _bReadOnly )
+		pShm = shmat(nShmId, 0, SHM_RDONLY);
+	else
+		pShm = shmat(nShmId, 0, 0);
+	
+	if( (long)pShm == -1 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "createShm_key[0x%x] : fail : cannot attach shm[%d] : %s", _nShmKey, nShmId, strerror_r(errno, szErr, sizeof(szErr)));
+		return NULL;
+	}
+
+	_nShmId = nShmId;
+
+	LogInternal(E_LOG_INFO, "createShm_key[0x%x] : success : shm[%d] : size[%lu]", _nShmKey, nShmId, _uSize);
+
+	return pShm;
+}
+
+bool destroyShm(const char * _pszPathName, void * pShmMem)
+{
+	key_t key;
+	int nShmId;
+
+	if( !_pszPathName )
+	{
+		LogInternal(E_LOG_ERR, "destroyShm_path : fail : invalid arg");
+		return false;
+	}
+
+	if( (key = ftok(_pszPathName, SHM_FTOK_ID)) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_path[%s] : fail : ftok() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	if( (nShmId = shmget(key, 0, SHM_MODE)) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_path[%s] : fail : shmget() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	if( pShmMem && shmdt(pShmMem) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_path[%s] : fail : shmdt() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	if( shmctl(nShmId, IPC_RMID, NULL) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_path[%s] : fail : shmctl() : %s", _pszPathName, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	LogInternal(E_LOG_INFO, "destroyShm_path[%s] : success : shm[%d]", _pszPathName, nShmId);
+
+	return true;
+}
+
+bool destroyShm(int _nShmKey, void * pShmMem)
+{
+	key_t key;
+	int nShmId;
+
+	key = (key_t)_nShmKey;
+
+	if( (nShmId = shmget(key, 0, SHM_MODE)) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_key[0x%x] : fail : shmget() : %s", _nShmKey, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	if( pShmMem && shmdt(pShmMem) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_key[0x%x] : fail : shmdt() : %s", _nShmKey, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	if( shmctl(nShmId, IPC_RMID, NULL) < 0 )
+	{
+		char szErr[64];
+		LogInternal(E_LOG_ERR, "destroyShm_key[0x%x] : fail : shmctl() : %s", _nShmKey, strerror_r(errno, szErr, sizeof(szErr)));
+		return false;
+	}
+
+	LogInternal(E_LOG_INFO, "destroyShm_key[0x%x] : success : shm[%d]", _nShmKey, nShmId);
+
+	return true;
+}
+
+}
+

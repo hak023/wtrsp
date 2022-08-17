@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine
+END
+icc_generic.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/icc_generic.h
+END
+msvc_ia32_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/msvc_ia32_common.h
+END
+sunos_sparc.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/sunos_sparc.h
+END
+windows_intel64.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/windows_intel64.h
+END
+mac_ppc.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/mac_ppc.h
+END
+gcc_itsx.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/gcc_itsx.h
+END
+linux_intel64.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/linux_intel64.h
+END
+linux_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/linux_common.h
+END
+gcc_armv7.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/gcc_armv7.h
+END
+windows_ia32.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/windows_ia32.h
+END
+macos_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/macos_common.h
+END
+xbox360_ppc.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/xbox360_ppc.h
+END
+linux_ia32.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/linux_ia32.h
+END
+ibm_aix51.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/ibm_aix51.h
+END
+mic_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/mic_common.h
+END
+linux_ia64.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/linux_ia64.h
+END
+gcc_ia32_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/gcc_ia32_common.h
+END
+windows_api.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/windows_api.h
+END
+msvc_armv7.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/msvc_armv7.h
+END
+gcc_generic.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/machine/gcc_generic.h
+END

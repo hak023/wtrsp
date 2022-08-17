@@ -1,0 +1,252 @@
+#include "DelLog.hxx"
+#include "thread.hxx"
+
+namespace eSipUtil
+{
+/************************** Static Instance & Valuable ***************************************/
+DelLogMgr * g_pclsDelLogMgr = NULL;
+NormalThread<DelLogMgr> * g_pclsDelLogThread = NULL;
+bool g_bDelLogInit = false;
+static void s_fnMSleep(int _unMsec)
+{
+	struct timeval val;
+	val.tv_sec = _unMsec / 1000;
+	val.tv_usec = (_unMsec % 1000) * 1000;
+	select(0, 0, 0, 0, &val);
+}
+static void s_fnCbkDelLogProcess(DelLogMgr * _pclsDelLog)
+{
+	g_pclsDelLogMgr->m_fnReadAndDelete();
+	s_fnMSleep(100);
+}
+/***************************** API Functions **********************************************/
+void g_fnCreateDelLog(const char * _pszDirPath, const char * _pszFileName, 
+												unsigned int _unMaxLimit,unsigned int _unExpireTime)
+{
+	bool bRet = false;
+	LogInternal(E_LOG_ERR, "Add DelLog Path=%s,File=%s,Limit=%u, Ret = %d"
+											,_pszDirPath,_pszFileName,_unMaxLimit,bRet);
+	if(g_bDelLogInit == false)
+	{
+		g_bDelLogInit = true;
+		g_pclsDelLogMgr = new DelLogMgr;
+		bRet = g_pclsDelLogMgr->m_fnAdd(_pszDirPath,_pszFileName,_unMaxLimit,_unExpireTime);
+		g_pclsDelLogThread = new NormalThread<DelLogMgr>;
+		g_pclsDelLogThread->setName("DelLogMgr");
+		g_pclsDelLogThread->setObject(g_pclsDelLogMgr);
+		g_pclsDelLogThread->setProcessCb(s_fnCbkDelLogProcess);	
+		g_pclsDelLogThread->run();
+	}
+	else
+	{
+		bRet = g_pclsDelLogMgr->m_fnAdd(_pszDirPath,_pszFileName,_unMaxLimit,_unExpireTime);
+	}
+}
+void g_fnTerminateDelLog(const char * _pszDirPath, const char * _pszFileName)
+{
+	g_pclsDelLogMgr->m_fnDel(_pszDirPath,_pszFileName);
+}
+bool g_fnChangedDelLog(const char * _pszDirPath, const char * _pszFileName, 
+																int _nMaxLimit,int _nExpireTime)
+{
+	LogInternal(E_LOG_ERR,"Change Del Log : [%s] [%s]",_pszDirPath,_pszFileName);
+	return g_pclsDelLogMgr->m_fnChangeInfo(_pszDirPath,_pszFileName,_nMaxLimit,_nExpireTime);
+}
+/**************************** DelLog File Info **********************************************/
+DelLog::DelLog()
+{
+	m_unLastTime=0;
+	m_unFileCnt = 0;
+	m_bAllMode = false;
+	m_unExipreSec = 0;
+	m_unMaxLimitedFileNum=0;
+	m_eLastMode = E_FMOD_NONE;
+}
+DelLog::~DelLog()
+{
+}
+void DelLog::m_fnInit(const char * _pszDirPath, const char * _pszFileName, 
+												unsigned int _unMaxLimit,unsigned int _unExpireTime)
+{
+	KString clsTmpKey; 
+	if(DelLogMgr::m_fnGenKey(_pszDirPath, _pszFileName,clsTmpKey)== false) return;
+	m_fnSetKey((KCSTR)clsTmpKey);
+	m_clsDirName = (KCSTR)_pszDirPath;
+	if(_pszDirPath[KString::m_fnStrLen(_pszDirPath)-1] != '/') m_clsDirName<<"/";
+	m_clsFileName = _pszFileName;
+	if(m_clsFileName == (KCSTR)"all") m_bAllMode = true;
+	m_unMaxLimitedFileNum = _unMaxLimit;
+	m_unExipreSec = _unExpireTime;
+	LogInternal(E_LOG_ERR,"Delete File> Key : %s, Path = %s, File=%s, Limit=%d\r\n",
+						(KCSTR)clsTmpKey,(KCSTR)m_clsDirName,(KCSTR)m_clsFileName,m_unMaxLimitedFileNum);
+}
+void DelLog::m_fnClear()
+{
+	m_unLastTime=0;
+	m_unFileCnt = 0;
+	m_clsLastDName = KNULL;
+	m_eLastMode = E_FMOD_NONE;
+}
+bool DelLog::m_fnReadAndDelete()
+{
+	if(m_unMaxLimitedFileNum==0) return false;
+	if(KString::m_fnStrLen((KCSTR)m_clsDirName)==0) return false;
+	DIR *dp = NULL;struct dirent *entry = NULL;struct stat f_stat;
+	if((dp=opendir((KCSTR)m_clsDirName)) == NULL) return false;
+	m_fnClear();KString clsTmpPath;
+	while((entry = readdir(dp)) != NULL)
+	{
+		clsTmpPath=KNULL;clsTmpPath<<(KCSTR)m_clsDirName<<(KCSTR)entry->d_name;
+		memset(&f_stat,0x00,sizeof(struct stat));	stat((KCSTR)clsTmpPath, &f_stat);
+		if((S_ISDIR(f_stat.st_mode)) || (S_ISREG(f_stat.st_mode)))
+		{
+			if(m_fnMatchFile(entry->d_name))
+			{
+				if(m_fnCheckExpireTime(entry->d_name,&f_stat))
+				{
+					m_fnRemoveFile(entry->d_name,Directorys::m_fnGetMode(&f_stat));
+					closedir(dp); return true;
+				}
+				else if(m_fnUpdateLastFile(entry,&f_stat))
+				{
+					m_fnRemoveFile(m_clsLastDName,m_eLastMode);
+					closedir(dp);return true;
+				}
+			}
+		}
+	}
+	closedir(dp);
+	return false;
+}
+bool DelLog::m_fnMatchFile(char *_pszFileName)
+{
+	if(KString::m_fnStrCmp(_pszFileName,(char*)".")==0) return false;
+	if(KString::m_fnStrCmp(_pszFileName,(char*)"..")==0) return false;
+	if(m_bAllMode) return true;
+	if(KString::m_fnStrnCmp(_pszFileName,(KCSTR)m_clsFileName,m_clsFileName.m_unRealLen)==0) 
+	{
+		return true;
+	}
+	return false;
+}
+bool DelLog::m_fnCheckExpireTime(char *_pszFileName,struct stat *pstat)
+{
+	if((m_unExipreSec > 0) && ((unsigned int)difftime(time(NULL),pstat->st_mtime) >=m_unExipreSec))
+	{
+		return true;
+	}
+	return false;
+}
+bool DelLog::m_fnRemoveFile(char * _pszFileName, FileMode_t _eMode)
+{
+	if(KString::m_fnStrLen(_pszFileName)==0) return false;
+	KString clsTmpPath; clsTmpPath<<(KCSTR)m_clsDirName<<(KCSTR)_pszFileName;
+	chmod((KCSTR)clsTmpPath,0777);
+	if(_eMode == E_FMOD_DIR)
+	{
+		LogInternal(E_LOG_ERR,"Remove Dir : %s",(KCSTR)clsTmpPath);
+		Directorys::m_fnRemoveDir((KCSTR)clsTmpPath);
+	}
+	else if(_eMode == E_FMOD_FILE)
+	{
+		LogInternal(E_LOG_ERR,"Remove File : %s",(KCSTR)clsTmpPath);
+		unlink((KCSTR)clsTmpPath);
+	}
+	return true;
+}
+bool DelLog::m_fnUpdateLastFile(struct dirent *entry, struct stat *pstat)
+{	
+	if(m_unFileCnt==0)
+	{
+		m_unLastTime = (unsigned int)(pstat->st_mtime);
+		m_clsLastDName = (KCSTR)entry->d_name;
+		m_eLastMode = Directorys::m_fnGetMode(pstat);
+	}
+	else if(m_unLastTime > (unsigned int)(pstat->st_mtime))
+	{
+		m_unLastTime = (unsigned int)(pstat->st_mtime);
+		m_clsLastDName = (KCSTR)entry->d_name;
+		m_eLastMode = Directorys::m_fnGetMode(pstat);
+	}
+	if(m_unFileCnt >= m_unMaxLimitedFileNum) return true;
+	(m_unFileCnt)++;
+	return false;
+}
+/******************************* Del Log Manager ******************************************/
+DelLogMgr::DelLogMgr(){}
+DelLogMgr::~DelLogMgr()
+{
+	g_pclsDelLogThread->shutdown();
+	g_pclsDelLogThread->join();
+}
+bool DelLogMgr::m_fnAdd(const char * _pszDirPath, const char * _pszFileName, 
+												unsigned int _unMaxLimit,unsigned int _unExpireTime)
+{
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_WRITE);
+	DelLog * pclsNew = new DelLog;
+	pclsNew->m_fnInit(_pszDirPath,_pszFileName,_unMaxLimit,_unExpireTime);
+	return m_listDelFile.m_fnPushBack(pclsNew,true);
+}
+DelLog * DelLogMgr::m_fnFind(const char * _pszDirPath,const char * _pszFileName)
+{
+	KString clsTmp;if(m_fnGenKey(_pszDirPath,_pszFileName,clsTmp)==false) return NULL;
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_READ);
+	return (DelLog*)m_listDelFile.m_fnFindNode((KCSTR)clsTmp);
+}
+bool DelLogMgr::m_fnDel(const char * _pszDirPath,const char * _pszFileName)
+{
+	KString clsTmp;if(m_fnGenKey(_pszDirPath,_pszFileName,clsTmp)==false) return false;
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_WRITE);
+	return m_listDelFile.m_fnDelNode((KCSTR)clsTmp);
+}
+bool DelLogMgr::m_fnChangeInfo(const char * _pszDirPath, const char * _pszFileName, 
+																int _nMaxLimit, int _nExpireTime)
+{
+	KString clsTmp;if(m_fnGenKey(_pszDirPath,_pszFileName,clsTmp)==false) return false;
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_READ);
+	DelLog * pclsFind = (DelLog*)m_listDelFile.m_fnFindNode((KCSTR)clsTmp);
+	if(pclsFind==NULL) 
+	{
+		LogInternal(E_LOG_ERR,"Not Found DelLog Item : [%s] [%s]",_pszDirPath,_pszFileName);
+		return false;
+	}
+	if(_nMaxLimit != -1)
+	{
+		LogInternal(E_LOG_ERR,"Max File %u -> %u",pclsFind->m_unMaxLimitedFileNum,_nMaxLimit);
+		pclsFind->m_unMaxLimitedFileNum = (unsigned int)_nMaxLimit;
+	}
+	if(_nExpireTime != -1)
+	{
+		LogInternal(E_LOG_ERR,"Max Duration(Sec) %u -> %u",pclsFind->m_unExipreSec,_nExpireTime);
+		pclsFind->m_unExipreSec = (unsigned int)_nExpireTime;
+	}
+	return true;
+}
+void DelLogMgr::m_fnClear()
+{
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_WRITE);
+	m_listDelFile.m_fnClear();
+}
+void DelLogMgr::m_fnReadAndDelete()
+{
+	ListItr_t itrFind; DelLog * pclsFind = NULL;
+	Lock clsAutoLoc(m_clsLock,Lock::E_LOCK_TYPE_READ);
+	pclsFind = m_fnBegin(itrFind);
+	while(pclsFind)
+	{
+		if(pclsFind->m_fnReadAndDelete()) return;   // exist Del File, delete & return;
+		pclsFind = m_fnNext(itrFind);
+	}
+}
+bool DelLogMgr::m_fnGenKey(const char * _pszPath, const char * _pszFileName, KString &_rclsResult)
+{
+	unsigned int unPLen = KString::m_fnStrLen(_pszPath);
+	unsigned int unFLen = KString::m_fnStrLen(_pszFileName);
+	if(unPLen == 0 || unFLen ==0 ) return false;
+	_rclsResult<<(KCSTR)_pszPath;
+	if(_pszPath[unPLen-1] != '/') _rclsResult<<(KCHR)'/';
+	_rclsResult<<(KCSTR)_pszFileName;
+	return true;
+}
+}
+

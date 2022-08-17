@@ -1,0 +1,1137 @@
+
+
+#include "TreeCli.hxx"
+#include "ConfigFile.hxx"
+#include "timeUtil.hxx"
+#include "fileControl.hxx"
+
+namespace eSipUtil
+{
+char g_szDefClistring[]=
+"==========================================="
+"==========================================="
+"===========================================";
+
+char R_chr = '\n';
+const char delim[]=" \t\n";
+bool boot_once = false; 
+
+static TransportConfig_t s_stCliTransportCfg;
+static SocketCfg_t s_stCliSocketCfg;
+static TransportMgrOption s_stCliMgrOption;
+char s_szCliName[]="Cli";
+
+/************************* Transport Event CallBack ******************************************/
+static void s_fnCbkCliAcceptConnected(TransportMgr & _rclsTransportMgr, Net5Tuple_t & _rstNet5Tuple)
+{
+	LogInternal(E_LOG_INFO,"[%s] Remote(%s, %d), Local(%s, %d)",__func__,
+		_rstNet5Tuple.m_szRemoteIp,_rstNet5Tuple.m_nRemotePort,
+		_rstNet5Tuple.m_szLocalIp,_rstNet5Tuple.m_nLocalPort);
+	TreeCli * pclsCli = (TreeCli*)_rclsTransportMgr.getAppData();
+	if(pclsCli)
+	{
+		CliSession * pclsSess = pclsCli->m_fnAddSession(_rstNet5Tuple);
+		if(pclsSess)
+		{
+			CliNet_t pstWelcom; pstWelcom.m_stHdr.m_stAddr = _rstNet5Tuple;
+			KString clsWelcom; clsWelcom<<"\r\n\r\n======= "<<pclsCli->m_szCliName;
+			clsWelcom<<" CLI =======\r\n\r\n";
+			pclsSess->m_fnSendRsp(&pstWelcom,(KCSTR)clsWelcom);
+		}
+	}
+}
+static void s_fnCbkCliClientConnected(TransportMgr & _rclsTransportMgr,const Net5Tuple_t & _rstNet5Tuple)
+{
+	LogInternal(E_LOG_INFO,"[%s] Remote(%s, %d), Local(%s, %d)",__func__,
+		_rstNet5Tuple.m_szRemoteIp,_rstNet5Tuple.m_nRemotePort,
+		_rstNet5Tuple.m_szLocalIp,_rstNet5Tuple.m_nLocalPort);
+	TreeCli * pclsCli = (TreeCli*)_rclsTransportMgr.getAppData();
+	if(pclsCli)
+	{
+		pclsCli->m_fnAddSession(_rstNet5Tuple);
+	}
+	printf("\r\nCli Server Connected..\r\n");
+}
+static void s_fnCbkCliDisconnected(TransportMgr & _rclsTransportMgr, 
+										const Net5Tuple_t & _rstNet5Tuple,
+										ETransportErr_t _eTrspErr)
+{
+	LogInternal(E_LOG_INFO,"[%s] Remote(%s, %d), Local(%s, %d)",__func__,
+		_rstNet5Tuple.m_szRemoteIp,_rstNet5Tuple.m_nRemotePort,
+		_rstNet5Tuple.m_szLocalIp,_rstNet5Tuple.m_nLocalPort);
+	TreeCli * pclsCli = (TreeCli*)_rclsTransportMgr.getAppData();
+	if(pclsCli)
+	{
+		pclsCli->m_fnDelSession(_rstNet5Tuple);
+		if(pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+		{
+			pclsCli->m_clsLock.m_fnWriteLock();
+			strncpy(pclsCli->m_szPrompt,pclsCli->m_szOrgPrompt,255);
+			pclsCli->m_eMod = E_CLI_MOD_CONSOL;
+			pclsCli->CurrentParam = pclsCli->RootParam;
+			pclsCli->m_clsLock.m_fnUnlock();
+			printf("\r\nCli Server DisConnected..\r\n");
+		}
+	}
+}
+static int s_fnCbkCliAnalizePacket(TransportMgr & _rclsTransportMgr,const char * _pRcvData, 
+										unsigned int _unRcvDataLen, const Net5Tuple_t & _rstNet5Tuple,
+										void * _pAppBuffer)
+{
+	CliNet_t *pstPk = (CliNet_t*)_pRcvData;
+	if(pstPk->m_fnGetValid()==false)
+	{
+		LogInternal(E_LOG_ERR,"Invalid Magic Code.");
+		return -1;
+	}
+	return pstPk->m_fnGetLen();
+}
+static void s_fnPrintCliRawData(void * _pvData, unsigned int _unLen)
+{
+	KString clsBuff; clsBuff.m_fnCatHexs(_pvData,_unLen);
+	LogInternal(E_LOG_INFO,(KCSTR)clsBuff);
+	
+}
+static void s_fnCbkCliSendPacket( TransportMgr & _rclsTransportMgr,const char * _pData, 
+									unsigned int _unDataLen, const Net5Tuple_t & _rstNet5Tuple,
+									void * _pSndAppData)
+{
+	// User Coding
+	// trace or etc...
+	LogInternal(E_LOG_INFO,"[%s] Snd PkLen=%u, %s^%u ----> %s^%u",__func__,_unDataLen,
+													_rstNet5Tuple.m_szLocalIp,
+													_rstNet5Tuple.m_nLocalPort,
+													_rstNet5Tuple.m_szRemoteIp,
+													_rstNet5Tuple.m_nRemotePort);
+	if( eSipUtil::AsyncFileLog::m_fnCheckLogLevel(0, 0, E_LOG_DEBUG))
+	{
+		s_fnPrintCliRawData((void*)_pData,_unDataLen);
+	}
+	TreeCli * pclsCli = (TreeCli*)_rclsTransportMgr.getAppData();
+	if(pclsCli && pclsCli->m_eMod == E_CLI_MOD_SERVER)
+	{
+		CliNet_t *pstPk = (CliNet_t*)_pData;
+		pstPk->m_stHdr.m_stAddr = _rstNet5Tuple;
+		//KString clsDebug; pstPk->m_fnDebug(clsDebug);
+		//LogInternal(E_LOG_INFO,(KCSTR)clsDebug);
+	}
+}
+static void s_fnCbkCliRecvPacket(TransportMgr & _rclsTransportMgr,char * _pData, 
+									unsigned int _unDataLen,  const Net5Tuple_t & _rstNet5Tuple)
+{
+	// User Coding
+	// Build Event Struct
+	LogInternal(E_LOG_INFO,"[%s] Rcv PkLen=%u, %s^%u <---- %s^%u",__func__,_unDataLen,
+													_rstNet5Tuple.m_szLocalIp,
+													_rstNet5Tuple.m_nLocalPort,
+													_rstNet5Tuple.m_szRemoteIp,
+													_rstNet5Tuple.m_nRemotePort);
+	if( eSipUtil::AsyncFileLog::m_fnCheckLogLevel(0, 0, E_LOG_DEBUG))
+	{
+		s_fnPrintCliRawData(_pData,_unDataLen);
+	}
+	TreeCli * pclsCli = (TreeCli*)_rclsTransportMgr.getAppData();
+	if(pclsCli && pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+	{
+		CliNet_t *pstPk = (CliNet_t*)_pData;
+		if(pstPk->m_stHdr.m_szPrompt[0] !=0)
+		{
+			pclsCli->m_clsLock.m_fnWriteLock();
+			pclsCli->m_szPrompt[0]=0; strncpy(pclsCli->m_szPrompt,pstPk->m_stHdr.m_szPrompt,255);
+			pclsCli->m_clsLock.m_fnUnlock();
+		}
+		char * pszbody = pstPk->m_fnBody();
+		if(KString::m_fnStrLen(pszbody) > 0 )
+		{
+			printf("%s %s",pstPk->m_stHdr.m_szPrompt,pstPk->m_fnBody());
+			if(KString::m_fnStrnCmp("Ctrl +C", pszbody,7)==0)
+			{
+				pclsCli->m_pclsTransport->delTransport(_rstNet5Tuple);
+			}
+		}
+		delete [] _pData;
+	}
+	else if(pclsCli && pclsCli->m_eMod == E_CLI_MOD_SERVER)
+	{
+		CliNet_t *pstPk = (CliNet_t*)_pData;
+		pstPk->m_stHdr.m_stAddr = _rstNet5Tuple;
+		KString clsDebug;
+		LogInternal(E_LOG_INFO,pstPk->m_fnDebug(clsDebug));
+		pclsCli->m_fnSetEvent(pstPk);
+	}
+	else {delete [] _pData;}
+	// put cli process
+}
+static void s_fnAddServerCliTransport(TransportMgr * _pclsMgr, const char * _pszServerIP, unsigned int _unServerPort)
+{
+	Net5Tuple_t stAddr;
+	stAddr.m_fnSetLocalIp(_pszServerIP);
+	stAddr.m_fnSetLocalPort(_unServerPort);
+	stAddr.m_fnSetTransportType(E_TRANSPORT_TYPE_tcp);
+	s_stCliTransportCfg.m_stTcpConfig.m_nTcpRole = 0;
+	LogInternal(E_LOG_INFO,"[%s] Add Server Trans Port, %s- %u",__func__,_pszServerIP,_unServerPort);
+	_pclsMgr->addTransport(stAddr, s_stCliSocketCfg, s_stCliTransportCfg);
+}
+/************************* Connect Client Transport ****************************************/
+void g_fnAddClientCliTransport(TransportMgr * _pclsMgr,const char * _pszServerIP,unsigned int _unServerPort,
+														const char * _pszMyIP, unsigned int _unMyPort)
+{
+	Net5Tuple_t stAddr;
+	stAddr.m_fnSetLocalIp(_pszMyIP);
+	stAddr.m_fnSetLocalPort(_unMyPort);
+	stAddr.m_fnSetRemoteIp(_pszServerIP);
+	stAddr.m_fnSetRemotePort(_unServerPort);
+	stAddr.m_fnSetTransportType(E_TRANSPORT_TYPE_tcp);
+	s_stCliTransportCfg.m_stTcpConfig.m_nTcpRole = 1;
+	LogInternal(E_LOG_INFO,"[%s] Add Client Trans Port, %s- %u",__func__,_pszServerIP,_unServerPort);
+	_pclsMgr->addTransport(stAddr, s_stCliSocketCfg, s_stCliTransportCfg);
+}
+static TransportMgr * s_fnCreateCliTransportMgr(int _nCoreID)
+{
+	s_stCliSocketCfg.m_nReuse = 1;
+	s_stCliSocketCfg.m_nBlock = 0;
+	s_stCliSocketCfg.m_nUseLinger = 1;				
+	s_stCliSocketCfg.m_nLingerWaitTime = 0;		
+	s_stCliTransportCfg.m_pfnRcvProcCb = s_fnCbkCliRecvPacket;
+	s_stCliTransportCfg.m_pfnSndPrevProcCb = s_fnCbkCliSendPacket;
+	s_stCliTransportCfg.m_pfnDelTransportCb = s_fnCbkCliDisconnected;
+	s_stCliTransportCfg.m_stTcpConfig.m_pfnAcceptConnectionCb = s_fnCbkCliAcceptConnected;
+	s_stCliTransportCfg.m_stTcpConfig.m_pfnConnected4NonblockCb = s_fnCbkCliClientConnected;
+	s_stCliTransportCfg.m_stTcpConfig.m_pfnTcpRcvMatchCb = s_fnCbkCliAnalizePacket;
+	s_stCliTransportCfg.m_unRcvBufferSize = 10240*10; 
+	s_stCliMgrOption.m_pszMgrName = s_szCliName;
+	s_stCliMgrOption.m_unMaxTransportSize = 20;
+	s_stCliMgrOption.m_unMaxEpollSize = 100;
+	s_stCliMgrOption.m_unMaxThreadQueueSize = 200;
+	s_stCliMgrOption.m_nThreadQueueWaitMs = -1;
+	TransportMgr * pclsCliTransport = new TransportMgr(s_stCliMgrOption,_nCoreID);
+	return pclsCliTransport;
+}
+/********************** Console Thread ******************************/
+TreeCli::TreeCli(CliParam_t *_pstHParam,const char * _pszPromptName)
+{
+	Func_num = E_CLI_ST_IDLE;
+	Prev_Func = E_CLI_ST_START;
+	CurrentParam = _pstHParam;
+	RootParam = _pstHParam;
+	memset(m_szCliName,0x00,256);
+	memset(m_szPrompt,0x00,256);
+	memset(m_szOrgPrompt,0x00,256);
+	strncpy(m_szCliName,_pszPromptName,255);
+	KString::m_fnStrnCat(m_szPrompt, 255,"%s> ",_pszPromptName);
+	KString::m_fnStrnCat(m_szOrgPrompt,255,"%s> ",_pszPromptName);
+	m_pclsQThread = NULL;	m_pclsTransport = NULL;
+	m_eMod = E_CLI_MOD_NONE;m_unSrvPort=0;m_unLocalPort = 0;m_nCoreID = -1;
+	m_pclsGetChr = NULL;m_pfnNotify=NULL;
+}
+TreeCli::~TreeCli()
+{
+	if(m_pclsQThread) delete m_pclsQThread;
+	if(m_pclsTransport) delete m_pclsTransport;
+}
+void TreeCli::m_fnCbkGetChr(TreeCli * _pclsT)
+{
+	_pclsT->m_fnRunFunc();
+	g_fnMilliSleep(10);
+}
+void TreeCli::m_fnInit(ECliMode_t _eT, const char * _pszSrvIP, unsigned int _unSrvPort, int _nCoreID)
+{
+	m_nCoreID = _nCoreID;
+	if(_eT == E_CLI_MOD_NONE) return;
+	m_eMod = _eT;
+	if(_eT != E_CLI_MOD_SERVER) 
+	{
+		m_pclsGetChr = new NormalThread<TreeCli>("CliGetChr");
+		m_pclsGetChr->setProcessCb(m_fnCbkGetChr);
+		m_pclsGetChr->setObject(this);
+		m_pclsGetChr->run_(-1,-1,false);
+	}
+	if(_eT == E_CLI_MOD_SERVER) m_fnAddServer(_pszSrvIP,_unSrvPort);
+	m_fnStart();
+	if(_nCoreID == -1)m_pclsQThread->run();	
+	else m_pclsQThread->run_(_nCoreID+1,-1,false);
+}
+void TreeCli::m_fnSetAppCallBack(PFuncNotify_t _pfn)
+{
+	m_pfnNotify = _pfn;
+}
+bool TreeCli::m_fnStart()
+{
+	m_pclsQThread = new QueueThread<CliNet_t>(1000, m_fnProcess, -1, "CLI");
+	m_pclsQThread->setObject(this);
+	return true;
+}
+void TreeCli::m_fnAddServer(const char * _pszIP, unsigned int _unPort)
+{
+	if(m_pclsTransport) delete m_pclsTransport;
+	m_pclsTransport = s_fnCreateCliTransportMgr(m_nCoreID);
+	m_pclsTransport->setAppData(this);
+	m_eMod = E_CLI_MOD_SERVER;
+	m_clsSrvIP = _pszIP; m_unSrvPort = _unPort;
+	s_fnAddServerCliTransport(m_pclsTransport,_pszIP,_unPort);
+}
+void TreeCli::m_fnConnectClient(const char * _pszIP, unsigned int _unPort,const char * _pszMyIP, unsigned int _unMyPort)
+{
+	if(m_pclsTransport) delete m_pclsTransport;
+	m_pclsTransport = s_fnCreateCliTransportMgr(m_nCoreID);
+	m_pclsTransport->setAppData(this);
+	m_eMod = E_CLI_MOD_CLIENT;
+	m_clsSrvIP = _pszIP; m_unSrvPort = _unPort;
+	m_clsLocalIP = _pszMyIP, m_unLocalPort = _unMyPort;
+	g_fnAddClientCliTransport(m_pclsTransport,_pszIP,_unPort,_pszMyIP, _unMyPort);
+}
+void TreeCli::m_fnSendToSrv(const char * _pszLine)
+{
+	if(m_pclsTransport==NULL) return;
+	Net5Tuple_t stAddr; stAddr.reset();
+	stAddr.m_fnSetLocalIp((KCSTR)m_clsLocalIP);stAddr.m_fnSetLocalPort(m_unLocalPort);
+	stAddr.m_fnSetRemoteIp((KCSTR)m_clsSrvIP);stAddr.m_fnSetRemotePort(m_unSrvPort);
+	stAddr.m_fnSetTransportType(E_TRANSPORT_TYPE_tcp);
+	CliNet_t *pstPk = g_fnBuildCliString(_pszLine);
+	pstPk->m_stHdr.m_stAddr = stAddr;unsigned int unSndLen = pstPk->m_fnGetLen();
+	//KString clsHex; clsHex.m_fnCatHexs(pstPk,unSndLen);printf((KCSTR)clsHex);
+	//KString clsDebug;pstPk->m_fnDebug(clsDebug);printf((KCSTR)clsDebug);
+	if(m_pclsTransport->sendData(stAddr,(char*)pstPk,unSndLen) < 0) g_fnFreeCliString(pstPk);
+}
+void TreeCli::m_fnPrint(CliNet_t * _pstInfo,const char * pFormat,...)
+{
+	char pszTemp[DEF_MAX_CLI_CHAR]; memset(pszTemp,0x00,DEF_MAX_CLI_CHAR);
+	va_list ap;va_start(ap, pFormat);vsnprintf(pszTemp, DEF_MAX_CLI_CHAR-1,pFormat, ap);va_end(ap);
+	int nlen = strlen(pszTemp);
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	pszTemp[nlen] = '\r';pszTemp[nlen+1] = '\n';pszTemp[nlen+2] = 0;
+	CliNet_t * pstPk = g_fnBuildCliString(pszTemp);
+	if(_pstInfo)memcpy(&pstPk->m_stHdr,&_pstInfo->m_stHdr,sizeof(CliHdr_t));
+	pstPk->m_fnSetEvType(E_CLI_EVENT_STDOUT);
+	m_fnSetEvent(pstPk);
+}
+void TreeCli::m_fnStop()
+{
+	m_pclsQThread->shutdown();m_pclsQThread->join();
+}
+void TreeCli::m_fnCliHande(ECliHandle_t func_type)
+{
+	switch(func_type)
+	{
+		case E_CLI_ST_IDLE:
+			g_fnCliIdle(this,NULL,NULL);
+			break;
+		case E_CLI_ST_INSERTING:
+			g_fnCliInserting(this,NULL,NULL);
+			break;
+		case E_CLI_ST_EXECUTING:
+			g_fnCliExeCuting(this,NULL,NULL);
+			break;
+		case E_CLI_ST_SUCCESS:
+			g_fnCliSuccess(this,NULL,NULL);
+			break;
+		default:
+			g_fnCliIdle(this,NULL,NULL);
+			break;
+		
+	};
+}
+CliSession * TreeCli::m_fnAddSession(const Net5Tuple_t & _rstAddr)
+{
+	char szAddr[256]; _rstAddr.getStr(szAddr,256);
+	CliSession * pclsNew = new CliSession(this);
+	if(!m_mapSes.m_fnSetMap(szAddr,pclsNew)) return NULL;
+	return pclsNew;
+}
+CliSession * TreeCli::m_fnFindSession(const Net5Tuple_t & _rstAddr)
+{
+	char szAddr[256]; _rstAddr.getStr(szAddr,256);
+	return (CliSession*)m_mapSes.m_fnFindMap(szAddr);
+}
+bool TreeCli::m_fnDelSession(const Net5Tuple_t & _rstAddr)
+{
+	char szAddr[256]; _rstAddr.getStr(szAddr,256);
+	return m_mapSes.m_fnDelMap(szAddr);
+}
+void TreeCli::m_fnRunFunc(void)
+{
+	m_fnCliHande(Func_num);
+}
+void TreeCli::m_fnProcessMsg(void * _pvMsg)
+{
+	CliNet_t * pstPk = (CliNet_t *)_pvMsg;
+	if(pstPk==NULL) return;
+	if(pstPk->m_fnGetValid())   // REMOTE Packet
+	{
+		char szAddr[128];KString clsBody = pstPk->m_fnBody();
+		CliSession * pclsSess = m_fnFindSession(pstPk->m_stHdr.m_stAddr);
+		if(pclsSess)
+		{
+			LogInternal(E_LOG_INFO,"Find Cli Session : %s",pstPk->m_stHdr.m_stAddr.getStr(szAddr,128));
+			char *arg[DEF_MAX_CLI_ARG];int i = 0; for(;i<DEF_MAX_CLI_ARG;i++) arg[i]=NULL;
+			TokStrings clsArrays;KString::m_fnTokenizeC((KSTR)clsBody," ",clsArrays);
+			unsigned int unCnt = 0;i=0;
+			for(;unCnt<clsArrays.m_fnGetNum();unCnt++)
+			{
+				if(unCnt == DEF_MAX_CLI_ARG) break;
+				arg[unCnt] = (KSTR)clsArrays[unCnt];
+			}
+			pclsSess->m_fnProcPk(pstPk, arg,unCnt);
+		}
+		else
+		{
+			LogInternal(E_LOG_ERR,"Not Found Cli Session : %s",pstPk->m_stHdr.m_stAddr.getStr(szAddr,128));
+		}
+	}
+	else if(pstPk->m_fnGetEvType() == E_CLI_EVENT_STDIN)
+	{
+		KString clsBody = pstPk->m_fnBody();
+		char *arg[DEF_MAX_CLI_ARG];int i = 0; for(;i<DEF_MAX_CLI_ARG;i++) arg[i]=NULL;
+		TokStrings clsArrays;
+		KString::m_fnTokenizeC((KSTR)clsBody," ",clsArrays);
+		unsigned int unCnt = 0;i=0;
+		for(;unCnt<clsArrays.m_fnGetNum();unCnt++)
+		{
+			if(unCnt == DEF_MAX_CLI_ARG) break;
+			arg[unCnt] = (KSTR)clsArrays[unCnt];
+		}
+		while(1)
+		{
+			if(CurrentParam[i].m_fnCliProcess(this,arg,unCnt)) break;
+			i++;
+		}
+	}
+	else if(pstPk->m_fnGetEvType() == E_CLI_EVENT_STDOUT)
+	{
+		if(m_eMod == E_CLI_MOD_NONE || m_eMod == E_CLI_MOD_CONSOL)
+		{
+			printf(pstPk->m_fnBody());
+		}
+		else if(m_eMod == E_CLI_MOD_CLIENT)
+		{
+			m_fnSendToSrv(pstPk->m_fnBody());
+		}
+		else if(m_eMod == E_CLI_MOD_SERVER)
+		{
+			CliSession * pSess = m_fnFindSession(pstPk->m_stHdr.m_stAddr);
+			if(pSess) pSess->m_fnSendRsp(pstPk, pstPk->m_fnBody());
+		}
+	}
+	else if(pstPk->m_fnGetEvType() == E_CLI_EVENT_APP)
+	{
+		if(m_pfnNotify) m_pfnNotify(this,pstPk);
+	}
+	g_fnFreeCliString(pstPk);
+}
+void TreeCli::m_fnProcess(CliNet_t* _pstData,void * _pvUser)
+{
+	TreeCli * pclsCli = (TreeCli*)_pvUser;
+	if(_pstData)
+	{
+		if(pclsCli) pclsCli->m_fnProcessMsg((void *)_pstData);
+	}
+}
+/******************************* Cli Session *********************************************/
+CliSession::CliSession(TreeCli* _pclsOwner)
+{
+	m_pclsOwner = _pclsOwner; m_pclsCurParam = _pclsOwner->RootParam;
+	m_clsPrompt<<m_pclsOwner->m_szCliName<<"> ";
+}
+CliSession::~CliSession(){}
+void CliSession::m_fnProcPk(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	unsigned int i=0;KString clsErrRsp;
+	CliParam_t *pclsTmpParam = m_pclsCurParam;
+	if(param_num == 0) return;                    
+	while(1)
+	{
+		m_pclsCurParam = &pclsTmpParam[i];
+		if(m_fnIsNull()) break;                                    // skipp
+		if(m_fnCliChangeDirProcess(_pstPk,arg,param_num)) return;
+		if(m_fnCliViewDirectory(_pstPk,arg,param_num)) break;
+		if(m_fnCliOsProcess(_pstPk,arg,param_num)) break;
+		if(m_fnCliExitProcess(_pstPk,arg,param_num)) break;
+		if(m_fnCliCatProcess(_pstPk,arg,param_num)) break;
+		if(strlen(m_pclsCurParam->key) == 0)                                        // not match key = "";
+		{
+			clsErrRsp<<"Not match Key : "<<arg[0]<<"\r\n";m_fnSendRsp(_pstPk,(KCSTR)clsErrRsp);
+			if(m_pclsCurParam->Cli_Handle) m_pclsCurParam->Cli_Handle(m_pclsOwner,_pstPk,arg,param_num);
+			break;                                              
+		}
+		if((strncmp(m_pclsCurParam->key,arg[0],strlen(m_pclsCurParam->key))==0) 
+											&& (strlen(m_pclsCurParam->key) == strlen(arg[0])))
+		{
+			if(m_pclsCurParam->Cli_Handle) m_pclsCurParam->Cli_Handle(m_pclsOwner,_pstPk,arg,param_num);
+			else
+			{
+				m_fnSendRsp(_pstPk,"is Directory\r\n");
+			}
+			break;                                             
+		}                                             
+		i++;  // not match and next handle
+	}
+	m_pclsCurParam = pclsTmpParam;
+}
+CliParam_t * CliSession::m_fnFindDir(CliParam_t * _pstHandle, const char * _pszDirName)
+{
+	unsigned int i = 0;
+	while(1)
+	{
+		if(_pstHandle[i].m_fnIsNull())
+		{
+			return NULL;
+		}
+		else
+		{
+			if((strncmp(_pstHandle[i].key,_pszDirName,2)==0) && (strlen(_pstHandle[i].key) == strlen(_pszDirName)))	
+			{
+				if(_pstHandle[i].Child == NULL) return NULL;
+				return &_pstHandle[i];
+			}
+		}
+		i++;
+	}
+}
+bool CliSession::m_fnCliChangeDirProcess(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	CliParam_t *tempParam = NULL; int len = 0;KString clschgRsp;
+	KString clsTmp; char * pszTmpPrompt = NULL;KString clsTmpPrompt;
+	if((strncmp("cd",arg[0],2)==0) && (2 == strlen(arg[0])))
+	{
+		if(param_num == 1) 
+		{
+			//change root handle....
+			m_pclsCurParam = m_pclsOwner->RootParam;
+			m_pclsOwner->m_clsLock.m_fnWriteLock();
+			m_clsPrompt=KNULL; m_clsPrompt<<m_pclsOwner->m_szCliName<<"> ";
+			m_pclsOwner->m_clsLock.m_fnUnlock();
+			LogInternal(E_LOG_INFO,"1. Change Prompt : [%s]",(KCSTR)m_clsPrompt);
+			KString clschgRsp; clschgRsp<<"1. Change Prompt\r\n";
+			m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);
+			return true;
+		}
+		else if((strncmp("..",arg[1],2)==0) && (2 == strlen(arg[1])))
+		{
+			//change parents handle...
+			if(m_pclsCurParam->Parents == NULL)
+			{
+				// already root handle
+				m_pclsCurParam = m_pclsOwner->RootParam;
+				m_pclsOwner->m_clsLock.m_fnWriteLock();
+				m_clsPrompt=KNULL; m_clsPrompt<<m_pclsOwner->m_szCliName<<"> ";
+				m_pclsOwner->m_clsLock.m_fnUnlock();
+				LogInternal(E_LOG_INFO,"2. Change Prompt : [%s]",(KCSTR)m_clsPrompt);
+				KString clschgRsp; clschgRsp<<"2. Change Prompt\r\n";
+				m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);
+				return true;
+			}
+			else
+			{
+				clsTmpPrompt = m_clsPrompt;
+				pszTmpPrompt = (KSTR)clsTmpPrompt;
+				LogInternal(E_LOG_INFO,"3. Org Prompt : [%s]",(KCSTR)m_clsPrompt);
+				len = KString::m_fnStrLen(pszTmpPrompt);len--;
+				for(;len > 0;len--)
+				{
+					if(pszTmpPrompt[len] == '/')
+					{
+						pszTmpPrompt[len] = 0x00;
+						break;
+					}
+				}
+				m_pclsOwner->m_clsLock.m_fnWriteLock();
+				m_clsPrompt = KNULL;m_clsPrompt<<(KSTR)pszTmpPrompt<<"> ";
+				m_pclsOwner->m_clsLock.m_fnUnlock();
+				LogInternal(E_LOG_INFO,"3. Change Prompt : [%s]",(KCSTR)m_clsPrompt);
+				m_pclsCurParam = (CliParam_t *)m_pclsCurParam->Parents;
+				clschgRsp = KNULL; clschgRsp<<"3. Change Prompt\r\n";
+				m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);
+				return true;
+			}
+		}
+		else
+		{
+			//change child handle...
+			tempParam = m_pclsCurParam;
+			clsTmp = m_clsPrompt; 
+			int prom_len = m_clsPrompt.m_unRealLen;
+			if(prom_len <= 3)
+			{
+				clschgRsp=KNULL; clschgRsp<<"Illegal Dir Path : "<<m_clsPrompt<<"\r\n";
+				m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);
+				return true;
+			}
+			clsTmp = arg[1];
+			TokStrings clsArr;	KString::m_fnTokenizeC((KSTR)clsTmp, "/",clsArr);
+			for(unsigned int i=0;i<clsArr.m_fnGetNum();i++)
+			{
+				tempParam = m_fnFindDir(tempParam,clsArr[i]);
+				if(tempParam==NULL)
+				{
+					clschgRsp=KNULL; clschgRsp<<"Illegal Dir Path : "<<m_clsPrompt<<"\r\n";
+					m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);	
+					return true;
+				}
+				else
+				{
+					tempParam = (CliParam_t*)tempParam->Child;
+				}
+			}
+			m_pclsCurParam = tempParam;
+			KString clstmp2 = (KCSTR)m_clsPrompt;pszTmpPrompt = (KSTR)clstmp2;
+			len = KString::m_fnStrLen((KCSTR)pszTmpPrompt);len--;
+			for(;len > 0;len--)
+			{
+				if(pszTmpPrompt[len] == '>')
+				{
+					pszTmpPrompt[len] = 0x00;
+					break;
+				}
+			}
+			m_pclsOwner->m_clsLock.m_fnWriteLock();
+			m_clsPrompt= KNULL;m_clsPrompt<<pszTmpPrompt;
+			for(unsigned int i=0;i<clsArr.m_fnGetNum();i++)
+			{
+				 m_clsPrompt<<"/"<<clsArr[i];
+			}
+			m_clsPrompt<<"> ";
+			m_pclsOwner->m_clsLock.m_fnUnlock();
+			LogInternal(E_LOG_INFO,"4. Change Prompt : [%s]",(KCSTR)m_clsPrompt);
+			clschgRsp=KNULL;clschgRsp<<"4. Change Prompt\r\n";
+			m_fnSendRsp(_pstPk,(KCSTR)clschgRsp);
+			return true;
+		}
+		return true;                                             // catch and return cli
+	}
+	return false;
+}
+bool CliSession::m_fnCliViewDirectory(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	if((strncmp("ls",arg[0],2)==0) && (2 == strlen(arg[0])))
+	{
+		m_fnCliCmdView(_pstPk,arg,param_num);
+		return true;
+	}
+	return false;
+}
+void CliSession::m_fnCliCmdView(CliNet_t *_pstPk,char *Arg[],int param_num)
+{
+	CliParam_t *hParam = m_pclsCurParam;
+	int i = 0;
+	KString clsRsp;
+	clsRsp<<"\r\n";
+	if(hParam->Parents == NULL)
+		clsRsp<<"======================================== Root Info =================================================\r\n";
+	else
+		clsRsp<<"======================================== Directory Info ============================================\r\n";
+	while(1)
+	{
+		if(hParam[i].m_fnIsNull()) break;
+		if(strlen(hParam[i].key) == 0){ i++;continue;}
+		clsRsp<<"Command ["<<hParam[i].m_fnStringType()<<"] : ["<<hParam[i].key<<"] <"<<hParam[i].desc<<">\r\n";
+		i++;
+	}
+	clsRsp<<"\r\n";
+	clsRsp<<"======================================== Main Comand ===============================================\r\n";
+	clsRsp<<"Command [EXE] : [exit] <서버 프로세스 종료>\r\n";
+	clsRsp<<"Command [EXE] : [os] <OS 명령어를 직접 입력>\r\n";
+	clsRsp<<"Command [EXE] : [logout] <서버 콘솔 연결 종료>\r\n";
+	clsRsp<<"Command [EXE] : [cat] [pszFilePath] <Cat Open File >\r\n";
+	clsRsp<<"Command [EXE] : [ls] <Directory Display>\r\n";
+	clsRsp<<"Command [EXE] : [cd] <Change Root Directory>\r\n";
+	clsRsp<<"Command [EXE] : [cd ..] <Change Upper Directory>\r\n";
+	clsRsp<<"Command [EXE] : [cd /dir_1/dir_2/] <Change dir_1/dir_2/ Directory>\r\n";
+	char szHandle[64]; memset(szHandle,0x00,64);
+	snprintf(szHandle,63,"%p\r\n",m_pclsCurParam);
+	clsRsp<<"Current Handle: "<<szHandle;
+	clsRsp<<"\r\n";
+	m_fnSendRsp(_pstPk,(KCSTR)clsRsp);
+}
+bool CliSession::m_fnCliOsProcess(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	if((strncmp("os",arg[0],2)==0) && (2 == strlen(arg[0])))
+	{
+		#if 0
+		m_fnSendRsp(_pstPk,"Not Supported.");
+		#else
+		//==========> Get Cmd String
+		KString clsOsCmd; for(int i=1; i<param_num;i++) clsOsCmd<<" "<<arg[i];
+		//==========> Tmp Path 
+		KString clsTmpPath; clsTmpPath<<"aa";
+		clsTmpPath<<".oscmd";
+		//==========> Attach Cmd String
+		g_fnCliOS_Command("%s > %s",(KCSTR)clsOsCmd,(KCSTR)clsTmpPath);
+		//==========> Cmd Return File Load
+		CfgFileInfo clsTmpFile; clsTmpFile.m_fnInit((KCSTR)clsTmpPath);
+		KString clsTmpStr = clsTmpFile.m_pszRawData; TokStrings clsTok;
+		KString::m_fnTokenizeC((KSTR)clsTmpStr,"\r\n",clsTok);
+		KString clsOutStr;
+		for(unsigned int i=0;i<clsTok.m_fnGetNum();i++)
+		{
+			clsOutStr<<clsTok[i]<<"\r\n";
+		}
+		//==========> Response
+		if(clsTmpFile.m_pszRawData) m_fnSendRsp(_pstPk,(KSTR)clsOutStr);
+		//==========> Tmp File Removed
+		unlink((KCSTR)clsTmpPath);
+		#endif
+		return true;
+	}
+	return false;
+}
+bool CliSession::m_fnCliCatProcess(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	if((strncmp("cat",arg[0],3)==0) && (3 == strlen(arg[0])))
+	{
+		if(KString::m_fnStrLen(arg[1])==0) return false;
+		CfgFileInfo clsFile; clsFile.m_fnInit(arg[1]);
+		m_fnSendRsp(_pstPk,clsFile.m_pszRawData);
+		return true;
+	}
+	return false;
+}
+bool CliSession::m_fnCliExitProcess(CliNet_t *_pstPk,char *arg[],int param_num)
+{
+	if((strncmp("exit",arg[0],4)==0) && (4 == strlen(arg[0])))
+	{
+		m_fnSendRsp(_pstPk,"Warnning Not Supported. Server Killed\r\n");
+		//raise(SIGINT);
+		return true;
+	}
+	if((strncmp("logout",arg[0],6)==0) && (6 == strlen(arg[0])))
+	{
+		m_fnSendRsp(_pstPk,"Ctrl +C, Disconnecting\r\n");
+		//raise(SIGINT);
+		return true;
+	}
+	return false;
+}
+void CliSession::m_fnSendRsp(CliNet_t * _pstPk, const char * _pszRsp)
+{
+	if(m_pclsOwner->m_pclsTransport == NULL) return;
+	CliNet_t * pstPk = g_fnBuildCliString(_pszRsp);
+	pstPk->m_fnSetPrompt((KCSTR)m_clsPrompt);
+	pstPk->m_stHdr.m_stAddr = _pstPk->m_stHdr.m_stAddr;
+	unsigned int unLen = pstPk->m_fnGetLen();
+	if(m_pclsOwner->m_pclsTransport->sendData(_pstPk->m_stHdr.m_stAddr, (char*)pstPk,unLen) < 0)
+	{
+		g_fnFreeCliString(pstPk);
+	}
+}
+bool CliSession::m_fnIsNull()
+{
+	if(m_pclsCurParam != NULL && (m_pclsCurParam->Child == NULL) 
+		&& (m_pclsCurParam->Cli_Handle == NULL) 
+		&& (strlen(m_pclsCurParam->key) == 0)) return true;
+	else return false;
+}
+
+/********************** CLI State Functions ***************************/
+void g_fnCliIdle(TreeCli *pCli,CliSession *_pclsSess,CliNet_t *_pstPk)
+{
+	char cCatch = getchar();
+	if(cCatch == R_chr) 
+	{
+		if(boot_once == false)
+		{
+			boot_once = true;
+			printf("CLI Start, Try, \"ls\" + Enter \r\n");
+		}
+		else
+		{
+			pCli->m_clsLock.m_fnReadLock();
+			printf(pCli->m_szPrompt);
+			pCli->m_clsLock.m_fnUnlock();
+		}
+		pCli->m_clsGetBuff = KNULL;
+	}
+	else if(cCatch != 0x00)
+	{
+		pCli->m_clsGetBuff<<cCatch;
+		g_fnCliChange(E_CLI_ST_INSERTING,pCli);
+	}
+}
+void g_fnCliInserting(TreeCli *pCli,CliSession *_pclsSess,CliNet_t *_pstPk)
+{
+	char cCatch = getchar();
+	if(cCatch == R_chr)
+	{
+		g_fnCliChange(E_CLI_ST_EXECUTING,pCli);
+		g_fnCliExeCuting(pCli,_pclsSess,_pstPk);
+		pCli->m_clsGetBuff = KNULL;
+	}
+	else if(cCatch != 0x00) pCli->m_clsGetBuff<<cCatch;
+}
+void g_fnCliExeCuting(TreeCli *pCli,CliSession *_pclsSess,CliNet_t *_pstPk)
+{
+	const char * pszBuff = (KCSTR)pCli->m_clsGetBuff;
+	if((strncmp(pszBuff,"os ",3) == 0))
+	{
+		system(&pszBuff[3]);
+		g_fnCliChange(E_CLI_ST_SUCCESS,pCli);
+		return;
+	}
+	if((pszBuff[0] == 0x1b) && 
+		(pszBuff[1] == 0x5b))
+	{
+		if(pszBuff[2] == 0x44)
+		{
+			//SAMPLE_LOG("KEY LEFT");
+		}
+		else if(pszBuff[2] == 0x41)
+		{
+		}
+		else if(pszBuff[2] == 0x43)
+		{
+			//SAMPLE_LOG("KEY RIGHT");
+		}
+		else if(pszBuff[2] == 0x42)
+		{
+			//SAMPLE_LOG("KEY DOWN");
+		}
+	}
+	if(pCli->m_eMod == E_CLI_MOD_CONSOL)
+	{
+		CliNet_t *pstPk = g_fnBuildCliString((KCSTR)pCli->m_clsGetBuff);
+		pstPk->m_fnSetEvType(E_CLI_EVENT_STDIN);
+		pCli->m_fnSetEvent(pstPk);
+	}
+	else if(pCli->m_eMod == E_CLI_MOD_CLIENT)
+	{
+		if(strcmp(pszBuff,"ls")==0) system("clear");
+		pCli->m_fnSendToSrv((KCSTR)pCli->m_clsGetBuff);
+	}
+	g_fnCliChange(E_CLI_ST_SUCCESS,pCli);
+}
+void g_fnCliSuccess(TreeCli *pCli,CliSession *_pclsSess,CliNet_t *_pstPk)
+{
+	pCli->m_clsLock.m_fnReadLock();
+	printf(pCli->m_szPrompt);
+	pCli->m_clsLock.m_fnUnlock();
+	g_fnCliChange(E_CLI_ST_IDLE,pCli);
+}
+void g_fnCliChange(ECliHandle_t Func,TreeCli *pCli)
+{
+	if(pCli->Func_num !=pCli->Prev_Func)
+	{
+		pCli->Prev_Func = pCli->Func_num;
+		pCli->Func_num = Func;
+	}
+}
+/********************** CLI Basic Functions ***************************/
+void g_fnCliCmdView(TreeCli *pCli,char *Arg[],int param_num)
+{
+	TreeCli *mCli = (TreeCli*)pCli;
+	CliParam_t *hParam = (CliParam_t *)mCli->CurrentParam;
+	int i = 0;
+	system("clear");
+	g_fnCliPrint_Default(" ");
+	if(hParam->Parents == NULL)
+		g_fnCliPrint_Range("Root Info");
+	else
+		g_fnCliPrint_Range("Directory Info");
+	while(1)
+	{
+		if(hParam[i].m_fnIsNull()) break;
+		if(strlen(hParam[i].key) == 0){ i++;continue;}
+		g_fnCliPrint_Default("Command [%s] : [%s] <%s>",hParam[i].m_fnStringType(),hParam[i].key,hParam[i].desc);
+		i++;
+	}
+	g_fnCliPrint_Default(" ");
+	g_fnCliPrint_Range("Main Comand");
+	g_fnCliPrint_Default("Command [EXE] : [exit] <종료>");
+	g_fnCliPrint_Default("Command [EXE] : [os] <OS 명령어를 직접 입력>");
+	g_fnCliPrint_Default("Command [EXE] : [ls] <Directory Display>");
+	g_fnCliPrint_Default("Command [EXE] : [cd] <Change Root Directory>");
+	g_fnCliPrint_Default("Command [EXE] : [cat] [FilePath] <Cat File Read>");
+	g_fnCliPrint_Default("Command [EXE] : [cd ..] <Change Upper Directory>");
+	g_fnCliPrint_Default("Command [EXE] : [cd /dir_1/dir_2/] <Change dir_1/dir_2/ Directory>");
+	g_fnCliPrint_Default(" ");
+}
+bool g_fnCliChangeDirProcess(TreeCli *pCli,char *arg[],int param_num)
+{
+	TreeCli *mCli = (TreeCli*)pCli;
+	CliParam_t *hParam = (CliParam_t *)mCli->CurrentParam;
+	void *voidParam = NULL;
+	CliParam_t *tempParam = NULL;
+	if((strncmp("cd",arg[0],2)==0) && (2 == strlen(arg[0])))
+	{
+		if(param_num == 1) 
+		{
+			//change root handle....
+			voidParam = hParam->Parents;
+			if(voidParam == NULL)
+			{
+				mCli->m_clsLock.m_fnWriteLock();
+				mCli->m_szPrompt[0] = 0x00;
+				KString::m_fnStrnCat(mCli->m_szPrompt,255,"%s> ",mCli->m_szCliName);
+				mCli->m_clsLock.m_fnUnlock();
+				return true;
+			}
+			tempParam = (CliParam_t *)voidParam;
+			while(1)
+			{
+				voidParam = tempParam->Parents;
+				if(voidParam == NULL)
+				{
+					mCli->m_clsLock.m_fnWriteLock();
+					mCli->m_szPrompt[0] = 0x00;
+					KString::m_fnStrnCat(mCli->m_szPrompt,255,"%s> ",mCli->m_szCliName);
+					mCli->m_clsLock.m_fnUnlock();
+					mCli->CurrentParam = tempParam;
+					return true;
+				}
+				tempParam = (CliParam_t *)voidParam;
+			}
+		}
+		else if((strncmp("..",arg[1],2)==0) && (2 == strlen(arg[1])))
+		{
+			//change parents handle...
+			if(hParam->Parents == NULL)
+				return true;
+			else
+			{
+				mCli->m_clsLock.m_fnWriteLock();
+				int len = strlen(mCli->m_szPrompt);
+				len--;
+				for(;len > 0;len--)
+				{
+					if(mCli->m_szPrompt[len] == '/')
+					{
+						mCli->m_szPrompt[len] = 0x00;
+						break;
+					}
+				}
+				KString::m_fnStrnCat(mCli->m_szPrompt,255,"> ");
+				mCli->m_clsLock.m_fnUnlock();
+				mCli->CurrentParam = (CliParam_t *)hParam->Parents;
+				return true;
+			}
+		}
+		else
+		{
+			//change child handle...
+			int depth = param_num -1;
+			int j = 0;
+			tempParam = hParam;
+			mCli->m_clsLock.m_fnWriteLock();
+			int prom_len = strlen(mCli->m_szPrompt);
+			char pszTmpPrompt[256];
+			memset(pszTmpPrompt,0x00,256);
+			strcpy(pszTmpPrompt,mCli->m_szPrompt);
+			if(pszTmpPrompt[prom_len-3] == '/') pszTmpPrompt[prom_len-3] = 0x00;
+			else pszTmpPrompt[prom_len-2] = 0x00;
+			for(int i = 0;i<depth;i++)
+			{
+				KString::m_fnStrnCat(pszTmpPrompt,255,"/%s",arg[i+1]);
+			}
+			KString::m_fnStrnCat(pszTmpPrompt,255,"> ");
+			for(int i = 0; i<depth;i++)
+			{
+				while(1)
+				{
+					if(tempParam[j].m_fnIsNull())
+					{
+						printf("Not Match Directory : %s\r\n",arg[i+1]);
+						mCli->m_clsLock.m_fnUnlock();
+						return true;
+					}
+					else
+					{
+						if((strncmp(tempParam[j].key,arg[i+1],2)==0) && (strlen(tempParam[j].key) == strlen(arg[i+1])))	
+						{
+							if(tempParam[j].Child == NULL)
+							{
+								printf("Not Directory\r\n");
+								mCli->m_clsLock.m_fnUnlock();
+								return true;
+							}
+							voidParam = tempParam[j].Child;
+							tempParam = (CliParam_t*)voidParam;
+							goto next_depth;	
+						}
+					}
+					j++;
+				}
+				next_depth:
+				j = 0;
+			}
+			mCli->CurrentParam = tempParam;
+			mCli->m_szPrompt[0] = 0x00;
+			KString::m_fnStrnCat(mCli->m_szPrompt,255,pszTmpPrompt);
+			mCli->m_clsLock.m_fnUnlock();
+			return true;
+		}
+		return true;                                             // catch and return cli
+	}
+	return false;
+}
+bool g_fnCliViewDirectory(TreeCli *pCli,char *arg[],int param_num)
+{
+	if((strncmp("ls",arg[0],2)==0) && (2 == strlen(arg[0])))
+	{
+		g_fnCliCmdView(pCli,arg,param_num);
+		return true;
+	}
+	return false;
+}
+bool g_fnCliExitProcess(TreeCli *pCli, char *arg[],int param_num)
+{
+	if((strncmp("exit",arg[0],4)==0) && (4 == strlen(arg[0])))
+	{
+		printf("Ctrl +C, Process Killed\r\n");
+		raise(SIGINT);
+		return true;
+	}
+	return false;
+}
+bool g_fnCliCatProcess(TreeCli *pCli, char *arg[],int param_num)
+{
+	if((strncmp("cat",arg[0],3)==0) && (3 == strlen(arg[0])))
+	{
+		if(KString::m_fnStrLen(arg[1])==0) return false;
+		CfgFileInfo clsFile; clsFile.m_fnInit(arg[1]);
+		printf("%s\r\n",clsFile.m_pszRawData);
+		return true;
+	}
+	return false;
+}
+void g_fnCliPrint_Default(const char *pFormat, ...)
+{
+	char pszTemp[DEF_MAX_CLI_CHAR];memset(pszTemp,0x00,DEF_MAX_CLI_CHAR);
+	va_list ap;va_start(ap, pFormat);vsnprintf(pszTemp, DEF_MAX_CLI_CHAR-1,pFormat, ap);va_end(ap);
+	int nlen = strlen(pszTemp);
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	pszTemp[nlen] = '\r';pszTemp[nlen+1] = '\n';pszTemp[nlen+2] = 0;
+	printf(pszTemp);
+}
+void g_fnCliPrint_RangeCat(char *strDebug,const char *pFormat, ...)
+{
+	if(strDebug==NULL) return;
+	int prev_len = strlen(strDebug);int nlen = 0;int tot_len = prev_len;int sharp_len = 0;
+	memcpy(&strDebug[tot_len],g_szDefClistring,DEF_MAX_CLI_LINE_START);
+	tot_len = tot_len + DEF_MAX_CLI_LINE_START;	strDebug[tot_len] = ' ';tot_len++;strDebug[tot_len] = 0x00;
+	va_list ap;va_start(ap, pFormat);vsprintf(&strDebug[tot_len], pFormat, ap);va_end(ap);
+	tot_len = strlen(strDebug);	strDebug[tot_len] = ' ';tot_len++;nlen = tot_len - prev_len;
+	if(nlen <  DEF_MAX_CLI_LINE_END)
+	{
+		sharp_len = DEF_MAX_CLI_LINE_END - nlen;
+		memcpy(&strDebug[tot_len],g_szDefClistring,sharp_len);
+		tot_len += sharp_len;
+	}
+	strDebug[tot_len] = '\r';strDebug[tot_len+1] = '\n';strDebug[tot_len+2] = 0x00;
+}
+void g_fnCliPrint_Range(const char *pFormat, ...)
+{
+	char TmpBuff[DEF_MAX_CLI_CHAR];memset(TmpBuff,0x00,DEF_MAX_CLI_CHAR);int nlen = 0;int sharp_len = 0;
+	sharp_len = DEF_MAX_CLI_LINE_START;memcpy(&TmpBuff[nlen],g_szDefClistring,sharp_len);
+	nlen = nlen + sharp_len;TmpBuff[nlen] = ' ';nlen++;TmpBuff[nlen] = 0x00;
+	va_list ap;va_start(ap, pFormat);vsnprintf(&TmpBuff[nlen],DEF_MAX_CLI_CHAR-nlen-2 ,pFormat, ap);va_end(ap);
+	nlen = strlen(TmpBuff);TmpBuff[nlen] = ' ';	nlen++;
+	if(nlen <  DEF_MAX_CLI_LINE_END)
+	{
+		sharp_len = DEF_MAX_CLI_LINE_END - nlen;
+		memcpy(&TmpBuff[nlen],g_szDefClistring,sharp_len);
+		nlen = nlen + sharp_len;
+	}
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	TmpBuff[nlen] = '\r';TmpBuff[nlen+1] = '\n';TmpBuff[nlen+2] = 0;
+	printf(TmpBuff);
+}
+void g_fnCliOS_Command(const char *pFormat, ...)
+{
+	char TmpBuff[DEF_MAX_CLI_COMMAND_LINE];	TmpBuff[0] = 0;int nlen = 0;
+	va_list ap;va_start(ap, pFormat);vsprintf(&TmpBuff[0], pFormat, ap);va_end(ap);
+	nlen = strlen(TmpBuff);TmpBuff[nlen] = 0x00;system(TmpBuff);
+}
+void g_fnCliPrintCli(TreeCli * _pclsCli,const char * _pszBuff)
+{
+	if(_pclsCli->m_eMod == E_CLI_MOD_NONE || _pclsCli->m_eMod == E_CLI_MOD_CONSOL)
+	{
+		printf(_pszBuff);
+	}
+	else if(_pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+	{
+		_pclsCli->m_fnSendToSrv(_pszBuff);
+	}
+}
+void g_fnCliPrintCliVar(TreeCli * _pclsCli,const char *pFormat, ...)
+{
+	char pszTemp[DEF_MAX_CLI_CHAR];memset(pszTemp,0x00,DEF_MAX_CLI_CHAR);
+	va_list ap;va_start(ap, pFormat);vsnprintf(pszTemp, DEF_MAX_CLI_CHAR-1,pFormat, ap);va_end(ap);
+	int nlen = strlen(pszTemp);
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	pszTemp[nlen] = '\r';pszTemp[nlen+1] = '\n';pszTemp[nlen+2] = 0;
+	if(_pclsCli->m_eMod == E_CLI_MOD_CONSOL)
+	{
+		printf(pszTemp);
+	}
+	else if(_pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+	{
+		_pclsCli->m_fnSendToSrv(pszTemp);
+	}
+}
+void g_fnCliPrintSrv(CliSession * _pclsSess,CliNet_t * _pstPk,const char * _pszBuff)
+{
+	if(_pclsSess->m_pclsOwner)
+	{
+		if(_pclsSess->m_pclsOwner->m_eMod == E_CLI_MOD_CONSOL)
+		{
+			printf(_pszBuff);
+		}
+		else if(_pclsSess->m_pclsOwner->m_eMod == E_CLI_MOD_SERVER)
+		{
+			_pclsSess->m_fnSendRsp(_pstPk,_pszBuff);
+		}
+	}
+}
+void g_fnCliPrintSrvVar(CliSession * _pclsSess,CliNet_t * _pstPk,const char *pFormat, ...)
+{
+	char pszTemp[DEF_MAX_CLI_CHAR]; memset(pszTemp,0x00,DEF_MAX_CLI_CHAR);
+	va_list ap;va_start(ap, pFormat);vsnprintf(pszTemp, DEF_MAX_CLI_CHAR-1,pFormat, ap);va_end(ap);
+	int nlen = strlen(pszTemp);
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	pszTemp[nlen] = '\r';pszTemp[nlen+1] = '\n';pszTemp[nlen+2] = 0;
+	if(_pclsSess->m_pclsOwner)
+	{
+		if(_pclsSess->m_pclsOwner->m_eMod == E_CLI_MOD_CONSOL)
+		{
+			printf(pszTemp);
+		}
+		else if(_pclsSess->m_pclsOwner->m_eMod == E_CLI_MOD_SERVER)
+		{
+			_pclsSess->m_fnSendRsp(_pstPk,pszTemp);
+		}
+	}
+}
+void g_fnCliPrintEv(TreeCli * _pclsCli,CliSession * _pclsSess,CliNet_t * _pstPk,const char * _pszBuff)
+{
+	if(_pclsCli)
+	{
+		if(_pclsCli->m_eMod == E_CLI_MOD_CONSOL || _pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+		{
+			g_fnCliPrintCli(_pclsCli,_pszBuff);	return;
+		}
+	}
+	if(_pclsSess && _pstPk)
+	{
+		g_fnCliPrintSrv(_pclsSess, _pstPk,_pszBuff);return;
+	}
+	
+}
+void g_fnCliPrintEvVar(TreeCli * _pclsCli,CliSession * _pclsSess,CliNet_t * _pstPk,const char *pFormat, ...)
+{
+	char pszTemp[DEF_MAX_CLI_CHAR]; memset(pszTemp,0x00,DEF_MAX_CLI_CHAR);
+	va_list ap;va_start(ap, pFormat);vsnprintf(pszTemp, DEF_MAX_CLI_CHAR-1,pFormat, ap);va_end(ap);
+	int nlen = strlen(pszTemp);
+	if(nlen + 3 > DEF_MAX_CLI_CHAR) nlen = DEF_MAX_CLI_CHAR-3;
+	pszTemp[nlen] = '\r';pszTemp[nlen+1] = '\n';pszTemp[nlen+2] = 0;
+	if(_pclsCli)
+	{
+		if(_pclsCli->m_eMod == E_CLI_MOD_CONSOL || _pclsCli->m_eMod == E_CLI_MOD_CLIENT)
+		{
+			g_fnCliPrintCli(_pclsCli,pszTemp);	return;
+		}
+	}
+	if(_pclsSess && _pstPk)
+	{
+		g_fnCliPrintSrv(_pclsSess, _pstPk,pszTemp);return;
+	}
+}
+}
+

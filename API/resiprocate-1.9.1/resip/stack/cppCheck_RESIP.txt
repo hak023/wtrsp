@@ -1,0 +1,461 @@
+[Aor.cxx:79]: (style) Variable 'start' is assigned a value that is never used.
+[Aor.cxx:36]: (style) Variable 'anchor' is assigned a value that is never used.
+[Auth.cxx:155]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Auth.cxx:166]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[BranchParameter.cxx:61] -> [BranchParameter.cxx:67]: (performance) Variable 'curr' is reassigned a value before the old one has been used.
+[BranchParameter.cxx:94]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[Connection.cxx:297]: (style) Variable 'writePair' is assigned a value that is never used.
+[ConnectionBase.cxx:397]: (style) Checking if unsigned variable 'contentLength' is less than zero.
+[ConnectionBase.cxx:786]: (error) Mismatching allocation and deallocation: uncompressed
+[Contents.cxx:575]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[DnsResult.cxx:562]: (style) Statements following return, break, continue, goto or throw will never be executed.
+[DnsResult.cxx:255]: (style) The scope of the variable 'order' can be reduced.
+[DnsResult.cxx:262]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[DnsResult.cxx:671]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[DnsResult.cxx:877]: (style) Variable 'fDone' is assigned a value that is never used.
+[HeaderFieldValueList.cxx:121]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[HeaderFieldValueList.cxx:171]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[HeaderFieldValueList.cxx:200]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:53]: (style) The scope of the variable 'j' can be reduced.
+[Helper.cxx:964]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:1124]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:1280]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:1751]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:1761]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:2388]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Helper.cxx:1968]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.
+[Helper.cxx:2008]: (error) Object pointed by an 'auto_ptr' is destroyed using operator 'delete'. You should not use 'auto_ptr' for pointers obtained with operator 'new[]'.
+[IntegerCategory.cxx:110]: (style) Variable 'start' is assigned a value that is never used.
+[InternalTransport.cxx:212]: (style) Variable 'nRet' is assigned a value that is never used.
+[InternalTransport.cxx:239]: (style) Variable 'nRet' is assigned a value that is never used.
+[MessageFilterRule.cxx:102]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[MessageFilterRule.cxx:123]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[MessageFilterRule.cxx:151]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[MessageWaitingContents.cxx:181]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[NameAddr.cxx:189]: (style) The scope of the variable 'laQuote' can be reduced.
+[ParserCategory.cxx:117]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:122]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:204]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:266]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:319]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:338]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:354]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParserCategory.cxx:393]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SdpContents.cxx:620]: (style) Variable 'anchor' is assigned a value that is never used.
+[SdpContents.cxx:1715]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipFrag.cxx:202] -> [SipFrag.cxx:213]: (performance) Buffer 'termCharArray' is being written before its old content has been used.
+[SipMessage.cxx:350]: (style) The scope of the variable 'pc' can be reduced.
+[SipMessage.cxx:1882]: (style) Copying 'auto_ptr' pointer to another does not create two equal objects since one has lost its ownership of the pointer.
+[SipMessage.cxx:167]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:173]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:259]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:267]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:274]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:370]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:820]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:883]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1229]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1252]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1276]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1290]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1362]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1897]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1930]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1944]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1707]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipMessage.cxx:1733]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[SipStack.cxx:187]: (style) The scope of the variable 'unFaultMsgLen' can be reduced.
+[SipStack.cxx:1394]: (style) The scope of the variable 'nTuId' can be reduced.
+[SipStack.cxx:1417]: (style) The scope of the variable 'nTuId' can be reduced.
+[SipStack.cxx:1441]: (style) The scope of the variable 'nTuId' can be reduced.
+[SipStack.cxx:1470]: (style) The scope of the variable 'nTuId' can be reduced.
+[SipStack.cxx:1504]: (style) The scope of the variable 'nTuId' can be reduced.
+[SipStack.cxx:2089]: (style) The scope of the variable 'pTransport' can be reduced.
+[SipStack.cxx:202]: (error) Memory leak: pszFaultMsg
+[SipStack.cxx:301]: (error) Memory leak: pszFaultMsg
+[SipStack.cxx:445]: (error) Memory leak: pszFaultMsg
+[SipStack.cxx:2131]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[StatusLine.cxx:129] -> [StatusLine.cxx:139]: (performance) Variable 'start' is reassigned a value before the old one has been used.
+[TimeAccumulate.cxx:18]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TimeAccumulate.cxx:35]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransactionState.cxx:2926] -> [TransactionState.cxx:2927]: (performance) Variable 'behavior' is reassigned a value before the old one has been used.
+[TransactionState.cxx:1282] -> [TransactionState.cxx:1277]: (style) Found duplicate branches for 'if' and 'else'.
+[TransactionState.cxx:1796] -> [TransactionState.cxx:1789]: (style) Found duplicate branches for 'if' and 'else'.
+[TransactionUser.cxx:131]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx]: (information) Too many #ifdef configurations - cppcheck only checks 12 of 14 configurations. Use --force to check all configurations.
+[TransportSelector.cxx:362]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:378]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:404]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:432]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:454]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:1771]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:2097]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TransportSelector.cxx:1282]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuIM.cxx:593]: (style) The scope of the variable 'encrypted' can be reduced.
+[TuIM.cxx:935]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuIM.cxx:1003]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuIM.cxx:1061]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:104]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:118]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:132]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:153]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:203]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:217]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:231]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:247]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:275]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[TuSelector.cxx:190]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Tuple.cxx:997] -> [Tuple.cxx:981]: (style) Found duplicate branches for 'if' and 'else'.
+[Tuple.cxx:652] -> [Tuple.cxx:646]: (style) Found duplicate branches for 'if' and 'else'.
+[Tuple.cxx:878] -> [Tuple.cxx:872]: (style) Found duplicate branches for 'if' and 'else'.
+[Tuple.cxx:997] -> [Tuple.cxx:991]: (style) Found duplicate branches for 'if' and 'else'.
+[UInt32Category.cxx:111]: (style) Variable 'start' is assigned a value that is never used.
+[UdpTransport.cxx:572]: (style) Variable 'origBufferConsumed' is assigned a value that is never used.
+[UdpTransport.cxx:572]: (style) The scope of the variable 'origBufferConsumed' can be reduced.
+[UdpTransport.cxx:680]: (style) The scope of the variable 'sc' can be reduced.
+[UdpTransport.cxx:717]: (style) Variable 'origBufferConsumed' is assigned a value that is never used.
+[Uri.cxx:1387]: (style) The scope of the variable 'anchor' can be reduced.
+[Uri.cxx:1255]: (style) Variable 'start' is assigned a value that is never used.
+[Via.cxx:214]: (style) Variable 'startMark' is assigned a value that is never used.
+[WarningCategory.cxx:67]: (style) Variable 'anchor' is assigned a value that is never used.
+[eSipHandler.cxx:1317]: (style) C-style pointer casting
+[eSipHandler.cxx:901] -> [eSipHandler.cxx:904]: (performance) Variable 'nLocalPort' is reassigned a value before the old one has been used.
+[eSipHandler.cxx:902] -> [eSipHandler.cxx:906]: (performance) Variable 'nRemotePort' is reassigned a value before the old one has been used.
+[eSipHandler.cxx:1074]: (style) Variable 'nRet' is assigned a value that is never used.
+[eSipHandler.cxx:1139]: (style) Variable 'nRet' is assigned a value that is never used.
+[eSipHandler.cxx:1184]: (style) Variable 'nRet' is assigned a value that is never used.
+[eSipSimpleParsing.cxx:189]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[eSipSimpleParsing.cxx:206]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[eSipSimpleParsing.cxx:215]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[eSipSimpleParsing.cxx:224]: (style) The scope of the variable 'pszUnknown' can be reduced.
+[eSipSimpleParsing.cxx:509]: (style) The scope of the variable 'pCurrentPos' can be reduced.
+[eSipSimpleParsing.cxx:709]: (style) Variable 'bSipsSchem' is assigned a value that is never used.
+[eSipStackMonitor.cxx:67]: (style) The scope of the variable 'pnResult' can be reduced.
+[ssl/DtlsTransport.cxx]: (information) Too many #ifdef configurations - cppcheck only checks 12 of 16 configurations. Use --force to check all configurations.
+[ssl/DtlsTransport.cxx:194]: (style) The scope of the variable 'wbio' can be reduced.
+[ssl/DtlsTransport.cxx:480]: (style) The scope of the variable 'wBio' can be reduced.
+[ssl/DtlsTransport.cxx:523]: (style) The scope of the variable 'expected' can be reduced.
+[ssl/DtlsTransport.cxx:551]: (style) Variable 'expected' is assigned a value that is never used.
+[ssl/DtlsTransport.cxx:219]: (error) Memory leak: pt
+[ssl/MacSecurity.cxx:133] -> [ssl/MacSecurity.cxx:137]: (performance) Variable 'status' is reassigned a value before the old one has been used.
+[ssl/MacSecurity.cxx:195]: (style) Variable 'iErr' is assigned a value that is never used.
+[ssl/MacSecurity.cxx:201]: (error) Uninitialized variable: cBuf1
+[ssl/Security.cxx:1404] -> [ssl/Security.cxx:1437]: (performance) Variable 'ext' is reassigned a value before the old one has been used.
+[ssl/Security.cxx:820]: (style) The scope of the variable 'passPhrase' can be reduced.
+[ssl/Security.cxx:159]: (style) Variable 'iErr' is assigned a value that is never used.
+[ssl/Security.cxx:544]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[ssl/Security.cxx:740]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[ssl/Security.cxx:793]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[ssl/Security.cxx:845]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.
+[ssl/Security.cxx:165]: (error) Uninitialized variable: cBuf1
+[ssl/Security.cxx:331]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/Security.cxx:1065]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/Security.cxx:1075]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/Security.cxx:2257]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/Security.cxx:2611]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/Security.cxx:2620]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/TlsConnection.cxx:542]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/TlsConnection.cxx:552]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/TlsConnection.cxx:254]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/TlsConnection.cxx:623]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ssl/WinSecurity.cxx:88]: (error) Invalid number of character (() when these macros are defined: 'UNICODE;USE_SSL'.
+[test/InviteClient.cxx:90]: (style) Exception should be caught by reference.
+[test/InviteServer.cxx:54]: (style) Exception should be caught by reference.
+[test/RFC4475TortureTests.cxx:109]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:408]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:654]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:865]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:1075]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:1273]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:1480]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:1780]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:1962]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:2172]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:2437]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:2698]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:2933]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3112]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3193]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3283]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3370]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3444]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3525]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3605]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3683]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3763]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3834]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:3915]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4001]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4072]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4139]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4214]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4281]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4346]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4423]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4487]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4558]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4734]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4799]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4863]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4927]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:4995]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5064]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5132]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5199]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5279]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5342]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5406]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5470]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5544]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5607]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5671]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:5734]: (style) The scope of the variable 'result' can be reduced.
+[test/RFC4475TortureTests.cxx:125]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:424]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:670]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:881]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:1091]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:1289]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:1496]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:1796]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:1978]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:2188]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:2453]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:2714]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:2949]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3126]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3208]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3297]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3384]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3458]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3539]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3619]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3697]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3777]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3848]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:3929]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4015]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4086]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4153]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4228]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4295]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4360]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4437]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4501]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4574]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4750]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4815]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4879]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:4943]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5011]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5080]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5148]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5215]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5295]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5358]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5422]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5486]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5560]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5623]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5687]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:5750]: (style) Variable 'message' is assigned a value that is never used.
+[test/RFC4475TortureTests.cxx:235]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:250]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:1001]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:1209]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:1646]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2074]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2080]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2086]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2092]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2098]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2301]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2316]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2331]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/RFC4475TortureTests.cxx:2346]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/Resolver.cxx:213]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[test/Resolver.cxx:149]: (style) The scope of the variable 'herrno' can be reduced.
+[test/Resolver.cxx:150]: (style) Unused variable: buffer
+[test/Resolver.cxx:190]: (style) Unused variable: str
+[test/SipTortureTests.cxx:645]: (style) The scope of the variable 'txt' can be reduced.
+[test/SipTortureTests.cxx:719]: (style) The scope of the variable 'txt' can be reduced.
+[test/SipTortureTests.cxx:758]: (style) The scope of the variable 'txt' can be reduced.
+[test/SipTortureTests.cxx:800]: (style) The scope of the variable 'txt' can be reduced.
+[test/SipTortureTests.cxx:839]: (style) The scope of the variable 'txt' can be reduced.
+[test/SipTortureTests.cxx:564]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/SipTortureTests.cxx:825]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/UAS.cxx:67]: (style) Variable 'proto' is assigned a value that is never used.
+[test/dumpasn1.c:1068]: (style) The scope of the variable 'bitFlag' can be reduced.
+[test/dumpasn1.c:595]: (style) Variable 'ch' is assigned a value that is never used.
+[test/dumpasn1.c:610]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[test/dumpasn1.c:1004]: (style) Clarify calculation precedence for '%' and '?'.
+[test/dumpasn1.c:1160]: (style) Unused variable: convBuffer
+[test/dumpasn1.c:1210]: (style) Unused variable: p
+[test/limpc.cxx:506]: (style) The scope of the variable 'tlsPort' can be reduced.
+[test/limpc.cxx:507]: (style) The scope of the variable 'dtlsPort' can be reduced.
+[test/limpc.cxx:527]: (style) The scope of the variable 'useTls' can be reduced.
+[test/limpc.cxx:528]: (style) The scope of the variable 'noTls' can be reduced.
+[test/limpc.cxx:535]: (style) The scope of the variable 'noV6' can be reduced.
+[test/limpc.cxx:537]: (style) The scope of the variable 'genUserCert' can be reduced.
+[test/limpc.cxx:617]: (style) Variable 'tlsPort' is assigned a value that is never used.
+[test/limpc.cxx:623]: (style) Variable 'dtlsPort' is assigned a value that is never used.
+[test/limpc.cxx:573]: (style) Variable 'useTls' is assigned a value that is never used.
+[test/limpc.cxx:581]: (style) Variable 'noTls' is assigned a value that is never used.
+[test/limpc.cxx:601]: (style) Variable 'noV6' is assigned a value that is never used.
+[test/limpc.cxx:555]: (style) Variable 'genUserCert' is assigned a value that is never used.
+[test/makeSelfCert.cxx:46] -> [test/makeSelfCert.cxx:50]: (performance) Variable 'stat' is reassigned a value before the old one has been used.
+[test/makeSelfCert.cxx:117] -> [test/makeSelfCert.cxx:151]: (performance) Variable 'ext' is reassigned a value before the old one has been used.
+[test/testBlast.cxx:123]: (error) Invalid number of character ({) when these macros are defined: ''.
+[test/testConvertRaw.cxx:143]: (style) Variable 'hdr' is assigned a value that is never used.
+[test/testConvertRaw.cxx:147]: (style) Variable 'nCols' is assigned a value that is never used.
+[test/testConvertRaw.cxx:148]: (style) Variable 'col' is assigned a value that is never used.
+[test/digcalc.hxx:68]: (style) The scope of the variable 'j' can be reduced.
+[test/testHash.cxx:120]: (style) Variable 'n' is assigned a value that is never used.
+[test/testMultipartMixedContents.cxx:112]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testMultipartMixedContents.cxx:131]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testParseNameAddr.cxx:65]: (style) Statements following return, break, continue, goto or throw will never be executed.
+[test/testSdp.cxx:79]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSelect.cxx:84]: (style) Variable 'time3' is assigned a value that is never used.
+[test/testSipMessage.cxx:988]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSipMessage.cxx:1598]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSipMessage.cxx:1604]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSipMessage.cxx:1642]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSipMessage.cxx:1648]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testSipMessageMemory.cxx:22] -> [test/testSipMessageMemory.cxx:23]: (performance) Variable 'local' is reassigned a value before the old one has been used.
+[test/testSipStack1.cxx:55]: (style) The scope of the variable 'msg' can be reduced.
+[test/testSource.cxx:36]: (style) Variable 'serv_port' is assigned a value that is never used.
+[test/testStack.cxx:153]: (style) 'class SipStackAndThread' does not have a copy constructor which is recommended since the class contains a pointer to allocated memory.
+[test/testStun.cxx:34]: (style) Variable 'proto' is assigned a value that is never used.
+[test/testStun.cxx:35]: (style) Variable 'bindAddr' is assigned a value that is never used.
+[test/testStun.cxx:38]: (style) Variable 'window' is assigned a value that is never used.
+[test/testStun.cxx:39]: (style) Variable 'seltime' is assigned a value that is never used.
+[test/testStun.cxx:74]: (style) Variable 'outstanding' is assigned a value that is never used.
+[test/testStun.cxx:75]: (style) Variable 'sent' is assigned a value that is never used.
+[test/testTcp.cxx:162]: (style) The scope of the variable 'msg' can be reduced.
+[test/testTcp.cxx:311]: (style) The scope of the variable 'msg' can be reduced.
+[test/testTcp.cxx:48]: (style) Variable 'logType' is assigned a value that is never used.
+[test/testTcp.cxx:49]: (style) Variable 'logLevel' is assigned a value that is never used.
+[test/testTls.cxx:66] -> [test/testTls.cxx:68]: (performance) Variable 'runs' is reassigned a value before the old one has been used.
+[test/testTlsConnection.cxx:182]: (warning) memset() called to fill 0 bytes of '&'.
+[test/testTypedef.cxx:427]: (warning) Member variable 'Foo::va2' is not initialized in the constructor.
+[test/testTypedef.cxx:438]: (warning) Member variable 'FooFoo::va2' is not initialized in the constructor.
+[test/testUdp.cxx:136]: (style) The scope of the variable 'msg' can be reduced.
+[test/testUdp.cxx:32]: (style) Variable 'logType' is assigned a value that is never used.
+[test/testUdp.cxx:33]: (style) Variable 'logLevel' is assigned a value that is never used.
+[ssl/DtlsTransport.cxx:742]: (style) The function '_mapDebug' is never used.
+[ssl/DtlsTransport.cxx:749]: (style) The function '_printSock' is never used.
+[ssl/Security.cxx:206]: (style) The function 'addCADirectory' is never used.
+[TransactionUser.cxx:113]: (style) The function 'addDomain' is never used.
+[ssl/Security.cxx:1168]: (style) The function 'addDomainCertPEM' is never used.
+[ssl/Security.cxx:1203]: (style) The function 'addDomainPrivateKeyPEM' is never used.
+[SipStack.cxx:900]: (style) The function 'addTransport4Slb' is never used.
+[ssl/Security.cxx:1238]: (style) The function 'addUserCertDER' is never used.
+[ssl/Security.cxx:1231]: (style) The function 'addUserCertPEM' is never used.
+[ssl/Security.cxx:1333]: (style) The function 'addUserPrivateKeyDER' is never used.
+[ssl/Security.cxx:1326]: (style) The function 'addUserPrivateKeyPEM' is never used.
+[Uri.cxx:751]: (style) The function 'aorEqual' is never used.
+[MsgHeaderScanner.cxx:470]: (style) The function 'categoryName' is never used.
+[ssl/Security.cxx:1850]: (style) The function 'checkAndSetIdentity' is never used.
+[SipMessage.cxx:1905]: (style) The function 'clearOutboundDecorators' is never used.
+[Helper.cxx:808]: (style) The function 'computeUniqueBranch' is never used.
+[TransportSelector.cxx:346]: (style) The function 'createSelectInterruptor' is never used.
+[EventStackThread.cxx:190]: (style) The function 'createStack' is never used.
+[SipStack.cxx:908]: (style) The function 'delTransport4Slb' is never used.
+[LazyParser.cxx:73]: (style) The function 'doParse' is never used.
+[eSipSimpleParsing.cxx:401]: (style) The function 'errlog' is never used.
+[SipMessage.cxx:1717]: (style) The function 'fnMergeAllSingleLine' is never used.
+[Uri.cxx:855]: (style) The function 'getAOR' is never used.
+[TuIM.cxx:1221]: (style) The function 'getBuddyGroup' is never used.
+[Helper.cxx:2378]: (style) The function 'getClientPublicAddress' is never used.
+[QValue.cxx:14]: (style) The function 'getData' is never used.
+[ssl/Security.cxx:2708]: (style) The function 'getDomainCert' is never used.
+[ssl/Security.cxx:1196]: (style) The function 'getDomainCertDER' is never used.
+[ssl/Security.cxx:2720]: (style) The function 'getDomainKey' is never used.
+[ssl/Security.cxx:1224]: (style) The function 'getDomainPrivateKeyPEM' is never used.
+[ConnectionBase.cxx:123]: (style) The function 'getFlowKey' is never used.
+[SipStack.cxx:1178]: (style) The function 'getHostAddress' is never used.
+[test/Resolver.cxx:229]: (style) The function 'getHostName' is never used.
+[InvalidContents.cxx:87]: (style) The function 'getOriginalType' is never used.
+[test/testDns.cxx:161]: (style) The function 'getPermutationNumber' is never used.
+[SdpContents.cxx:1828]: (style) The function 'getRate' is never used.
+[SipMessage.cxx:1705]: (style) The function 'getRawUnknownHeader' is never used.
+[Transport.cxx:537]: (style) The function 'getSipStack' is never used.
+[SipStack.cxx:1231]: (style) The function 'getUri' is never used.
+[ssl/Security.cxx:2714]: (style) The function 'getUserCert' is never used.
+[ssl/Security.cxx:1259]: (style) The function 'getUserCertDER' is never used.
+[ssl/Security.cxx:1309]: (style) The function 'getUserPassPhrase' is never used.
+[ssl/Security.cxx:2726]: (style) The function 'getUserPrivateKey' is never used.
+[ssl/Security.cxx:1361]: (style) The function 'getUserPrivateKeyDER' is never used.
+[ssl/Security.cxx:1354]: (style) The function 'getUserPrivateKeyPEM' is never used.
+[Helper.cxx:1942]: (style) The function 'gruuUserPart' is never used.
+[ssl/Security.cxx:1210]: (style) The function 'hasDomainPrivateKey' is never used.
+[ssl/Security.cxx:1279]: (style) The function 'hasUserPassPhrase' is never used.
+[DateCategory.cxx:237]: (style) The function 'in_dayofweek_word_set' is never used.
+[Uri.cxx:28]: (style) The function 'initAllTables' is never used.
+[Helper.cxx:2348]: (style) The function 'isClientBehindNAT' is never used.
+[test/testConnectionBase.cxx:47]: (style) The function 'isDatagram' is never used.
+[Mime.cxx:74]: (style) The function 'isEqual' is never used.
+[SipStack.cxx:1225]: (style) The function 'isMyPort' is never used.
+[TransactionController.cxx:150]: (style) The function 'isTUOverloaded' is never used.
+[Helper.cxx:320]: (style) The function 'jitterValue' is never used.
+[UdpTransport.cxx:339]: (style) The function 'join4SndTh' is never used.
+[Headers.cxx:132]: (style) The function 'knownReturn' is never used.
+[eSipHandler.cxx:1093]: (style) The function 'm_fnSendInit' is never used.
+[eSipHandler.cxx:1157]: (style) The function 'm_fnSendPing' is never used.
+[DeprecatedDialog.cxx:444]: (style) The function 'makeInitialInvite' is never used.
+[DeprecatedDialog.cxx:528]: (style) The function 'makeOptions' is never used.
+[DeprecatedDialog.cxx:509]: (style) The function 'makeRefer' is never used.
+[DeprecatedDialog.cxx:607]: (style) The function 'makeReplaces' is never used.
+[Helper.cxx:438]: (style) The function 'makeResponse4App' is never used.
+[DeprecatedDialog.cxx:472]: (style) The function 'makeUpdate' is never used.
+[Helper.cxx:1442]: (style) The function 'makeWWWChallenge' is never used.
+[Helper.cxx:1803]: (style) The function 'massageRoute' is never used.
+[SipMessage.cxx:1807]: (style) The function 'mergeUri' is never used.
+[DnsResult.cxx:61]: (style) The function 'onDnsResult' is never used.
+[eSipSimpleParsing.cxx:874]: (style) The function 'parsingAcceptContact' is never used.
+[eSipSimpleParsing.cxx:819]: (style) The function 'parsingCSeq' is never used.
+[eSipSimpleParsing.cxx:859]: (style) The function 'parsingCallId' is never used.
+[eSipSimpleParsing.cxx:788]: (style) The function 'parsingFrom' is never used.
+[eSipSimpleParsing.cxx:695]: (style) The function 'parsingStartLine' is never used.
+[eSipSimpleParsing.cxx:755]: (style) The function 'parsingTo' is never used.
+[eSipSimpleParsing.cxx:896]: (style) The function 'parsingVia' is never used.
+[Connection.cxx:412]: (style) The function 'processPollEvent' is never used.
+[TimerQueue.cxx:112]: (style) The function 'processTimer4Esip' is never used.
+[test/testConnectionBase.cxx:43]: (style) The function 'processTransmitQueue' is never used.
+[SipStack.cxx:1747]: (style) The function 'receiveAny' is never used.
+[TuIM.cxx:1283]: (style) The function 'removeBuddy' is never used.
+[ssl/Security.cxx:1189]: (style) The function 'removeDomainCert' is never used.
+[ssl/Security.cxx:1217]: (style) The function 'removeDomainPrivateKey' is never used.
+[ParserCategory.cxx:182]: (style) The function 'removeParametersExcept' is never used.
+[ssl/Security.cxx:1252]: (style) The function 'removeUserCert' is never used.
+[ssl/Security.cxx:1296]: (style) The function 'removeUserPassPhrase' is never used.
+[ssl/Security.cxx:1347]: (style) The function 'removeUserPrivateKey' is never used.
+[eSipSimpleParsing.cxx:504]: (style) The function 'seekHeader' is never used.
+[SipStack.cxx:1557]: (style) The function 'sendTo' is never used.
+[NameAddr.cxx:178]: (style) The function 'setAllContacts' is never used.
+[SipStack.cxx:920]: (style) The function 'setConnected4NonBlock4SlbCb' is never used.
+[SipStack.cxx:914]: (style) The function 'setDelTransport4SlbCb' is never used.
+[eSipHandler.cxx:567]: (style) The function 'setDumpSip4Cps' is never used.
+[UdpTransport.cxx:945]: (style) The function 'setExternalUnknownDatagramHandler' is never used.
+[TransactionUser.cxx:127]: (style) The function 'setMessageFilterRuleList' is never used.
+[Helper.cxx:848]: (style) The function 'setNonceHelper' is never used.
+[BasicNonceHelper.cxx:36]: (style) The function 'setPrivateKey' is never used.
+[SipMessage.cxx:1088]: (style) The function 'setRawBody' is never used.
+[TcpBaseTransport.cxx:368]: (style) The function 'setRcvBufLen' is never used.
+[SipStack.cxx:926]: (style) The function 'setRcvManageMsg4SlbCb' is never used.
+[InternalTransport.cxx:191]: (style) The function 'setSocketRcvBuffSize' is never used.
+[InternalTransport.cxx:219]: (style) The function 'setSocketSndBuffSize' is never used.
+[eSipHandler.cxx:922]: (style) The function 'setTimeTestFlag' is never used.
+[Uri.cxx:1297]: (style) The function 'setUriPasswordEncoding' is never used.
+[ssl/Security.cxx:1266]: (style) The function 'setUserPassPhrase' is never used.
+[test/TestSupport.cxx:129]: (style) The function 'showN' is never used.
+[UdpTransport.cxx:333]: (style) The function 'stop4SndTh' is never used.
+[UdpTransport.cxx:933]: (style) The function 'stunResult' is never used.
+[UdpTransport.cxx:903]: (style) The function 'stunSendTest' is never used.
+[DnsInterface.cxx:101]: (style) The function 'supportedProtocols' is never used.
+[DeprecatedDialog.cxx:226]: (style) The function 'targetRefreshRequest' is never used.
+[test/SipTortureTests.cxx:835]: (style) The function 'test15' is never used.
+[test/testSecurity.cxx:25]: (style) The function 'testMultiple' is never used.
+[SipMessage.cxx:1491]: (style) The function 'throwHeaderMissing' is never used.
+[DeprecatedDialog.cxx:264]: (style) The function 'updateRequest' is never used.
+(information) Cppcheck cannot find all the include files (use --check-config for details)

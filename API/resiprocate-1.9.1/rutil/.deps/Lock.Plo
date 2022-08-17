@@ -1,0 +1,8 @@
+Lock.lo: Lock.cxx /usr/include/stdc-predef.h ../rutil/Lock.hxx \
+ ../rutil/Lockable.hxx
+
+/usr/include/stdc-predef.h:
+
+../rutil/Lock.hxx:
+
+../rutil/Lockable.hxx:

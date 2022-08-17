@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client
+END
+TurnUdpSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnUdpSocket.hxx
+END
+TurnAsyncTlsSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncTlsSocket.cxx
+END
+TurnTlsSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnTlsSocket.cxx
+END
+reTurnClient_7_1.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/reTurnClient_7_1.vcproj
+END
+reTurnClient_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/reTurnClient_8_0.vcproj
+END
+reTurnClient_10_0.vcxproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/reTurnClient_10_0.vcxproj
+END
+reTurnClient_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/reTurnClient_9_0.vcproj
+END
+TurnAsyncTlsSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncTlsSocket.hxx
+END
+ErrorCode.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/ErrorCode.hxx
+END
+TurnTlsSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnTlsSocket.hxx
+END
+TurnAsyncSocketHandler.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncSocketHandler.cxx
+END
+reTurnClient_10_0.vcxproj.filters
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/reTurnClient_10_0.vcxproj.filters
+END
+TurnAsyncSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncSocket.cxx
+END
+TurnSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnSocket.cxx
+END
+TurnAsyncSocketHandler.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncSocketHandler.hxx
+END
+TurnAsyncSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncSocket.hxx
+END
+TurnSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnSocket.hxx
+END
+TurnAsyncTcpSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncTcpSocket.cxx
+END
+TurnTcpSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnTcpSocket.cxx
+END
+TurnAsyncUdpSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncUdpSocket.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/Makefile.am
+END
+TurnUdpSocket.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnUdpSocket.cxx
+END
+TurnAsyncTcpSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncTcpSocket.hxx
+END
+TurnTcpSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnTcpSocket.hxx
+END
+TurnAsyncUdpSocket.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/reTurn/client/TurnAsyncUdpSocket.hxx
+END

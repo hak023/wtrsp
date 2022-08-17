@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail
+END
+openssl_stream_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail/openssl_stream_service.hpp
+END
+openssl_operation.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail/openssl_operation.hpp
+END
+openssl_init.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail/openssl_init.hpp
+END
+openssl_context_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail/openssl_context_service.hpp
+END
+openssl_types.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl/detail/openssl_types.hpp
+END

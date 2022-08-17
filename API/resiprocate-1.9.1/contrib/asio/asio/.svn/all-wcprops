@@ -1,0 +1,305 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio
+END
+error.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/error.hpp
+END
+basic_socket.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_socket.hpp
+END
+buffered_stream.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_stream.hpp
+END
+system_error.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/system_error.hpp
+END
+basic_io_object.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_io_object.hpp
+END
+read_at.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/read_at.hpp
+END
+basic_raw_socket.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_raw_socket.hpp
+END
+serial_port_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/serial_port_service.hpp
+END
+basic_stream_socket.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_stream_socket.hpp
+END
+placeholders.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/placeholders.hpp
+END
+basic_deadline_timer.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_deadline_timer.hpp
+END
+buffered_write_stream_fwd.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_write_stream_fwd.hpp
+END
+thread.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/thread.hpp
+END
+datagram_socket_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/datagram_socket_service.hpp
+END
+handler_invoke_hook.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/handler_invoke_hook.hpp
+END
+is_read_buffered.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/is_read_buffered.hpp
+END
+basic_socket_acceptor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_socket_acceptor.hpp
+END
+buffer.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffer.hpp
+END
+write_at.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/write_at.hpp
+END
+completion_condition.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/completion_condition.hpp
+END
+raw_socket_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/raw_socket_service.hpp
+END
+socket_base.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/socket_base.hpp
+END
+error_code.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/error_code.hpp
+END
+serial_port.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/serial_port.hpp
+END
+basic_serial_port.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_serial_port.hpp
+END
+deadline_timer_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/deadline_timer_service.hpp
+END
+version.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/version.hpp
+END
+io_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/io_service.hpp
+END
+streambuf.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/streambuf.hpp
+END
+buffered_read_stream.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_read_stream.hpp
+END
+basic_streambuf.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_streambuf.hpp
+END
+basic_datagram_socket.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_datagram_socket.hpp
+END
+write.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/write.hpp
+END
+strand.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/strand.hpp
+END
+basic_socket_iostream.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_socket_iostream.hpp
+END
+buffered_stream_fwd.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_stream_fwd.hpp
+END
+basic_socket_streambuf.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/basic_socket_streambuf.hpp
+END
+ssl.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/ssl.hpp
+END
+deadline_timer.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/deadline_timer.hpp
+END
+buffers_iterator.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffers_iterator.hpp
+END
+handler_alloc_hook.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/handler_alloc_hook.hpp
+END
+buffered_write_stream.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_write_stream.hpp
+END
+read.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/read.hpp
+END
+serial_port_base.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/serial_port_base.hpp
+END
+stream_socket_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/stream_socket_service.hpp
+END
+time_traits.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/time_traits.hpp
+END
+read_until.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/read_until.hpp
+END
+is_write_buffered.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/is_write_buffered.hpp
+END
+buffered_read_stream_fwd.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/buffered_read_stream_fwd.hpp
+END
+socket_acceptor_service.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/asio/asio/socket_acceptor_service.hpp
+END

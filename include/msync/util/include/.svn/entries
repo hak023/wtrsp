@@ -1,0 +1,189 @@
+10
+
+dir
+0
+https://svn.alox.com/repos/vIBC/trunk/src/include/msync/util/include
+https://svn.alox.com/repos/vIBC
+add
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1c93119a-1b73-42c0-9774-7fabd2e416fd
+
+mutil.h
+file
+
+
+
+add
+
+mclient.h
+file
+
+
+
+add
+
+r_base.h
+file
+
+
+
+add
+
+reconfig.h
+file
+
+
+
+add
+
+r_list.h
+file
+
+
+
+add
+
+r_util.h
+file
+
+
+
+add
+
+r_inifile.h
+file
+
+
+
+add
+
+net-support.h
+file
+
+
+
+add
+
+r_destroyer.h
+file
+
+
+
+add
+
+r_jthread.h
+file
+
+
+
+add
+
+mclient_ha.h
+file
+
+
+
+add
+
+r_ifconfig.h
+file
+
+
+
+add
+
+mptcpserver.h
+file
+
+
+
+add
+
+gtticker.h
+file
+
+
+
+add
+
+amsock.h
+file
+
+
+
+add
+
+app_com.h
+file
+
+
+
+add
+
+r_sock.h
+file
+
+
+
+add
+
+r_sharedmemory.h
+file
+
+
+
+add
+
+ipv6.h
+file
+
+
+
+add
+
+alivechecker.h
+file
+
+
+
+add
+
+app_commsg.h
+file
+
+
+
+add
+
+r_types.h
+file
+
+
+
+add
+
+logmgr.h
+file
+
+
+
+add
+

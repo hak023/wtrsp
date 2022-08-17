@@ -1,0 +1,940 @@
+
+#include "flexIf.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+static const unsigned int s_unMaxMsgLen = 65000;
+static const unsigned int s_unDefaultMsgLen = 2048;
+static const unsigned int s_unIncreaseSize = 100;
+
+static const unsigned int s_unTopMagicCookie = 0x9D1FC7B8;
+static const unsigned int s_unBottomMagicCookie = 0x5FB1C275;
+
+static const unsigned int s_unMaxCategoryNameLen = 16;
+
+typedef struct
+{
+	unsigned char m_ucData[2];
+	
+	void m_fnSet(unsigned short _us)
+	{
+		m_ucData[0] = (unsigned char)(_us >> 8);
+  		m_ucData[1] = (unsigned char)(_us);
+	}
+
+	unsigned short m_fnGet() const{ return (unsigned short)(m_ucData[0] << 8) + (unsigned short)(m_ucData[1]); }
+
+	void m_fnAdd(unsigned short _us){ m_fnSet(m_fnGet()+_us); }
+
+	void m_fnReset()
+	{
+		m_ucData[0] = 0;
+		m_ucData[1] = 0;
+	}
+	
+}USHORT_t;
+
+typedef struct
+{
+	unsigned char m_ucData[4];
+
+	void m_fnSet(unsigned int _ui)
+	{
+		m_ucData[0] = (unsigned char)(_ui >> 24);
+  		m_ucData[1] = (unsigned char)(_ui >> 16);
+		m_ucData[2] = (unsigned char)(_ui >> 8);
+		m_ucData[3] = (unsigned char)(_ui);
+	}
+
+	unsigned int m_fnGet() const
+	{
+		return (unsigned int)(m_ucData[0] << 24) + (unsigned int)(m_ucData[1] << 16) + (unsigned int)(m_ucData[2] << 8) + (unsigned int)(m_ucData[3]);
+	}
+
+	void m_fnReset()
+	{
+		m_ucData[0] = 0;
+		m_ucData[1] = 0;
+		m_ucData[2] = 0;
+		m_ucData[3] = 0;
+	}
+	
+}UINT_t;
+
+struct FlexTop
+{	
+	UINT_t m_stMagicCookie;
+	UINT_t m_stTotalLength;
+	UINT_t m_stCategoryNum;
+
+	void m_fnReset()
+	{		
+		m_stMagicCookie.m_fnSet(s_unTopMagicCookie);
+		m_stTotalLength.m_fnReset();
+		m_stCategoryNum.m_fnReset();
+	}
+};
+
+struct FlexBottom
+{
+	UINT_t m_stMagicCookie;
+
+	void m_fnReset()
+	{
+		m_stMagicCookie.m_fnSet(s_unBottomMagicCookie);
+	}
+};
+
+struct FlexKeyValueEntityHdr
+{
+	UINT_t m_stKeyLength;
+	UINT_t m_stValueLength;
+	UINT_t m_stNextPos;
+
+	unsigned int m_fnGetKeyLen() const{ return m_stKeyLength.m_fnGet(); }
+	unsigned int m_fnGetKeyOffset() const{ return sizeof(struct FlexKeyValueEntityHdr); }
+	unsigned int m_fnGetValueLen() const{ return m_stValueLength.m_fnGet(); }
+	unsigned int m_fnGetValueOffset() const{ return m_fnGetKeyOffset()+m_fnGetKeyLen()+1; }
+	unsigned int m_fnGetEntityTotalLen() const{ return m_fnGetValueOffset()+m_stValueLength.m_fnGet()+1;}
+	unsigned int m_fnGetNextPos() const{ return m_stNextPos.m_fnGet(); }
+
+	void m_fnReset()
+	{
+		m_stKeyLength.m_fnReset();
+		m_stValueLength.m_fnReset();
+		m_stNextPos.m_fnReset();
+	}
+
+	bool m_fnValid(unsigned int _unRemainLen) const
+	{
+		if( _unRemainLen == 0 )
+		{
+			LogInternal(E_LOG_ERR, "FlexKeyValueEntityHdr : invalid : RemainLen[%u]", _unRemainLen);
+			return false;
+		}
+
+		const char * pEntityMem = (const char *)this;
+
+		if( m_fnGetKeyLen() == 0 || m_fnGetEntityTotalLen() > _unRemainLen )
+		{
+			LogInternal(E_LOG_ERR, "FlexKeyValueEntityHdr : invalid : KeyLen[%d], EntityTotalLen[%d], RemainLen[%u]", m_fnGetKeyLen(), m_fnGetEntityTotalLen(), _unRemainLen);
+			return false;
+		}
+
+		if( m_fnGetKeyLen() != strlen(pEntityMem+m_fnGetKeyOffset()) )
+		{
+			LogInternal(E_LOG_ERR, "FlexKeyValueEntityHdr : invalid : Key[%s], KeyLen[%u!=%lu]", 
+														pEntityMem+m_fnGetKeyOffset(), m_fnGetKeyLen(), strlen(pEntityMem+m_fnGetKeyOffset()));
+			return false;
+		}
+
+		return true;
+	}
+
+	bool m_fnSetData(const char * _pszKey, const void * _pValue, unsigned int _unValueLen)
+	{
+		if( !_pszKey || strlen(_pszKey) == 0 || !_pValue )
+			return false;
+
+		unsigned int unKeyLen = strlen(_pszKey);
+
+		m_stKeyLength.m_fnSet(unKeyLen);
+		m_stValueLength.m_fnSet(_unValueLen);
+
+		char * pszKey = (char *)this + m_fnGetKeyOffset();
+		memcpy(pszKey, _pszKey, unKeyLen);
+		pszKey[unKeyLen] = 0x00;
+		char * pszValue = (char *)this + m_fnGetValueOffset();
+		memcpy(pszValue, _pValue, _unValueLen);
+		pszValue[_unValueLen] = 0x00;
+
+		return true;
+	}
+
+	const char * m_fnGetKey() const
+	{
+		return (const char *)this+m_fnGetKeyOffset();
+	}
+
+	const void * m_fnGetValue(unsigned int & _runValueLen) const
+	{
+		const char * pValue = (const char *)this+m_fnGetValueOffset();
+		_runValueLen = m_fnGetValueLen();
+		return (const void *)pValue;
+	}
+};
+
+struct FlexCategoryHdr
+{
+	char m_szCategoryName[s_unMaxCategoryNameLen];
+	UINT_t m_stEntityNums;
+	UINT_t m_stFirstFlexEntityPos;
+	UINT_t m_stLastFlexEntityPos;
+
+	void m_fnReset()
+	{
+		memset(m_szCategoryName, 0x00, s_unMaxCategoryNameLen);
+		m_stEntityNums.m_fnReset();
+		m_stFirstFlexEntityPos.m_fnReset();
+		m_stLastFlexEntityPos.m_fnReset();
+	}
+
+	bool m_fnValid(void * _pMsg, unsigned int _unMsgLen) const
+	{
+		unsigned int unPrevEntityPos = 0, unCurrentEntityPos = 0, unEntityNum = 0;
+		const FlexKeyValueEntityHdr * pstEntityHdr = NULL;
+		char szCategoryName[s_unMaxCategoryNameLen];
+		memcpy(szCategoryName, m_szCategoryName, s_unMaxCategoryNameLen-1);
+		szCategoryName[s_unMaxCategoryNameLen-1] = 0x00;
+
+		unCurrentEntityPos = m_stFirstFlexEntityPos.m_fnGet();
+		while( unCurrentEntityPos > 0 )
+		{
+			if( unPrevEntityPos >= unCurrentEntityPos )
+			{
+				LogInternal(E_LOG_ERR, "FlexCategoryHdr : invalid : Category[%s] : NextPos(Prev[%u]>=Next[%u]), EntityIdx[%u]", 
+															szCategoryName, unPrevEntityPos, unCurrentEntityPos, unEntityNum);
+				return false;
+			}
+
+			if( unCurrentEntityPos >= _unMsgLen )
+			{
+				LogInternal(E_LOG_ERR, "FlexCategoryHdr : invalid : Category[%s] : NextPos(Next[%u]>=MsgLen[%u], EntityIdx[%u]",
+															szCategoryName, unCurrentEntityPos, _unMsgLen, unEntityNum);
+				return false;
+			}
+			
+			pstEntityHdr = (const FlexKeyValueEntityHdr *)((const char *)_pMsg + unCurrentEntityPos);
+			if( !pstEntityHdr->m_fnValid(_unMsgLen-unCurrentEntityPos) )
+			{
+				LogInternal(E_LOG_ERR, "FlexCategoryHdr : invalid : Category[%s] : invalid Entity", szCategoryName);
+				return false;
+			}
+
+			unPrevEntityPos = unCurrentEntityPos;
+			unCurrentEntityPos = pstEntityHdr->m_stNextPos.m_fnGet();
+			++unEntityNum;
+		}
+
+		if( m_stEntityNums.m_fnGet() != unEntityNum )
+		{
+			LogInternal(E_LOG_ERR, "FlexCategoryHdr : invalid : Category[%s] : unmatch EntityNum : %u != %u", 
+														szCategoryName, m_stEntityNums.m_fnGet(), unEntityNum);
+			return false;
+		}
+
+		return true;
+	}
+};
+
+FlexIf::FlexIf()
+	: m_pMsg(NULL)
+{
+	m_fnReset(false);
+}
+
+FlexIf::FlexIf(const char * _pszCategory1, ...)
+	: m_pMsg(NULL)
+{
+	m_fnReset(false);
+
+	if( !_pszCategory1 || strlen(_pszCategory1) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : construct : fail : invalid argument : Category1[%s]", _pszCategory1);
+		return;
+	}
+
+	m_pMsg = malloc(s_unDefaultMsgLen);
+	if( !m_pMsg )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : construct : fail : can't create Msg");
+		return;
+	}
+	memset(m_pMsg, 0x00, s_unDefaultMsgLen);
+	m_unMaxMsgLen = s_unDefaultMsgLen;
+
+	/*==== set Top ====*/
+	FlexTop * pstFlexTop = (FlexTop *)m_pMsg;
+	pstFlexTop->m_fnReset();
+	m_unMsgLen += sizeof(FlexTop);
+
+	/*==== set First CategoryHdr ====*/
+	FlexCategoryHdr * pstFlexCategoryHdr = (FlexCategoryHdr *)((char *)m_pMsg+m_unMsgLen);
+	pstFlexCategoryHdr->m_fnReset();
+	strncpy(pstFlexCategoryHdr->m_szCategoryName, _pszCategory1, s_unMaxCategoryNameLen-1);
+	pstFlexCategoryHdr->m_szCategoryName[s_unMaxCategoryNameLen-1] = 0x00;
+	m_unMsgLen += sizeof(FlexCategoryHdr);
+
+	/*==== set Other CategoryHdr ====*/
+	unsigned int unCategoryNum = 1;
+	char * pszTmp;
+	va_list arg;
+	va_start(arg, _pszCategory1);
+	while(1)
+	{
+		pszTmp = va_arg(arg, char*);
+		if( pszTmp == NULL )
+			break;
+		if( strlen(pszTmp) == 0 )
+			continue;
+
+		if( m_unMsgLen + sizeof(FlexCategoryHdr) + sizeof(FlexBottom) > s_unMaxMsgLen )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : construct : fail : over length : category[%s]", pszTmp);
+			m_fnReset(true);
+			return;
+		}
+
+		pstFlexCategoryHdr = (FlexCategoryHdr *)((char *)m_pMsg+m_unMsgLen);
+		pstFlexCategoryHdr->m_fnReset();
+		strncpy(pstFlexCategoryHdr->m_szCategoryName, pszTmp, s_unMaxCategoryNameLen-1);
+		pstFlexCategoryHdr->m_szCategoryName[s_unMaxCategoryNameLen-1] = 0x00;
+		m_unMsgLen += sizeof(FlexCategoryHdr);
+
+		++unCategoryNum;
+	}
+	va_end(arg);
+
+	pstFlexTop->m_stCategoryNum.m_fnSet(unCategoryNum);
+	pstFlexTop->m_stTotalLength.m_fnSet(m_unMsgLen);
+
+	m_bValid = true;
+	m_unCategoryNum = unCategoryNum;
+
+	LogInternal(E_LOG_DEBUG, "FlexIf : construct : category num[%u]", unCategoryNum);
+}
+
+FlexIf::~FlexIf()
+{
+	free(m_pMsg);
+}
+
+void FlexIf::m_fnReset(bool _bFree)
+{
+	if( _bFree )
+		free(m_pMsg);
+	m_pMsg = NULL;
+	m_unMsgLen = 0;
+	m_unMaxMsgLen = 0;
+	m_bValid = false;
+	m_unCategoryNum = 0;
+	//m_bSetMsg = false;
+}
+
+bool FlexIf::m_fnValid() const
+{
+	const FlexTop * pstFlexTop = (const FlexTop *)m_pMsg;
+	
+	if( pstFlexTop->m_stMagicCookie.m_fnGet() != s_unTopMagicCookie )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : invalid : MagicCookie[0x%x]", pstFlexTop->m_stMagicCookie.m_fnGet());
+		return false;
+	}
+
+	if( pstFlexTop->m_stTotalLength.m_fnGet() != m_unMsgLen )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : invalid : unmatch Length : length of struct[%u] != length of packet[%u]", pstFlexTop->m_stTotalLength.m_fnGet(), m_unMsgLen);
+		return false;
+	}
+
+	unsigned int unCategoryNum = pstFlexTop->m_stCategoryNum.m_fnGet();
+	if( unCategoryNum == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : invalid : invalid CategoryNum");
+		return false;
+	}
+
+	const FlexCategoryHdr * pstFlexCategoryHdr = NULL;
+	const char * pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+	for( unsigned int i = 0; i < unCategoryNum; ++i )
+	{
+		pstFlexCategoryHdr = (const FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*i);
+		if( !pstFlexCategoryHdr->m_fnValid(m_pMsg, m_unMsgLen) )
+			return false;
+	}
+
+	return true;
+}
+
+unsigned int FlexIf::m_fnGetMinMsgLen()
+{
+	return sizeof(FlexTop);
+}
+
+int FlexIf::m_fnGetBuildMsgLen(const void * pMsg, unsigned int _unMsgLen)
+{
+	if( !pMsg || _unMsgLen== 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetBuildMsgLen : fail : invalid argument : Msg[%p], Len[%u]", pMsg, _unMsgLen);
+		return -1;
+	}
+
+	if( _unMsgLen < sizeof(FlexTop) )
+		return 0;
+
+	const FlexTop * pstFlexTop = (const FlexTop *)pMsg;
+	if( pstFlexTop->m_stMagicCookie.m_fnGet() != s_unTopMagicCookie )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetBuildMsgLen : fail : invalid magic cookie");
+		return -1;
+	}
+
+	return pstFlexTop->m_stTotalLength.m_fnGet();
+}
+
+bool FlexIf::m_fnAddItem(const char * pszCategory, const char * _pszKey, KString _clsValue)
+{
+	const char * pszValue = (KCSTR)_clsValue;
+
+	if( pszValue )
+		return m_fnAddItem(pszCategory, _pszKey, (const void *)pszValue, strlen(pszValue));
+	else
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : Key[%s] : invalid value", _pszKey);
+		return false;
+	}
+}
+
+bool FlexIf::m_fnAddItem(const char * pszCategory, const char * _pszKey, const void * _pValue, unsigned int _unValueLen)
+{
+	if( !pszCategory || strlen(pszCategory) == 0 || !_pszKey || strlen(_pszKey) == 0 || !_pValue )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : invalid argument : Category[%s], Key[%s], Value[%p]", pszCategory, _pszKey, _pValue);
+		return false;
+	}
+
+	if( !m_bValid  )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : Category[%s], Key[%s] : invalid state", pszCategory, _pszKey);
+		return false;
+	}
+
+#if 0
+	if( m_bSetMsg )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : can't add for setMsg");
+		return false;
+	}
+#endif
+
+	/*==== find category ====*/
+	unsigned int unCategoryIdx = 0;
+	char * pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+	for( unCategoryIdx = 0; unCategoryIdx < m_unCategoryNum; ++unCategoryIdx )
+	{
+		FlexCategoryHdr * pstFlexCategoryHdr = (FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*unCategoryIdx);
+		if( strcmp(pstFlexCategoryHdr->m_szCategoryName, pszCategory) == 0 )
+			break;
+		pstFlexCategoryHdr= NULL;
+	}
+	if( unCategoryIdx >= m_unCategoryNum )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : Category[%s], Key[%s] : can't find Category", pszCategory, _pszKey);
+		return false;
+	}
+
+	/*==== check lenght ====*/
+	FlexKeyValueEntityHdr stEntityHdr;
+	stEntityHdr.m_stKeyLength.m_fnSet(strlen(_pszKey));
+	stEntityHdr.m_stValueLength.m_fnSet(_unValueLen);
+	unsigned int unExpectMsgLen = m_unMsgLen + stEntityHdr.m_fnGetEntityTotalLen() + sizeof(FlexBottom);
+	if( unExpectMsgLen > s_unMaxMsgLen )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : Category[%s], Key[%s] : over Length[%u]", pszCategory, _pszKey, unExpectMsgLen);
+		return false;
+	}
+	if( unExpectMsgLen > m_unMaxMsgLen )
+	{
+		unsigned int unIncreaseSize = unExpectMsgLen - m_unMaxMsgLen + s_unIncreaseSize;
+		void * pNewMsg = realloc(m_pMsg, m_unMaxMsgLen+unIncreaseSize);
+		if( !pNewMsg )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : AddItem : fail : Category[%s], Key[%s] : realloc[%u]", pszCategory, _pszKey, m_unMaxMsgLen+unIncreaseSize);
+			return false;
+		}
+		m_pMsg = pNewMsg;
+		m_unMaxMsgLen += unIncreaseSize;
+	}
+	
+	/*==== add Item ====*/
+	pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+	FlexCategoryHdr * pstFindCategoryHdr = (FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*unCategoryIdx);
+	FlexKeyValueEntityHdr * pstAddEntityHdr = (FlexKeyValueEntityHdr *)((char *)m_pMsg + m_unMsgLen);
+	pstAddEntityHdr->m_fnSetData(_pszKey, _pValue, _unValueLen);
+	if( pstFindCategoryHdr->m_stFirstFlexEntityPos.m_fnGet() > 0 )
+	{
+		FlexKeyValueEntityHdr * pstPrevEntityHdr = (FlexKeyValueEntityHdr *)((char *)m_pMsg + pstFindCategoryHdr->m_stLastFlexEntityPos.m_fnGet());
+		pstPrevEntityHdr->m_stNextPos.m_fnSet(m_unMsgLen);
+		pstFindCategoryHdr->m_stLastFlexEntityPos.m_fnSet(m_unMsgLen);
+	}
+	else
+	{
+		pstFindCategoryHdr->m_stFirstFlexEntityPos.m_fnSet(m_unMsgLen);
+		pstFindCategoryHdr->m_stLastFlexEntityPos.m_fnSet(m_unMsgLen);
+	}
+	unsigned int unEntityNum = pstFindCategoryHdr->m_stEntityNums.m_fnGet();
+	pstFindCategoryHdr->m_stEntityNums.m_fnSet(unEntityNum+1);
+	m_unMsgLen += pstAddEntityHdr->m_fnGetEntityTotalLen();
+
+	FlexTop * pstFlexTop = (FlexTop *)m_pMsg;
+	pstFlexTop->m_stTotalLength.m_fnSet(m_unMsgLen);
+
+	LogInternal(E_LOG_DEBUG, "FlexIf : AddItem : Category[%s], Key[%s], Value[%s] : TotalLen[%u]", pszCategory, _pszKey, (const char *)_pValue, m_unMsgLen);
+	
+	return true;
+}
+
+CmpString FlexIf::m_fnGetNextItem(const char * pszCategory, const char * _pszKey) const
+{
+	unsigned int unPos = 0;
+
+	return (const char *)m_fnGetNextItem(pszCategory, _pszKey, unPos);
+}
+
+CmpString FlexIf::m_fnGetNextItem(const char * pszCategory, const char * _pszKey, unsigned int & _runPos) const
+{
+	unsigned int unValueLen = 0;
+
+	return (const char *)m_fnGetNextItem(pszCategory, _pszKey, unValueLen, _runPos);
+}
+
+const void * FlexIf::m_fnGetNextItem(const char * pszCategory, const char * _pszKey, unsigned int & _runValueLen, unsigned int & _runPos) const
+{
+	const FlexKeyValueEntityHdr * pstStartEntityHdr = NULL;
+	unsigned int unPrevPos = 0;
+	const void * pValue = NULL;
+
+	if( !pszCategory || strlen(pszCategory) == 0 || !_pszKey || strlen(_pszKey) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : invalid argument : Category[%s], Key[%s]", pszCategory, _pszKey);
+		goto END;
+	}
+
+	if( !m_bValid )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid state", pszCategory, _pszKey);
+		goto END;
+	}
+
+	if( _runPos >= m_unMsgLen )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid Postion : Position[%u], MsgLen[%u]", 
+													pszCategory, _pszKey, _runPos, m_unMsgLen);
+		goto END;
+	}
+	
+	if( _runPos == 0 )
+	{
+		const FlexCategoryHdr * pstFlexCategoryHdr = NULL;
+		const char * pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+		for( unsigned int i = 0; i < m_unCategoryNum; ++i )
+		{
+			pstFlexCategoryHdr = (const FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*i);
+			if( strcmp(pstFlexCategoryHdr->m_szCategoryName, pszCategory) == 0 )
+				break;
+			pstFlexCategoryHdr= NULL;
+		}
+		if( !pstFlexCategoryHdr )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextItem(first) : fail : Category[%s], Key[%s] : can't find Category", pszCategory, _pszKey);
+			goto END;
+		}		
+		if( pstFlexCategoryHdr->m_stFirstFlexEntityPos.m_fnGet() > 0 )
+		{
+			pstStartEntityHdr = (const FlexKeyValueEntityHdr *)((char *)m_pMsg + pstFlexCategoryHdr->m_stFirstFlexEntityPos.m_fnGet());
+		}
+		else
+		{
+			LogInternal(E_LOG_DEBUG, "FlexIf : GetNextItem(first) : fail : Category[%s], Key[%s] : empty Entity", pszCategory, _pszKey);
+			goto END;
+		}
+	}
+	else
+	{
+		if( _runPos >= m_unMsgLen )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid argument of unPos : Pos[%u], MsgLen[%u]", 
+														pszCategory, _pszKey, _runPos, m_unMsgLen);
+			goto END;
+		}
+		
+		pstStartEntityHdr = (const FlexKeyValueEntityHdr *)((char *)m_pMsg + _runPos);
+		if( !pstStartEntityHdr->m_fnValid(m_unMsgLen-_runPos) )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid Entity for Pos : Pos[%u]", 
+														pszCategory, _pszKey, _runPos);
+			goto END;
+		}
+	}
+	
+	while( pstStartEntityHdr )
+	{
+		if( strcmp(pstStartEntityHdr->m_fnGetKey(), _pszKey) == 0 )
+		{
+			_runPos = pstStartEntityHdr->m_fnGetNextPos();
+			pValue = pstStartEntityHdr->m_fnGetValue(_runValueLen);
+			LogInternal(E_LOG_DEBUG, "FlexIf : GetNextItem : Category[%s], Key[%s], Value[%s], ValueLen[%u], NextPos[%u]", 
+															pszCategory, _pszKey, (const char *)pValue, _runValueLen, _runPos);
+			break;
+		}
+
+		if( pstStartEntityHdr->m_fnGetNextPos() == 0 )
+		{
+			LogInternal(E_LOG_DEBUG, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : not found Entity", pszCategory, _pszKey);			
+			break;
+		}
+
+		if( unPrevPos >= pstStartEntityHdr->m_fnGetNextPos() )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid NextPos(Prev[%u]>=Next[%u])", 
+														pszCategory, _pszKey, unPrevPos, pstStartEntityHdr->m_fnGetNextPos());
+			break;
+		}
+
+		if( pstStartEntityHdr->m_fnGetNextPos() >= m_unMsgLen )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextItem : fail : Category[%s], Key[%s] : invalid NextPos(Next[%u]>=MsgLen[%u])", 
+														pszCategory, _pszKey, pstStartEntityHdr->m_fnGetNextPos(), m_unMsgLen);
+			break;
+		}
+		
+		unPrevPos = pstStartEntityHdr->m_fnGetNextPos();
+		pstStartEntityHdr = (const FlexKeyValueEntityHdr *)((char *)m_pMsg + pstStartEntityHdr->m_fnGetNextPos());
+	}	
+
+END :
+
+	if( !pValue )
+		_runPos = 0;
+	
+	return pValue;
+}
+
+bool FlexIf::m_fnGetNextAnyItem(const char * pszCategory, const char *& _rpszKey, const char *& _rpszValue, unsigned int & _runPos) const
+{
+	unsigned int unValueLen = 0;
+
+	return m_fnGetNextAnyItem(pszCategory, _rpszKey, (const void *&)_rpszValue, unValueLen, _runPos);
+}
+
+bool FlexIf::m_fnGetNextAnyItem(const char * pszCategory, const char *& _rpszKey, const void *& _rpValue, unsigned int & _runValueLen, unsigned int & _runPos) const
+{
+	const FlexKeyValueEntityHdr * pstStartEntityHdr = NULL;
+
+	if( !pszCategory || strlen(pszCategory) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem : invalid argument : Category[%s]", pszCategory);
+		goto FAIL;
+	}
+
+	if( !m_bValid )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem : fail : Category[%s] : invalid state", pszCategory);
+		goto FAIL;
+	}
+
+	if( _runPos >= m_unMsgLen )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem : fail : Category[%s] : invalid Postion : Position[%u], MsgLen[%u]", 
+													pszCategory, _runPos, m_unMsgLen);
+		goto FAIL;
+	}
+
+	if( _runPos == 0 )
+	{
+		const FlexCategoryHdr * pstFlexCategoryHdr = NULL;
+		const char * pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+		for( unsigned int i = 0; i < m_unCategoryNum; ++i )
+		{
+			pstFlexCategoryHdr = (const FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*i);
+			if( strcmp(pstFlexCategoryHdr->m_szCategoryName, pszCategory) == 0 )
+				break;
+			pstFlexCategoryHdr= NULL;
+		}
+		if( !pstFlexCategoryHdr )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem(first) : fail : Category[%s] : can't find Category", pszCategory);
+			goto FAIL;
+		}		
+		if( pstFlexCategoryHdr->m_stFirstFlexEntityPos.m_fnGet() > 0 )
+		{
+			pstStartEntityHdr = (const FlexKeyValueEntityHdr *)((char *)m_pMsg + pstFlexCategoryHdr->m_stFirstFlexEntityPos.m_fnGet());
+		}
+		else
+		{
+			LogInternal(E_LOG_DEBUG, "FlexIf : GetNextAnyItem(first) : fail : Category[%s]: empty Entity", pszCategory);
+			goto FAIL;
+		}
+	}
+	else
+	{
+		if( _runPos >= m_unMsgLen )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem : fail : Category[%s] : invalid argument of unPos : Pos[%u], MsgLen[%u]", 
+														pszCategory, _runPos, m_unMsgLen);
+			goto FAIL;
+		}
+		
+		pstStartEntityHdr = (const FlexKeyValueEntityHdr *)((char *)m_pMsg + _runPos);
+		if( !pstStartEntityHdr->m_fnValid(m_unMsgLen-_runPos) )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : GetNextAnyItem : fail : Category[%s] : invalid Entity for Pos : Pos[%u]", pszCategory, _runPos);
+			goto FAIL;
+		}
+	}
+
+	_runPos = pstStartEntityHdr->m_fnGetNextPos();
+	_rpszKey = pstStartEntityHdr->m_fnGetKey();
+	_rpValue = pstStartEntityHdr->m_fnGetValue(_runValueLen);
+	LogInternal(E_LOG_DEBUG, "FlexIf : GetNextAnyItem : Category[%s], Key[%s], Value[%s], ValueLen[%u], NextPos[%u]", 
+														pszCategory, _rpszKey, (const char *)_rpValue, _runValueLen, _runPos);
+
+	return true;
+
+FAIL :
+	_runPos = 0;
+	_rpszKey = NULL;
+	_rpValue = NULL;
+	return false;
+	
+}
+
+void * FlexIf::m_fnGetBuildMsg(unsigned int & _runMsgLen)
+{
+	if( !m_bValid )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetBuildMsg : fail : invalid state");
+		return NULL;
+	}
+
+#if 0
+	if( !m_bSetMsg )
+	{
+		/*==== set Bottom ====*/
+		FlexBottom * pstFlexBottom = (FlexBottom *)((char *)m_pMsg + m_unMsgLen);
+		pstFlexBottom->m_fnReset();
+		m_unMsgLen += sizeof(FlexBottom);
+
+		FlexTop * pstFlexTop = (FlexTop *)m_pMsg;
+		pstFlexTop->m_stTotalLength.m_fnSet(m_unMsgLen);		
+	}
+#endif
+
+	_runMsgLen = m_unMsgLen;
+	void * pMsg = m_pMsg;
+	m_fnReset(false);
+	
+	return pMsg;
+}
+
+bool FlexIf::m_fnSetBuildMsg(void * _pMsg, unsigned int _unMsgLen, bool _bSkipChkValid)
+{
+	if( !_pMsg || _unMsgLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : SetBuildMsg : fail : invalid argument : Msg[%p], Len[%u]", _pMsg, _unMsgLen);
+		return false;
+	}
+
+	m_fnReset(true);
+	m_pMsg = _pMsg;
+	m_unMsgLen = _unMsgLen;
+	m_unMaxMsgLen = _unMsgLen;
+	if( !_bSkipChkValid )
+	{
+		if( !m_fnValid() )
+		{
+			LogInternal(E_LOG_ERR, "FlexIf : SetBuildMsg : fail : invalid msg");
+			m_fnReset(false);
+			return false;
+		}
+	}
+
+	m_bValid = true;
+	const FlexTop * pstFlexTop = (const FlexTop *)m_pMsg;	
+	m_unCategoryNum = pstFlexTop->m_stCategoryNum.m_fnGet();
+	//m_bSetMsg = true;
+
+	return true;
+}
+
+const char * FlexIf::m_fnGetSuccPacketStr(char * _pszStr, unsigned int _unMaxStrLen) const
+{
+	static const unsigned int s_unColumnNum = 8;
+
+	if( !_pszStr || _unMaxStrLen == 0 )
+		return _pszStr;
+
+	if( !m_bValid )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetSuccPacketStr : fail : invalid state");
+		return _pszStr;
+	}
+
+	_pszStr[0] = 0x00;
+
+	unsigned int unLineNum = m_unMsgLen/s_unColumnNum;
+	unsigned int unPacketIdx = 0;
+	if( m_unMsgLen%s_unColumnNum > 0 )
+		++unLineNum;
+	for( unsigned int i = 0; i < unLineNum; ++i )
+	{	
+		for( unsigned int j = 0; j < s_unColumnNum; ++j )
+		{
+			unPacketIdx = i*s_unColumnNum+j;
+			if( unPacketIdx >= m_unMsgLen )
+			{
+				for( unsigned int k = 0; k < s_unColumnNum - j; ++k )
+				{
+					strncat(_pszStr, _unMaxStrLen, ".  ");
+				}
+				break;
+			}
+			
+			strncat(_pszStr, _unMaxStrLen, "%02x ", ((const unsigned char *)m_pMsg)[i*s_unColumnNum+j]);
+		}
+
+		strncat(_pszStr, _unMaxStrLen, "   ||   ");
+
+		for( unsigned int j = 0; j < s_unColumnNum; ++j )
+		{
+			unPacketIdx = i*s_unColumnNum+j;
+			if( unPacketIdx >= m_unMsgLen )
+			{
+				for( unsigned int k = 0; k < s_unColumnNum - j; ++k )
+				{
+					strncat(_pszStr, _unMaxStrLen, ". ");
+				}
+				break;
+			}
+			
+			if( ((const unsigned char *)m_pMsg)[i*s_unColumnNum+j] >= 32 && ((const unsigned char *)m_pMsg)[i*s_unColumnNum+j] <= 126 )
+				strncat(_pszStr, _unMaxStrLen, "%c ", ((const unsigned char *)m_pMsg)[i*s_unColumnNum+j]);
+			else
+				strncat(_pszStr, _unMaxStrLen, ". ", ((const unsigned char *)m_pMsg)[i*s_unColumnNum+j]);
+		}
+
+		strncat(_pszStr, _unMaxStrLen, " : %u", i*s_unColumnNum);
+
+		strncat(_pszStr, _unMaxStrLen, "\n");
+	}
+
+	return _pszStr;
+}
+
+const char * FlexIf::m_fnGetFailPacketStr(const void * _pFailPacket, unsigned int _unPacketLen, char * _pszStr, unsigned int _unMaxStrLen)
+{
+	static const unsigned int s_unColumnNum = 8;
+
+	if( !_pszStr || _unMaxStrLen == 0 )
+		return _pszStr;
+
+	_pszStr[0] = 0x00;
+
+	unsigned int unLineNum = _unPacketLen/s_unColumnNum;
+	unsigned int unPacketIdx = 0;
+	if( _unPacketLen%s_unColumnNum > 0 )
+		++unLineNum;
+	for( unsigned int i = 0; i < unLineNum; ++i )
+	{	
+		for( unsigned int j = 0; j < s_unColumnNum; ++j )
+		{
+			unPacketIdx = i*s_unColumnNum+j;
+			if( unPacketIdx >= _unPacketLen )
+			{
+				for( unsigned int k = 0; k < s_unColumnNum - j; ++k )
+				{
+					strncat(_pszStr, _unMaxStrLen, ".  ");
+				}
+				break;
+			}
+			
+			strncat(_pszStr, _unMaxStrLen, "%02x ", ((const unsigned char *)_pFailPacket)[i*s_unColumnNum+j]);
+		}
+
+		strncat(_pszStr, _unMaxStrLen, "   ||   ");
+
+		for( unsigned int j = 0; j < s_unColumnNum; ++j )
+		{
+			unPacketIdx = i*s_unColumnNum+j;
+			if( unPacketIdx >= _unPacketLen )
+			{
+				for( unsigned int k = 0; k < s_unColumnNum - j; ++k )
+				{
+					strncat(_pszStr, _unMaxStrLen, ". ");
+				}
+				break;
+			}
+			
+			if( ((const unsigned char *)_pFailPacket)[i*s_unColumnNum+j] >= 32 && ((const unsigned char *)_pFailPacket)[i*s_unColumnNum+j] <= 126 )
+				strncat(_pszStr, _unMaxStrLen, "%c ", ((const unsigned char *)_pFailPacket)[i*s_unColumnNum+j]);
+			else
+				strncat(_pszStr, _unMaxStrLen, ". ", ((const unsigned char *)_pFailPacket)[i*s_unColumnNum+j]);
+		}
+
+		strncat(_pszStr, _unMaxStrLen, " : %u", i*s_unColumnNum);
+
+		strncat(_pszStr, _unMaxStrLen, "\n");
+	}
+
+	return _pszStr;
+}
+
+const char * FlexIf::m_fnGetDebugStr(const char * _pPacket, unsigned int _unPacketLen, char * _pszStr, unsigned int _unMaxStrLen, bool _bInit)
+{
+	FlexIf clsFlexIf;
+
+	if( !clsFlexIf.m_fnSetBuildMsg((void *)_pPacket, _unPacketLen) )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetDebugStr : fail : SetBuildMsg");
+		return _pszStr;
+	}
+
+	const char * pszDebugStr = clsFlexIf.m_fnGetDebugStr(_pszStr, _unMaxStrLen, _bInit);
+	clsFlexIf.m_fnReset(false);
+
+	return pszDebugStr;
+}
+
+const char * FlexIf::m_fnGetDebugStr(char * _pszStr, unsigned int _unMaxStrLen, bool _bInit) const
+{
+	if( !_pszStr || _unMaxStrLen == 0 )
+		return _pszStr;	
+
+	if( !m_bValid )
+	{
+		LogInternal(E_LOG_ERR, "FlexIf : GetDebugStr : fail : invalid state");
+		return _pszStr;
+	}
+
+	if( _bInit )
+		_pszStr[0] = 0x00;
+
+	const FlexTop * pstFlexTop = (const FlexTop *)m_pMsg;
+	unsigned int unCategoryNum = pstFlexTop->m_stCategoryNum.m_fnGet();
+	const char * pStartCategoryHdr = (char *)m_pMsg + sizeof(FlexTop);
+	const FlexCategoryHdr * pstFlexCategoryHdr = NULL;
+	const FlexKeyValueEntityHdr * pstEntityHdr = NULL;
+	unsigned int unValueLen;
+	for( unsigned int i = 0; i < unCategoryNum; ++i )
+	{
+		pstFlexCategoryHdr = (const FlexCategoryHdr *)(pStartCategoryHdr + sizeof(FlexCategoryHdr)*i);
+		if( i != 0 )
+			strncat(_pszStr, _unMaxStrLen, ",");
+		strncat(_pszStr, _unMaxStrLen, "%s[", pstFlexCategoryHdr->m_szCategoryName);
+		unsigned int unCurrentEntityPos = pstFlexCategoryHdr->m_stFirstFlexEntityPos.m_fnGet();
+		while( unCurrentEntityPos > 0 )
+		{
+			pstEntityHdr = (const FlexKeyValueEntityHdr *)((const char *)m_pMsg + unCurrentEntityPos);
+			strncat(_pszStr, _unMaxStrLen, "(%s:%s)", pstEntityHdr->m_fnGetKey(), pstEntityHdr->m_fnGetValue(unValueLen));
+			unCurrentEntityPos = pstEntityHdr->m_stNextPos.m_fnGet();
+		}
+		strncat(_pszStr, _unMaxStrLen, "]");
+	}
+
+	return _pszStr;
+}
+
+}
+

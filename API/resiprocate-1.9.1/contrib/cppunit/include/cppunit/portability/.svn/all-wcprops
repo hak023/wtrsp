@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability
+END
+Stream.h
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/Stream.h
+END
+Makefile.in
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/Makefile.in
+END
+CppUnitSet.h
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/CppUnitSet.h
+END
+CppUnitMap.h
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/CppUnitMap.h
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/Makefile.am
+END
+CppUnitVector.h
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/CppUnitVector.h
+END
+CppUnitDeque.h
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/CppUnitDeque.h
+END
+CppUnitStack.h
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/contrib/cppunit/include/cppunit/portability/CppUnitStack.h
+END

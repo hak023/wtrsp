@@ -1,0 +1,206 @@
+[Coders.cxx]: (information) Too many #ifdef configurations - cppcheck only checks 12 of 15 configurations. Use --force to check all configurations.
+[Condition.cxx:239] -> [Condition.cxx:268]: (performance) Variable 'ret' is reassigned a value before the old one has been used.
+[ConfigParse.cxx:135]: (style) The scope of the variable 'anchor' can be reduced.
+[ConfigParse.cxx:358]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ConfigParse.cxx:363]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[DataStream.cxx:103]: (style) Unsigned variable 'len' can't be negative so it is unnecessary to test it.
+[DnsUtil.cxx:53]: (style) The scope of the variable 'herrno' can be reduced.
+[KeyValueStore.cxx:34]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Log.cxx:200] -> [Log.cxx:201]: (performance) Variable 'level' is reassigned a value before the old one has been used.
+[Log.cxx:483] -> [Log.cxx:471]: (style) Found duplicate branches for 'if' and 'else'.
+[Log.cxx:139] -> [Log.cxx:140]: (performance) Variable 'level' is reassigned a value before the old one has been used.
+[Log.cxx:981]: (style) The scope of the variable 'pEntry' can be reduced.
+[Log.cxx:652]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[ParseBuffer.cxx:672]: (style) The scope of the variable 'last' can be reduced.
+[RecursiveMutex.cxx:71] -> [RecursiveMutex.cxx:78]: (performance) Variable 'rc' is reassigned a value before the old one has been used.
+[RecursiveMutex.cxx:92]: (style) Variable 'rc' is assigned a value that is never used.
+[SelectInterruptor.cxx:86]: (style) Variable 'x' is assigned a value that is never used.
+[Socket.cxx:72]: (style) Variable 'doneInit' is assigned a value that is never used.
+[ThreadIf.cxx:340]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[Time.cxx:300] -> [Time.cxx:302]: (performance) Variable 'clock' is reassigned a value before the old one has been used.
+[TransportType.cxx:52]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.
+[TransportType.cxx:58]: (performance) Returning the result of c_str() in a function that returns std::string is slow and redundant.
+[WinCompat.cxx:222] -> [WinCompat.cxx:222]: (style) Same expression on both sides of '|'.
+[WinCompat.cxx:556] -> [WinCompat.cxx:556]: (style) Same expression on both sides of '|'.
+[dns/AresDns.cxx:254]: (style) The scope of the variable 'optmask' can be reduced.
+[dns/AresDns.cxx:252]: (style) Variable 'status' is not assigned a value.
+[dns/AresDns.cxx:293]: (style) Variable 'optmask' is assigned a value that is never used.
+[dns/AresDns.cxx:551]: (error) Possible null pointer dereference: hostdata
+[dns/AresDns.cxx:344]: (error) Uninitialized variable: status
+[dns/DnsHostRecord.hxx:21]: (performance) Function parameter 'name' should be passed by reference.
+[dns/DnsNaptrRecord.cxx:47]: (style) Variable 'start' is assigned a value that is never used.
+[dns/DnsStub.cxx:458] -> [dns/DnsStub.cxx:460]: (performance) Variable 'cached' is reassigned a value before the old one has been used.
+[dns/DnsStub.cxx:242]: (style) Unused variable: overlays
+[dns/RRCache.cxx:156]: (warning) Ineffective call of function 'empty()'. Did you intend to call 'clear()' instead?
+[dns/RRCache.cxx:199]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[dns/RRCache.cxx:241]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[dns/RRCache.cxx:251]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[dns/ares/adig.c:213]: (style) The scope of the variable 'nfds' can be reduced.
+[dns/ares/adig.c:213]: (style) The scope of the variable 'count' can be reduced.
+[dns/ares/adig.c:217]: (style) The scope of the variable 'tvp' can be reduced.
+[dns/ares/adig.c:218]: (style) The scope of the variable 'errmem' can be reduced.
+[dns/ares/adig.c:385]: (style) The scope of the variable 'errmem' can be reduced.
+[dns/ares/adig.c:146]: (style) struct or union member 'option::has_arg' is never used.
+[dns/ares/adig.c:147]: (style) struct or union member 'option::flag' is never used.
+[dns/ares/adig.c:148]: (style) struct or union member 'option::val' is never used.
+[dns/ares/ahost.c:41]: (style) The scope of the variable 'nfds' can be reduced.
+[dns/ares/ahost.c:43]: (style) The scope of the variable 'tvp' can be reduced.
+[dns/ares/ahost.c:44]: (style) The scope of the variable 'errmem' can be reduced.
+[dns/ares/ahost.c:91]: (style) The scope of the variable 'mem' can be reduced.
+[dns/ares/ahost.c:96]: (error) Uninitialized variable: mem
+[dns/ares/ares__get_hostent.c:36]: (style) The scope of the variable 'alias' can be reduced.
+[dns/ares/ares__read_line.c:34]: (style) The scope of the variable 'len' can be reduced.
+[dns/ares/ares_gethostbyname.c:266]: (style) The scope of the variable 'ind1' can be reduced.
+[dns/ares/ares_init.c:117]: (style) The scope of the variable 'server' can be reduced.
+[dns/ares/ares_init.c:339]: (style) The scope of the variable 'p' can be reduced.
+[dns/ares/ares_init.c:467]: (style) The scope of the variable 'hostname' can be reduced.
+[dns/ares/ares_init.c:845]: (style) The scope of the variable 'val' can be reduced.
+[dns/ares/ares_init.c:493]: (style) The scope of the variable 'num' can be reduced.
+[dns/ares/ares_init.c:518]: (style) Variable 'dwRetVal' is assigned a value that is never used.
+[dns/ares/ares_init.c:1066]: (style) The scope of the variable 'xdigits' can be reduced.
+[dns/ares/ares_parse_a_reply.c:38]: (style) The scope of the variable 'rr_type' can be reduced.
+[dns/ares/ares_parse_a_reply.c:38]: (style) The scope of the variable 'rr_class' can be reduced.
+[dns/ares/ares_parse_a_reply.c:38]: (style) The scope of the variable 'rr_len' can be reduced.
+[dns/ares/ares_parse_ptr_reply.c:39]: (style) The scope of the variable 'rr_type' can be reduced.
+[dns/ares/ares_parse_ptr_reply.c:39]: (style) The scope of the variable 'rr_class' can be reduced.
+[dns/ares/ares_parse_ptr_reply.c:39]: (style) The scope of the variable 'rr_len' can be reduced.
+[dns/ares/ares_process.c:960]: (warning) Assignment of function parameter has no effect outside the function.
+[dns/ares/ares_process.c:241]: (style) The scope of the variable 'server' can be reduced.
+[dns/ares/ares_process.c:926]: (style) The scope of the variable 'i' can be reduced.
+[dns/ares/ares_query.c:86]: (style) The scope of the variable 'ancount' can be reduced.
+[dns/ares/ares_query.c:87]: (style) The scope of the variable 'rcode' can be reduced.
+[dns/ares/ares_search.c:205]: (style) The scope of the variable 'hostaliases' can be reduced.
+[dns/ares/ares_search.c:206]: (style) The scope of the variable 'fp' can be reduced.
+[dns/ares/ares_search.c:208]: (style) The scope of the variable 'status' can be reduced.
+[dns/ares/ares_search.c:209]: (style) The scope of the variable 'q' can be reduced.
+[dns/ares/ares_search.c:60]: (error) Memory leak: s
+[resipfaststreams.hxx:302]: (style) The scope of the variable 'idx' can be reduced.
+[resipfaststreams.cxx:1]: (information) Skipping configuration '_W64' since the value of '_W64' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.
+[stun/Stun.cxx]: (information) Too many #ifdef configurations - cppcheck only checks 12 of 13 configurations. Use --force to check all configurations.
+[stun/Stun.cxx:68]: (warning) Assignment of function parameter has no effect outside the function.
+[stun/Stun.cxx:76] -> [stun/Stun.cxx:72]: (style) Found duplicate branches for 'if' and 'else'.
+[stun/Stun.cxx:1094]: (style) The scope of the variable 'port' can be reduced.
+[stun/Stun.cxx:1128]: (style) The scope of the variable 'h' can be reduced.
+[stun/Stun.cxx:1576]: (style) The scope of the variable 'ok' can be reduced.
+[stun/Stun.cxx:1577]: (style) The scope of the variable 'recvAltIp' can be reduced.
+[stun/Stun.cxx:1578]: (style) The scope of the variable 'recvAltPort' can be reduced.
+[stun/Stun.cxx:1981]: (style) Variable 'discard' is assigned a value that is never used.
+[stun/Stun.cxx:2538]: (style) Variable 'changedAddr' is assigned a value that is never used.
+[stun/Stun.cxx:2633]: (style) Variable 'changedAddr' is assigned a value that is never used.
+[stun/Stun.cxx:1449]: (portability) scanf without field width limits can crash with huge input data on some versions of libc.
+[stun/Stun.cxx:1332]: (error) Uninitialized variable: hmac
+[stun/Stun.cxx:1449]: (warning) %x in format string (no. 1) requires 'unsigned int *' but the argument type is 'unsigned long *'.
+[test/testCoders.cxx:109]: (style) The scope of the variable 'b' can be reduced.
+[test/testCountStream.cxx:11]: (style) Variable 'count' is not assigned a value.
+[test/testData.cxx:1121] -> [test/testData.cxx:1122]: (performance) Variable 'empt' is reassigned a value before the old one has been used.
+[test/testData.cxx:1107] -> [test/testData.cxx:1107]: (style) Same expression on both sides of '=='.
+[test/testData.cxx:1112] -> [test/testData.cxx:1112]: (style) Same expression on both sides of '!='.
+[test/testFifo.cxx:344]: (style) The scope of the variable 'c' can be reduced.
+[test/testInserter.cxx:137]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testInserter.cxx:154]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testInserter.cxx:170]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testInserter.cxx:186]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testInserter.cxx:202]: (performance) Prefer prefix ++/-- operators for non-primitive types.
+[test/testIntrusiveList.cxx:13]: (warning) Member variable 'Foo::va2' is not initialized in the constructor.
+[test/testIntrusiveList.cxx:28]: (warning) Member variable 'FooFoo::va2' is not initialized in the constructor.
+[test/testRandomThread.cxx:282]: (style) The scope of the variable 'doSweep' can be reduced.
+[test/testRandomThread.cxx:289]: (style) Variable 'doSweep' is assigned a value that is never used.
+[wince/WceCompat.cxx:102]: (style) The function 'FreeString' is never used.
+[wince/WceCompat.cxx:86]: (style) The function 'FromWString' is never used.
+[dns/ares/ares_init.c:101]: (style) The function 'ares_init_with_socket_function' is never used.
+[dns/ares/ares_local.c:13]: (style) The function 'ares_local_gethostbyaddr' is never used.
+[dns/DnsStub.cxx:824]: (style) The function 'clearDnsCache' is never used.
+[test/testCoders.cxx:53]: (style) The function 'compareData' is never used.
+[ServerProcess.cxx:103]: (style) The function 'daemonize' is never used.
+[WinCompat.cxx:473]: (style) The function 'determineSourceInterface' is never used.
+[dns/DnsStub.cxx:836]: (style) The function 'doClearDnsCache' is never used.
+[dns/DnsStub.cxx:872]: (style) The function 'doGetDnsCacheDump' is never used.
+[dns/DnsStub.cxx:854]: (style) The function 'doLogDnsCache' is never used.
+[RADIUSDigestAuthenticator.cxx:198]: (style) The function 'doRADIUSCheck' is never used.
+[dns/DnsStub.cxx:818]: (style) The function 'doSetEnumDomains' is never used.
+[dns/DnsStub.cxx:794]: (style) The function 'doSetEnumSuffixes' is never used.
+[ServerProcess.cxx:36]: (style) The function 'dropPrivileges' is never used.
+[GeneralCongestionManager.cxx:107]: (style) The function 'encodeCurrentState' is never used.
+[RADIUSDigestAuthenticator.cxx:255]: (style) The function 'final' is never used.
+[Poll.cxx:105]: (style) The function 'findFDInWaitResult' is never used.
+[Data.cxx:772]: (style) The function 'getBuf' is never used.
+[ConfigParse.cxx:225]: (style) The function 'getConfigBool' is never used.
+[ConfigParse.cxx:184]: (style) The function 'getConfigData' is never used.
+[ConfigParse.cxx:270]: (style) The function 'getConfigInt' is never used.
+[ConfigParse.cxx:247]: (style) The function 'getConfigUnsignedLong' is never used.
+[ConfigParse.cxx:293]: (style) The function 'getConfigUnsignedShort' is never used.
+[Random.cxx:381]: (style) The function 'getCryptoRandomBase64' is never used.
+[dns/DnsStub.cxx:860]: (style) The function 'getDnsCacheDump' is never used.
+[Time.cxx:227]: (style) The function 'getForever' is never used.
+[FdPoll.cxx:894]: (style) The function 'getImplList' is never used.
+[DnsUtil.cxx:184]: (style) The function 'getLocalDomainName' is never used.
+[DnsUtil.cxx:216]: (style) The function 'getLocalIpAddress' is never used.
+[Random.cxx:369]: (style) The function 'getRandomBase64' is never used.
+[Time.cxx:238]: (style) The function 'getRandomFutureTimeMs' is never used.
+[Socket.cxx:131]: (style) The function 'getSocketError' is never used.
+[Subsystem.cxx:19]: (style) The function 'getSubsystem' is never used.
+[TransportType.cxx:30]: (style) The function 'getTransportTypeFromName' is never used.
+[ssl/SHA1Stream.cxx:104]: (style) The function 'getUInt32' is never used.
+[Random.cxx:417]: (style) The function 'getVersion4UuidUrn' is never used.
+[Socket.cxx:145]: (style) The function 'increaseLimitFds' is never used.
+[Log.cxx:175]: (style) The function 'initializeApp' is never used.
+[DnsUtil.cxx:447]: (style) The function 'isIpAddress' is never used.
+[test/testFifo.cxx:150]: (style) The function 'isNear' is never used.
+[TransportType.cxx:76]: (style) The function 'isReliable' is never used.
+[Log.cxx:670]: (style) The function 'localLoggerReinitialize' is never used.
+[GeneralCongestionManager.cxx:89]: (style) The function 'logCurrentState' is never used.
+[dns/DnsStub.cxx:842]: (style) The function 'logDnsCache' is never used.
+[ThreadIf.cxx:152]: (style) The function 'm_fnSetFinishTime' is never used.
+[ThreadIf.cxx:148]: (style) The function 'm_fnSetStartTime' is never used.
+[Socket.cxx:43]: (style) The function 'makeSocketBlocking' is never used.
+[dns/DnsStub.cxx:47]: (style) The function 'onLogDnsResult' is never used.
+[CountStream.cxx:47]: (style) The function 'overflow' is never used.
+[RWMutex.cxx:162]: (style) The function 'pendingWriterCount' is never used.
+[ParseBuffer.cxx:835]: (style) The function 'qVal' is never used.
+[RWMutex.cxx:156]: (style) The function 'readerCount' is never used.
+[GeneralCongestionManager.cxx:25]: (style) The function 'registerFifo' is never used.
+[dns/DnsStub.cxx:373]: (style) The function 'removeResultTransform' is never used.
+[Timer.cxx:76]: (style) The function 'resetT1' is never used.
+[ssl/OpenSSLInit.cxx:117]: (style) The function 'resip_OpenSSLInit_dynCreateFunction' is never used.
+[ssl/OpenSSLInit.cxx:125]: (style) The function 'resip_OpenSSLInit_dynDestroyFunction' is never used.
+[ssl/OpenSSLInit.cxx:132]: (style) The function 'resip_OpenSSLInit_dynLockFunction' is never used.
+[ssl/OpenSSLInit.cxx:87]: (style) The function 'resip_OpenSSLInit_lockingFunction' is never used.
+[ssl/OpenSSLInit.cxx:101]: (style) The function 'resip_OpenSSLInit_threadIdFunction' is never used.
+[Data.cxx:1613]: (style) The function 'schemeLowercase' is never used.
+[Log.cxx:254]: (style) The function 'setAppLevel' is never used.
+[Log.cxx:359]: (style) The function 'setAppMaxByteCount' is never used.
+[Log.cxx:321]: (style) The function 'setAppMaxLineCount' is never used.
+[Data.cxx:702]: (style) The function 'setBuf' is never used.
+[dns/DnsStub.cxx:887]: (style) The function 'setDnsCacheSize' is never used.
+[dns/DnsStub.cxx:881]: (style) The function 'setDnsCacheTTL' is never used.
+[dns/DnsStub.cxx:800]: (style) The function 'setEnumDomains' is never used.
+[dns/DnsStub.cxx:776]: (style) The function 'setEnumSuffixes' is never used.
+[dns/ExternalDnsFactory.cxx:25]: (style) The function 'setExternalCreator' is never used.
+[Log.cxx:352]: (style) The function 'setMaxByteCount' is never used.
+[Log.cxx:314]: (style) The function 'setMaxLineCount' is never used.
+[ServerProcess.cxx:137]: (style) The function 'setPidFile' is never used.
+[dns/DnsStub.cxx:367]: (style) The function 'setResultTransform' is never used.
+[Socket.cxx:228]: (style) The function 'setSocketRcvBufLen' is never used.
+[test/testCoders.cxx:48]: (style) The function 'showCoded' is never used.
+[Data.cxx:2199]: (style) The function 'sizeEqualCaseInsensitiveTokenCompare' is never used.
+[ParseBuffer.cxx:500]: (style) The function 'skipBackToOneOf' is never used.
+[ParseBuffer.cxx:436]: (style) The function 'skipBackWhitespace' is never used.
+[stun/Stun.cxx:1850]: (style) The function 'stunFindLocalInterfaces' is never used.
+[stun/Stun.cxx:2011]: (style) The function 'stunGetUserNameAndPassword' is never used.
+[stun/Stun.cxx:1470]: (style) The function 'stunInitServer' is never used.
+[stun/Stun.cxx:2110]: (style) The function 'stunNatType' is never used.
+[stun/Stun.cxx:2485]: (style) The function 'stunOpenSocket' is never used.
+[stun/Stun.cxx:2552]: (style) The function 'stunOpenSocketPair' is never used.
+[stun/Stun.cxx:1185]: (style) The function 'stunParseServerName' is never used.
+[stun/Stun.cxx:1571]: (style) The function 'stunServerProcess' is never used.
+[stun/Stun.cxx:2023]: (style) The function 'stunTest' is never used.
+[Data.cxx:716]: (style) The function 'takeBuf' is never used.
+[Log.cxx:392]: (style) The function 'toString' is never used.
+[Data.cxx:1552]: (style) The function 'trunc' is never used.
+[Data.cxx:949]: (style) The function 'truncate2' is never used.
+[ParseBuffer.cxx:714]: (style) The function 'uInt32' is never used.
+[ParseBuffer.cxx:688]: (style) The function 'uInt8' is never used.
+[GeneralCongestionManager.cxx:38]: (style) The function 'unregisterFifo' is never used.
+[GeneralCongestionManager.cxx:47]: (style) The function 'updateFifoTolerances' is never used.
+[Data.cxx:1371]: (style) The function 'urlNonEncodedCharsInitFn' is never used.
+(information) Cppcheck cannot find all the include files (use --check-config for details)

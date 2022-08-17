@@ -1,0 +1,272 @@
+
+#include <stdexcept>
+
+#include "ColumnStr.hxx"
+#include "bufferControl.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+static const char * s_pszLineEnd = "\n";
+static const unsigned int s_unLineEndLen = strlen(s_pszLineEnd);
+
+ColumnStr::ColumnStr()
+	: m_bInit(false), m_unColumnNum(0)
+{
+}
+
+ColumnStr::~ColumnStr()
+{
+}
+
+bool ColumnStr::m_fnInit(const ColumnStrConfig & _rstColumnMgrConfig)
+{
+	if( m_bInit )
+		return true;
+
+	if( _rstColumnMgrConfig.m_vecColumnInfo.size() == 0 
+		|| _rstColumnMgrConfig.m_clsColumnDelimiter.size() == 0
+		|| _rstColumnMgrConfig.m_clsColumnComment.size() == 0 )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr : Init : fail : invalid argument");
+		return false;
+	}
+
+	m_unColumnNum = _rstColumnMgrConfig.m_vecColumnInfo.size();
+	m_stColumnStrConfig = _rstColumnMgrConfig;
+	m_bInit = true;
+
+	return true;
+}
+
+bool ColumnStr::m_fnCreateTitleComment(std::string & _rclsStr) const
+{
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateTitleComment : fail : not init", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+
+	_rclsStr = m_stColumnStrConfig.m_clsColumnComment;
+
+	int nDummySpaceLen;
+	const vec_ColumnInfo & rvecColumnInfo = m_stColumnStrConfig.m_vecColumnInfo;
+	for( vec_ColumnInfo::const_iterator itrColumnInfo = rvecColumnInfo.begin(); itrColumnInfo != rvecColumnInfo.end(); ++itrColumnInfo )
+	{
+		const ColumnInfo & rclsColumnInfo = *itrColumnInfo;
+		_rclsStr += rclsColumnInfo.m_clsColumnTitleName;
+		_rclsStr += m_stColumnStrConfig.m_clsColumnDelimiter;
+		nDummySpaceLen = rclsColumnInfo.m_unMaxColumnLen - rclsColumnInfo.m_clsColumnTitleName.size();
+		for( int i = 0; i < nDummySpaceLen; ++i )
+		{
+			_rclsStr += " ";
+		}
+	}
+
+	_rclsStr += s_pszLineEnd;
+	_rclsStr += s_pszLineEnd;
+
+	return true;
+}
+
+bool ColumnStr::m_fnCreateOneLine(const list_LineData & _rlistLineData, std::string & _rclsStr) const
+{
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateOneLine : fail : not init", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+	
+	const std::string * parrOrderingStr[m_unColumnNum];
+	memset(parrOrderingStr, 0x00, sizeof(std::string *)*m_unColumnNum);
+	
+	vec_ColumnInfo::const_iterator itrColumnInfo;
+	const vec_ColumnInfo & rvecColumnInfo = m_stColumnStrConfig.m_vecColumnInfo;
+	unsigned int unColumnIdx = 0;
+	list_LineData::const_iterator itrLineData = _rlistLineData.begin();
+	while( itrLineData != _rlistLineData.end() )
+	{
+		unColumnIdx = 0;
+		for( itrColumnInfo = rvecColumnInfo.begin(); itrColumnInfo != rvecColumnInfo.end(); ++itrColumnInfo )
+		{
+			if( itrLineData->first == itrColumnInfo->m_clsColumnTitleName )
+			{
+				parrOrderingStr[unColumnIdx] = &(itrLineData->second);
+				break;
+			}
+			++unColumnIdx;
+		}
+		if( itrColumnInfo == rvecColumnInfo.end() )
+		{
+			LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateOneLine : fail : not found ColumnTitle[%s]", m_stColumnStrConfig.m_clsName.c_str(), itrLineData->first.c_str());
+			return false;
+		}
+		++itrLineData;
+	}
+
+	int nDummySpaceLen;
+	unsigned int i = 0, unDataLen = 0;
+	for( i = 0; i < m_stColumnStrConfig.m_clsColumnComment.size(); ++i )
+	{
+		_rclsStr += " ";
+	}	
+	try
+	{
+		for( i = 0; i < m_unColumnNum; ++i )
+		{
+			if( parrOrderingStr[i] )
+			{
+				_rclsStr += *(parrOrderingStr[i]);
+				unDataLen = parrOrderingStr[i]->size();
+			}
+			else
+			{
+				unDataLen = 0;
+			}
+			_rclsStr += m_stColumnStrConfig.m_clsColumnDelimiter;
+			nDummySpaceLen =  rvecColumnInfo.at(i).m_unMaxColumnLen - unDataLen;		
+			for( int i = 0; i < nDummySpaceLen; ++i )
+			{
+				_rclsStr += " ";
+			}
+		}
+	}
+	catch(const std::out_of_range & e)
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateOneLine : fail : occur exception vector.at(%u)", m_stColumnStrConfig.m_clsName.c_str(), i);
+		return false;
+	}
+
+	_rclsStr += s_pszLineEnd;
+
+	return true;
+}
+
+bool ColumnStr::m_fnCreateAllLine(const list_LineDataAll & _rlistLineDataAll, std::string & _rclsStr) const
+{
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateAllLine : fail : not init", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+
+	unsigned int unLineIdx = 0;
+	list_LineDataAll::const_iterator itrLineDataAll;
+	for( itrLineDataAll = _rlistLineDataAll.begin(); itrLineDataAll != _rlistLineDataAll.end(); ++itrLineDataAll )
+	{
+		if( !m_fnCreateOneLine(*itrLineDataAll, _rclsStr) )
+		{
+			LogInternal(E_LOG_ERR, "ColumnStr[%s] : CreateAllLine : fail : CreateOneLine : Line[%u]", m_stColumnStrConfig.m_clsName.c_str(), unLineIdx);
+			return false;
+		}
+
+		++unLineIdx;
+	}
+
+	return true;
+}
+
+bool ColumnStr::m_fnParsingTotalLine(const char * _pszTotalStr, unsigned int _unMaxTotalStrLen, list_LineDataAll & _rlistLineDataAll) const
+{
+	if( !m_bInit )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : ParsingTotalLine : fail : not init", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+
+	if( !_pszTotalStr || _unMaxTotalStrLen == 0 )
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : ParsingTotalLine : fail : invalid argument", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+
+	BufferControl clsLineBufferControl;
+	BufferControl clsTotalBufferControl(_pszTotalStr, _unMaxTotalStrLen);
+	unsigned int unCurrentLine = 0, unCurrentColumn = 0;
+	const char * pCurrentPos = NULL, * pLineStartPos = NULL, * pLineEndPos = NULL;	
+	list_LineData listLineData;
+	const vec_ColumnInfo & rvecColumnInfo = m_stColumnStrConfig.m_vecColumnInfo;
+	
+	try
+	{
+		while( !clsTotalBufferControl.eof() )
+		{
+			unCurrentColumn = 0;
+			pCurrentPos= NULL; pLineStartPos = NULL; pLineEndPos = NULL;			
+			listLineData.clear();
+				
+			/*==== skip comment ====*/
+			if( clsTotalBufferControl.isStr(m_stColumnStrConfig.m_clsColumnComment.c_str()) )
+				goto NEXT_LINE;
+
+			/*==== get Line ====*/
+			pLineEndPos = clsTotalBufferControl.findStr(s_pszLineEnd);
+			if( pLineEndPos )
+				clsLineBufferControl.setBuffer(clsTotalBufferControl.getStartPos(), pLineEndPos - clsTotalBufferControl.getStartPos());
+			else
+				clsLineBufferControl.setBuffer(clsTotalBufferControl.getStartPos(), clsTotalBufferControl.getSize());
+
+			/*==== parsing Line ====*/
+			clsLineBufferControl.skipWhitespace();
+			while( !clsLineBufferControl.eof() )
+			{
+				if( unCurrentColumn >= m_unColumnNum )
+				{
+					LogInternal(E_LOG_ERR, "ColumnStr[%s] : ParsingTotalLine : fail : Column is over : Line[%u], ColumnNum[%u]", m_stColumnStrConfig.m_clsName.c_str(), unCurrentLine, m_unColumnNum);
+					goto NEXT_LINE;
+				}
+			
+				pCurrentPos = clsLineBufferControl.findStr(m_stColumnStrConfig.m_clsColumnDelimiter.c_str());			
+				if( pCurrentPos )
+				{
+					std::string clsTmpStr(clsLineBufferControl.getStartPos(), pCurrentPos - clsLineBufferControl.getStartPos());
+					listLineData.push_back(std::make_pair(rvecColumnInfo.at(unCurrentColumn).m_clsColumnTitleName, clsTmpStr));
+					clsLineBufferControl.setStartPos(pCurrentPos);
+					clsLineBufferControl.move(m_stColumnStrConfig.m_clsColumnDelimiter.size());
+					clsLineBufferControl.skipWhitespace();
+				}
+				else
+				{
+					std::string clsTmpStr(clsLineBufferControl.getStartPos(), clsLineBufferControl.getSize());
+					listLineData.push_back(std::make_pair(rvecColumnInfo.at(unCurrentColumn).m_clsColumnTitleName, clsTmpStr));
+				}
+				
+				++unCurrentColumn;
+			}
+			//dummy column
+			if( listLineData.size() > 0 )
+			{
+				for( unsigned int i = listLineData.size(); i < m_unColumnNum; ++i )
+				{
+					std::string clsTmpStr;
+					listLineData.push_back(std::make_pair(rvecColumnInfo.at(i).m_clsColumnTitleName, clsTmpStr));
+				}
+
+				_rlistLineDataAll.push_back(listLineData);
+			}			
+
+	NEXT_LINE :
+			if( !pLineEndPos )
+				pLineEndPos = clsTotalBufferControl.findStr(s_pszLineEnd);
+
+			if( pLineEndPos )
+			{
+				clsTotalBufferControl.setStartPos(pLineEndPos+s_unLineEndLen);
+				++unCurrentLine;
+			}
+			else
+				break;
+		}
+	}
+	catch(const std::out_of_range & e)
+	{
+		LogInternal(E_LOG_ERR, "ColumnStr[%s] : ParsingTotalLine : fail : occur exception vector.at()", m_stColumnStrConfig.m_clsName.c_str());
+		return false;
+	}
+
+	return true;
+}
+
+}
+

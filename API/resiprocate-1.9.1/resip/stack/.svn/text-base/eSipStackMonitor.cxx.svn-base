@@ -1,0 +1,187 @@
+
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#ifdef ESIP_IN_RESIP
+
+#include <sys/syscall.h>
+#include <iostream>
+#include <fstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include "resip/stack/eSipStackMonitor.hxx"
+#include "resip/stack/eSipHandler.hxx"
+#include "resip/stack/SipMessage.hxx"
+#include "resip/stack/StatisticsManager.hxx"
+#include "resip/stack/SipStack.hxx"
+#include "rutil/Logger.hxx"
+
+#include "eSipUtil/ConfigFile.hxx"
+#include "eSipUtil/timeUtil.hxx"
+
+#define RESIPROCATE_SUBSYSTEM resip::Subsystem::STATS
+
+namespace resip
+{
+
+static const char * s_pszFileName = "StackRsc";
+
+StackMonitorThread::StackMonitorThread(SipStack & _rclsSipStack, const resip::Data & _rclsFilePath, int _nRscFileIdx)
+	: m_clsFifo(0,0), m_rclsSipStack(_rclsSipStack), m_unInterval(0), m_clsFilePath(_rclsFilePath), m_nRscFileIdx(_nRscFileIdx), m_pclsStm(NULL)
+{
+	memset(&m_stLastTime, 0x00, sizeof(struct tm));
+	run();
+}
+
+StackMonitorThread::~StackMonitorThread()
+{
+	delete m_pclsStm;
+}
+
+void StackMonitorThread::setInterval(unsigned int _unInterval)
+{
+	int unPrevInterval = m_unInterval;
+	m_unInterval = _unInterval;
+
+	if( unPrevInterval == 0 )
+	{
+		int * pnShutdown = new int(1);
+		m_clsFifo.add(pnShutdown, resip::TimeLimitFifo<int>::InternalElement);
+	}
+}
+
+void StackMonitorThread::stop()
+{
+	shutdown();
+	int * pnShutdown = new int(2);
+	m_clsFifo.add(pnShutdown, resip::TimeLimitFifo<int>::InternalElement);
+}
+
+void StackMonitorThread::thread()
+{
+	CritLog(<<"StackMonitorThread : thread["<<syscall(SYS_gettid)<<"] : start");
+
+	eSipUtil::DelayTest stDelayTest;
+	int * pnResult;
+	
+	while( !isShutdown() )
+	{
+		stDelayTest.setStartDelayTest("monitor:get");
+		pnResult = m_clsFifo.getNext(m_unInterval);
+		stDelayTest.setEndDelayTest(E_DELAY_TEST_TYPE_MONITOR, getResetCnt4DelayTest(E_DELAY_TEST_TYPE_MONITOR), m_unInterval+10);
+		if( !pnResult )
+			process();
+		else
+		{
+			if( *pnResult == 1 )
+			{
+				delete pnResult;
+			}
+			else
+			{
+				delete pnResult;			
+				break;
+			}
+		}
+	}
+
+	CritLog(<<"StackMonitorThread : thread : stop");
+}
+
+void StackMonitorThread::process()
+{
+	eSipUtil::DelayTest stDelayTest;
+
+	stDelayTest.setStartDelayTest("monitor:proc1");
+
+	struct timespec stCurrentTs;
+	clock_gettime(CLOCK_REALTIME, &stCurrentTs);
+	struct tm tmTime;
+	localtime_r(&(stCurrentTs.tv_sec), &tmTime);
+
+	char szDir[128];
+	snprintf(szDir, 127, "%s/%04d%02d%02d/", m_clsFilePath.c_str(), tmTime.tm_year + 1900, tmTime.tm_mon+1, tmTime.tm_mday);
+	eSipUtil::CfgFile::m_fnCreateDir(szDir);
+
+	char szFullPath[256];
+	if( m_nRscFileIdx <= 0 )
+		snprintf(szFullPath, 255, "%s%s", szDir, s_pszFileName);
+	else
+		snprintf(szFullPath, 255, "%s%s_%d", szDir, s_pszFileName, m_nRscFileIdx);
+	
+	char szTime[20];
+	sprintf(szTime, "%02d:%02d:%02d:%03d", tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec, (int)(stCurrentTs.tv_nsec/1000000));
+
+	stDelayTest.setEndDelayTest(E_DELAY_TEST_TYPE_MONITOR, getResetCnt4DelayTest(E_DELAY_TEST_TYPE_MONITOR), getLimitMs4DelayTest(E_DELAY_TEST_TYPE_MONITOR));
+	stDelayTest.setStartDelayTest("monitor:proc2");
+
+	if( !m_pclsStm 
+		|| m_stLastTime.tm_year != tmTime.tm_year 
+		|| m_stLastTime.tm_mon != tmTime.tm_mon 
+		|| m_stLastTime.tm_mday != tmTime.tm_mday )
+	{
+		m_stLastTime.tm_year = tmTime.tm_year;
+		m_stLastTime.tm_mon = tmTime.tm_mon;
+		m_stLastTime.tm_mday = tmTime.tm_mday;
+		delete m_pclsStm;
+		m_pclsStm = new std::ofstream(szFullPath, std::ios_base::out | std::ios_base::app);
+		if( !m_pclsStm )
+		{
+			ErrLog(<<"StackMonitorThread : process : fail : can't open ofstream");
+			return;
+		}
+	}
+
+	stDelayTest.setEndDelayTest(E_DELAY_TEST_TYPE_MONITOR, getResetCnt4DelayTest(E_DELAY_TEST_TYPE_MONITOR), getLimitMs4DelayTest(E_DELAY_TEST_TYPE_MONITOR));
+	stDelayTest.setStartDelayTest("monitor:proc3");
+	
+	unsigned int unClientTransactionNum = m_rclsSipStack.getCurrentClientTransactionNum();
+	unsigned int unServerTransactionNum = m_rclsSipStack.getCurrentServerTransactionNum();
+	unsigned int unTransactionTimerFifoSize = m_rclsSipStack.getTransactionTimerFifoSize();
+	
+	std::list< std::pair<Data, unsigned int> > listTransportTxFifoSize = m_rclsSipStack.getTransportTxFifoSize();
+	std::list< std::pair<Data, unsigned int> > listMiddleTranscFifoSize = m_rclsSipStack.getMiddleTransactionFifoSize();
+	std::list< std::pair<Data, unsigned int> > listTranscFifoSize = m_rclsSipStack.getTransactionFifoSize4Monitor();	
+	std::list< std::pair<Data, unsigned int> > listTuFifoSize = m_rclsSipStack.getTuFifoSize();
+
+	stDelayTest.setEndDelayTest(E_DELAY_TEST_TYPE_MONITOR, getResetCnt4DelayTest(E_DELAY_TEST_TYPE_MONITOR), getLimitMs4DelayTest(E_DELAY_TEST_TYPE_MONITOR));
+	stDelayTest.setStartDelayTest("monitor:proc4");
+
+	std::ofstream & m_rclsStm = *m_pclsStm;
+
+	m_rclsStm<<szTime<<" [ClientTranscNum="<<unClientTransactionNum<<", ServerTranscNum="<<unServerTransactionNum<<", TranscTimerFifoSize="<<unTransactionTimerFifoSize;
+	for( std::list< std::pair<Data, unsigned int> >::const_iterator listItr = listTransportTxFifoSize.begin(); listItr != listTransportTxFifoSize.end(); ++listItr )
+	{
+		m_rclsStm<<" ,"<<listItr->first<<"="<<listItr->second;
+	}
+	for( std::list< std::pair<Data, unsigned int> >::const_iterator listItr = listMiddleTranscFifoSize.begin(); listItr != listMiddleTranscFifoSize.end(); ++listItr )
+	{
+		m_rclsStm<<" ,"<<listItr->first<<"="<<listItr->second;
+	}
+	for( std::list< std::pair<Data, unsigned int> >::const_iterator listItr = listTranscFifoSize.begin(); listItr != listTranscFifoSize.end(); ++listItr )
+	{
+		m_rclsStm<<" ,"<<listItr->first<<"="<<listItr->second;
+	}
+	for( std::list< std::pair<Data, unsigned int> >::const_iterator listItr = listTuFifoSize.begin(); listItr != listTuFifoSize.end(); ++listItr )
+	{
+		m_rclsStm<<" ,"<<listItr->first<<"="<<listItr->second;
+	}
+
+	for( unsigned int i = 0; i < 4; ++i )
+	{
+		m_rclsStm<<", FifoSize="<<eSipUtil::AsyncFileLog::m_fnGetCurrentQueueSize(i);
+	}
+
+	m_rclsStm<<std::endl;
+	
+	stDelayTest.setEndDelayTest(E_DELAY_TEST_TYPE_MONITOR, getResetCnt4DelayTest(E_DELAY_TEST_TYPE_MONITOR), getLimitMs4DelayTest(E_DELAY_TEST_TYPE_MONITOR));
+	
+	return;
+}
+
+}
+
+#endif
+

@@ -1,0 +1,315 @@
+#include "JsonFile.hxx"
+#include "Directory.hxx"
+#include "log.hxx"
+#include "timerTable.hxx"
+#include "fileControl.hxx"
+namespace eSipUtil
+{
+TimerTable<JsonTimerData_t> * g_pclsJsonTimer = NULL;
+static void s_fnSetJsonTimer(JsonFile * _pclsCfg)
+{
+	if(g_pclsJsonTimer == NULL) return;
+	JsonTimerData_t * pstTime = new JsonTimerData_t;
+	pstTime->m_pclsJsonFile = _pclsCfg;
+	g_pclsJsonTimer->setTimer(pstTime,100);
+}
+static void s_fnCbkJsonTimerOut(JsonTimerData_t * _pstData)
+{
+	if(_pstData==NULL) return;
+	if(g_pclsJsonTimer == NULL){delete _pstData;return;}
+	JsonTimerData_t * pstTime = new JsonTimerData_t;
+	pstTime->m_pclsJsonFile = _pstData->m_pclsJsonFile;
+	_pstData->m_pclsJsonFile->m_fnTimerCheckProc();	
+	g_pclsJsonTimer->setTimer(pstTime,100);
+	delete _pstData;
+}
+JsonFileObject::JsonFileObject(){}
+JsonFileObject::~JsonFileObject(){}
+JsonFileObject * JsonFileObject::m_fnGetObject(const char * _pszKey)
+{
+	return(JsonFileObject*)m_fnFindObj(_pszKey);
+}
+KString & JsonFileObject::m_fnGetVal(const char * _pszKey,bool * _pbResult)
+{
+	JsonFileObject * pclsObj = (JsonFileObject*)m_fnFindObj(_pszKey);
+	if(pclsObj== NULL && _pbResult) *_pbResult = false;
+	else if(pclsObj && _pbResult) *_pbResult = true;
+	return m_fnFindVal(_pszKey);
+}
+KString & JsonFileObject::m_fnGetComVal(CfgFile * _pclsCom,const char * _pszKey,bool * _pbResult)
+{
+	KString &rclsVal =  m_fnFindVal(_pszKey);
+	JsonFileObject * pclsObj = (JsonFileObject*)m_fnFindObj(_pszKey);
+	if(pclsObj== NULL)
+	{
+		if(_pbResult) *_pbResult = false;
+		return rclsVal;
+	}
+	if(_pclsCom==NULL)
+	{
+		if(rclsVal.m_unRealLen==0)
+		{
+			if(_pbResult) * _pbResult = false;
+			return rclsVal;
+		}
+		else
+		{
+			if(_pbResult) * _pbResult = true;
+			return rclsVal;
+		}
+	}
+	else
+	{
+		std::string clsComVal;
+		if(!CfgFile::m_fnGetCommonCfg((KCSTR)rclsVal,clsComVal,_pclsCom))
+		{
+			if(rclsVal.m_unRealLen==0)
+			{
+				if(_pbResult) * _pbResult = false;
+				return rclsVal;
+			}
+			else
+			{
+				if(_pbResult) * _pbResult = true;
+				return rclsVal;
+			}
+		}
+		else
+		{
+			if(clsComVal.size()==0)
+			{
+				if(_pbResult) * _pbResult = false;
+				return rclsVal;
+			}
+			else
+			{
+				if(_pbResult) * _pbResult = true;
+				pclsObj->m_clsTemplateVal = clsComVal.c_str();
+				return pclsObj->m_clsTemplateVal;
+			}
+		}
+	}
+}
+bool JsonFileObject::m_fnAddItem(const char * _pszKey, KString _clsVal)
+{
+	if(KString::m_fnStrLen(_pszKey)==0 || _clsVal.m_unRealLen ==0) return false;
+	return m_fnAddObj(json_type_string,_pszKey,_clsVal);
+}
+JsonFileObject * JsonFileObject::m_fnAddList(const char * _pszKey)
+{
+	return (JsonFileObject*)m_fnAddObjInternal(json_type_array,_pszKey);
+}
+JsonFileObject * JsonFileObject::m_fnAddObject(const char * _pszKey)
+{
+	return (JsonFileObject*)m_fnAddObjInternal(json_type_object,_pszKey);
+}
+bool JsonFileObject::m_fnDel(const char * _pszKey){return m_fnDelObj(_pszKey);}
+EJsonFile_t JsonFileObject::m_fnGetType()
+{
+	if(m_eType == json_type_string) return E_JSON_FILE_ITEM;
+	else if(m_eType == json_type_array_item) return E_JSON_FILE_ITEM;
+	else if(m_eType == json_type_boolean) return E_JSON_FILE_ITEM;
+	else if(m_eType == json_type_int) return E_JSON_FILE_ITEM;
+	else if(m_eType == json_type_array) return E_JSON_FILE_LIST;
+	else if(m_eType == json_type_object) return E_JSON_FILE_OBJECT;
+	else return E_JSON_FILE_NONE;
+}
+JsonFileObject * JsonFileObject::m_fnBeginItor(ListItr_t & _rstItor)
+{
+	return (JsonFileObject*)m_fnBegin(_rstItor);
+}
+JsonFileObject * JsonFileObject::m_fnNextItor(ListItr_t & _rstItor)
+{
+	return (JsonFileObject*)m_fnNext(_rstItor);
+}	
+JsonFile::JsonFile()
+{
+	m_pvUser=NULL;m_pfnChanged = NULL; m_bReadChanged = false;
+	if(g_pclsJsonTimer == NULL)
+		g_pclsJsonTimer = new TimerTable<JsonTimerData_t>(s_fnCbkJsonTimerOut,"JsonFile");
+}
+JsonFile::~JsonFile(){}
+bool JsonFile::m_fnLoadFile(const char * _pszPath,const char * _pszDefaultComment)
+{
+	if(KString::m_fnStrLen(_pszPath)==0)
+	{
+		LogInternal(E_LOG_ERR,"Json File Load Failed, Empty Path, [%s]",_pszPath);
+		return false;
+	}
+	CfgFile::m_fnCreateDirExeptFile(_pszPath);
+	m_clsFileName = _pszPath;	m_clsFile.m_fnInit(_pszPath);
+	return m_fnReLoadFile(_pszDefaultComment);
+}
+bool JsonFile::m_fnReLoadFile(const char * _pszDefaultComment)
+{
+	FILE *fp = NULL;
+	CfgFile::m_fnCreateDirExeptFile((KCSTR)m_clsFileName); chmod((KCSTR)m_clsFileName,0755);
+	if ((fp = fopen((KCSTR)m_clsFileName, "r")) == NULL) 
+	{
+		fp = fopen((const char*)(KSTR)m_clsFileName,(char*)"a");
+		if(fp == NULL)
+		{
+			LogInternal(E_LOG_ERR,"[%s-%s-%u] File Open Fail (%s)",
+													__FILE__,__func__,__LINE__,(KCSTR)m_clsFileName);
+			return false;
+		}
+		if(KString::m_fnStrLen(_pszDefaultComment) > 0)
+		{
+			fputs(_pszDefaultComment,fp);
+		}
+		else
+		{
+			KString clsComment; 
+			clsComment<<(KCSTR)"            \r\n";
+			fwrite((KCSTR)clsComment,strlen((KCSTR)clsComment),1,fp);
+		}
+		fflush(fp);fclose(fp);
+		chmod((KCSTR)m_clsFileName,0755);
+		LogInternal(E_LOG_ERR,"[%s] File is Empty",(KCSTR)m_clsFileName);
+		LogInternal(E_LOG_ERR,"[%s] Default File Write & Check Timer Reset",(KCSTR)m_clsFileName);
+		m_clsFile.m_unCurrentModiTime = 1;
+		return false;
+	}
+	m_clsFile.m_fnUpdateTime();m_clsFile.m_fnUpdateCRC();
+	if(m_clsFile.m_unReadSz ==0)
+	{
+		LogInternal(E_LOG_ERR,"[%s] Read Size is Zero",(KCSTR)m_clsFileName);
+		fclose(fp);
+		return false;
+	}
+	LogInternal(E_LOG_ERR,"Json Raw Data\r\n%s",m_clsFile.m_pszRawData);
+	fclose(fp);
+	return m_fnParseJson(m_clsFile.m_pszRawData);
+}
+char * JsonFile::m_fnBuildFile(){return m_fnBuild();}
+bool JsonFile::m_fnWriteFile(const char * _pszBuild)
+{
+	if(KString::m_fnStrLen((KCSTR)m_clsFileName)==0) return false;
+	#if 0 // cwkim Default Create Dir
+	CfgFile::m_fnCreateDirExeptFile((KCSTR)m_clsFileName);
+	chmod((KCSTR)m_clsFileName,0755); 
+	#endif 
+	bool bRet = false;
+	if(KString::m_fnStrLen(_pszBuild) > 0)
+	{
+		bRet = FileControl::m_fnWrite((KCSTR)m_clsFileName,_pszBuild,KString::m_fnStrLen(_pszBuild));
+	}
+	else
+	{
+		char * pszBuild = m_fnBuild();
+		bRet = FileControl::m_fnWrite((KCSTR)m_clsFileName,pszBuild,KString::m_fnStrLen(pszBuild));
+	}
+	if(bRet == false) LogInternal(E_LOG_DEBUG,"Json Write Fail : %s",(KCSTR)m_clsFileName);
+	return true;
+}
+JsonFileObject * JsonFile::m_fnGetObject(const char * _pszKey)
+{
+	return(JsonFileObject*)m_fnFindObj(_pszKey);
+}
+KString & JsonFile::m_fnGetVal(const char * _pszKey, bool * _pbResult)
+{
+	JsonFileObject * pclsObj = (JsonFileObject*)m_fnFindObj(_pszKey);
+	if(pclsObj== NULL && _pbResult) *_pbResult = false;
+	else if(pclsObj && _pbResult) *_pbResult = true;
+	return m_fnFindVal(_pszKey);
+}
+KString & JsonFile::m_fnGetComVal(CfgFile * _pclsCom,const char * _pszKey, bool * _pbResult)
+{
+	KString & rclsVal = m_fnFindVal(_pszKey);
+	JsonFileObject * pclsObj = (JsonFileObject*)m_fnFindObj(_pszKey);
+	if(pclsObj== NULL)
+	{
+		if(_pbResult) *_pbResult = false;
+		return rclsVal;
+	}
+	if(_pclsCom==NULL)
+	{
+		if(rclsVal.m_unRealLen==0)
+		{
+			if(_pbResult) * _pbResult = false;
+			return rclsVal;
+		}
+		else
+		{
+			if(_pbResult) * _pbResult = true;
+			return rclsVal;
+		}
+	}
+	else
+	{
+		std::string clsComVal;
+		if(!CfgFile::m_fnGetCommonCfg((KCSTR)rclsVal,clsComVal,_pclsCom))
+		{
+			if(rclsVal.m_unRealLen==0)
+			{
+				if(_pbResult) * _pbResult = false;
+				return rclsVal;
+			}
+			else
+			{
+				if(_pbResult) * _pbResult = true;
+				return rclsVal;
+			}
+		}
+		else
+		{
+			if(clsComVal.size()==0)
+			{
+				if(_pbResult) * _pbResult = false;
+				return rclsVal;
+			}
+			else
+			{
+				if(_pbResult) * _pbResult = true;
+				pclsObj->m_clsTemplateVal = clsComVal.c_str();
+				return pclsObj->m_clsTemplateVal;
+			}
+		}
+	}
+}
+bool JsonFile::m_fnAddItem(const char * _pszKey,KString _clsVal)
+{
+	if(KString::m_fnStrLen(_pszKey)==0 ||_clsVal.m_unRealLen ==0) return false;
+	return m_fnAddObj(json_type_string,_pszKey,_clsVal);
+}
+JsonFileObject * JsonFile::m_fnAddList(const char * _pszKey)
+{
+	return (JsonFileObject*)m_fnAddObjInternal(json_type_array,_pszKey);
+}
+JsonFileObject * JsonFile::m_fnAddObject(const char * _pszKey)
+{
+	return (JsonFileObject*)m_fnAddObjInternal(json_type_object,_pszKey);
+}
+bool JsonFile::m_fnDel(const char * _pszKey){return m_fnDelObj(_pszKey);}
+JsonFileObject * JsonFile::m_fnBeginItor(ListItr_t & _rstItor)
+{
+	return (JsonFileObject*)m_fnBegin(_rstItor);
+}
+JsonFileObject * JsonFile::m_fnNextItor(ListItr_t & _rstItor)
+{
+	return (JsonFileObject*)m_fnNext(_rstItor);
+}
+void JsonFile::m_fnSetNotifyChangedFile(PFuncJsonChanged_t _pFn,bool _bEnhanced, void * _pvUser)
+{
+	m_pvUser = _pvUser;m_pfnChanged = _pFn;m_clsFile.m_fnEnableCheckChanged(_bEnhanced);
+	s_fnSetJsonTimer(this);
+}
+void JsonFile::m_fnSetNotifyChangedFileWithRead(PFuncJsonChanged_t _pFn,bool _bEnhanced, void * _pvUser)
+{
+	m_bReadChanged = true;m_pvUser = _pvUser;m_pfnChanged = _pFn;
+	m_clsFile.m_fnEnableCheckChanged(_bEnhanced);s_fnSetJsonTimer(this);
+}
+bool JsonFile::m_fnTimerCheckProc()
+{
+	bool bRet = m_clsFile.m_fnCheckChanged();
+	if(bRet)
+	{
+		if(m_pfnChanged)
+		{
+			if(m_bReadChanged) m_fnReLoadFile(NULL);
+			m_pfnChanged(this);
+		}
+	}
+	return bRet;
+}
+}

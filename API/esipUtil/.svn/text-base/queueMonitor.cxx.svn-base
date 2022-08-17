@@ -1,0 +1,152 @@
+
+#include "queueMonitor.hxx"
+#include "shm.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+
+QueueMonMgr & QueueMonMgr::getInstance(unsigned int _unMaxQueueNum, int _nShmKey)
+{
+	static QueueMonMgr s_clsInstance(_unMaxQueueNum, _nShmKey);
+
+	return s_clsInstance;
+}
+
+QueueMonMgr::QueueMonMgr(unsigned int _unMaxQueueNum, int _nShmKey)
+	: m_unMaxQueueNum(_unMaxQueueNum), m_nShmKey(_nShmKey), m_pstQueueMonShm(NULL)
+{
+	if( m_unMaxQueueNum == 0 || m_nShmKey == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : fail : invalid argument : MaxQueueNum[%u], ShmKey[0x%x]", m_unMaxQueueNum, m_nShmKey);
+		return;
+	}
+
+	int nShmId;
+	size_t ulMaxShmSize = QueueMonShm::m_fnGetMaxShmSize(m_unMaxQueueNum);
+	m_pstQueueMonShm = (QueueMonShm *)eSipUtil::createShmAuto(m_nShmKey, ulMaxShmSize, nShmId);
+	if( m_pstQueueMonShm )
+	{		
+		m_pstQueueMonShm->m_fnReset(m_unMaxQueueNum);
+		LogInternal(E_LOG_INFO, "QueueMonMgr : create Shm : ShmKey[0x%x], ShmId[%d], ShmSize[%lu]", m_nShmKey, nShmId, ulMaxShmSize);
+	}
+	else
+		LogInternal(E_LOG_ERR, "QueueMonMgr : fail : create Shm : ShmKey[0x%x], ShmSize[%lu]", m_nShmKey, ulMaxShmSize);
+}
+
+QueueMonMgr::~QueueMonMgr()
+{
+}
+
+void QueueMonMgr::m_fnResetCurrentSize()
+{
+	if( m_pstQueueMonShm )
+	{
+		Lock clsLock(m_clsAddMutex);
+		
+		m_pstQueueMonShm->m_fnResetCurrentSize();
+
+		LogInternal(E_LOG_INFO, "QueueMonMgr : ResetCurrentSize"); 
+	}
+}
+
+bool QueueMonMgr::m_fnAddQueue(const char * _pszQueueName, unsigned int _unMaxSize, unsigned int & _runQueueMonId)
+{
+	if( !m_pstQueueMonShm )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : AddQueue : fail : invalid shm"); 
+		return false;
+	}
+
+	Lock clsLock(m_clsAddMutex);
+
+	if( m_pstQueueMonShm->m_unCurrentQueueNum >= m_unMaxQueueNum )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : AddQueue : fail : over MaxQueueNum"); 
+		return false;
+	}
+
+	_runQueueMonId = m_pstQueueMonShm->m_unCurrentQueueNum;
+	
+	QueueMonEntity * arrQueueMonEntity = m_pstQueueMonShm->m_fnGetQueueMonEntityArray();
+	if( _pszQueueName && strlen(_pszQueueName) > 0 )
+	{
+		strncpy(arrQueueMonEntity[_runQueueMonId].m_szQueueName, _pszQueueName, QueueMonEntity::E_CONST_MAX_QUEUE_NAME_LEN-1);
+		arrQueueMonEntity[_runQueueMonId].m_szQueueName[QueueMonEntity::E_CONST_MAX_QUEUE_NAME_LEN-1] = 0x00;
+	}
+	arrQueueMonEntity[_runQueueMonId].m_unMaxSize = _unMaxSize;
+
+	++(m_pstQueueMonShm->m_unCurrentQueueNum);
+
+	LogInternal(E_LOG_INFO, "QueueMonMgr : AddQueue : QueueMonId[%u], QueueName[%s], QueueMaxSize[%u]", _runQueueMonId, _pszQueueName, _unMaxSize); 
+
+	return true;
+}
+
+bool QueueMonMgr::m_fnSetQueueName(unsigned int _unQueueMonId, const char * _pszQueueName)
+{
+	if( !m_pstQueueMonShm )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : SetQueueName : fail : invalid shm");
+		return false;
+	}
+
+	if( _unQueueMonId >= m_pstQueueMonShm->m_unCurrentQueueNum )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : SetQueueName : fail : invalid QueueMonId[%u] : QueueName[%s]", _unQueueMonId, _pszQueueName);
+		return false;
+	}
+
+	if( !_pszQueueName || strlen(_pszQueueName) == 0 )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : SetQueueName : fail : QueueMonId[%u] : invalid QueueName[%s]", _unQueueMonId, _pszQueueName);
+		return false;
+	}
+
+	QueueMonEntity * arrQueueMonEntity = m_pstQueueMonShm->m_fnGetQueueMonEntityArray();
+	strncpy(arrQueueMonEntity[_unQueueMonId].m_szQueueName, _pszQueueName, QueueMonEntity::E_CONST_MAX_QUEUE_NAME_LEN-1);
+	arrQueueMonEntity[_unQueueMonId].m_szQueueName[QueueMonEntity::E_CONST_MAX_QUEUE_NAME_LEN-1] = 0x00;
+
+	LogInternal(E_LOG_DEBUG, "QueueMonMgr : SetQueueName : QueueMonId[%u] : QueueName[%s]", _unQueueMonId, arrQueueMonEntity[_unQueueMonId].m_szQueueName);
+
+	return true;
+}
+
+bool QueueMonMgr::m_fnSetMaxSize(unsigned int _unQueueMonId, unsigned int _unMaxSize)
+{
+	if( !m_pstQueueMonShm )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : SetMaxSize : fail : invalid shm");
+		return false;
+	}
+
+	if( _unQueueMonId >= m_pstQueueMonShm->m_unCurrentQueueNum )
+	{
+		LogInternal(E_LOG_ERR, "QueueMonMgr : SetMaxSize : fail : invalid QueueMonId[%u] : MaxQueueSize[%u]", _unQueueMonId, _unMaxSize);
+		return false;
+	}
+
+	QueueMonEntity * arrQueueMonEntity = m_pstQueueMonShm->m_fnGetQueueMonEntityArray();
+	arrQueueMonEntity[_unQueueMonId].m_unMaxSize= _unMaxSize;
+
+	LogInternal(E_LOG_DEBUG, "QueueMonMgr : SetMaxSize : QueueMonId[%u] : MaxQueueSize[%u]", _unQueueMonId, arrQueueMonEntity[_unQueueMonId].m_unMaxSize);
+
+	return true;
+}
+
+bool QueueMonMgr::m_fnTouchQueue(unsigned int _unQueueMonId, unsigned int _unCurrentSize)
+{
+	if( !m_pstQueueMonShm )
+		return false;
+
+	if( _unQueueMonId >= m_pstQueueMonShm->m_unCurrentQueueNum )
+		return false;
+
+	QueueMonEntity * arrQueueMonEntity = m_pstQueueMonShm->m_fnGetQueueMonEntityArray();
+	arrQueueMonEntity[_unQueueMonId].m_unCurrentSize = _unCurrentSize;
+	arrQueueMonEntity[_unQueueMonId].m_ulLastTouch = time(NULL);
+
+	return true;
+}
+
+}

@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku
+END
+input1
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/input1
+END
+input2
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/input2
+END
+input3
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/input3
+END
+input4
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/input4
+END
+index.html
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/index.html
+END
+sudoku.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/sudoku.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task_group/sudoku/Makefile
+END

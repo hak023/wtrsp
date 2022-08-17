@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum
+END
+SerialSumTree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/SerialSumTree.cpp
+END
+TreeMaker.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/TreeMaker.h
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/main.cpp
+END
+OptimizedParallelSumTree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/OptimizedParallelSumTree.cpp
+END
+index.html
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/index.html
+END
+SimpleParallelSumTree.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/SimpleParallelSumTree.cpp
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/Makefile
+END
+common.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/examples/task/tree_sum/common.h
+END

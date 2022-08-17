@@ -1,0 +1,215 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall
+END
+WebAdminThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/WebAdminThread.cxx
+END
+B2BSession.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/B2BSession.hxx
+END
+HttpBase.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/HttpBase.hxx
+END
+WebAdminThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/WebAdminThread.hxx
+END
+clicktocall.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall.cxx
+END
+XmlRpcServerThread.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServerThread.cxx
+END
+XmlRpcConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcConnection.cxx
+END
+WebAdmin.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/WebAdmin.cxx
+END
+clicktocall.config
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall.config
+END
+XmlRpcServerThread.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServerThread.hxx
+END
+XmlRpcConnection.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcConnection.hxx
+END
+Version.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/Version.hxx
+END
+WebAdmin.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/WebAdmin.hxx
+END
+XmlRpcServer.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServer.cxx
+END
+clicktocall_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall_9_0.vcproj
+END
+AddressTranslator.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/AddressTranslator.cxx
+END
+AppSubsystem.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/AppSubsystem.cxx
+END
+HttpConnection.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/HttpConnection.cxx
+END
+ClickToCallCmds.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/ClickToCallCmds.hxx
+END
+XmlRpcServer.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServer.hxx
+END
+AddressTranslator.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/AddressTranslator.hxx
+END
+AppSubsystem.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/AppSubsystem.hxx
+END
+HttpConnection.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/HttpConnection.hxx
+END
+ConfigParser.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/ConfigParser.cxx
+END
+clicktocall_8_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall_8_0.sln
+END
+clicktocall_9_0.sln
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall_9_0.sln
+END
+XmlRpcServerBase.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServerBase.cxx
+END
+ConfigParser.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/ConfigParser.hxx
+END
+clicktocall_8_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/clicktocall_8_0.vcproj
+END
+XmlRpcServerBase.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/XmlRpcServerBase.hxx
+END
+Server.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/Server.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/Makefile.am
+END
+B2BSession.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/B2BSession.cxx
+END
+HttpBase.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/HttpBase.cxx
+END
+Server.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/Server.hxx
+END

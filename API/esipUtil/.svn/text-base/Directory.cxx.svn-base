@@ -1,0 +1,250 @@
+#include "Directory.hxx"
+#include "log.hxx"
+
+namespace eSipUtil
+{
+DirFile::DirFile(){}
+DirFile::~DirFile(){}
+void DirFile::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCSTR)"[File] : "<<(KCSTR)m_clsPath<<(KCSTR)"\r\n";
+}
+Directorys::Directorys(){m_fnClear();}
+Directorys::~Directorys(){}
+void Directorys::m_fnClear()
+{
+	m_pstDir = NULL;
+	m_pstEntry = NULL;
+	memset(&m_stStat,0x00,sizeof(struct stat));
+	m_listChildDir.m_fnClear();
+	m_listChildFile.m_fnClear();
+	m_pclsTmpFile = NULL;
+	m_pclsTmpDir = NULL;
+}
+bool Directorys::m_fnRead(const char * _pszPath)
+{
+	unsigned int unLen = KString::m_fnStrLen(_pszPath);
+	if(unLen ==0) return false;
+	m_clsPath = (KCSTR)_pszPath; 
+	if(_pszPath[unLen-1] != '/') m_clsPath<<(KCHR)'/';
+	if((m_pstDir=opendir((KCSTR)m_clsPath)) == NULL) return false;
+	while((m_pstEntry = readdir(m_pstDir)) != NULL)
+	{
+		m_clsTmpPath=KNULL;m_clsTmpPath<<(KCSTR)m_clsPath<<(KCSTR)m_pstEntry->d_name;
+		chmod((KCSTR)m_clsTmpPath,0777);
+		memset(&m_stStat,0x00,sizeof(struct stat));stat((KCSTR)m_clsTmpPath, &m_stStat); 
+		//lstat((KCSTR)m_clsTmpPath,&m_stStat);
+		//printf("[%s] %s\r\n",m_fnGetStringFileMode(&m_stStat),(KCSTR)m_clsTmpPath);
+		if(S_ISDIR(m_stStat.st_mode) && (m_fnIsLinkDir(m_pstEntry->d_name)==false))
+		{
+			m_pclsTmpDir = m_fnAddChildDir();
+			m_pclsTmpDir->m_fnRead((KCSTR)m_clsTmpPath);
+		}
+		else if(S_ISREG(m_stStat.st_mode))
+		{
+			m_pclsTmpFile = m_fnAddChildFile();
+			m_pclsTmpFile->m_clsPath = (KCSTR)m_clsTmpPath;
+			//memset(&m_pclsTmpFile->m_stStat,0x00 sizeof(struct stat));
+			memcpy(&m_pclsTmpFile->m_stStat,&m_stStat,sizeof(struct stat));
+			m_pclsTmpFile->m_clsName = (KCSTR)m_pstEntry->d_name;
+		}
+	}
+	closedir(m_pstDir);
+	return true;
+}
+Directorys * Directorys::m_fnAddChildDir()
+{
+	Directorys *pclsNew = new Directorys; 
+	m_listChildDir.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+DirFile * Directorys::m_fnAddChildFile()
+{
+	DirFile *pclsNew = new DirFile; 
+	m_listChildFile.m_fnPushBack(pclsNew);
+	return pclsNew;
+}
+void Directorys::m_fnDebug(KString &_rclsDebug)
+{
+	_rclsDebug<<(KCSTR)"[Dir] : "<<(KCSTR)m_clsPath<<(KCSTR)"\r\n";
+	ListItr_t itrDir; ListItr_t itrFile;
+	Directorys * pclsTmpDir = m_fnBeginDir(itrDir);
+	while(pclsTmpDir)
+	{
+		pclsTmpDir->m_fnDebug(_rclsDebug);
+		pclsTmpDir = m_fnNextDir(itrDir);
+	}
+	DirFile * pclsTmpFile = m_fnBeginFile(itrFile);
+	while(pclsTmpFile)
+	{
+		pclsTmpFile->m_fnDebug(_rclsDebug);
+		pclsTmpFile = m_fnNextFile(itrFile);
+	}
+}
+void Directorys::m_fnNotifyDirInfo(PFuncNotiDirInfo _pfnNotify,void * _pvUser)
+{
+	ListItr_t itrDir; ListItr_t itrFile;
+	Directorys * pclsTmpDir = m_fnBeginDir(itrDir);
+	while(pclsTmpDir)
+	{
+		pclsTmpDir->m_fnNotifyDirInfo(_pfnNotify,_pvUser);
+		_pfnNotify(NULL,pclsTmpDir,_pvUser);
+		pclsTmpDir = m_fnNextDir(itrDir);
+	}
+	DirFile * pclsTmpFile = m_fnBeginFile(itrFile);
+	while(pclsTmpFile)
+	{
+		_pfnNotify(pclsTmpFile,NULL,_pvUser);
+		pclsTmpFile = m_fnNextFile(itrFile);
+	}
+}
+FileMode_t Directorys::m_fnGetMode(struct stat * _pstStat)
+{
+	if(S_ISDIR(_pstStat->st_mode))  return E_FMOD_DIR;
+	else if(S_ISREG(_pstStat->st_mode))  return E_FMOD_FILE;
+	else if(S_ISLNK(_pstStat->st_mode)) return E_FMOD_LINK;
+	else if(S_ISCHR(_pstStat->st_mode))  return E_FMOD_CHAR;
+	else if(S_ISBLK(_pstStat->st_mode))  return E_FMOD_BLOCK;
+	else if(S_ISFIFO(_pstStat->st_mode)) return E_FMOD_FIFO;
+	else if(S_ISSOCK(_pstStat->st_mode))  return E_FMOD_SOC;
+	else return E_FMOD_NONE;
+}
+const char * Directorys::m_fnGetStringFileMode(struct stat * _pstStat)
+{
+	if(S_ISDIR(_pstStat->st_mode))  return "E_FMOD_DIR";
+	else if(S_ISREG(_pstStat->st_mode))  return "E_FMOD_FILE";
+	else if(S_ISLNK(_pstStat->st_mode)) return "E_FMOD_LINK";
+	else if(S_ISCHR(_pstStat->st_mode))  return "E_FMOD_CHAR";
+	else if(S_ISBLK(_pstStat->st_mode))  return "E_FMOD_BLOCK";
+	else if(S_ISFIFO(_pstStat->st_mode)) return "E_FMOD_FIFO";
+	else if(S_ISSOCK(_pstStat->st_mode))  return "E_FMOD_SOC";
+	else return "E_FMOD_NONE";
+	return "E_FMOD_NONE";
+}
+bool Directorys::m_fnIsLinkDir(const char * _pszDir)
+{
+	unsigned int unLen = KString::m_fnStrLen(_pszDir);
+	if(unLen==0) return false;
+	else if(unLen == 1 && _pszDir[0] == '.') return true;
+	else if(unLen == 2 && _pszDir[0]=='.' && _pszDir[1]=='.') return true;
+	return false;
+}
+void Directorys::m_fnRemoveDir(const char * _pszDirPath) 
+{
+	unsigned int unLen = KString::m_fnStrLen(_pszDirPath);
+	if(unLen ==0) return;
+	DIR * pstDir = NULL; dirent * pstEntry = NULL; struct stat stStat; KString clsPath(128);
+	clsPath = (KCSTR)_pszDirPath;
+	if(_pszDirPath[unLen-1] != '/') clsPath<<(KCHR)'/';
+	chmod((KCSTR)clsPath,0777);
+	pstDir = opendir((KCSTR)clsPath);
+	if (pstDir) 
+	{
+		while ((pstEntry = readdir(pstDir)) != NULL) 
+		{
+			KString clsTmpPath; clsTmpPath<<(KCSTR)clsPath<<(KCSTR)pstEntry->d_name;
+			memset(&stStat,0x00,sizeof(struct stat));stat((KCSTR)clsTmpPath,&stStat);
+			if(S_ISDIR(stStat.st_mode) && (m_fnIsLinkDir(pstEntry->d_name) == false))
+				m_fnRemoveDir((KCSTR)clsTmpPath);
+			else
+			{
+				if(S_ISREG(stStat.st_mode))
+				{
+					//printf("Delete Child File : [%s]\r\n",(KCSTR)clsTmpPath);
+					chmod((KCSTR)clsTmpPath,0777); unlink((KCSTR)clsTmpPath);
+				}
+			}
+		}
+		closedir(pstDir);
+		//printf("Delete       Dir  : [%s]\r\n",(KCSTR)_pszDirPath);
+		chmod((KCSTR)_pszDirPath,0777);rmdir(_pszDirPath);
+	}
+	else
+	{
+		memset(&stStat,0x00,sizeof(struct stat));stat(_pszDirPath,&stStat);
+		if(S_ISREG(stStat.st_mode))
+		{
+			//printf("Delete Paratent File  : [%s]\r\n",(KCSTR)_pszDirPath);
+			chmod((KCSTR)_pszDirPath,0777);unlink(_pszDirPath);
+		}
+	}
+}
+void Directorys::m_fnCatPath(KString &_rclsPath)
+{
+	char * pszPath = (KSTR)_rclsPath;
+	if(pszPath && pszPath[_rclsPath.m_unRealLen-1] != '/') _rclsPath<<'/';
+}
+void Directorys::m_fnDelExpireTimeFile(const char * _pszDir, unsigned int _unExpSec, unsigned int * _punDepth)
+{
+	if(KString::m_fnStrLen((KCSTR)_pszDir)==0) return;
+	DIR *dp = NULL;struct dirent *entry = NULL;struct stat f_stat;
+	KString clsBasePath; KString clsTmpPath; clsBasePath<<_pszDir; m_fnCatPath(clsBasePath);
+	if((dp=opendir((KCSTR)_pszDir)) == NULL) return;
+	while((entry = readdir(dp)) != NULL)
+	{
+		clsTmpPath=KNULL;clsTmpPath<<clsBasePath<<(KCSTR)entry->d_name;
+		memset(&f_stat,0x00,sizeof(struct stat));stat((KCSTR)clsTmpPath, &f_stat);
+		if(m_fnIsLinkDir(entry->d_name) == false)
+		{
+			if((S_ISDIR(f_stat.st_mode)))
+			{
+				if((unsigned int)difftime(time(NULL),f_stat.st_mtime) >=_unExpSec)
+				{
+					m_fnRemoveDir((KCSTR)clsTmpPath);
+				}
+				else
+				{
+					if(_punDepth) *_punDepth = *_punDepth+1;
+					m_fnDelExpireTimeFile((KCSTR)clsTmpPath,_unExpSec,_punDepth);
+				}
+			}
+			else if(S_ISREG(f_stat.st_mode))
+			{
+				if((unsigned int)difftime(time(NULL),f_stat.st_mtime) >=_unExpSec)
+				{
+					//LogInternal(E_LOG_ERR,"Remote File : %s",(KCSTR)clsTmpPath);
+					chmod((KCSTR)clsTmpPath,0777);unlink((KCSTR)clsTmpPath);
+				}
+			}
+		}
+	}
+	closedir(dp);
+}
+void Directorys::m_fnDelEmptyDir(const char * _pszDirPath,unsigned int * _punDepth)
+{
+	unsigned int unLen = KString::m_fnStrLen(_pszDirPath);
+	if(unLen ==0) return;
+	DIR * pstDir = NULL; dirent * pstEntry = NULL; struct stat stStat; 
+	KString clsPath;KString clsTmpPath; clsPath = (KCSTR)_pszDirPath;m_fnCatPath(clsPath);
+	unsigned int unFileDirCnt = 0;pstDir = opendir((KCSTR)clsPath);
+	if(pstDir == NULL) return; 
+	while ((pstEntry = readdir(pstDir)) != NULL) 
+	{
+		clsTmpPath=KNULL; clsTmpPath<<clsPath<<(KCSTR)pstEntry->d_name;
+		memset(&stStat,0x00,sizeof(struct stat));stat((KCSTR)clsTmpPath,&stStat);
+		if(S_ISDIR(stStat.st_mode) && (m_fnIsLinkDir(pstEntry->d_name) == false))
+		{
+			unFileDirCnt++;
+			if(_punDepth) *_punDepth = *_punDepth+1;
+			m_fnDelEmptyDir((KCSTR)clsTmpPath,_punDepth);
+		}
+		else
+		{
+			if(S_ISREG(stStat.st_mode))
+			{
+				unFileDirCnt++;
+			}
+		}
+	}
+	closedir(pstDir);
+	if(unFileDirCnt==0 && *_punDepth != 0)
+	{
+		memset(&stStat,0x00,sizeof(struct stat));stat((KCSTR)_pszDirPath,&stStat);
+		if((unsigned int)difftime(time(NULL),stStat.st_mtime) >=4)   // After 4 Secs	
+		{
+			//LogInternal(E_LOG_ERR,"Remote Dir : %s",_pszDirPath);
+			chmod(_pszDirPath,0777);rmdir(_pszDirPath);
+		}
+	}
+}
+}

@@ -1,0 +1,309 @@
+{
+    "SOURCE": [
+        {
+            "T_CODEC": [
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "MP3C",
+                    "_AudioCodecID": "MP3C",
+                    "_Format": "mp3",
+                    "_ACodec": "mp3",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "true",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "MP3",
+                    "_AudioCodecID": "MP3",
+                    "_Format": "mp3",
+                    "_ACodec": "mp3",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "true",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "WMA",
+                    "_AudioCodecID": "WMA2",
+                    "_Format": "asf",
+                    "_ACodec": "wmav2",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "true",
+                    "_Etc": "-map 0 -map -0:v"
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "K3G",
+                    "_AudioCodecID": "AAC",
+                    "_Format": "3gp",
+                    "_ACodec": "aac",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": "-map 0 -map -0:v"
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "3GP",
+                    "_AudioCodecID": "AAC",
+                    "_Format": "3gp",
+                    "_ACodec": "aac",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": "-map 0 -map -0:v"
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "VOX",
+                    "_AudioCodecID": "VOX",
+                    "_Format": "s16le",
+                    "_ACodec": "pcm_s16le",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "AMR",
+                    "_AudioCodecID": "AMRWB",
+                    "_Format": "AMR",
+                    "_ACodec": "AMR_WB",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "AMR",
+                    "_AudioCodecID": "AMR",
+                    "_Format": "AMR",
+                    "_ACodec": "AMR_RFC53",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "G711",
+                    "_AudioCodecID": "G711",
+                    "_Format": "RAW",
+                    "_ACodec": "G711A",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "MMF",
+                    "_AudioCodecID": "MMF",
+                    "_Format": "mmf",
+                    "_ACodec": "adpcm_yamaha",
+                    "_Tool": "CONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                }
+            ],
+            "_Codec": "MP3"
+        },
+        {
+            "T_CODEC": [
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "WMA",
+                    "_AudioCodecID": "WMA2",
+                    "_Format": "asf",
+                    "_ACodec": "wmav2",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": "-map 0 -map -0:v"
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "VOX",
+                    "_AudioCodecID": "VOX",
+                    "_Format": "s16le",
+                    "_ACodec": "pcm_s16le",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "AMR",
+                    "_AudioCodecID": "AMRWB",
+                    "_Format": "AMR",
+                    "_ACodec": "AMR_WB",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "AMR",
+                    "_AudioCodecID": "AMR",
+                    "_Format": "AMR",
+                    "_ACodec": "AMR_RFC53",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "G711",
+                    "_AudioCodecID": "G711",
+                    "_Format": "RAW",
+                    "_ACodec": "G711A",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "MMF",
+                    "_AudioCodecID": "MMF",
+                    "_Format": "mmf",
+                    "_ACodec": "adpcm_yamaha",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                }
+            ],
+            "_Codec": "WAV"
+        },
+        {
+            "T_CODEC": [
+               {
+                    "_Type": "Video",
+                    "_TargetID": "3G2",
+                    "_AudioCodecID": "AMR",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "3gp",
+                    "_ACodec": "libopencore_amrnb",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+               }
+            ],
+            "_Codec": "3G2"
+        },
+        {
+            "T_CODEC": [
+                {
+                    "_Type": "Audio",
+                    "_TargetID": "WMA",
+                    "_AudioCodecID": "WMA2",
+                    "_Format": "asf",
+                    "_ACodec": "wmav2",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": "-map 0 -map -0:v"
+                },
+                {
+                    "_Type": "Video",
+                    "_TargetID": "K3G",
+                    "_AudioCodecID": "AMR",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "3gp",
+                    "_ACodec": "libopencore_amrnb",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Video",
+                    "_TargetID": "3GP",
+                    "_AudioCodecID": "AMR",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "3gp",
+                    "_ACodec": "libopencore_amrnb",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                }
+            ],
+            "_Codec": "3GP"
+        },
+        {
+            "T_CODEC": [
+                {
+                    "_Type": "Video",
+                    "_TargetID": "3GP",
+                    "_AudioCodecID": "AMR",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "3gp",
+                    "_ACodec": "libopencore_amrnb",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Video",
+                    "_TargetID": "K3G",
+                    "_AudioCodecID": "AMR",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "3gp",
+                    "_ACodec": "libopencore_amrnb",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Video",
+                    "_TargetID": "K3G",
+                    "_AudioCodecID": "QCELP",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "MP4",
+                    "_ACodec": "QCP13K",
+                    "_VCodec": "MPEG4",
+                    "_Tool": "MCONV",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                },
+                {
+                    "_Type": "Video",
+                    "_TargetID": "MP4",
+                    "_AudioCodecID": "AAC",
+                    "_VideoCodecID": "MPEG4",
+                    "_Format": "mp4",
+                    "_ACodec": "libfdk_aac",
+                    "_VCodec": "mpeg4",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+                }
+            ],
+            "_Codec": "K3G"
+        },
+        {
+            "T_CODEC": [
+               {
+                    "_Type": "Image",
+                    "_TargetID": "JPEG",
+                    "_VideoCodecID": "JPEG",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+               }
+            ],
+            "_Codec": "JPEG"
+        },
+        {
+            "T_CODEC": [
+               {
+                    "_Type": "Image",
+                    "_TargetID": "PNG",
+                    "_VideoCodecID": "PNG",
+                    "_Tool": "ffmpeg",
+                    "_Metadata": "false",
+                    "_Etc": ""
+               }
+            ],
+            "_Codec": "PNG"
+        }
+    ]
+}

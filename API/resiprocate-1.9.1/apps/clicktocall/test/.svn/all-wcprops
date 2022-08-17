@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/test
+END
+clicktocallxml.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/test/clicktocallxml.cxx
+END
+Makefile.am
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/test/Makefile.am
+END
+clicktocallxml_9_0.vcproj
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/repos/vIBC/!svn/ver/75/trunk/src/API/resiprocate-1.9.1/apps/clicktocall/test/clicktocallxml_9_0.vcproj
+END

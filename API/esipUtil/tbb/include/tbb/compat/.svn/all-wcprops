@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/compat
+END
+ppl.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/compat/ppl.h
+END
+thread
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/compat/thread
+END
+tuple
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/compat/tuple
+END
+condition_variable
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/repos/vIBC/!svn/ver/1388/trunk/src/API/esipUtil/tbb/include/tbb/compat/condition_variable
+END

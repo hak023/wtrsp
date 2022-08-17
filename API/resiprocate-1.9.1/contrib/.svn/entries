@@ -1,0 +1,95 @@
+10
+
+dir
+1518
+https://svn.alox.com/repos/vIBC/trunk/src/API/resiprocate-1.9.1/contrib
+https://svn.alox.com/repos/vIBC
+
+
+
+2016-05-12T01:56:04.912895Z
+75
+hdkim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1c93119a-1b73-42c0-9774-7fabd2e416fd
+
+cppunit
+dir
+
+getopt
+dir
+
+popt
+dir
+
+GeoIP
+dir
+
+MySQLConnectorC
+dir
+
+opensigcomp
+dir
+
+Netxx-0.3.2
+dir
+
+db
+dir
+
+srtp
+dir
+
+pcre
+dir
+
+asio
+dir
+
+.cvsignore
+file
+
+
+
+
+2017-03-17T07:06:12.248735Z
+4727ecdde581778ab8f14695c8b80a57
+2016-05-12T01:56:04.912895Z
+75
+hdkim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11
+
