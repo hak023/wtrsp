@@ -50,6 +50,7 @@ public:
 	static bool m_fnWriteImageFile(KString & _rclsXml, KString & _rclsPath, KString & _rclsImgFileName);
 	/*Util*/
 	static void m_fnSetLongLogSkip(KString & _rclsXml, KString & _rclsSkipXml);
+	static void m_fnXmlFormatter(KString & _rclsXml, KString & _rclsXmlFormat);
 	static void m_fnSetTranscodesCnt(TiXmlElement* pclsBodyElement, CTranscodesCnt & _rclsTranscodesCnt);
 };
 

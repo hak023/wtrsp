@@ -26,7 +26,10 @@ NasSystemTable::NasSystemTable()
 {
 	m_listNasSystem.m_fnClear();
 }
-NasSystemTable::~NasSystemTable(){}
+NasSystemTable::~NasSystemTable()
+{
+	m_listNasSystem.m_fnClear();
+}
 NasSystemTable * NasSystemTable::m_fnGetInstance()
 {
 	if(m_pclsMy==NULL) m_pclsMy = new NasSystemTable;
@@ -72,7 +75,7 @@ void NasSystemTable::m_fnGetSourceDir(KString &_rclsNasCode, KString &_rclsSourc
 		_rclsSourceDir.m_fnReSize(10240);
 		if (KString::m_fnStrCmp((KCSTR) pclsNasSystem->m_clsCode, (KCSTR) _rclsNasCode) == 0)
 		{
-			_rclsSourceDir.m_fnCat((KCSTR)m_clsNasRoot); 	// 경로 지정 필요
+			_rclsSourceDir.m_fnCat((KCSTR)m_clsNasRoot); 
 			if(((KCSTR)m_clsNasRoot)[m_clsNasRoot.m_unRealLen - 1] != '/')
 					_rclsSourceDir.m_fnCat("/");
 			_rclsSourceDir.m_fnCat((KCSTR)pclsNasSystem->m_clsSourceDir);
@@ -82,16 +85,16 @@ void NasSystemTable::m_fnGetSourceDir(KString &_rclsNasCode, KString &_rclsSourc
 		else
 		{
 			_rclsSourceDir = "UNKNOWN";
-			m_clsLock.m_fnUnlock();
 		}
 		pclsNasSystem = (NasSystem*) m_listNasSystem.m_fnGetNext(stItor);
 	}
+   m_clsLock.m_fnUnlock();
 }
 void NasSystemTable::m_fnDebug(KString & _rclsDebug)
 {
 	m_clsLock.m_fnReadLock();
 	_rclsDebug<<"<NAS_SYSTEM_TABLE>\n";
-	_rclsDebug<<"NAS_ROOT_DIR" << m_clsNasRoot << "\n";
+	_rclsDebug<<"NAS_ROOT_DIR" << "=" << m_clsNasRoot << "\n";
 	Iterator stItor;
 	NasSystem * pclsNasPoint = (NasSystem*)m_listNasSystem.m_fnGetNext(stItor);
 	while(pclsNasPoint)

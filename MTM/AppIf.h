@@ -112,10 +112,10 @@ inline const char * g_fnGetTrssCodeDesc(eSipUtil::CmpString _clsCmp)
    if(_clsCmp == "0000")      return "OK";
    else if(_clsCmp == "1009") return "JOB_TRANSCODE_TIMEOUT";
    else if(_clsCmp == "1016") return "JOB_IS_LIMITED";
-   else if(_clsCmp == "3001") return "TRANSCODING_FAILED";		// 규격서에 없음
+   else if(_clsCmp == "3001") return "TRANSCODING_FAILED";	
    else if(_clsCmp == "3002") return "NOT_SUPPORTED_AUDIO_DECODEC_TYPE";
    else if(_clsCmp == "3003") return "NOT_SUPPORTED_VIDEO_DECODEC_TYPE";
-   else if(_clsCmp == "3004") return "NOT_SUPPORTED_AUDIO_ENCODEC_TYPE"; // target
+   else if(_clsCmp == "3004") return "NOT_SUPPORTED_AUDIO_ENCODEC_TYPE"; 
    else if(_clsCmp == "3005") return "NOT_SUPPORTED_VIDEO_ENCODEC_TYPE";
    else if(_clsCmp == "3006") return "MEDIA_ENCODING_ERROR";
    else if(_clsCmp == "3007") return "MEDIA_DECODING_ERROR";

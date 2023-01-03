@@ -173,9 +173,10 @@ void TrseNode::m_fnCallLog(bool bSend, KString & _rclsXml)
 	KString clsMine;
 	KString clsOther;
 	KString clsBodyType;
+	KString clsAddrString;
 	AppXmlParser::m_fnGetBodyType(_rclsXml, clsBodyType);
 
-	KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"[S:%s][T:%010u] ",(KCSTR)clsSessionID,unTid);
+	KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"%s [S:%s][T:%010u] ",m_clsAddr.getStr((KSTR )clsAddrString, 128, false), (KCSTR)clsSessionID,unTid);
 
 	if(bSend)
 	{
@@ -190,7 +191,14 @@ void TrseNode::m_fnCallLog(bool bSend, KString & _rclsXml)
 	if(g_fnCheckTrseLog(E_LOG_DEBUG))
 	{
 		eLv = E_LOG_DEBUG;
-		KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_rclsXml);
+		if(MainConfig::m_fnGetInstance()->m_bXmlFormatter)
+		{
+			KString clsXmlFormat;
+			AppXmlParser::m_fnXmlFormatter(_rclsXml, clsXmlFormat);
+			KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsXmlFormat);
+		}
+		else
+			KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_rclsXml);
 	}
 	SELOG(eLv, pszTemp);
 }

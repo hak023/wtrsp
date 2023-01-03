@@ -7,8 +7,6 @@ import datetime
 import xml.etree.ElementTree as ET
 from socket import *
 
-TEST= ="한글테스트"
-
 #Server Info
 HOST = "121.134.202.25"
 PORT = 30001
@@ -116,7 +114,7 @@ def SendAliveCheck():
         LinkTestRequest = '<?xml version="1.0"?>'
         LinkTestRequest += '<WTRS.MSG Version11="1.0">'
         LinkTestRequest += '<HEADER From="urn:wtrsp:auth.endpoint:MMSC_ACPT" SessionID="%s" To="urn:wtrsp:system:wtrsg" TransactionID="%d">' % (SessionID, GetTid())
-        LinkTestRequest += '<Error Code="" Description="" Source=""/>'
+        LinkTestRequest += '<Error Code="" Description=""�" Source=""/>'
         LinkTestRequest += '</HEADER>'
         LinkTestRequest += '<BODY>'
         LinkTestRequest += '<LinkTestRequest/>'

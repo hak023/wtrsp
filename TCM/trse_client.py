@@ -13,7 +13,7 @@ PORT = 30001
 
 #global variable
 TransactionID = 0
-SendAliveCheckTimer = 60
+SendAliveCheckTimer = 1
 SHUTDOWN = False
 lock = threading.Lock()
 SessionID = ''

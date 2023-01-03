@@ -37,6 +37,7 @@ public:
 	TrsgTrTimerMgr m_clsTrsgTrTimer;
 	SessionTimerMgr m_clsSessionTimer;
 	GarbageTimerMgr m_clsGarbageTimer;
+
 private:
 	void m_fnStart(unsigned int _unIdx);
 	void m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv); /*pclsSess->m_fnRecvTrseCrtJobReq(_pclsEv->m_clsXml);*/

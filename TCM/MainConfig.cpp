@@ -21,10 +21,11 @@ DefaultCfgItem_t EnvDefaultCfg[]=
 	{"LOG","TRSE_LEVEL","3"},
 	{"LOG","TRSS_LEVEL","3"},
 	{"LOG","SKIP_BINARY","1"},
+	{"LOG","XML_FORMATTER","0"},
 	{"NAS","NAS_INTERNAL","/home/ibc/ibc/src/vIBC/trunk/src/NAS_INTERNAL"},
 	{"NAS","DELETE_DECODE_FILE","1"},
 	{"NAS","DELETE_ENCODE_FILE","1"},
-	{"GBG","GBG_CHECK_CNT","1000"},
+	{"GBG","GBG_CHECK_CNT","100"},
 	{"GBG","GBG_INTERVAL_TMR","1000"},
 	{"GBG","GBG_SES_TMR","60"},
 	{"SES","SES_TMR","40000"},
@@ -39,11 +40,15 @@ DefaultCfgItem_t EnvDefaultCfg[]=
 	{"TRSG","RETRY_CONNECTION_INTERVAL","3"},
 	{"TRSG","TRANSACTION_TIMEOUT","0"},
 	{"TRSG","MAX_CONNECTION_RETRIES","0"},
+	{"LB","IP","0.0.0.0"},
 	{NULL,NULL,NULL}
 };
 MainConfig * g_fnCreateMainConfig()
 {
-   return MainConfig::m_fnGetInstance();
+	MainConfig * pMainConfig = MainConfig::m_fnGetInstance();
+	pMainConfig->m_fnApplyEnv();
+	pMainConfig->m_fnDisplayEnv();
+	return pMainConfig;
 }
 MainConfig * MainConfig::m_pclsMy = NULL;
 MainConfig::MainConfig()
@@ -79,7 +84,8 @@ void MainConfig::m_fnDisplayEnv()
 	IFLOG(E_LOG_DEBUG,"APP_LEVEL:%d", m_eLvApp);
 	IFLOG(E_LOG_DEBUG,"TRSE_LEVEL:%d", m_eLvTrse);
 	IFLOG(E_LOG_DEBUG,"TRSS_LEVEL:%d", m_eLvTrss);
-	IFLOG(E_LOG_DEBUG,"SKIP_BINARY:%d\n", m_bSkipBinary);
+	IFLOG(E_LOG_DEBUG,"SKIP_BINARY:%d", m_bSkipBinary);
+	IFLOG(E_LOG_DEBUG,"XML_FORMATTER:%d\n", m_bXmlFormatter);
 
 	IFLOG(E_LOG_DEBUG,"[NAS]");
 	IFLOG(E_LOG_DEBUG,"NAS_INTERNAL:%s", (KCSTR)m_clsNasInternal);
@@ -96,7 +102,6 @@ void MainConfig::m_fnDisplayEnv()
 
 	IFLOG(E_LOG_DEBUG,"[TRSE]");
 	IFLOG(E_LOG_DEBUG,"ESTABLISH_REQ_TIMEOUT:%d\n", m_unTrseEstablishTimeout);
-	IFLOG(E_LOG_DEBUG,"ESTABLISH_REQ_TIMEOUT:%d\n", m_unTrseEstablishTimeout);
 
 	IFLOG(E_LOG_DEBUG,"[TRSS]");
 	IFLOG(E_LOG_DEBUG,"ESTABLISH_REQ_TIMEOUT:%d", m_unTrssEstablishTimeout);
@@ -110,13 +115,17 @@ void MainConfig::m_fnDisplayEnv()
 	IFLOG(E_LOG_DEBUG,"MAX_TAG_IMAGE_SIZE_KB:%d", m_unMaxTagImageSizeKB);
 	IFLOG(E_LOG_DEBUG,"RETRY_CONNECTION_INTERVAL:%d", m_unRetryConnectionInterval);
 	IFLOG(E_LOG_DEBUG,"TRANSACTION_TIMEOUT:%d", m_unTransactionTimeout);
-	IFLOG(E_LOG_DEBUG,"MAX_CONNECTION_RETRIES:%d", m_unMaxConnectionRetries);
+	IFLOG(E_LOG_DEBUG,"MAX_CONNECTION_RETRIES:%d\n", m_unMaxConnectionRetries);
+
+	IFLOG(E_LOG_DEBUG,"[LB]");
+	IFLOG(E_LOG_DEBUG,"IP:%s", (KCSTR)m_clsTrseLoadBalanceIP);
 	IFLOG(E_LOG_DEBUG,"=======================================================");
 }
 void MainConfig::m_fnLoadFile()
 {
 	m_clsMainCfg.m_fnLoadConfig("../config/TCM/main.cfg", MainDefaultCfg);
 	m_clsEnvCfg.m_fnLoadConfig("../config/TCM/env.cfg",EnvDefaultCfg);
+	m_clsEnvCfg.m_fnSetNotifyChangedFile(s_fnCbkEnvChanged, true, this);
 
 	//Apply Config
 	m_fnApplyMain();
@@ -125,8 +134,6 @@ void MainConfig::m_fnLoadFile()
 	//Display Config
 	m_fnDisplayMain();
 	m_fnDisplayEnv();
-
-	m_clsEnvCfg.m_fnSetNotifyChangedFile(s_fnCbkEnvChanged, true, this);
 }
 void MainConfig::m_fnApplyMain()
 {
@@ -146,6 +153,7 @@ void MainConfig::m_fnApplyEnv()
 	m_eLvTrse = (eSipUtil::ELogLevel_t)(KINT)m_clsEnvCfg.m_fnFindVal("LOG","TRSE_LEVEL");
 	m_eLvTrss = (eSipUtil::ELogLevel_t)(KINT)m_clsEnvCfg.m_fnFindVal("LOG","TRSS_LEVEL");
 	m_bSkipBinary = (((KINT)m_clsEnvCfg.m_fnFindVal("LOG","SKIP_BINARY") == 1) ? true : false);
+	m_bXmlFormatter = (((KINT)m_clsEnvCfg.m_fnFindVal("LOG","XML_FORMATTER") == 1) ? true : false);
 
 	//Set Log Level.
 	g_fnSetLog(E_VWTRSG_LOG_CATE_UTIL, m_eLvUtil);
@@ -185,6 +193,8 @@ void MainConfig::m_fnApplyEnv()
 	m_unRetryConnectionInterval = (KUINT)m_clsEnvCfg.m_fnFindVal("TRSG","RETRY_CONNECTION_INTERVAL");
 	m_unTransactionTimeout = (KUINT)m_clsEnvCfg.m_fnFindVal("TRSG","TRANSACTION_TIMEOUT");
 	m_unMaxConnectionRetries = (KUINT)m_clsEnvCfg.m_fnFindVal("TRSG","MAX_CONNECTION_RETRIES");
+
+	m_clsTrseLoadBalanceIP = (KCSTR)m_clsEnvCfg.m_fnFindVal("LB","IP");
 }
 
 void MainConfig::s_fnCbkEnvChanged(CfgFile * _pclsObj)

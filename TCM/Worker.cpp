@@ -12,6 +12,8 @@ Worker * g_fnCreateWorker()
 }
 Worker * Worker::m_pclsMy = NULL;
 unsigned int Worker::m_unMax = 0;
+//(Worker Num ) * (IdMgrNum) = (Total Session)
+eSipUtil::IdMgr *Worker::m_pWorkerIdMgr = new IdMgr( MainConfig::m_fnGetInstance()->m_unWorkerNum * (MainConfig::m_fnGetInstance()->m_unIdMgrNum));
 Worker::Worker()
 {
 	m_pclsQ = NULL;m_unIdx = 0; 
@@ -180,6 +182,11 @@ void Worker::m_fnProcTrseCrtJobReq(AppTrseEvent * _pclsEv)
 	unsigned int unTid = _pclsEv->m_unTid;
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 
+   if(clsSessionID.m_unRealLen == 0)
+   {
+      IFLOG(E_LOG_ERR,"SessionID Len is zero. [Key:%s-%d]", (KSTR)clsSessionID, unTid);
+      return;
+   }
 	if(m_clsSesMgr.m_fnIsOverload())//해당 Woker에 세션이 Full 일 경우
 	{
 		_pclsEv->m_clsJobID = (KCSTR)g_fnGetUUID();
@@ -204,11 +211,10 @@ void Worker::m_fnProcTrseCrtJobReq(AppTrseEvent * _pclsEv)
 			//에러 응답 전송
 			TrseTransport * pclsTrans = TrseTransport::m_fnGetInstance();
 			pclsTrans->m_fnXmlSend(_pclsEv->m_stAddr, clsCreateJobRes);
-			m_fnCallLog(false, _pclsEv);
 			IFLOG(E_LOG_ERR, "IsOverLoad Response[%s]", (KCSTR)clsCreateJobRes);
 
 			pclsCTrsgCdrInfo->m_fnSendTrseCrtJobRes(clsCreateJobRes, E_JOB_IS_LIMITED);//Trsg code 설정.
-			pclsCTrsgCdrInfo->m_fnMakeCdrList();//write
+			pclsCTrsgCdrInfo->m_fnMakeCdrList(_pclsEv->m_clsJobID);//write
 			delete pclsCTrsgCdrInfo;
 		}
 		return;
@@ -436,7 +442,7 @@ void Worker::m_fnProcTrssTrTimeOut(AppTrssTimerEvent * _pclsEv)
 	TrssTransaction * pclsTr = m_clsTrssTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trss(Tid:%d, JobID:%s, SessionID:%s) TrssTrTimeOut (Not Exist Trss Tr) ", unTid, (KCSTR)clsJobID, (KCSTR)clsSessionID);
+		IFLOG(E_LOG_INFO, "Trss(Tid:%d, JobID:%s, SessionID:%s) TrssTrTimeOut (Not Exist Trss Tr) ", unTid, (KCSTR)clsJobID, (KCSTR)clsSessionID);
 		return;
 	}
 
@@ -457,7 +463,7 @@ void Worker::m_fnProcSessionTimeOut(AppSessionTimerEvent * _pclsEv)
 	Session * pclsSes = m_clsSesMgr.m_fnSessionFind( _pclsEv->m_unTid, _pclsEv->m_clsSessionID);
 	if(pclsSes == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Session(Tid:%d, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsSessionID);
+		IFLOG(E_LOG_INFO, "Session(Tid:%d, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsSessionID);
 		return;
 	}
 	else

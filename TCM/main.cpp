@@ -15,10 +15,15 @@
 #include <sys/resource.h>
 #include <fstream>
 #include <cstring>
+#include <algorithm>
+#include <sstream>
+#include <vector>
+#include <unistd.h>
+#include <cstdio>
 /******************************* Util Include ********************************************/
 #include "ConfigFile.hxx"
 #include "string.hxx"
-#include "log.hxx"
+#include "Trsplog.hxx"
 #include "rutil/XMLCursor.hxx"
 #include "rutil/DataStream.hxx"
 #include "rutil/Inserter.hxx"
@@ -30,7 +35,7 @@
 #include "Worker.h"
 #include "TrseNodeMgr.h"
 #include "TrssNodeMgr.h"
-#include "tinyxml/tinyxml.h"
+#include "tinyxml.h"
 #include "AppXmlParser.h"
 #include "CBase64.h"
 #include "TrsgCdr.h"
@@ -49,6 +54,38 @@ static const char *s_fnStringSignal(int sig);
 static void s_fnSignalHandle(int sig);
 static void s_fnSetSignal();
 static void s_fnSetProcName(int argc, char ** argv);
+void get_process_id_list(std::vector<pid_t> &list)
+{
+	char command[256]; memset(command, 0x00, sizeof(command));
+	char result[256]; memset(result, 0x00, sizeof(result));
+	char *ptr = NULL;
+
+	sprintf(command, "pidof %s", (KCSTR)g_clsProcName);
+	// get "pidof" result as string
+	FILE *fp = popen(command, "r");
+	list.clear();
+	if (fp)
+	{
+		size_t ret = fread(result, 1, 256, fp);
+		pclose(fp);
+		if (ret <= 0)
+		{
+			printf("failed to get pidof command result\n");
+			return;
+		}
+		// convert as std::string and remove new line character(\n)
+		std::string szres(result);
+		szres.replace(szres.find('\n'), 1, "");
+		// split string and push pid values in vector (delimeter = ' ')
+		std::string szpid;
+		std::istringstream stream(szres);
+		while (getline(stream, szpid, ' '))
+		{
+			pid_t pid = strtol(szpid.c_str(), &ptr, 10);
+			list.push_back(pid);
+		}
+	}
+}
 void main_memory_init()
 {
 	struct rlimit rlim;
@@ -63,9 +100,9 @@ int g_fnGetLog()
 }
 void s_fnCreateLog(const char *_pszProcName)
 {
-	KString clsLogPath; clsLogPath<<(KCSTR)"../log/"<<_pszProcName<<(KCSTR)"/";
+	KString clsLogPath; clsLogPath<<(KCSTR)"/logs/"<<_pszProcName<<(KCSTR)"/";
 	std::cout << "clsLogPath:" << (KCSTR)clsLogPath << "\n";
-	AsyncFileLog::m_fnInit((KCSTR)clsLogPath,(KCSTR)g_clsProcName, g_unVwtrsgLogInst,819200,10);
+	AsyncFileLog::m_fnInit((KCSTR)clsLogPath,(KCSTR)g_clsProcName, g_unVwtrsgLogInst,819200,0);
 	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_UTIL,"UTIL");
 	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_APP, "APP ");
 	AsyncFileLog::m_fnSetCategoryStr(g_unVwtrsgLogInst, E_VWTRSG_LOG_CATE_TRSE,  "TRSE");
@@ -99,8 +136,18 @@ int main(int argc, char ** argv)
 	g_unPid = (unsigned int) getpid();
 	g_clsBuildDate << (KCSTR) __DATE__ << " - " << (KCSTR) __TIME__;
 	s_fnSetProcName(argc, argv);
+	//중복 실행 방지
+	std::vector<pid_t> pid_list;
+	get_process_id_list(pid_list);
+	if(pid_list.size() > 1)
+	{
+		printf("%s is already running\n", (KCSTR)g_clsProcName);
+		return 0;
+	}
+
 	s_fnSetSignal();
 	s_fnCreateLog((KCSTR)g_clsProcName);
+	IFLOG(E_LOG_ERR,"Process Start [%s]", (KCSTR)g_clsProcName);
 	g_fnCreateMainConfig();
 	g_fnCreateAclSystemTable();
 	g_fnCreateTrsgCdr();

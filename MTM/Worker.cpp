@@ -31,7 +31,7 @@ Worker* Worker::m_fnGetInstance(unsigned int _unNum)
 	for (unsigned int i = 0; i < _unNum; i++)
 	{
 		m_pclsMy[i].m_fnStart(i);
-		m_pclsMy[i].m_clsGarbageTimer.m_fnSetTimer(i, MainConfig::m_fnGetInstance()->m_unGarbageInvervalTmr);
+		m_pclsMy[i].m_clsGarbageTimer.m_fnSetTimer(i, MainConfig::m_fnGetInstance()->m_unGarbageIntervalTmr);
 	}
 	return m_pclsMy;
 }
@@ -52,8 +52,8 @@ void Worker::m_fnPutTrsgEv(AppTrsgEvent *_pclsEv)
 		delete _pclsEv;
 	else
 	{
-		unsigned int nDecision = unTid % m_unMax; //동일한 TID는 동일한 Woker에 할당 되도록 함.
-		if (m_pclsMy[nDecision].m_pclsQ->put(_pclsEv) == false)
+		unsigned int unDecision = unTid % m_unMax; //동일한 TID는 동일한 Worker에 할당 되도록 함.
+		if (m_pclsMy[unDecision].m_pclsQ->put(_pclsEv) == false)
 		{
 			delete _pclsEv;
 		}
@@ -66,8 +66,8 @@ void Worker::m_fnPutTrsgTcStartEv(AppTrsgTcStartEvent *_pclsEv)
 		delete _pclsEv;
 	else
 	{
-		unsigned int nDecision = unTid % m_unMax; //동일한 TID는 동일한 Woker에 할당 되도록 함.
-		if (m_pclsMy[nDecision].m_pclsQ->put(_pclsEv) == false)
+		unsigned int unDecision = unTid % m_unMax; //동일한 TID는 동일한 Worker에 할당 되도록 함.
+		if (m_pclsMy[unDecision].m_pclsQ->put(_pclsEv) == false)
 		{
 			delete _pclsEv;
 		}
@@ -80,8 +80,8 @@ void Worker::m_fnPutTrsgTcStopEv(AppTrsgTcStopEvent *_pclsEv)
 		delete _pclsEv;
 	else
 	{
-		unsigned int nDecision = unTid % m_unMax; //동일한 TID는 동일한 Woker에 할당 되도록 함.
-		if (m_pclsMy[nDecision].m_pclsQ->put(_pclsEv) == false)
+		unsigned int unDecision = unTid % m_unMax; //동일한 TID는 동일한 Worker에 할당 되도록 함.
+		if (m_pclsMy[unDecision].m_pclsQ->put(_pclsEv) == false)
 		{
 			delete _pclsEv;
 		}
@@ -173,6 +173,11 @@ void Worker::m_fnCbkProcess(AppBaseEvent *_pclsEv, void *_pvOwner)
 	{
 		pclsMy->m_fnProcSessionEnd((AppSessionEndEvent*) _pclsEv);
 	}
+	else
+	{
+		IFLOG(E_LOG_ERR,"UNKNOWN Event WorkerQueue(%d)", _pclsEv->m_eT);
+	}
+
 	delete _pclsEv;
 }
 void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
@@ -181,39 +186,24 @@ void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	// Session Full 이면 JobNotify_Destroyed 메시지 전송
-	if(m_clsSesMgr.m_fnIsOverload())
+	if (m_clsSesMgr.m_fnIsOverload())
 	{
 		m_fnCallLog(false, _pclsEv);
-		IFLOG(E_LOG_ERR,"Session IsOverload(E_JOB_IS_LIMITED) [Key:%s-%d-%s]", (KSTR)clsSessionID, unTid, (KSTR)clsJobID);
+		IFLOG(E_LOG_ERR, "Session IsOverload(E_JOB_IS_LIMITED) [Key:%s-%d-%s]", (KSTR) clsSessionID, unTid, (KSTR) clsJobID);
 
 		unsigned int unTranscodingList = AppXmlParser::m_fnGetTranscodingList(_pclsEv->m_clsXml);
 
-		KString clsJobStatusChangedNotify; clsJobStatusChangedNotify.m_fnReSize(10240);
+		KString clsJobStatusChangedNotify;
+		clsJobStatusChangedNotify.m_fnReSize(10240);
 		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
 
 		// Destroyed 메시지 전송
 		TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 		pclsTrans->m_fnXmlSend(_pclsEv->m_stAddr, clsJobStatusChangedNotify);
-		m_fnCallLog(true, _pclsEv);
-		return;
-	}
-
-	// 동시처리개수 제한 확인하기 (IDMGR)
-	// 괜찮으면 ++
-	// 넘으면 -> Destroyed
-	if(Worker::m_pWorkerIdMgr->getAvailableIdNum() == 0)
-	{
-		IFLOG(E_LOG_ERR, "ID_MGR Full(E_JOB_IS_LIMITED) [Key:%s-%d-%s : %d]", (KSTR)clsSessionID, unTid, (KSTR)clsJobID, Worker::m_pWorkerIdMgr->getAvailableIdNum());
-		unsigned int unTranscodingList = AppXmlParser::m_fnGetTranscodingList(_pclsEv->m_clsXml);
-
-		KString clsJobStatusChangedNotify; clsJobStatusChangedNotify.m_fnReSize(10240);
-		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
-
-		// Destroyed 메시지 전송
-		TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
-		pclsTrans->m_fnXmlSend(_pclsEv->m_stAddr, clsJobStatusChangedNotify);
-		m_fnCallLog(true, _pclsEv);
+		IFLOG(E_LOG_ERR, "Session IsOverLoad Response[%s]", (KCSTR) clsJobStatusChangedNotify);
 		return;
 	}
 
@@ -229,8 +219,7 @@ void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
 		IFLOG(E_LOG_ERR, "TrsgTransaction Create Fail[Key:%s-%d-%s]", (KSTR) clsSessionID, unTid, (KSTR) clsJobID);
 		return;
 	}
-
-	pclsTrsgTr->m_stTrsgAddr = _pclsEv->m_stAddr; //Trsg Addr set
+	pclsTrsgTr->m_stTrsgAddr = _pclsEv->m_stAddr;
 
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(unTid, clsJobID, clsSessionID);
 	if (pclsSess)
@@ -247,6 +236,26 @@ void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
 		return;
 	}
 
+   // Worker IdMgr Full
+	if (pclsSess->m_nAllocWorker == -1)
+	{
+		m_fnCallLog(false, _pclsEv);
+		IFLOG(E_LOG_ERR, "ID_MGR Full(E_JOB_IS_LIMITED) [Key:%s-%d-%s : %d]", (KSTR) clsSessionID, unTid, (KSTR) clsJobID, Worker::m_pWorkerIdMgr->getAvailableIdNum());
+		// Session Delete
+		m_clsSesMgr.m_fnTrsgDel(unTid, clsJobID, clsSessionID);
+
+		unsigned int unTranscodingList = AppXmlParser::m_fnGetTranscodingList(_pclsEv->m_clsXml);
+
+		KString clsJobStatusChangedNotify;
+		clsJobStatusChangedNotify.m_fnReSize(10240);
+		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
+
+		// Destroyed 메시지 전송
+		TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
+		pclsTrans->m_fnXmlSend(_pclsEv->m_stAddr, clsJobStatusChangedNotify);
+		IFLOG(E_LOG_ERR, "TC Request Overload Response[%s]", (KCSTR) clsJobStatusChangedNotify);
+		return;
+	}
 	pclsSess->m_clsJobID = clsJobID;
 
 	m_fnCallLog(false, _pclsEv);
@@ -259,12 +268,15 @@ void Worker::m_fnProcTrsgStatusChangedNotifyCreated(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -282,12 +294,15 @@ void Worker::m_fnProcTrsgStatusChangedNotifyWaiting(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -305,12 +320,15 @@ void Worker::m_fnProcTrsgStatusChangedNotifyJobStarted(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -327,12 +345,16 @@ void Worker::m_fnProcTrsgStatusChangedNotifyTranscodingStarted(AppTrsgTcStartEve
 	unsigned int unTid = _pclsEv->m_unTid;
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
+
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -349,12 +371,16 @@ void Worker::m_fnProcTrsgStatusChangedNotifyTranscodingStopped(AppTrsgTcStopEven
 	unsigned int unTid = _pclsEv->m_unTid;
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
+
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -372,12 +398,15 @@ void Worker::m_fnProcTrsgStatusChangedNotifyJobStopped(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -395,12 +424,15 @@ void Worker::m_fnProcTrsgStatusChangedNotifyDestroyed(AppTrsgEvent *_pclsEv)
 	KString clsSessionID = _pclsEv->m_clsSessionID;
 	KString clsJobID = _pclsEv->m_clsJobID;
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST File:%s, Line:%d, Func:%s", __FILE__, __LINE__, __func__);
+
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess)
 	{
@@ -423,9 +455,10 @@ void Worker::m_fnProcTrsgTrTimeOut(AppTrsgTimerEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
+
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess == NULL)
 	{
@@ -439,7 +472,7 @@ void Worker::m_fnProcSessionTimeOut(AppSessionTimerEvent *_pclsEv)
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess == NULL)
 	{
-		IFLOG(E_LOG_ERR, "Session(Tid:%d, JobID:%s, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsJobID, (KCSTR)_pclsEv->m_clsSessionID);
+		IFLOG(E_LOG_INFO, "Session(Tid:%d, JobID:%s, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsJobID, (KCSTR)_pclsEv->m_clsSessionID);
 		return;
 	}
 	else
@@ -455,7 +488,7 @@ void Worker::m_fnProcSessionTimeOut(AppSessionTimerEvent *_pclsEv)
 void Worker::m_fnProcGarbageClear(AppGarbageTimerEvent *_pclsEv)
 {
 	m_clsSesMgr.m_fnGarbageClear();
-	m_clsGarbageTimer.m_fnSetTimer(_pclsEv->m_unWorkerIdx, MainConfig::m_fnGetInstance()->m_unGarbageInvervalTmr);
+	m_clsGarbageTimer.m_fnSetTimer(_pclsEv->m_unWorkerIdx, MainConfig::m_fnGetInstance()->m_unGarbageIntervalTmr);
 }
 void Worker::m_fnProcSessionEnd(AppSessionEndEvent *_pclsEv)
 {
@@ -523,5 +556,4 @@ void Worker::m_fnCallLog(bool bSend, AppBaseEvent *_pclsEv)
 		KString::m_fnStrnCat(pszTemp, clsLog.m_unLen, "%s <-- %s : %s", (KCSTR)MainConfig::m_fnGetInstance()->m_clsSysName, (KCSTR) clsOther, g_fnGetAppString(_pclsEv->m_eT));
 	}
 	IFLOG(eLv, pszTemp);
-
 }

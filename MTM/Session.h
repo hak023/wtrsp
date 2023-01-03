@@ -46,7 +46,7 @@ public:
 
 	KString m_fnGetFileName();
 	void * m_fnGetWorker();
-	ETrssCodeSet_t m_fnExecuteTranscoding(KString & _rclsTcCommand, ETcType_t _eTcType, KString & _rclsResultDescription);
+	ETrssCodeSet_t m_fnExecuteTranscoding(KString & _rclsTcCommand, KString &_rclsSourceContainerID, TargetContent* _pclsTarget, KString & _rclsResultDescription);
 	/* RECV MSG */
 	void m_fnRecvSessionTimeOut();
 	void m_fnCreateSessionEndEv();

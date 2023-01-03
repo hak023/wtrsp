@@ -82,7 +82,7 @@ def SendCreateJobRequest():
     CreateJobRequest += '<CreateJobRequest>'
     CreateJobRequest += '<Job Kind="Realtime" ServiceName="Z1yp1whm">'
     CreateJobRequest += '<SourceContentMap>'
-    CreateJobRequest += '<SourceContent BinaryData="" File="Unavailable.mp3" Path="vwtrss/mp3" NASCode="67" ID="0">'
+    CreateJobRequest += '<SourceContent BinaryData="" File="6420001358.mp3" Path="vwtrss/audio" NASCode="67" ID="0">'
     CreateJobRequest += '<Container ID="MP3">'
     CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
@@ -90,7 +90,7 @@ def SendCreateJobRequest():
     CreateJobRequest += '</SourceContent>'
     CreateJobRequest += '</SourceContentMap>'
     CreateJobRequest += '<TargetContentMap>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="MP3TestFile_6.vox" ID="6" NASCode="10" Path="vwtrss/test">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="mp3_To_vox.vpm" ID="6" NASCode="10" Path="vwtrss/test" >'
     CreateJobRequest += '<Container ID="VOX">'
     CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
     CreateJobRequest += '<AudioCodec BitPerSample="4" BitRate="64000" Channel="1" ID="VOX" SampleRate="8000"/>'
@@ -132,12 +132,12 @@ def SendAliveCheck():
         time.sleep(SendAliveCheckTimer)
 
 def RecvTcpData():
+    print ('start!!1')
     global SHUTDOWN
     global SessionID
     while not SHUTDOWN :
         header = c.recv(30)
         bodySizeStr = header[10:]
-        
         body = c.recv(int(bodySizeStr))
         recvLen = len(body)
 
@@ -154,6 +154,7 @@ def RecvTcpData():
             decompress_msg = zlib.decompress(body)
         except Exception as e:
             continue
+
         decompress_msg = decompress_msg[0:-1]
         logger.info('[RECV]' + decompress_msg.decode('utf-8'))
         
@@ -173,7 +174,7 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
@@ -184,8 +185,6 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

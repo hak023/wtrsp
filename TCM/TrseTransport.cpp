@@ -46,6 +46,9 @@ void TrseTransport::m_fnDelConnection(const Net5Tuple_t & _rstNet5Tuple)
 void TrseTransport::m_fnCbkNotify(ETcpNotiEv_t _eT, const Net5Tuple_t & _rstNet5Tuple,
 										ETransportErr_t _eDisconErr)
 {
+	//L4 health check ¹«½Ã.
+	if(KString::m_fnStrCmp(_rstNet5Tuple.m_szRemoteIp, (KCSTR)MainConfig::m_fnGetInstance()->m_clsTrseLoadBalanceIP) == 0) return;
+
 	if (_eT == E_TCP_NOTI_ACCEPT_CON)
 	{
 		TrseConEv * pclsNew = new TrseConEv;

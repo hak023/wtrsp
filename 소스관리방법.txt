@@ -1,0 +1,25 @@
+1. 개발 서버
+121.134.202.25 ibc/ibcdnflrj
+1) TCM
+/home/ibc/ibc/src/vIBC/trunk/src/TCM
+2) MTM
+/home/ibc/ibc/src/vIBC/trunk/src/MTM
+
+
+2. SVN
+vibc SVN에 세들어 살고 있다. - 라이브러리가 동일하기 때문
+https://svn.alox.com/repos/vIBC/trunk/src
+
+3. Git Hub
+https://github.com/hak023/wtrsp   << 임시주소.
+
+유플러스에서 별도의 github 주소를 주기로 함.
+
+4. 그 외에 컴파일 환경은 docker hub를 통해서도 다운로드 받을 수 있도록도 하였음.
+같은 폴더에 있는 메뉴얼 참조.
+
+
+
+* 221020 by hak. 유플러스에서 받은 git 주소로 소스 이동합니다.
+https://bitbucket.alms.lguplus.co.kr:7990/scm/med_mims_mims/w_trsp.git
+같은 폴더에 있는 메뉴얼에도 반영하였으니 참고.

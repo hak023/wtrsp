@@ -29,7 +29,7 @@ void AppXmlParser::m_fnGetCurrentTime(KString & _rclsCurrent)
 bool AppXmlParser::m_fnValid(KString & _rclsXml)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	if(doc.Error())
 	{
 		IFLOG(E_LOG_ERR,"[AppXmlParser]Error in [%s]", doc.ErrorDesc());
@@ -40,6 +40,14 @@ bool AppXmlParser::m_fnValid(KString & _rclsXml)
 	if (rootElement == NULL)
 	{
 		IFLOG(E_LOG_ERR,"[AppXmlParser]Xml Format error[WTRS.MSG]");
+		return false;
+	}
+
+
+	CmpString clsRootEleName = rootElement->Value();
+	if((clsRootEleName == "WTRS.MSG") == false)
+	{
+		IFLOG(E_LOG_ERR,"[AppXmlParser]Xml Format error[rootElement Invalid:%s]", (KCSTR)clsRootEleName);
 		return false;
 	}
 
@@ -109,7 +117,7 @@ bool AppXmlParser::m_fnValid(KString & _rclsXml)
 ETrsgCodeSet_t AppXmlParser::m_fnCreateJobValid(KString & _rclsXml)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* jobElement = bodyTypeElement->FirstChildElement(
@@ -138,7 +146,7 @@ ETrsgCodeSet_t AppXmlParser::m_fnCreateJobValid(KString & _rclsXml)
 bool AppXmlParser::m_fnGetBodyType(KString & _rclsXml, KString & _rclsBodyType)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY")->FirstChildElement();
@@ -207,7 +215,7 @@ unsigned int AppXmlParser::m_fnGetTransactionID(KString & _rclsXml)
 	int nTid = 0;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 	if(headerElement->QueryIntAttribute("TransactionID",&nTid) == TIXML_SUCCESS)
@@ -223,7 +231,7 @@ unsigned int AppXmlParser::m_fnGetTransactionID(KString & _rclsXml)
 void AppXmlParser::m_fnGetSessionID(KString & _rclsXml, KString & _rclsSessionID)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 	_rclsSessionID = headerElement->Attribute("SessionID");
@@ -231,7 +239,7 @@ void AppXmlParser::m_fnGetSessionID(KString & _rclsXml, KString & _rclsSessionID
 void AppXmlParser::m_fnGetJobID(KString & _rclsXml, KString & _rclsJobID)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyElement =  rootElement->FirstChildElement("BODY");
 	TiXmlElement* jobStatusChangedNotifyElement = bodyElement->FirstChildElement("JobStatusChangedNotify");
@@ -242,7 +250,7 @@ void AppXmlParser::m_fnGetJobID(KString & _rclsXml, KString & _rclsJobID)
 void AppXmlParser::m_fnGetToFrom(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -252,7 +260,7 @@ void AppXmlParser::m_fnGetToFrom(KString & _rclsXml, KString & _rclsTo, KString 
 void AppXmlParser::m_fnGetAuthInfo(KString & _rclsXml, KString & _rclsID, KString & _rclsPWD, KString & _rclsIP)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyElement =  rootElement->FirstChildElement("BODY");
 	if(bodyElement == NULL) return;
@@ -271,7 +279,7 @@ void AppXmlParser::m_fnGetNasCode(KString & _rclsXml, int* _pnSrcNasCode, int* _
 	if(AppXmlParser::m_fnGetBodyType(_rclsXml, clsBodyType))
 	{
 		TiXmlDocument doc;
-		doc.Parse((KCSTR) _rclsXml);
+		doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 		TiXmlElement* rootElement = doc.RootElement();;
 		TiXmlElement* bodyElement = rootElement->FirstChildElement("BODY");
 
@@ -431,7 +439,7 @@ void AppXmlParser::m_fnGetSourceContentInfo(KString & _rclsXml, KString & _rclsP
  */
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();;
 	TiXmlElement* bodyElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* jobElement = bodyElement->FirstChildElement(
@@ -534,7 +542,7 @@ unsigned int AppXmlParser::m_fnGetTranscodingList(KString & _rclsXml)
 	unsigned int nTranscoding = 0;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* jobElement = bodyTypeElement->FirstChildElement(
@@ -599,7 +607,7 @@ void AppXmlParser::m_fnGetJobStateResultCode(KString & _rclsXml, KString & _rcls
 	</WTRS.MSG>
 	 */
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* jobStateElement = bodyTypeElement->FirstChildElement(
@@ -639,7 +647,7 @@ void AppXmlParser::m_fnGetTransSessionID(KString & _rclsXml, KString & _rclsTran
 </WTRS.MSG>
 	 */
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* transcodesElement = bodyTypeElement->FirstChildElement(
@@ -680,7 +688,7 @@ void AppXmlParser::m_fnGetTransCnt(KString & _rclsXml, int* _pnCancel, int* _pnC
 </WTRS.MSG>
 	 */
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* transcodesElement = bodyTypeElement->FirstChildElement(
@@ -699,7 +707,7 @@ void AppXmlParser::m_fnGetTargetContentList(KString & _rclsXml, StlList * _pclsT
 	else return;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyTypeElement = rootElement->FirstChildElement("BODY");
 	TiXmlElement* targetContentMapElement = bodyTypeElement->FirstChildElement(
@@ -784,7 +792,7 @@ void AppXmlParser::m_fnMakeLinkTestRes(KString & _rclsXml, KString & _rclsLinkTe
 	KString clsTransactionID;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -848,7 +856,7 @@ void AppXmlParser::m_fnMakeEstablishSessionRes(KString & _rclsXml, KString & _rc
 	clsCode = g_fnGetTrsgCode(_eSt); clsDescription = g_fnGetTrsgCodeDesc((KCSTR)clsCode);
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -908,7 +916,7 @@ void AppXmlParser::m_fnMakeCloseSessionRes(KString & _rclsXml, KString & _rclsCl
 	KString clsTransactionID;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -971,7 +979,7 @@ void AppXmlParser::m_fnMakeCreateJobReq(KString & _rclsXml, KString & _rclsTo,
 </WTRS.MSG>
 */
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1066,7 +1074,7 @@ void AppXmlParser::m_fnMakeCreateJobRes(KString & _rclsXml, KString & _rclsTo, K
 	KString clsServiceName;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 	TiXmlElement* bodyElement =  rootElement->FirstChildElement("BODY");
@@ -1102,7 +1110,7 @@ void AppXmlParser::m_fnMakeCreateJobRes(KString & _rclsXml, KString & _rclsTo, K
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, KString & _rclsJobStatusChgNotify)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1118,7 +1126,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString & _rclsXml, KS
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Waiting(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, KString & _rclsJobStatusChgNotify)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1134,7 +1142,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Waiting(KString & _rclsXml, KS
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, CTranscodesCnt & _rclsTranscodesCnt, KString & _rclsJobStatusChgNotify)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1153,7 +1161,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString & _rclsXml,
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, CTranscodesCnt & _rclsTranscodesCnt, KString & _rclsJobStatusChgNotify)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1176,7 +1184,7 @@ bool AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Stopped(KString & _rclsXml,
 	AppXmlParser::m_fnGetNasCode(_rclsXml, NULL , &nDstNasCode);
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1228,7 +1236,9 @@ bool AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Stopped(KString & _rclsXml,
 				//ResultCode 변경 작업.
 				TiXmlElement* jobStateElement = bodyElement->FirstChildElement(
 							"JobStatusChangedNotify")->FirstChildElement("JobState");
+				TiXmlElement *transcodesElement = jobStateElement->FirstChildElement("Transcodes");
 				jobStateElement->SetAttribute("ResultCode", g_fnGetTrsgCode(E_TCP_BINARY_ENCODING_FAILED));
+				transcodesElement->SetAttribute("ResultCode", g_fnGetTrsgCode(E_TCP_BINARY_ENCODING_FAILED));
 			}
 			else
 			{
@@ -1269,7 +1279,7 @@ bool AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Stopped(KString & _rclsXml,
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, CTranscodesCnt & _rclsTranscodesCnt, KString & _rclsJobStatusChgNotify)
 {
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1288,7 +1298,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString & _rclsXml,
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, CTranscodesCnt & _rclsTranscodesCnt, KString & _rclsJobStatusChgNotify)
 {//Trss로 부터 Destroy를 받아서 전달하는 경우.
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* headerElement =  rootElement->FirstChildElement("HEADER");
 
@@ -1307,7 +1317,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString & _rclsXml, 
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString & _rclsXml, KString & _rclsJobStatusChgNotify, CTranscodesCnt & _rclsTranscodesCnt, ETrsgCodeSet_t _eSt)
 {// Trsg에서 자체적으로 Destroy를 보내야 하는 경우.(CreateJobResponse 메시지를 기반으로 Destroy를 생성함) (Overloading)
 	TiXmlDocument doc;
-	doc.Parse((KCSTR) _rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement *rootElement = doc.RootElement();
 	TiXmlElement *headerElement = rootElement->FirstChildElement("HEADER");
 	TiXmlElement *bodyElement = rootElement->FirstChildElement("BODY");
@@ -1361,7 +1371,7 @@ ETrsgCodeSet_t AppXmlParser::m_fnWriteSourceFile(KString & _rclsXml, KString & _
 	KString clsTransactionID;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyElement =  rootElement->FirstChildElement("BODY");
 
@@ -1393,7 +1403,7 @@ ETrsgCodeSet_t AppXmlParser::m_fnWriteSourceFile(KString & _rclsXml, KString & _
 		return E_TCP_BINARY_DECODING_FAILED;
 	}
 
-	//path, filename vaild check!!!
+	//path, filename valid check!!!
 	KString tmpFile;
 	KString::m_fnStrnCat((KSTR)tmpFile, tmpFile.m_unLen, "%s/%s", (KSTR)_rclsPath, (KSTR)_rclsFileName);
 	std::ofstream fout((KCSTR)tmpFile, std::ios::out);
@@ -1419,7 +1429,7 @@ bool AppXmlParser::m_fnWriteImageFile(KString & _rclsXml, KString & _rclsPath, K
 	KString clsTransactionID;
 
 	TiXmlDocument doc;
-	doc.Parse((KCSTR)_rclsXml);
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 	TiXmlElement* rootElement = doc.RootElement();
 	TiXmlElement* bodyElement =  rootElement->FirstChildElement("BODY");
 
@@ -1465,7 +1475,7 @@ bool AppXmlParser::m_fnWriteImageFile(KString & _rclsXml, KString & _rclsPath, K
 		return false;
 	}
 
-	//path, filename vaild check!!!
+	//path, filename valid check!!!
 	KString tmpFile;
 	KString::m_fnStrnCat((KSTR)tmpFile, tmpFile.m_unLen, "%s/%s", (KSTR)_rclsPath, (KSTR)_rclsImgFileName);
 	std::ofstream fout((KCSTR)tmpFile, std::ios::out);
@@ -1490,7 +1500,7 @@ void AppXmlParser::m_fnSetLongLogSkip(KString & _rclsXml, KString & _rclsSkipXml
 	if(AppXmlParser::m_fnGetBodyType(_rclsXml, clsBodyType))
 	{
 		TiXmlDocument doc;
-		doc.Parse((KCSTR) _rclsXml);
+		doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
 		TiXmlElement* rootElement = doc.RootElement();
 		TiXmlElement* bodyElement = rootElement->FirstChildElement("BODY");
 		if(clsBodyType == DEF_BODY_CREATE_JOB_REQ)//trsg <- trse 수신 시 출력 간소화
@@ -1631,7 +1641,14 @@ void AppXmlParser::m_fnSetLongLogSkip(KString & _rclsXml, KString & _rclsSkipXml
 		return;
 	}
 }
-
+void AppXmlParser::m_fnXmlFormatter(KString & _rclsXml, KString & _rclsXmlFormat)
+{
+	TiXmlDocument doc;
+	doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
+	TiXmlPrinter printer;
+	doc.Accept(&printer);
+	_rclsXmlFormat = printer.CStr();
+}
 void AppXmlParser::m_fnSetTranscodesCnt(TiXmlElement* pclsBodyElement, CTranscodesCnt & _rclsTranscodesCnt)
 {
 	TiXmlElement* bodyTypeElement = pclsBodyElement->FirstChildElement();

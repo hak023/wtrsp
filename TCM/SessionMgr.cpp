@@ -102,7 +102,7 @@ void SessionMgr::m_fnGarbageClear()
 				DailyTime clsGetTime;
 				clsGetTime.m_fnGetTimetToStr((unsigned int)stCurrentTime, clsCurrentTime);
 				clsGetTime.m_fnGetTimetToStr((unsigned int)m_pclsSesStruct[unIdx].stStartTime, clsStartTime);
-				IFLOG(E_LOG_ERR,"Garbage Clear WOKER[%d] ID[%u] SessionID[%s] Tid[%d] stCurrentTime[%s], stStartTime[%s], diff[%d]",
+				IFLOG(E_LOG_ERR,"Garbage Clear WORKER[%d] ID[%u] SessionID[%s] Tid[%d] stCurrentTime[%s], stStartTime[%s], diff[%d]",
 						pclsWorker->m_unIdx, unIdx, (KSTR)m_pclsSesStruct[unIdx].m_clsSessionID, m_pclsSesStruct[unIdx].m_unTid, (KCSTR)clsCurrentTime, (KCSTR)clsStartTime,
 					MainConfig::m_fnGetInstance()->m_unGarbageSesTmr);
 

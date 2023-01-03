@@ -4,7 +4,7 @@
 #include "main.h"
 #include "ConfigFile.hxx"
 #include "JsonFile.hxx"
-#include "log.hxx"
+#include "Trsplog.hxx"
 #include "lock.hxx"
 #include "AppIf.h"
 
@@ -37,6 +37,7 @@ public:
        m_clsTool = _rclsSrc.m_clsTool;
        m_clsMetadata = _rclsSrc.m_clsMetadata;
        m_clsEtc = _rclsSrc.m_clsEtc;
+       m_clsTimeStamp = _rclsSrc.m_clsTimeStamp;
        return * this;
     }
 	void m_fnDebug(eSipUtil::KString &_rclsDebug)
@@ -45,7 +46,7 @@ public:
 		_rclsDebug<< ", Type: " << m_clsType << ", AudioCodecID: " << m_clsACodecID
 				<< ", VideoCodecID: " << m_clsVCodecID << ", Format: " << m_clsFormat
 				<< ", ACodec: " << m_clsACodec << ", VCodec: " << m_clsVCodec
-				<<", Tool: " << m_clsTool << ", Metadata: " << m_clsMetadata << ", Etc: " << m_clsEtc << "]\n";
+				<<", Tool: " << m_clsTool << ", Metadata: " << m_clsMetadata << ", Etc: " << m_clsEtc << ", TimeStamp: " << m_clsTimeStamp << "]\n";
 	}
 	eSipUtil::KString m_clsSrcID;
 	eSipUtil::KString m_clsType;
@@ -58,6 +59,7 @@ public:
 	eSipUtil::KString m_clsTool;
 	eSipUtil::KString m_clsMetadata;
 	eSipUtil::KString m_clsEtc;
+	eSipUtil::KString m_clsTimeStamp;
 };
 class MainConfig
 {
@@ -94,24 +96,21 @@ public:
 	eSipUtil::ELogLevel_t m_eLvUtil;
 	eSipUtil::ELogLevel_t m_eLvApp;
 	eSipUtil::ELogLevel_t m_eLvTrsg;
+	bool m_bXmlFormatter;
 	//[NAS]
 	eSipUtil::KString m_clsNasInternal;
 	//[GRG]
 	unsigned int m_unGarbageSesTmr;
-	unsigned int m_unGarbageInvervalTmr;
+	unsigned int m_unGarbageIntervalTmr;
 	unsigned int m_unGarbageCheckCnt;
 	//[SES]
 	unsigned int m_unSesTmr;
 	//[TRSG]
-	unsigned int m_unTransactionTimeout;
-	unsigned int m_unTransactionRetryCnt;
-	unsigned int m_unEstablishSesResTimeout;
+	unsigned int m_unEstablishSesResTimeout;  
 	unsigned int m_unEstablishSesRetryCnt;
 	unsigned int m_unLinkTestResTimeout;
 	unsigned int m_unLinkTestRetryCnt;
-	unsigned int m_unReconnTimeout;
-	unsigned int m_unMaxTcpContentSizeKB;
-	unsigned int m_unMaxTagImageSizeKB;
+	unsigned int m_unReconnTmr;
 	//[TC]
 	unsigned int m_unCmdTimeout;
 

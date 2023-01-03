@@ -11,6 +11,13 @@ typedef enum
 	E_TC_MCONV,
 	E_TC_VOX
 } ETcType_t;
+inline const char * g_fnGetTranscodingType(ETcType_t _eTcType)
+{
+	if(_eTcType == E_TC_FFMPEG) return "FCONV";
+	else if(_eTcType == E_TC_MCONV) return "MCONV";
+	else if(_eTcType == E_TC_VOX) return "VOX";
+	else return "UNKNOWN";
+}
 
 class AudioCodec
 {
@@ -99,7 +106,7 @@ public:
 		_rclsDebug << "[TargetContent]\n";
 		_rclsDebug << "File=" << m_clsFile << ", ID=" << m_clsID << ", NASCode="
 				<< m_clsNasCode << ", Path=" << m_clsPath << ", Size=" << m_clsSize << ", FilePath=" << m_clsFilePath
-				<<", OutputFile=" << m_clsOutputFile << "\n";
+				<< ", TempFile=" << m_clsTempFile <<", OutputFile=" << m_clsOutputFile << "\n";
 		m_clsContainer.m_fnDebug(_rclsDebug);
 		return (KSTR) _rclsDebug;
 	}
@@ -111,6 +118,7 @@ public:
 	KString m_clsPath;
 	KString m_clsSize;
 	KString m_clsFilePath; 	// Path+File
+	KString m_clsTempFile;	// For Vox Type
 	KString m_clsOutputFile;
 	Container m_clsContainer;
 	KString m_clsTcCommand;

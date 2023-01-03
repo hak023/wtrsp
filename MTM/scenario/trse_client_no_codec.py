@@ -82,18 +82,18 @@ def SendCreateJobRequest():
     CreateJobRequest += '<CreateJobRequest>'
     CreateJobRequest += '<Job Kind="Realtime" ServiceName="Z1yp1whm">'
     CreateJobRequest += '<SourceContentMap>'
-    CreateJobRequest += '<SourceContent File="266245.3g2" ID="1" NASCode="10" Path="test/lhj">'
-    CreateJobRequest += '<Container ID="">'
+    CreateJobRequest += '<SourceContent File="6430001361.mp3" ID="1" NASCode="67" Path="vwtrss/audio">'
+    CreateJobRequest += '<Container ID="MP3">'
     CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</SourceContent>'
     CreateJobRequest += '</SourceContentMap>'
     CreateJobRequest += '<TargetContentMap>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="tc_266245.qcelp" ID="102" NASCode="10" Path="test/lhj">'
-    CreateJobRequest += '<Container ID="">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="no_codec_file.mp3" ID="102" NASCode="10" Path="vwtrss/test">'
+    CreateJobRequest += '<Container ID="MP3C">'
     CreateJobRequest += '<VideoCodec ID="" Width="" Height="" MaxFrameRate="" BitRate="" VariableFrameRate="" />'
-    CreateJobRequest += '<AudioCodec ID="" Channel="" SampleRate="" BitRate="" BitPerSample="" />'
+    CreateJobRequest += '<AudioCodec ID="MP3" Channel="1" SampleRate="8000" BitRate="122000" BitPerSample="15" />'
     CreateJobRequest += '<Metadata Album="" Artist="" Comment="" Genre="" Title="" Track="" Year=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
@@ -185,8 +185,6 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

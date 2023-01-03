@@ -174,7 +174,7 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
@@ -185,8 +185,6 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

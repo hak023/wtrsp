@@ -4,7 +4,7 @@
 
 #include "main.h"
 #include "ConfigFile.hxx"
-#include "log.hxx"
+#include "Trsplog.hxx"
 class MainConfig
 {
 	public:
@@ -38,6 +38,7 @@ class MainConfig
 		eSipUtil::ELogLevel_t m_eLvTrse;
 		eSipUtil::ELogLevel_t m_eLvTrss;
 		bool m_bSkipBinary;
+		bool m_bXmlFormatter;
 		//[NAS]
 		eSipUtil::KString m_clsNasInternal;
 		bool m_bDeleteDecodeFile;
@@ -63,6 +64,9 @@ class MainConfig
 		unsigned int m_unRetryConnectionInterval;
 		unsigned int m_unTransactionTimeout;
 		unsigned int m_unMaxConnectionRetries;
+
+		//[LB]
+		eSipUtil::KString m_clsTrseLoadBalanceIP;
 
 		static MainConfig * m_pclsMy;
 };

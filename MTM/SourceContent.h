@@ -144,7 +144,7 @@ public:
 	char * m_fnDebug(eSipUtil::KString & _rclsDebug)
 	{
 		_rclsDebug << "[SourceContent]\n";
-		_rclsDebug << "BinaryData=" << m_clsBinaryData << ", File=" << m_clsFile << ", ID=" << m_clsID << ", NASCode="
+		_rclsDebug << "BinaryData=" << m_clsBinaryData << ", File=" << m_clsFile << ", Container ID=" << m_clsID << ", NASCode="
 				<< m_clsNasCode << ", Path=" << m_clsPath << ", FilePath=" << m_clsFilePath
 				<< "\n";
 		m_clsMetadata.m_fnDebug(_rclsDebug);
@@ -153,7 +153,7 @@ public:
 
 	KString m_clsBinaryData;
 	KString m_clsFile;
-	KString m_clsID;
+	KString m_clsID;        // ContainerID
 	KString m_clsNasCode;
 	KString m_clsPath;
 	KString m_clsFilePath; 	// Path+File

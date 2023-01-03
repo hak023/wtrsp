@@ -63,7 +63,7 @@ void TrsgNode::m_fnDisConnected()
 	m_eSt = E_TRSG_NODE_ST_DISCONNECTED;
 	m_bConnect = false;
 
-	unTrsgReconnTmr = pclsConf->m_unReconnTimeout;
+	unTrsgReconnTmr = pclsConf->m_unReconnTmr;
 	m_unEstablishSesRetryCnt = 0;
 	m_unLinkTestRetryCnt = 0;
 
@@ -240,7 +240,14 @@ void TrsgNode::m_fnCallLog(bool bSend, KString &_rclsXml)
 	if (g_fnCheckTrsgLog (E_LOG_DEBUG))
 	{
 		eLv = E_LOG_DEBUG;
-		KString::m_fnStrnCat(pszTemp, 20480, "\n%s", (KCSTR) _rclsXml);
+		if(MainConfig::m_fnGetInstance()->m_bXmlFormatter)
+		{
+			KString clsXmlFormat;
+			AppXmlParser::m_fnXmlFormatter(_rclsXml, clsXmlFormat);
+			KString::m_fnStrnCat(pszTemp, 20480, "\n%s", (KCSTR) clsXmlFormat);
+		}
+		else
+			KString::m_fnStrnCat(pszTemp, 20480, "\n%s", (KCSTR) _rclsXml);
 	}
 	SGLOG(eLv, pszTemp);
 }

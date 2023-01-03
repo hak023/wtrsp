@@ -82,7 +82,7 @@ def SendCreateJobRequest():
     CreateJobRequest += '<CreateJobRequest>'
     CreateJobRequest += '<Job Kind="Realtime" ServiceName="Z1yp1whm">'
     CreateJobRequest += '<SourceContentMap>'
-    CreateJobRequest += '<SourceContent File="doggy.jpg" ID="1" NASCode="28" Path="animal/dog">'
+    CreateJobRequest += '<SourceContent File="82463318_orig.jpg" ID="1" NASCode="67" Path="vwtrss/audio">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
@@ -90,37 +90,37 @@ def SendCreateJobRequest():
     CreateJobRequest += '</SourceContent>'
     CreateJobRequest += '</SourceContentMap>'
     CreateJobRequest += '<TargetContentMap>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_240.jpg" ID="1" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_240.jpg" ID="1" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="240" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="240"/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="JPEG" SampleRate=""/>'
+    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="NONE" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_120.jpg" ID="2" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_120.jpg" ID="2" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="120" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="120"/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="JPEG" SampleRate=""/>'
+    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_90.jpg" ID="3" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_90.jpg" ID="3" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="90" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="90"/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_50.jpg" ID="4" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_50.jpg" ID="4" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="50" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="50"/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="NONE" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_25.jpg" ID="5" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_25.jpg" ID="5" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="25" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="25"/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="JPEG" SampleRate=""/>'
+    CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="doggy_600.jpg" ID="6" NASCode="28" Path="animal/dog" Size="40KB">'
+    CreateJobRequest += '<TargetContent BinaryData="" File="test_82463318_600.jpg" ID="6" NASCode="10" Path="vwtrss/test" Size="40KB">'
     CreateJobRequest += '<Container ID="JPEG">'
     CreateJobRequest += '<VideoCodec BitRate="64000" Height="600" ID="JPEG" MaxFrameRate="" VariableFrameRate="" Width="600"/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
@@ -208,7 +208,8 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    #file_handler = logging.FileHandler('../../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
@@ -219,8 +220,8 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
+    #print(c.getblocking())
+    #print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

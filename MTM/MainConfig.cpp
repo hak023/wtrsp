@@ -5,7 +5,8 @@ using namespace eSipUtil;
 DefaultCfgItem_t MainDefaultCfg[] =
 {
 { "MAIN", "ID_MGR_NUM", "1000" },
-{ "MAIN", "WORKER_QUEUE_CNT", "1000" },
+{ "MAIN", "WORKER_ID_MGR_NUM", "24" },
+{ "MAIN", "WORKER_QUEUE_CNT", "100" },
 { "MAIN", "WORKER_NUM", "8" },
 { "MAIN", "LOCAL_FROM", "urn:wtrsp:system:wtrss" },
 { "MAIN", "DST_TO", "urn:wtrsp:system:wtrsg" },
@@ -15,25 +16,25 @@ DefaultCfgItem_t EnvDefaultCfg[] =
 { "LOG", "UTIL_LEVEL", "0" },
 { "LOG", "APP_LEVEL", "3" },
 { "LOG", "TRSG_LEVEL", "3" },
+{ "LOG", "XML_FORMATTER","0" },
 { "NAS", "NAS_INTERNAL", "/home/ibc/ibc/src/vIBC/trunk/src/NAS_INTERNAL" },
 { "GBG", "GBG_CHECK_CNT", "1000" },
 { "GBG", "GBG_INTERVAL_TMR", "1000" },
 { "GBG", "GBG_SES_TMR", "60" },
-{ "SES", "SES_TMR", "40000" },
-{ "TRSG", "TRANSACTION_TIMEOUT", "30" },
-{ "TRSG", "TRANSACTION_RETRY_CNT", "30" },
-{ "TRSG", "ESTABLISH_SESSION_RES_TMR", "30" },
-{ "TRSG", "ESTABLISH_SESSION_RETRY_CNT", "30" },
-{ "TRSG", "LINK_TEST_RES_TMR", "30" },
-{ "TRSG", "LINK_TEST_RETRY_CNT", "30" },
-{ "TRSG", "RECONN_TMR", "30" },
-{ "TRSG", "MAX_TCP_CONTENT_SIZE_KB", "30" },
-{ "TRSG", "MAX_TAG_IMAGE_SIZE_KB", "30" },
-{ "TC", "TC_CMD_TMR", "30" },	// second
+{ "SES", "SES_TMR", "450000" },
+{ "TRSG", "ESTABLISH_SESSION_RES_TMR", "5000" },
+{ "TRSG", "ESTABLISH_SESSION_RETRY_CNT", "3" },
+{ "TRSG", "LINK_TEST_RES_TMR", "6000" },
+{ "TRSG", "LINK_TEST_RETRY_CNT", "3" },
+{ "TRSG", "RECON_TMR", "5000" },
+{ "TC", "TC_CMD_TMR", "45" },	
 { NULL, NULL, NULL } };
 MainConfig* g_fnCreateMainConfig()
 {
-	return MainConfig::m_fnGetInstance();
+	MainConfig * pMainConfig = MainConfig::m_fnGetInstance();
+	pMainConfig->m_fnApplyEnv();
+	pMainConfig->m_fnDisplayEnv();
+	return pMainConfig;
 }
 MainConfig *MainConfig::m_pclsMy = NULL;
 MainConfig::MainConfig()
@@ -58,9 +59,9 @@ void MainConfig::m_fnDisplayMain()
 	IFLOG(E_LOG_DEBUG, "[MAIN]");
 	IFLOG(E_LOG_DEBUG, "WORKER_NUM:%d", m_unWorkerNum);
 	IFLOG(E_LOG_DEBUG, "WORKER_QUEUE_CNT:%d", m_unWorkerQueueCnt);
-	IFLOG(E_LOG_DEBUG, "ID_MGR_NUM:%d\n", m_unIdMgrNum);
-	IFLOG(E_LOG_DEBUG, "WORKER_ID_MGR_NUM:%d\n", m_unWorkerIdMgrNum);
-	IFLOG(E_LOG_DEBUG, "LOCAL_FROM:%s\n", (KCSTR)m_clsLocName);
+	IFLOG(E_LOG_DEBUG, "ID_MGR_NUM:%d", m_unIdMgrNum);
+	IFLOG(E_LOG_DEBUG, "WORKER_ID_MGR_NUM:%d", m_unWorkerIdMgrNum);
+	IFLOG(E_LOG_DEBUG, "LOCAL_FROM:%s", (KCSTR)m_clsLocName);
 	IFLOG(E_LOG_DEBUG, "DST_TO:%s\n", (KCSTR)m_clsDstName);
 	IFLOG(E_LOG_DEBUG, "=======================================================");
 }
@@ -69,30 +70,27 @@ void MainConfig::m_fnDisplayEnv()
 	IFLOG(E_LOG_DEBUG, "============== ../config/MTM/env.cfg ===============");
 	IFLOG(E_LOG_DEBUG, "[LOG]");
 	IFLOG(E_LOG_DEBUG, "UTIL_LEVEL:%d", m_eLvUtil);
-	IFLOG(E_LOG_DEBUG, "APP_LEVEL:%d\n", m_eLvApp);
+	IFLOG(E_LOG_DEBUG, "APP_LEVEL:%d", m_eLvApp);
 	IFLOG(E_LOG_DEBUG, "TRSG_LEVEL:%d", m_eLvTrsg);
+	IFLOG(E_LOG_DEBUG, "XML_FORMATTER:%d\n", m_bXmlFormatter);
 
 	IFLOG(E_LOG_DEBUG, "[NAS]");
 	IFLOG(E_LOG_DEBUG, "NAS_INTERNAL:%s\n", (KCSTR) m_clsNasInternal);
 
 	IFLOG(E_LOG_DEBUG, "[GBG]");
 	IFLOG(E_LOG_DEBUG, "GBG_CHECK_CNT:%d", m_unGarbageCheckCnt);
-	IFLOG(E_LOG_DEBUG, "GBG_INTERVAL_TMR:%d", m_unGarbageInvervalTmr);
+	IFLOG(E_LOG_DEBUG, "GBG_INTERVAL_TMR:%d", m_unGarbageIntervalTmr);
 	IFLOG(E_LOG_DEBUG, "GBG_SES_TMR:%d\n", m_unGarbageSesTmr);
 
 	IFLOG(E_LOG_DEBUG, "[SES]");
 	IFLOG(E_LOG_DEBUG, "SES_TMR:%d\n", m_unSesTmr);
 
 	IFLOG(E_LOG_DEBUG, "[TRSG]");
-	IFLOG(E_LOG_DEBUG, "TRANSACTION_TIMEOUT:%d", m_unTransactionTimeout);
-	IFLOG(E_LOG_DEBUG, "TRANSACTION_RETRY_CNT:%d", m_unTransactionRetryCnt);
 	IFLOG(E_LOG_DEBUG, "ESTABLISH_SESSION_RES_TMR:%d", m_unEstablishSesResTimeout);
 	IFLOG(E_LOG_DEBUG, "ESTABLISH_SESSION_RETRY_CNT:%d", m_unEstablishSesRetryCnt);
 	IFLOG(E_LOG_DEBUG, "LINK_TEST_RES_TMR:%d", m_unLinkTestResTimeout);
 	IFLOG(E_LOG_DEBUG, "LINK_TEST_RETRY_CNT:%d", m_unLinkTestRetryCnt);
-	IFLOG(E_LOG_DEBUG, "RECONN_TMR:%d", m_unReconnTimeout);
-	IFLOG(E_LOG_DEBUG, "MAX_TAG_IMAGE_SIZE_KB:%d", m_unMaxTcpContentSizeKB);
-	IFLOG(E_LOG_DEBUG, "MAX_TAG_IMAGE_SIZE_KB:%d", m_unMaxTagImageSizeKB);
+	IFLOG(E_LOG_DEBUG, "RECON_TMR:%d", m_unReconnTmr);
 
 	IFLOG(E_LOG_DEBUG, "[TC]");
 	IFLOG(E_LOG_DEBUG, "TC_CMD_TMR:%d\n", m_unCmdTimeout);
@@ -135,6 +133,7 @@ void MainConfig::m_fnApplyEnv()
 	m_eLvUtil = (eSipUtil::ELogLevel_t) (KINT) m_clsEnvCfg.m_fnFindVal("LOG", "UTIL_LEVEL");
 	m_eLvApp = (eSipUtil::ELogLevel_t) (KINT) m_clsEnvCfg.m_fnFindVal("LOG", "APP_LEVEL");
 	m_eLvTrsg = (eSipUtil::ELogLevel_t) (KINT) m_clsEnvCfg.m_fnFindVal("LOG", "TRSG_LEVEL");
+	m_bXmlFormatter = (((KINT)m_clsEnvCfg.m_fnFindVal("LOG","XML_FORMATTER") == 1) ? true : false);
 
 	//Set Log Level.
 	g_fnSetLog(E_VWTRSS_LOG_CATE_UTIL, m_eLvUtil);
@@ -154,20 +153,16 @@ void MainConfig::m_fnApplyEnv()
 		m_unGarbageCheckCnt = unTmp;
 	}
 
-	m_unGarbageInvervalTmr = (KUINT) m_clsEnvCfg.m_fnFindVal("GBG", "GBG_INTERVAL_TMR");
+	m_unGarbageIntervalTmr = (KUINT) m_clsEnvCfg.m_fnFindVal("GBG", "GBG_INTERVAL_TMR");
 	m_unGarbageSesTmr = (KUINT) m_clsEnvCfg.m_fnFindVal("GBG", "GBG_SES_TMR");
 
 	m_unSesTmr = (KUINT) m_clsEnvCfg.m_fnFindVal("SES", "SES_TMR");
 
-	m_unTransactionTimeout = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "TRANSACTION_TIMEOUT");
-	m_unTransactionRetryCnt = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "TRANSACTION_RETRY_CNT");
 	m_unEstablishSesResTimeout = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "ESTABLISH_SESSION_RES_TMR");
 	m_unEstablishSesRetryCnt = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "ESTABLISH_SESSION_RETRY_CNT");
 	m_unLinkTestResTimeout = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "LINK_TEST_RES_TMR");
 	m_unLinkTestRetryCnt = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "LINK_TEST_RETRY_CNT");
-	m_unReconnTimeout = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "RECONN_TMR");
-	m_unMaxTcpContentSizeKB = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "MAX_TCP_CONTENT_SIZE_KB");
-	m_unMaxTagImageSizeKB = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "MAX_TAG_IMAGE_SIZE_KB");
+	m_unReconnTmr = (KUINT) m_clsEnvCfg.m_fnFindVal("TRSG", "RECON_TMR");
 
 	m_unCmdTimeout = (KUINT) m_clsEnvCfg.m_fnFindVal("TC", "TC_CMD_TMR");
 }
@@ -201,6 +196,7 @@ void MainConfig::m_fnApplyCodec()
 				pclsTcCodec->m_clsTool = (KSTR)pclsTargetItem->m_fnGetVal("_Tool");
 				pclsTcCodec->m_clsMetadata = (KSTR)pclsTargetItem->m_fnGetVal("_Metadata");
 				pclsTcCodec->m_clsEtc = (KSTR)pclsTargetItem->m_fnGetVal("_Etc");
+				pclsTcCodec->m_clsTimeStamp = (KSTR)pclsTargetItem->m_fnGetVal("_TimeStamp");
 
 				//add list
 				KString clsDebug;
@@ -210,7 +206,6 @@ void MainConfig::m_fnApplyCodec()
 
 				if(pclsTcCodec->m_clsACodecID.m_unRealLen > 0)
 				{
-					// Image 의 경우, Config ACodec 은 "" 로 설정
 					Codec* pclsCodec = new Codec;
 					pclsCodec->m_clsCodecID = (KCSTR)pclsTcCodec->m_clsACodecID;
 					//ex) Key:AMR Value:Codec class
@@ -260,6 +255,7 @@ ETrssCodeSet_t MainConfig::m_fnChkTargetCodec(KString &_rclsTargetAudioCodec, KS
 		if(m_mapVCodec.m_fnFindMap((KCSTR)_rclsTargetVideoCodec) == NULL)
 		{
 			m_clsLock.m_fnUnlock();
+         IFLOG(E_LOG_ERR,"Not Supported Codec(E_NOT_SUPPORT_VIDEO_ENCODEC_TYPE)");
 			return E_NOT_SUPPORT_VIDEO_ENCODEC_TYPE;
 		}
 		else
@@ -267,6 +263,7 @@ ETrssCodeSet_t MainConfig::m_fnChkTargetCodec(KString &_rclsTargetAudioCodec, KS
 			if(m_mapACodec.m_fnFindMap((KCSTR)_rclsTargetAudioCodec) == NULL)
 			{
 				m_clsLock.m_fnUnlock();
+            IFLOG(E_LOG_ERR,"Not Supported Codec(E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE)");
 				return E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE;
 			}
 			else//둘다 찾았다.
@@ -281,6 +278,7 @@ ETrssCodeSet_t MainConfig::m_fnChkTargetCodec(KString &_rclsTargetAudioCodec, KS
 		if(m_mapVCodec.m_fnFindMap((KCSTR)_rclsTargetVideoCodec) == NULL)
 		{
 			m_clsLock.m_fnUnlock();
+         IFLOG(E_LOG_ERR,"Not Supported Codec(E_NOT_SUPPORT_VIDEO_ENCODEC_TYPE)");
 			return E_NOT_SUPPORT_VIDEO_ENCODEC_TYPE;
 		}
 		else
@@ -294,6 +292,7 @@ ETrssCodeSet_t MainConfig::m_fnChkTargetCodec(KString &_rclsTargetAudioCodec, KS
 		if(m_mapACodec.m_fnFindMap((KCSTR)_rclsTargetAudioCodec) == NULL)
 		{
 			m_clsLock.m_fnUnlock();
+         IFLOG(E_LOG_ERR,"Not Supported Codec(E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE)");
 			return E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE;
 		}
 		else
@@ -305,11 +304,12 @@ ETrssCodeSet_t MainConfig::m_fnChkTargetCodec(KString &_rclsTargetAudioCodec, KS
 	else
 	{
 		// No Codec Info
-		IFLOG(E_LOG_ERR, "MainConfig::m_fnChkTargetCodec Error");
+		IFLOG(E_LOG_ERR, "MainConfig No Codec Info");
 	}
 
 	m_clsLock.m_fnUnlock();
-	return E_TRANSCODING_FAILED;
+   IFLOG(E_LOG_ERR,"Not Supported Codec(E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE)");
+	return E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE;
 }
 
 bool MainConfig::m_fnGetTargetCodec(KString &_rclsSourceID, KString &_rclsTargetID,

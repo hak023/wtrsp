@@ -98,18 +98,18 @@ def SendCreateJobRequest():
     CreateJobRequest += '<Metadata Album="" Artist="" Comment="" Genre="" Title="" Track="" Year=""/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="" ID="102" NASCode="" Path="">'
-    CreateJobRequest += '<Container ID="K3G">'
-    CreateJobRequest += '<VideoCodec BitRate="10240" Height="144" ID="MPEG4" MaxFrameRate="5" VariableFrameRate="" Width="176"/>'
+    #CreateJobRequest += '<TargetContent BinaryData="" File="" ID="102" NASCode="" Path="">'
+    #CreateJobRequest += '<Container ID="K3G">'
+    #CreateJobRequest += '<VideoCodec BitRate="10240" Height="144" ID="MPEG4" MaxFrameRate="5" VariableFrameRate="" Width="176"/>'
     #CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="14000" Channel="1" ID="QCELP" SampleRate="8000"/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="13000" Channel="1" ID="QCELP" SampleRate="8000"/>'
-    CreateJobRequest += '<Metadata Album="" Artist="" Comment="" Genre="" Title="" Track="" Year=""/>'
-    CreateJobRequest += '</Container>'
-    CreateJobRequest += '</TargetContent>'
+    #CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="13000" Channel="1" ID="QCELP" SampleRate="8000"/>'
+    #CreateJobRequest += '<Metadata Album="" Artist="" Comment="" Genre="" Title="" Track="" Year=""/>'
+    #CreateJobRequest += '</Container>'
+    #CreateJobRequest += '</TargetContent>'
     CreateJobRequest += '</TargetContentMap>'
     CreateJobRequest += '<TranscodingList>'
     CreateJobRequest += '<Transcoding SourceContentID="1" TargetContentID="101"/>'
-    CreateJobRequest += '<Transcoding SourceContentID="1" TargetContentID="102"/>'
+    #CreateJobRequest += '<Transcoding SourceContentID="1" TargetContentID="102"/>'
     CreateJobRequest += '</TranscodingList>'
     CreateJobRequest += '</Job>'
     CreateJobRequest += '</CreateJobRequest>'
@@ -184,9 +184,8 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
     
     logger.info('create socket')
     c = socket(AF_INET, SOCK_STREAM)
@@ -195,8 +194,6 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

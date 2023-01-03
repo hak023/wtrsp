@@ -105,6 +105,7 @@ class Session : public eSipUtil::StlObject
 		eSipUtil::KString m_clsInternalNasImgFileName;
 		CTranscodesCnt m_clsTranscodesCnt;
 		CTrsgCdrInfo * m_pclsCTrsgCdrInfo;
+		int m_nAllocWorker;
 };
 
 #endif

@@ -67,7 +67,6 @@ void AclSystemTable::m_fnLoadDB()
 		pclsEndPoint->m_clsID = (KCSTR)m_clsAclSystemFile.m_fnFindVal((KCSTR)clsTmp,"ID");
 		pclsEndPoint->m_clsPWD = (KCSTR)m_clsAclSystemFile.m_fnFindVal((KCSTR)clsTmp,"PWD");
 		pclsEndPoint->m_clsIP = (KCSTR)m_clsAclSystemFile.m_fnFindVal((KCSTR)clsTmp,"IP");
-
 		//pclsEndPoint->m_fnSetKey((KCSTR)m_clsAclSystemFile.m_fnFindVal((KCSTR)clsTmp,"ID"));
 
 		m_listAclSystem.m_fnPushBack(pclsEndPoint);

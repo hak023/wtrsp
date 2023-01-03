@@ -18,4 +18,4 @@ echo "============== TRSG_MSG.log =============="
 find /home/ibc/ibc/src/vIBC/trunk/src/stat/TRSG -type f -name "TRSG_MSG\.???\.????????????\.log" -ctime +$STAT_SAVE_DAY -exec ls {} \;
 
 
-
+date >> /home/ibc/ibc/src/vIBC/trunk/src/TCM/rmtest.log

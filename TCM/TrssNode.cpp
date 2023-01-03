@@ -139,7 +139,14 @@ void TrssNode::m_fnCallLog(bool bSend, KString & _rclsXml)
 	if(g_fnCheckTrssLog(E_LOG_DEBUG))
 	{
 		eLv = E_LOG_DEBUG;
-		KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_rclsXml);
+		if(MainConfig::m_fnGetInstance()->m_bXmlFormatter)
+		{
+			KString clsXmlFormat;
+			AppXmlParser::m_fnXmlFormatter(_rclsXml, clsXmlFormat);
+			KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsXmlFormat);
+		}
+		else
+			KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_rclsXml);
 	}
 	SSLOG(eLv, pszTemp);
 }

@@ -18,7 +18,7 @@ TrsgCdr * TrsgCdr::m_fnGetInstance()
 TrsgCdr::TrsgCdr()
 {
 	IFLOG(E_LOG_INFO, "========== Trsg Cdr init ==========");
-	m_clsTrsgCdrMgr.m_fnInit("TRSG_MSG", "../stat/TRSG", MainConfig::m_fnGetInstance()->m_unSysIndex, 5);
+	m_clsTrsgCdrMgr.m_fnInit("TRSG_MSG", "/logs/stat/TRSG", MainConfig::m_fnGetInstance()->m_unSysIndex, 5);
 }
 TrsgCdr::~TrsgCdr()
 {

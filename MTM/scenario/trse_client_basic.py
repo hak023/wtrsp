@@ -82,7 +82,7 @@ def SendCreateJobRequest():
     CreateJobRequest += '<CreateJobRequest>'
     CreateJobRequest += '<Job Kind="Realtime" ServiceName="Z1yp1whm">'
     CreateJobRequest += '<SourceContentMap>'
-    CreateJobRequest += '<SourceContent BinaryData="" File="Unavailable.mp3" Path="vwtrss/mp3" NASCode="67" ID="0">'
+    CreateJobRequest += '<SourceContent BinaryData="" File="01000034289719.mp3" Path="vwtrss/audio" NASCode="67" ID="0">'
     CreateJobRequest += '<Container ID="MP3">'
     CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
     CreateJobRequest += '<AudioCodec BitPerSample="" BitRate="" Channel="" ID="" SampleRate=""/>'
@@ -96,23 +96,9 @@ def SendCreateJobRequest():
     CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="192000" Channel="2" ID="MP3C" SampleRate="44100"/>'
     CreateJobRequest += '</Container>'
     CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="MP3TestFile_3.wma" ID="3" NASCode="10" Path="vwtrss/test">'
-    CreateJobRequest += '<Container ID="WMA">'
-    CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="160000" Channel="2" ID="WMA2" SampleRate="44100"/>'
-    CreateJobRequest += '</Container>'
-    CreateJobRequest += '</TargetContent>'
-    CreateJobRequest += '<TargetContent BinaryData="" File="MP3TestFile_7.amrwb" ID="7" NASCode="10" Path="vwtrss/test">'
-    CreateJobRequest += '<Container ID="AMR">'
-    CreateJobRequest += '<VideoCodec BitRate="" Height="" ID="" MaxFrameRate="" VariableFrameRate="" Width=""/>'
-    CreateJobRequest += '<AudioCodec BitPerSample="16" BitRate="23850" Channel="1" ID="AMRWB" SampleRate="16000"/>'
-    CreateJobRequest += '</Container>'
-    CreateJobRequest += '</TargetContent>'
     CreateJobRequest += '</TargetContentMap>'
     CreateJobRequest += '<TranscodingList>'
     CreateJobRequest += '<Transcoding SourceContentID="0" TargetContentID="1"/>'
-    CreateJobRequest += '<Transcoding SourceContentID="0" TargetContentID="3"/>'
-    CreateJobRequest += '<Transcoding SourceContentID="0" TargetContentID="7"/>'
     CreateJobRequest += '</TranscodingList>'
     CreateJobRequest += '</Job>'
     CreateJobRequest += '</CreateJobRequest>'
@@ -187,7 +173,7 @@ if __name__ == "__main__":
     
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
     
-    file_handler = logging.FileHandler('../../log/TRSE_CLIENT/trse_client_{:%m%d}.log'.format(datetime.datetime.now()))
+    file_handler=logging.FileHandler("../../../log/TRSE_CLIENT/trse_client_" + format(datetime.datetime.now().strftime("%m%d") +".log"))
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
@@ -198,8 +184,6 @@ if __name__ == "__main__":
     
     c.connect((HOST, PORT))
     logger.info('connected')
-    print(c.getblocking())
-    print(c.gettimeout())
     SendEstablishSessionRequest()
     t1 = threading.Thread(target=SendAliveCheck, args=())
     t1.daemon = True

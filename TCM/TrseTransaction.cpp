@@ -201,7 +201,10 @@ void TrseTransaction::m_fnCallLog(bool bSend, KString _clsXml)
 	if(g_fnCheckLog(E_LOG_INFO) == false ) return;
 
 	ELogLevel_t eLv = E_LOG_INFO;
-	KString clsLog; clsLog.m_fnReSize(1024 + _clsXml.m_unRealLen);
+
+	KString clsLog;
+	if (MainConfig::m_fnGetInstance()->m_bXmlFormatter) clsLog.m_fnReSize(4096 + 128 + _clsXml.m_unRealLen);
+	else clsLog.m_fnReSize(1024 + 128 + _clsXml.m_unRealLen);
 	char * pszTemp = (KSTR)clsLog;
 
 	Session * pclsSess = (Session *)m_pvSession;
@@ -211,9 +214,10 @@ void TrseTransaction::m_fnCallLog(bool bSend, KString _clsXml)
 	KString clsMine;
 	KString clsOther;
 	KString clsBodyType;
+	KString clsAddrString;
 	AppXmlParser::m_fnGetBodyType(_clsXml, clsBodyType);
 
-	KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"TrseTr [S:%s][T:%010u] ",(KCSTR)clsSessionID, unTid);
+	KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"TrseTr %s [S:%s][T:%010u] ",m_stTrseAddr.getStr((KSTR )clsAddrString, 128, false), (KCSTR)clsSessionID, unTid);
 
 	if(bSend)
 	{
@@ -232,9 +236,26 @@ void TrseTransaction::m_fnCallLog(bool bSend, KString _clsXml)
 		{
 			KString clsSimpleXml;
 			AppXmlParser::m_fnSetLongLogSkip(_clsXml, clsSimpleXml);
-			KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsSimpleXml);
+			if(MainConfig::m_fnGetInstance()->m_bXmlFormatter)
+			{
+				KString clsXmlFormat;
+				AppXmlParser::m_fnXmlFormatter(clsSimpleXml, clsXmlFormat);
+				KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsXmlFormat);
+			}
+			else
+				KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsSimpleXml);
 		}
-		else KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_clsXml);
+		else
+		{
+			if(MainConfig::m_fnGetInstance()->m_bXmlFormatter)
+			{
+				KString clsXmlFormat;
+				AppXmlParser::m_fnXmlFormatter(_clsXml, clsXmlFormat);
+				KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)clsXmlFormat);
+			}
+			else
+				KString::m_fnStrnCat(pszTemp,clsLog.m_unLen,"\n%s", (KCSTR)_clsXml);
+		}
 	}
 	IFLOG(eLv, pszTemp);
 }

@@ -27,7 +27,7 @@ DEF += ${EUTIL_DEF}
 ##############################################################################
 # OBJ LIST
 ##############################################################################
-MAIN_OBJ  = main.o MainConfig.o NasSystemTable.o
+MAIN_OBJ  = main.o Trsplog.o MainConfig.o NasSystemTable.o TrspSocketCom.o
 MAIN_OBJ += TrsgTransport.o TrsgTransaction.o TrsgTransactionMgr.o TrsgTransactionTimer.o
 MAIN_OBJ += Worker.o GarbageTimer.o #TargetContent.o
 MAIN_OBJ += Session.o SessionMgr.o SessionTimer.o DailyTime.o
@@ -59,7 +59,7 @@ CPPFLAGS += ${DEF} ${CPPINCLS}
 ##############################################################################
 LINKLIBS = -L./ -lpthread -L/usr/local/lib -lstdc++ -lcurses -lz #-L../API/pdk-3.2.2/lib -lbase 
 LINKLIBS += ${EUTIL_LIB}
-LINKLIBS += -L/usr/local/lib -lrutil -lresip
+LINKLIBS += -L/home/ibc/ibc/lib -lrutil -lresip
 
 ##############################################################################
 # OS Defined

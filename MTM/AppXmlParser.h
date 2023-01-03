@@ -38,7 +38,9 @@ public:
 	static void m_fnMakeJobStatusChangedNotify_TC_Stopped(KString &_rclsXml, ETrssCodeSet_t _eSt, KString &_rclsResultDescription, unsigned int _unFail, unsigned int _unSuccess, KString &_rclsJobStatusChangedNotify);
 	static void m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, KString &_rclsJobStatusChangedNotify);
 	static void m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, unsigned int _unTranscodingList, ETrssCodeSet_t _eSt, KString &_rclsJobStatusChangedNotify);
+	/*Util*/
 	static void m_fnGetCurrentTime(KString &_rclsCurrent);
+	static void m_fnXmlFormatter(KString & _rclsXml, KString & _rclsXmlFormat);
 };
 
 #endif

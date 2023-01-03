@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <time.h>
 #include "Session.h"
 #include "SessionMgr.h"
 #include "Worker.h"
@@ -31,26 +32,28 @@ Session::Session()
 	m_clsInputFile = KNULL;
 	m_eSrcSt = E_TC_RES_OK;
 	m_nAllocWorker = Worker::m_pWorkerIdMgr->getAvailableId();
+	if (m_nAllocWorker != -1)
+	{
+		//int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerNum) * (MainConfig::m_fnGetInstance()->m_unWorkerIdMgrNum);
+		int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerIdMgrNum);
+		IFLOG(E_LOG_ERR, "New Session[Total Session:%d]", nTotalSessionNum - Worker::m_pWorkerIdMgr->getAvailableIdNum());
+	}
 
-   // Session QueueThread 만들기
-   m_pclsQ = new QueueThread<AppBaseEvent>;
-   m_pclsQ->setName("SessionQueue");
-   m_pclsQ->setMaxQueueSize(1000);
-   m_pclsQ->setObject(this);
-   m_pclsQ->setProcessCb(m_fnCbkProcess);
-   m_pclsQ->run();
+	// Session QueueThread 만들기
+	m_pclsQ = new QueueThread<AppBaseEvent>;
+	m_pclsQ->setName("SessionQueue");
+	m_pclsQ->setMaxQueueSize(1000);
+	m_pclsQ->setObject(this);
+	m_pclsQ->setProcessCb(m_fnCbkProcess);
+	m_pclsQ->run();
 }
 Session::~Session()
 {
 	if (m_pclsQ)
 	{
-		IFLOG(E_LOG_ERR, "QueueThread shutdown");
 		m_pclsQ->shutdown();
-		IFLOG(E_LOG_ERR, "QueueThread join");
 		m_pclsQ->join();
-		IFLOG(E_LOG_ERR, "QueueThread delete");
 		delete m_pclsQ;
-		IFLOG(E_LOG_ERR, "QueueThread end");
 	}
 
 	if (m_pclsTrsgTr)
@@ -62,6 +65,7 @@ Session::~Session()
 		else
 			IFLOG(E_LOG_ERR, "Trsg Tr Del Fail[Tid:%d][JobID:%s][SessionID:%s]", m_unTid, (KCSTR) m_clsJobID, (KCSTR) m_clsSessionID);
 	}
+
 	if (m_pclsSourceContent)
 	{
 		delete m_pclsSourceContent;
@@ -70,12 +74,18 @@ Session::~Session()
 	m_clsTargetList.m_fnClear();
 	m_clsCodecList.m_fnClear();
 
-	Worker::m_pWorkerIdMgr->releaseId(m_nAllocWorker);
+	if (m_nAllocWorker != -1)
+	{
+		Worker::m_pWorkerIdMgr->releaseId(m_nAllocWorker);
+		//int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerNum) * (MainConfig::m_fnGetInstance()->m_unWorkerIdMgrNum);
+		int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerIdMgrNum);
+		IFLOG(E_LOG_ERR, "Delete Session[Total Session:%d]", nTotalSessionNum - Worker::m_pWorkerIdMgr->getAvailableIdNum());
+	}
 }
 void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 {
 	/*
-	 * Todo List when received CreateJobRequest
+	 * CreateJobRequest 받았을 때 할일
 	 * 1. TargetContent Count
 	 * 2. SourceContent
 	 * 3. TargetContent
@@ -83,9 +93,9 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 	 * 5. Metadata
 	 * 6. OutputFile
 	 * 7. Codec Find
-	 * 8. Command
-	 * 9. Send "Created"
-	 *
+	 * 8. Command 만들기
+	 * 9. Command 실행
+	 * 10. Send "Created" Event
 	 */
 
 	// CreateJobRequest MSG
@@ -113,50 +123,53 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 	// InputFile
 	if (m_pclsSourceContent->m_clsBinaryData.m_unRealLen > 0)
 	{
-		// 내부NAS에 위치한 SourceFile
+		// Internal NAS Check
 		KString clsPath = (KCSTR) pclsConf->m_clsNasInternal;
 		m_clsInputFile.m_fnCat((KCSTR) clsPath);
 		if (((KCSTR) clsPath)[clsPath.m_unRealLen - 1] != '/')
 			m_clsInputFile.m_fnCat("/");  //마지막 경로 / 없을 때 예외처리.
+
 		m_clsInputFile.m_fnCat((KCSTR) m_pclsSourceContent->m_clsBinaryData);
 
 		if (access((KCSTR)m_clsInputFile, F_OK) < 0)
 		{
 			// 파일 존재하지 않음
-			IFLOG(E_LOG_ERR, "InputFile[%s] is not Exist.", (KCSTR)m_clsInputFile);
+			IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] InputFile[%s] is not Exist.", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)m_clsInputFile);
 			m_eSrcSt = E_NAS_ACCESS_FAILED; // 잘못된 파일(NAS)경로, 존재하지 않음, 접근경로실패
 		}
 	}
 	else
 	{
+		// External NAS Check
 		if (m_pclsSourceContent->m_clsNasCode.m_unRealLen > 0)
 		{
 			pclsNasSystem->m_fnGetSourceDir(m_pclsSourceContent->m_clsNasCode, m_clsInputFile);
 			if (m_clsInputFile == "UNKNOWN")
 			{
-				IFLOG(E_LOG_ERR, "Invalid SourceContent NAS CODE[%s]", (KCSTR)m_pclsSourceContent->m_clsNasCode);
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Invalid SourceContent NAS CODE[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)m_pclsSourceContent->m_clsNasCode);
 				m_eSrcSt = E_NAS_ACCESS_FAILED;
 			}
 			else
 			{
 				if (((KCSTR) m_clsInputFile)[m_clsInputFile.m_unRealLen - 1] != '/')
 					m_clsInputFile.m_fnCat("/");  //마지막 경로 / 없을 때 예외처리.
+
 				m_clsInputFile.m_fnCat((KSTR) m_pclsSourceContent->m_clsFilePath);
 				if (access((KCSTR)m_clsInputFile, F_OK) < 0)
 				{
 					// 파일 존재하지 않음
-					IFLOG(E_LOG_ERR, "InputFile[%s] is not Exist.", (KCSTR)m_clsInputFile);
+					IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] InputFile[%s] is not Exist.", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)m_clsInputFile);
 					m_eSrcSt = E_NAS_ACCESS_FAILED; // 잘못된 파일(NAS)경로, 존재하지 않음, 접근경로실패
 				}
 			}
 		}
 		else
 		{
-			IFLOG(E_LOG_ERR, "Empty SourceContent NAS CODE[%s]", (KCSTR)m_pclsSourceContent->m_clsNasCode);
+			IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s]  Empty SourceContent NAS CODE", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID);
 			m_eSrcSt = E_NO_SRC_NAS_CODE;
 		}
 	}
-	IFLOG(E_LOG_INFO, "Input FilePath[%s]", (KCSTR)m_clsInputFile);
+	IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] Input FilePath[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)m_clsInputFile);
 
 	// Metadata
 	if (m_pclsSourceContent->m_clsMetadata.m_clsImageData.m_unRealLen > 0)
@@ -171,7 +184,7 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 
 		if (access((KCSTR)m_clsImageData, F_OK) < 0)
 		{
-			IFLOG(E_LOG_ERR, "Metadata Image[%s] is File Not Exist", (KCSTR) m_pclsSourceContent->m_clsMetadata.m_clsImageData);
+			IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Metadata ImageFile[%s] is not Exist", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR) m_pclsSourceContent->m_clsMetadata.m_clsImageData);
 			m_eSrcSt = E_NAS_ACCESS_FAILED;
 		}
 		else
@@ -207,13 +220,13 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 							clsCommand << "-metadata Track=\"" << m_pclsSourceContent->m_clsMetadata.m_fnGetTrack() << "\" ";
 			if(strcmp(m_pclsSourceContent->m_clsMetadata.m_fnGetYear(), "") != 0)
 							clsCommand << "-metadata Year=\"" << m_pclsSourceContent->m_clsMetadata.m_fnGetYear() << "\" ";
-			clsCommand << "-metadata www=\"\" -metadata Comment=\"\" -metadata Encodedby=\"\" ";
+			clsCommand << "-metadata www=\"\" -metadata Comment=\"\" -metadata Encodedby=\"\"";
 
 			m_clsMetaCommand = clsCommand;
 		}
-		IFLOG(E_LOG_INFO, "Metadata ImageData FilePath[%s] & Metadata Command[%s]", (KCSTR)m_clsMetaImage, (KCSTR)m_clsMetaCommand);
+		IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] Metadata ImageData FilePath[%s] & Metadata Command[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)m_clsMetaImage, (KCSTR)m_clsMetaCommand);
 	}
-	IFLOG(E_LOG_DEBUG, "SourceState(After Received CrtJobReq) : %s", g_fnGetTrssCode(m_eSrcSt));
+	IFLOG(E_LOG_DEBUG, "SourceState(After Received CrtJobReq) : %s", g_fnGetTrssCodeDesc((KCSTR)g_fnGetTrssCode(m_eSrcSt)));
 
 	// 3. OutputFile
 	Iterator stTargetItor;
@@ -225,22 +238,23 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 		if (m_pclsSourceContent->m_clsBinaryData.m_unRealLen > 0)
 		{
 			//Internal NAS
-			KString clsFileName = m_fnGetFileName();
-			pclsTarget->m_clsBinaryData = clsFileName;
-
-			KString clsPath = (KCSTR) pclsConf->m_clsNasInternal;
-			clsOutputFile.m_fnCat((KCSTR) clsPath);
-			if (((KCSTR) clsPath)[clsPath.m_unRealLen - 1] != '/')
+			KString clsNasPath = (KCSTR) pclsConf->m_clsNasInternal;
+			clsOutputFile.m_fnCat((KCSTR) clsNasPath);
+			if (((KCSTR) clsNasPath)[clsNasPath.m_unRealLen - 1] != '/')
 				clsOutputFile.m_fnCat("/");  //마지막 경로 / 없을 때 예외처리.
 
-			// Output Directory 확인
-			if(access((KCSTR)clsOutputFile, F_OK) < 0)
+			if(pclsTarget->m_clsContainer.m_clsID == "VOX")
 			{
-				IFLOG(E_LOG_ERR, "No Such Directory[%s]", (KCSTR)clsOutputFile);
-				pclsTarget->m_eTcSt = E_NAS_ACCESS_FAILED;
+				KString clsTempPath = clsOutputFile;
+				KString clsTempFile = m_fnGetFileName();
+				clsTempPath.m_fnCat((KCSTR)clsTempFile);
+				pclsTarget->m_clsTempFile = clsTempPath;
+				IFLOG(E_LOG_DEBUG, "[S:%s][T:%010u][J:%s] TEMP File For VOX[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)pclsTarget->m_clsTempFile);
 			}
 
-			clsOutputFile.m_fnCat((KCSTR) clsFileName);
+			KString clsFileName = m_fnGetFileName();
+			clsOutputFile.m_fnCat((KCSTR)clsFileName);
+			pclsTarget->m_clsBinaryData = clsFileName;
 			pclsTarget->m_clsOutputFile = clsOutputFile;
 		}
 		else
@@ -248,11 +262,35 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 			// External NAS
 			if (m_pclsSourceContent->m_clsNasCode.m_unRealLen > 0)
 			{
+				// VOX 케이스
+				if (pclsTarget->m_clsContainer.m_clsID == "VOX")
+				{
+					// VOX 의 중간변환 파일은 Internal NAS에 저장
+					KString clsTempPath; clsTempPath.m_fnReSize(BUFF_SIZE);
+					KString clsNasPath = (KCSTR) pclsConf->m_clsNasInternal;
+					clsTempPath.m_fnCat((KCSTR) clsNasPath);
+					if (((KCSTR) clsNasPath)[clsNasPath.m_unRealLen - 1] != '/')
+						clsTempPath.m_fnCat("/");  //마지막 경로 / 없을 때 예외처리.
+
+					KString clsTempFile = m_fnGetFileName();
+					clsTempPath.m_fnCat((KCSTR) clsTempFile);
+					pclsTarget->m_clsTempFile = clsTempPath;
+					IFLOG(E_LOG_DEBUG, "[S:%s][T:%010u][J:%s] TEMP File For VOX[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)pclsTarget->m_clsTempFile);
+				}
+
 				pclsNasSystem->m_fnGetSourceDir(pclsTarget->m_clsNasCode, clsOutputFile);
 				if (clsOutputFile == "UNKNOWN")
 				{
-					IFLOG(E_LOG_ERR, "Invalid TargetContent NAS CODE[%s]", (KCSTR)pclsTarget->m_clsNasCode);
-					pclsTarget->m_eTcSt = E_NAS_ACCESS_FAILED;
+					if (pclsTarget->m_clsNasCode.m_unRealLen == 0)
+					{
+						IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Empty TargetContent NAS CODE", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID);
+						pclsTarget->m_eTcSt = E_NO_TARGET_NAS_CODE;
+					}
+					else
+					{
+						IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Invalid TargetContent NAS CODE[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)pclsTarget->m_clsNasCode);
+						pclsTarget->m_eTcSt = E_NAS_ACCESS_FAILED;
+					}
 				}
 				else
 				{
@@ -263,9 +301,10 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 					KString clsOutputDir; clsOutputDir.m_fnReSize(BUFF_SIZE);
 					clsOutputDir = clsOutputFile;	// NAS Source Dir
 					clsOutputDir.m_fnCat((KCSTR) pclsTarget->m_clsPath);
+
 					if(access((KCSTR)clsOutputDir, F_OK) < 0)
 					{
-						IFLOG(E_LOG_ERR, "No Such Directory[%s]", (KCSTR)clsOutputDir);
+						IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Invalid Target Directory[%s]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (KCSTR)clsOutputDir);
 						pclsTarget->m_eTcSt = E_NAS_ACCESS_FAILED;
 					}
 
@@ -275,12 +314,14 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 			}
 			else
 			{
-				IFLOG(E_LOG_ERR, "Empty TargetContent NAS CODE[%s]", (KCSTR)pclsTarget->m_clsNasCode);
-				pclsTarget->m_eTcSt = E_NO_TARGET_NAS_CODE;
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Empty SourceContent NAS CODE", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID);
+				pclsTarget->m_eTcSt = E_NO_SRC_NAS_CODE;
 			}
 		}
-		IFLOG(E_LOG_INFO, "Output FilePath[%s]", (KCSTR)pclsTarget->m_clsOutputFile);
-		IFLOG(E_LOG_DEBUG, "TargetState(After Making OutputFile) : %s", g_fnGetTrssCode(pclsTarget->m_eTcSt));
+
+		KString clsDebug;
+		pclsTarget->m_fnDebug(clsDebug);
+		IFLOG(E_LOG_DEBUG, (KCSTR)clsDebug);
 
 		// OutputFile Directory & NAS OK
 		if (pclsTarget->m_eTcSt == E_TC_RES_OK)
@@ -296,15 +337,16 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 			if(clsTargetAudioCodec == "NONE" || clsTargetVideoCodec == "JPEG" || clsTargetVideoCodec == "PNG")
 				clsTargetAudioCodec = "";
 
-			IFLOG(E_LOG_DEBUG, "SourceContainerID:[%s], TargetContainerID:[%s], VideoCodec:[%s], AudioCodec:[%s]", (KSTR)clsSourceContainerID, (KSTR)clsTargetContainerID, (KSTR)clsTargetVideoCodec, (KSTR)clsTargetAudioCodec);
-
 			// Font 변환 지원하지 않음
-			if(clsSourceContainerID == "MDF" || clsSourceContainerID == "UTF" || clsTargetContainerID == "MDF" || clsTargetContainerID == "UTF" )
+			if (clsSourceContainerID == "MDF" || clsSourceContainerID == "UTF" || clsTargetContainerID == "MDF" || clsTargetContainerID == "UTF")
+			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Not Supported Codec(E_MEDIA_ENCODING_ERROR)", (KSTR) m_clsSessionID, m_unTid, (KSTR) m_clsJobID);
 				pclsTarget->m_eTcSt = E_MEDIA_ENCODING_ERROR;
+			}
 
 			// 1. Audio / Video Codec Each One Check
 			pclsTarget->m_eTcSt = pclsConf->m_fnChkTargetCodec(clsTargetAudioCodec, clsTargetVideoCodec);
-			IFLOG(E_LOG_DEBUG, "TargetState(After First Finding A/VCodec) : %s", g_fnGetTrssCode(pclsTarget->m_eTcSt));
+			IFLOG(E_LOG_DEBUG, "TargetState(After First Finding A/VCodec) : %s", g_fnGetTrssCodeDesc((KCSTR)g_fnGetTrssCode(pclsTarget->m_eTcSt)));
 			if (pclsTarget->m_eTcSt == E_TC_RES_OK)
 			{
 				TcCodec clsTargetCodec;
@@ -315,11 +357,11 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 				{
 					KString clsDebug;
 					clsTargetCodec.m_fnDebug(clsDebug);
-					IFLOG(E_LOG_DEBUG, "Get TargetCodec : %s", (KSTR ) clsDebug);
+					IFLOG(E_LOG_DEBUG, "Get TargetCodec : %s", (KSTR) clsDebug);
 
 					// Transcoding Command
 					KString clsTcCommand;	clsTcCommand.m_fnReSize(BUFF_SIZE);
-					if (clsTargetCodec.m_clsTool == "ffmpeg")
+					if (clsTargetCodec.m_clsTool == "FCONV")
 					{
 						pclsTarget->m_clsTcType = E_TC_FFMPEG;
 
@@ -329,13 +371,20 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 						if (clsTargetCodec.m_clsType == "Image")
 						{
 							if (pclsTarget->m_clsContainer.clsVideoCodec.m_clsWidth.m_unRealLen > 0 && pclsTarget->m_clsContainer.clsVideoCodec.m_clsHeight.m_unRealLen > 0)
+							{
 								clsTcCommand << " -vf scale=" << pclsTarget->m_clsContainer.clsVideoCodec.m_clsWidth << ":" << pclsTarget->m_clsContainer.clsVideoCodec.m_clsHeight;
+								clsTcCommand << " -y " << pclsTarget->m_clsOutputFile;
+							}
 							else
+							{
+								IFLOG(E_LOG_ERR, "TC Command For JPEG Something Wrong! RESET Command");
 								clsTcCommand.m_fnReSize(BUFF_SIZE);
+							}
 						}
 						else
 						{
-							// MetaImage Data -i file -map 0:0
+							// Audio & Video Type
+							// MetaImage Data -i [InputFile] -map 0:0 -map 1:0
 							if ((KBOOL) clsTargetCodec.m_clsMetadata && m_clsMetaImage.m_unRealLen > 0)
 								clsTcCommand << " " << m_clsMetaImage;
 
@@ -349,8 +398,18 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 							if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsSampleRate.m_unRealLen > 0)
 								clsTcCommand << " -ar " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsSampleRate;
 
-							if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate.m_unRealLen > 0)
-								clsTcCommand << " -ab " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate;
+							if (KString::m_fnStrCmp(pclsTarget->m_clsContainer.m_clsID, "VOX") != 0)
+							{
+								if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate.m_unRealLen > 0)
+									clsTcCommand << " -ab " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate;
+
+								if (pclsTarget->m_clsSize.m_unRealLen > 0 && KString::m_fnStrCmp(pclsTarget->m_clsContainer.m_clsID, "MMF") == 0)
+								{
+									KString clsSize = "";
+									clsSize << (KINT) pclsTarget->m_clsSize << "k";
+									clsTcCommand << " -fs " << clsSize;
+								}
+							}
 
 							if (clsTargetCodec.m_clsType == "Video")
 							{
@@ -365,17 +424,30 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 									clsTcCommand << " -s " << pclsTarget->m_clsContainer.clsVideoCodec.m_clsWidth << "x" << pclsTarget->m_clsContainer.clsVideoCodec.m_clsHeight;
 							}
 
+							// Encoded Time
+							if ((KBOOL) clsTargetCodec.m_clsTimeStamp)
+								clsTcCommand << " -timestamp now";
+
+							// -metadata Album=...
+							if ((KBOOL) clsTargetCodec.m_clsMetadata && m_clsMetaCommand.m_unRealLen > 0)
+							{
+								clsTcCommand << " " << m_clsMetaCommand << " -y " << pclsTarget->m_clsOutputFile;
+
+								// -map 0 -map -0:v
+								if (clsTargetCodec.m_clsEtc.m_unRealLen > 0)
+									clsTcCommand << " " << clsTargetCodec.m_clsEtc;
+							}
+							else
+							{
+								if (clsTargetCodec.m_clsEtc.m_unRealLen > 0)
+									clsTcCommand << " " << clsTargetCodec.m_clsEtc;
+
+								if (clsTargetContainerID == "VOX")
+									clsTcCommand << " -y " << pclsTarget->m_clsTempFile;
+								else
+									clsTcCommand << " -y " << pclsTarget->m_clsOutputFile;
+							}
 						}
-						// -metadata album="" ...
-						if ((KBOOL) clsTargetCodec.m_clsMetadata && m_clsMetaCommand.m_unRealLen > 0)
-							clsTcCommand << " " << m_clsMetaCommand;
-
-						// -y(overwrite) outputfile path
-						clsTcCommand << " -y " << clsOutputFile;
-
-						if (clsTargetCodec.m_clsEtc.m_unRealLen > 0)
-							clsTcCommand << " " << clsTargetCodec.m_clsEtc;
-
 					}
 					else if (clsTargetCodec.m_clsTool == "MCONV")
 					{
@@ -384,8 +456,8 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 
 						clsTcCommand << clsTargetCodec.m_clsTool;
 
-						if (clsSourceContainerID == "K3G")
-							clsSourceContainerID = "3GP";
+						if (clsSourceContainerID == "K3G")	clsSourceContainerID = "3GP";
+
 						clsTcCommand << " fc -sf " << clsSourceContainerID << " ";
 
 						if (clsTargetCodec.m_clsType == "Video")
@@ -393,21 +465,25 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 							clsTcCommand << "NULL " << m_clsInputFile;
 							clsTcCommand << " -df " << clsTargetCodec.m_clsFormat << " NULL " << clsOutputFile;
 							clsTcCommand << " -dv " << clsTargetCodec.m_clsVCodec;
+
 							// MaxFrameRate
 							if (pclsTarget->m_clsContainer.clsVideoCodec.m_clsMaxFrameRate.m_unRealLen > 0)
 								clsTcCommand << " " << pclsTarget->m_clsContainer.clsVideoCodec.m_clsMaxFrameRate;
 							else
 								clsTcCommand << " 0";
+
 							// BitRate
 							if (pclsTarget->m_clsContainer.clsVideoCodec.m_clsBitRate.m_unRealLen > 0)
 								clsTcCommand << " " << pclsTarget->m_clsContainer.clsVideoCodec.m_clsBitRate;
 							else
 								clsTcCommand << " 0";
+
 							// Width
 							if (pclsTarget->m_clsContainer.clsVideoCodec.m_clsWidth.m_unRealLen > 0)
 								clsTcCommand << " " << pclsTarget->m_clsContainer.clsVideoCodec.m_clsWidth;
 							else
 								clsTcCommand << " 0";
+
 							//Height
 							if (pclsTarget->m_clsContainer.clsVideoCodec.m_clsHeight.m_unRealLen > 0)
 								clsTcCommand << " " << pclsTarget->m_clsContainer.clsVideoCodec.m_clsHeight;
@@ -427,16 +503,19 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 							clsTcCommand << " " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsSampleRate;
 						else
 							clsTcCommand << " 0";
+
 						// Channel
 						if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsChannel.m_unRealLen > 0)
 							clsTcCommand << " " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsChannel;
 						else
 							clsTcCommand << " 1";
+
 						// BitPerSample
 						if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitPerSample.m_unRealLen > 0)
 							clsTcCommand << " " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitPerSample;
 						else
 							clsTcCommand << " 16";
+
 						// BitRate
 						if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate.m_unRealLen > 0)
 							clsTcCommand << " " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate;
@@ -450,18 +529,19 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 						pclsTarget->m_eTcSt = E_TRANSCODING_FAILED;
 					}
 					pclsTarget->m_clsTcCommand = clsTcCommand;
-				}	// bFind == true
+					// tc_codec.json 에서 일치하는 코덱 찾고, Command 만들기 완료
+				}
 				else
 				{
-					// bFind == false
+					// bFind == false & No Src/Target ContainerID 등..
 					IFLOG(E_LOG_ERR, "Not Supported Codec in SourceContent(%s) & TargetContent(C:%s,A:%s,V:%s)", (KCSTR)clsSourceContainerID, (KCSTR)clsTargetContainerID, (KCSTR)clsTargetAudioCodec, (KCSTR)clsTargetVideoCodec);
-					pclsTarget->m_eTcSt = E_TRANSCODING_FAILED;
+					pclsTarget->m_eTcSt = E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE;
 				}
 				// Audio & Video Codec Map 에서 찾기 실패
 			}
 			// MSG 이상 없음
 		}
-		IFLOG(E_LOG_DEBUG, "TargetState(After Making TC Command) : %s", g_fnGetTrssCode(pclsTarget->m_eTcSt));
+		IFLOG(E_LOG_DEBUG, "TargetState(After Making TC Command) : %s", g_fnGetTrssCodeDesc((KCSTR)g_fnGetTrssCode(pclsTarget->m_eTcSt)));
 
 		// pclsTarget
 		pclsTarget = (TargetContent*) m_clsTargetList.m_fnGetNext(stTargetItor);
@@ -534,11 +614,10 @@ void Session::m_fnProcTrsgTranscoding()
 	TargetContent *pclsTarget = (TargetContent*) m_clsTargetList.m_fnGetNext(stTargetItor);
 	while (pclsTarget)
 	{
-		// TC_STOPPED 에서 사용될 변환된 음원 길이
 		KString clsResultDescription;	clsResultDescription.m_fnReSize(BUFF_SIZE);
 		clsResultDescription = "0";
 
-		// 이벤트 생성
+		// TranscodingStarted Event
 		AppTrsgTcStartEvent *pclsStartEv = new AppTrsgTcStartEvent;
 		pclsStartEv->m_eT = E_MAIN_EV_TRSG_JOB_STATUS_CHANGED_NOTIFY_TRANSCODING_STARTED;
 		pclsStartEv->m_unTid = m_unTid;
@@ -550,31 +629,22 @@ void Session::m_fnProcTrsgTranscoding()
 		pclsStartEv->m_unTargetIdx = unTargetIdx;
 		Worker::m_fnPutTrsgTcStartEv(pclsStartEv);
 
-//		KString clsNotify;	clsNotify.m_fnReSize(BUFF_SIZE);
-//		m_pclsTrsgTr->m_fnSendNotiTcStarted(_rclsXml, m_pclsSourceContent, pclsTarget, unFail, unSuccess, unTargetIdx, clsNotify);
-//		m_eSt = E_SESS_ST_TRSG_JOB_CHG_NOTI_TC_STARTED_SND;
-//		m_clsLastSendXml = clsNotify;
-
 		if (m_eSrcSt == E_TC_RES_OK && pclsTarget->m_eTcSt == E_TC_RES_OK)
 		{
-			pclsTarget->m_eTcSt = m_fnExecuteTranscoding(pclsTarget->m_clsTcCommand, pclsTarget->m_clsTcType, clsResultDescription);
-			IFLOG(E_LOG_INFO, "First TC_RESULT: %s", g_fnGetTrssCode(pclsTarget->m_eTcSt));
+			pclsTarget->m_eTcSt = m_fnExecuteTranscoding(pclsTarget->m_clsTcCommand, m_pclsSourceContent->m_clsID, pclsTarget, clsResultDescription);
+			IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] TC_RESULT: %s", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, g_fnGetTrssCodeDesc((KCSTR)g_fnGetTrssCode(pclsTarget->m_eTcSt)));
 
 			if(pclsTarget->m_eTcSt == E_TC_RES_OK)
 			{
-				// 변환 성공
-				// PlayTime Get
-				IFLOG(E_LOG_INFO, "Transcoding Result File PlayTime : %s", (KSTR)clsResultDescription);
-
 				if(pclsTarget->m_clsContainer.clsAudioCodec.m_clsID == "VOX")
 				{
 					pclsTarget->m_clsTcType = E_TC_VOX;
 
 					KString clsVoxCommand;
-					clsVoxCommand << "vox -b 16 " << pclsTarget->m_clsOutputFile << " " << pclsTarget->m_clsOutputFile;
+					clsVoxCommand << "vox -b 16 " << pclsTarget->m_clsTempFile << " " << pclsTarget->m_clsOutputFile;
 
-					pclsTarget->m_eTcSt = m_fnExecuteTranscoding(clsVoxCommand, pclsTarget->m_clsTcType, clsResultDescription);
-					IFLOG(E_LOG_INFO, "Second TC_RESULT: %s", g_fnGetTrssCode(pclsTarget->m_eTcSt));
+					pclsTarget->m_eTcSt = m_fnExecuteTranscoding(clsVoxCommand, m_pclsSourceContent->m_clsID, pclsTarget, clsResultDescription);
+					IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] TC_RESULT : %s", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, g_fnGetTrssCodeDesc((KCSTR)g_fnGetTrssCode(pclsTarget->m_eTcSt)));
 				}
 			}
 		}
@@ -593,7 +663,6 @@ void Session::m_fnProcTrsgTranscoding()
 			if(pclsTarget->m_eTcSt == E_TC_RES_OK)
 				pclsTarget->m_eTcSt = m_eSrcSt;
 		}
-		IFLOG(E_LOG_INFO, "TC_RES:%s, ResultDescription:%s", g_fnGetTrssCode(pclsTarget->m_eTcSt), (KSTR)clsResultDescription);
 
 		// TranscodingStopped Event Worker Put
 		AppTrsgTcStopEvent *pclsStopEv = new AppTrsgTcStopEvent;
@@ -606,7 +675,6 @@ void Session::m_fnProcTrsgTranscoding()
 		pclsStopEv->m_eTcSt = pclsTarget->m_eTcSt;
 		pclsStopEv->m_clsResultDescription = clsResultDescription;
 		Worker::m_fnPutTrsgTcStopEv(pclsStopEv);
-		// Target 기준
 //		m_fnSendTrsgJobChgNotiTcStopped(clsNotify, unFail, unSuccess, pclsTarget->m_eTcSt, clsResultDescription);
 
 		unTargetIdx++;
@@ -635,11 +703,11 @@ void Session::m_fnSendTrsgJobChgNotiTcStopped(unsigned int _unFail, unsigned int
 
    // TranscodingList와 TargetContent 갯수 비교
    if(m_unTargetContentList != m_unTranscodingList)
-      IFLOG(E_LOG_ERR, "Different Target Count! [TargetContent:%d / TranscodingList:%d]", m_unTargetContentList, m_unTranscodingList);
+      IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Different Target Count! [TargetContent:%d / TranscodingList:%d]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, m_unTargetContentList, m_unTranscodingList);
 
    if ((_unFail + _unSuccess) == m_unTargetContentList)
    {
-      IFLOG(E_LOG_ERR, "Target Transcoding Completed! [Current:%d, Total:%d]", (_unFail + _unSuccess), m_unTargetContentList);
+      IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] Target Transcoding Completed! [Current:%d, Total:%d]", (KCSTR)m_clsSessionID, m_unTid, (KCSTR)m_clsJobID, (_unFail + _unSuccess), m_unTargetContentList);
       m_fnCreateTrsgEv(E_MAIN_EV_TRSG_JOB_STATUS_CHANGED_NOTIFY_JOB_STOPPED);
 //      m_fnSendTrsgJobChgNotiJobStopped(clsNotify);
    }
@@ -666,7 +734,6 @@ void Session::m_fnSendTrsgJobChgNotiJobDestroyed()
 	m_eSt = E_SESS_ST_TRSG_JOB_CHG_NOTI_JOB_DESTROYED_SND;
 	m_clsLastSendXml = clsNotify;
 
-	// Session 만료
 	m_fnCreateSessionEndEv();
 }
 KString Session::m_fnGetFileName()
@@ -682,109 +749,145 @@ KString Session::m_fnGetFileName()
 	struct timespec now_monotonic;
 	clock_gettime(CLOCK_REALTIME, &now_monotonic);
 
-	KString::m_fnStrnCat((KSTR) clsFileName, clsFileName.m_unLen, "%04d%02d%02d%02d%02d%02d%08lld_encode.tmp", tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec, now_monotonic.tv_nsec / 10);
+	KString::m_fnStrnCat((KSTR) clsFileName, clsFileName.m_unLen,
+			"%04d%02d%02d/%02d/%02d/%02d/%04d%02d%02d%02d%02d%02d%08lld_encode.tmp",
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec,
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec, now_monotonic.tv_nsec / 10);
+
+	// YYYYMMDD/HH/MM/SS/
+	KString clsDir;
+	KString::m_fnStrnCat((KSTR) clsDir, clsDir.m_unLen, "%s/%04d%02d%02d/%02d/%02d/%02d", (KCSTR)MainConfig::m_fnGetInstance()->m_clsNasInternal,
+	         tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
+
+	CfgFile::m_fnCreateDir((KCSTR)clsDir);
 
 	return clsFileName;
 }
+
 void* Session::m_fnGetWorker()
 {
 	SessionMgr *pclsMgr = (SessionMgr*) m_pclsOwner;
 	return pclsMgr->m_pclsOwner;
 }
-ETrssCodeSet_t Session::m_fnExecuteTranscoding(KString &_rclsTcCommand, ETcType_t _eTcType, KString & _rclsResultDescription)
+
+ETrssCodeSet_t Session::m_fnExecuteTranscoding(KString &_rclsTcCommand, KString &_rclsSourceContainerID, TargetContent* _pclsTarget, KString & _rclsResultDescription)
 {
-	FILE *fp;
-	int stTime = time(NULL);
 	MainConfig *pclsConf = MainConfig::m_fnGetInstance();
+	KString clsTcBinary;
+	clsTcBinary.m_fnReSize(BUFF_SIZE);
 
-	// 명령어 만들기
-	KString clsTcBinary; clsTcBinary.m_fnReSize(BUFF_SIZE);
-	clsTcBinary << "timeout " << pclsConf->m_unCmdTimeout << "s ";
-	clsTcBinary.m_fnCat((KCSTR)_rclsTcCommand);
-	clsTcBinary << " 2>&1 &";
+	clsTcBinary << "python3 commandTimeout.py " << pclsConf->m_unCmdTimeout << " " << (KCSTR) _rclsTcCommand << " 2>&1";
+	IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s]Execute Command: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KSTR) clsTcBinary);
 
-	IFLOG(E_LOG_INFO, "Execute Command[%s]", (KSTR)clsTcBinary);
+	KString clsBuff;
+	clsBuff.m_fnReSize(BUFF_SIZE);
+	KString clsSize;
+	clsSize.m_fnReSize(BUFF_SIZE);
+	KString clsTime;
+	clsTime.m_fnReSize(BUFF_SIZE);
 
-	KString clsBuff; clsBuff.m_fnReSize(BUFF_SIZE);
-	KString clsSize; clsSize.m_fnReSize(BUFF_SIZE);
-	KString clsTime; clsTime.m_fnReSize(BUFF_SIZE);
-	fp = popen((KCSTR)clsTcBinary, "r");
-	if(fp == NULL)
+	// 명령어 시작시간 설정
+	double timeDiffMs = 0.0;
+	struct timespec stTimespec, endTimespec;
+	clock_gettime(CLOCK_MONOTONIC, &stTimespec);
+
+	FILE *fp;
+	fp = popen((KCSTR) clsTcBinary, "r");
+	if (fp == NULL)
 	{
-		IFLOG(E_LOG_ERR, "m_fnExecuteTranscoding popen() fail");
+		IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s]Execute Command(%s) FAILED", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KSTR) clsTcBinary);
 		pclose(fp);
 		return E_TRANSCODING_FAILED;
 	}
 
-	if(_eTcType == E_TC_FFMPEG)
+	ETcType_t eTcType = _pclsTarget->m_clsTcType;
+	if (eTcType == E_TC_FFMPEG)
 	{
-		while(fgets((KSTR)clsBuff, BUFF_SIZE, fp))
+		while (fgets((KSTR) clsBuff, BUFF_SIZE, fp))
 		{
-			// Size 가져오기 (성공/실패 판단여부)
-			if(KString::m_fnStrStr((KSTR)clsBuff, "WTRSP_FileSize:") != NULL)
+			// Size > 0 면 변환성공
+			if (KString::m_fnStrStr((KSTR) clsBuff, "WTRSP_FileSize:") != NULL)
 			{
-				clsSize = KString::m_fnSkipString((KCSTR)clsBuff, "WTRSP_FileSize:");
+				clsSize = KString::m_fnSkipString((KCSTR) clsBuff, "WTRSP_FileSize:");
+				IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] %s ResultFileSize: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KCSTR) clsSize);
 
-				if(KString::m_fnAtoi((KCSTR)clsSize) <= 0)
-				{
-					pclose(fp);
-					return E_TRANSCODING_FAILED;   //Failed
-				}
-				else
-				{
-					clsBuff.m_fnReSize(BUFF_SIZE);
-					continue;
-				}
+				clsBuff.m_fnReSize(BUFF_SIZE);
+				continue;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Unknown encoder") != NULL)// FFMPEG 실패, 마지막 줄 Return 값에 따라서 처리
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "WTRSP_PlayTime:") != NULL)
 			{
+				clsTime = KString::m_fnSkipString((KCSTR) clsBuff, "WTRSP_PlayTime:");
+				_rclsResultDescription = clsTime;
+				IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] %s ResultPlayTime: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KCSTR) clsTime);
+         
+				clsBuff.m_fnReSize(BUFF_SIZE);
+				break;
+			}
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Unknown encoder") != NULL) // FFMPEG 실패, 마지막 줄 Return 값에 따라서 처리
+			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
-//				return E_NOT_SUPPORT_AUDIO_ENCODEC_TYPE;
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Unknown decoder") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Unknown decoder") != NULL)
 			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
-//				return E_NOT_SUPPORT_AUDIO_DECODEC_TYPE;
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "No such file or directory") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "No such file or directory") != NULL)
 			{	// Output 경로 없는 경우
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
 				return E_NAS_ACCESS_FAILED;
 			}
-			// FFMPEG 오류 항목들 체크 (metadata map 0:0 명령에서 에러, metadata:true 넣기 전 )
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Automatic encoder selection failed for output stream #0:0.") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Automatic encoder selection failed for output stream #0:0.") != NULL)
 			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Unsupported") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Unsupported") != NULL)
 			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Conversion failed!") != NULL) //bitrate too low 등.. 포함
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Conversion failed!") != NULL)
 			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
 				return E_PARAMETER_INVALID;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Is a directory") != NULL) //outputFile (파일이름 없을때)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Is a directory") != NULL)
 			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
 				pclose(fp);
 				return E_NAS_ACCESS_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "WTRSP_PlayTime:") != NULL && KString::m_fnAtoi((KCSTR)clsSize) > 0)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "received signal") != NULL)
 			{
-				clsTime = KString::m_fnSkipString((KCSTR)clsBuff, "WTRSP_PlayTime:");
-				_rclsResultDescription = clsTime;
-			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "received signal") != NULL)
-			{
-				IFLOG(E_LOG_ERR, "Received Signal: Command TimeOut");
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: Received Signal Command TimeOut", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType));
 				clsSize.m_fnReSize(BUFF_SIZE);
 				clsTime.m_fnReSize(BUFF_SIZE);
 				_rclsResultDescription = "0";
+
+				pclose(fp);
+				return E_TRANSCODING_FAILED; // Timeout
+			}
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Permission denied") != NULL)
+			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_PERMISSON_FAILED", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType));
+
 				pclose(fp);
 				return E_TRANSCODING_FAILED; // Timeout
 			}
@@ -795,74 +898,127 @@ ETrssCodeSet_t Session::m_fnExecuteTranscoding(KString &_rclsTcCommand, ETcType_
 			}
 			clsBuff.m_fnReSize(BUFF_SIZE);
 		}
-		int endTime = time(NULL);
-		// 명령어 실행시간
-		IFLOG(E_LOG_INFO, "Command duration=%d\n", endTime - stTime);
-		if(KString::m_fnAtoi((KCSTR)clsSize) <= 0)
-			return E_TRANSCODING_FAILED;   //Failed
+
+		if (KString::m_fnAtoi((KCSTR) clsSize) <= 0)
+		{
+			IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: ResultFile is Empty", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType));
+
+			pclose(fp);
+			return E_TRANSCODING_FAILED;
+		}
 		else
+		{
+			pclose(fp);
+			// 변환 성공 CASE
+			// 명령어 종료시간 설정
+			clock_gettime(CLOCK_MONOTONIC, &endTimespec);
+			timeDiffMs = (endTimespec.tv_sec - stTimespec.tv_sec) * 1000 + (endTimespec.tv_nsec - stTimespec.tv_nsec) / 1000000.0;
+			IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] %s_TC_SUCCESS Src:%s->Tgt:%s ExecutionTime:%.3lf(ms), ResultPlayTime:%d", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KCSTR) _rclsSourceContainerID,
+					(KCSTR) _pclsTarget->m_clsContainer.m_clsID, timeDiffMs, (KUINT) _rclsResultDescription);
+
+			KString clsChgMod = "chmod 777 ";
+			// FCONV로 변환하는 VOX는 중간파일로 TempFile 변경
+			if (_pclsTarget->m_clsContainer.m_clsID == "VOX" && _pclsTarget->m_clsTempFile.m_unRealLen > 0)
+				clsChgMod << (KCSTR) _pclsTarget->m_clsTempFile;
+			else
+				clsChgMod << (KCSTR) _pclsTarget->m_clsOutputFile;
+			IFLOG(E_LOG_DEBUG, "ChangeMod Command: %s", (KCSTR) clsChgMod);
+			std::system((KCSTR) clsChgMod);
+
 			return E_TC_RES_OK;
+		}
 	}
 	else	// MCONV, VOX
 	{
-		while(fgets((KSTR)clsBuff, BUFF_SIZE, fp))
+		while (fgets((KSTR) clsBuff, BUFF_SIZE, fp))
 		{
 			// 변환된 음원길이
-			if(KString::m_fnStrStr((KSTR)clsBuff, "WTRSP_PlayTime:") != NULL)
+			if (KString::m_fnStrStr((KSTR) clsBuff, "WTRSP_PlayTime:") != NULL)
 			{
-				clsTime = KString::m_fnSkipString((KCSTR)clsBuff, "WTRSP_PlayTime:");
+				clsTime = KString::m_fnSkipString((KCSTR) clsBuff, "WTRSP_PlayTime:");
 				_rclsResultDescription = clsTime;
 			}
 			// Timeout
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "received signal") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "received signal") != NULL)
 			{
-				IFLOG(E_LOG_ERR, "Received Signal: Command TimeOut");
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: Received Signal Command TimeOut", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType));
 				clsSize.m_fnReSize(BUFF_SIZE);
 				clsTime.m_fnReSize(BUFF_SIZE);
 				_rclsResultDescription = "0";
+
 				pclose(fp);
-				return E_TRANSCODING_FAILED; // Timeout
+				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 0,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 0,") != NULL)
 			{
 				pclose(fp);
+				// 명령어 종료시간 설정
+				clock_gettime(CLOCK_MONOTONIC, &endTimespec);
+				timeDiffMs = (endTimespec.tv_sec - stTimespec.tv_sec) * 1000 + (endTimespec.tv_nsec - stTimespec.tv_nsec) / 1000000.0;
+				IFLOG(E_LOG_INFO, "[S:%s][T:%010u][J:%s] %s_TC_SUCCESS Src:%s->Tgt:%s ExecutionTime:%.3lf(ms), ResultPlayTime:%d", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType),
+						(KCSTR) _rclsSourceContainerID, (KCSTR) _pclsTarget->m_clsContainer.m_clsID, timeDiffMs, (KUINT) _rclsResultDescription);
+
+				KString clsChgMod = "chmod 777 ";
+				clsChgMod << (KCSTR) _pclsTarget->m_clsOutputFile;
+				IFLOG(E_LOG_DEBUG, "ChangeMod Command: %s", (KCSTR) clsChgMod);
+				std::system((KCSTR) clsChgMod);
+
 				return E_TC_RES_OK;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 50,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 50,") != NULL)
 			{
-				pclose(fp);
 				// invalid License
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_LICENSE_KEY_INVALID;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 100,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 100,") != NULL)
 			{
-				pclose(fp);
 				// Internal Error
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 101,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 101,") != NULL)
 			{
-				pclose(fp);
 				//internal init error
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 102,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 102,") != NULL)
 			{
-				pclose(fp);
 				// internal file open error
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_TRANSCODING_FAILED;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 200,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 200,") != NULL)
 			{
-				pclose(fp);
 				//tc invalid argument
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_PARAMETER_INVALID;
 			}
-			else if(KString::m_fnStrStr((KSTR)clsBuff, "Code 201,") != NULL)
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Code 201,") != NULL)
 			{
-				pclose(fp);
 				// invalid argument file same
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_TC_FAILED: %s", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType), (KSTR) clsBuff);
+
+				pclose(fp);
 				return E_TRANSCODING_FAILED;
+			}
+			else if (KString::m_fnStrStr((KSTR) clsBuff, "Permission denied") != NULL)
+			{
+				IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] %s_PERMISSON_FAILED", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID, (KCSTR) g_fnGetTranscodingType(eTcType));
+
+				pclose(fp);
+				return E_TRANSCODING_FAILED; // Timeout
 			}
 			else
 			{
@@ -871,9 +1027,9 @@ ETrssCodeSet_t Session::m_fnExecuteTranscoding(KString &_rclsTcCommand, ETcType_
 			}
 			clsBuff.m_fnReSize(BUFF_SIZE);
 		}
-		int endTime = time(NULL);
-		// 명령어 실행시간
-		IFLOG(E_LOG_INFO, "Command Execution Time=%d\n", endTime - stTime);
+		IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] TC_FAILED: UNKNOWN", (KCSTR) m_clsSessionID, m_unTid, (KCSTR) m_clsJobID);
+
+		pclose(fp);
 		return E_TRANSCODING_FAILED;
 	}
 }
@@ -882,8 +1038,10 @@ void Session::m_fnRecvSessionTimeOut()
 	// 로직 중간에 멈추거나 Notify 보내는 중 등.. SessionTimer로부터 TimeOut 받았을때
 	if (E_SESS_ST_TRSG_CREATE_JOB_REQ_RCV <= m_eSt && m_eSt <= E_SESS_ST_TRSG_JOB_CHG_NOTI_JOB_STOPPED_SND)
 	{
-		KString clsNotify;	clsNotify.m_fnReSize(BUFF_SIZE);
+		KString clsNotify;
+		clsNotify.m_fnReSize(BUFF_SIZE);
 		// m_clsLastSendXml 마지막으로 보낸 메시지
+		IFLOG(E_LOG_ERR, "[S:%s][T:%010u][J:%s] Session Timeout(E_JOB_TRANSCODE_TIMEOUT)", (KSTR) m_clsSessionID, m_unTid, (KSTR) m_clsJobID);
 		m_pclsTrsgTr->m_fnSendNotiJobDestroy(m_clsLastSendXml, m_unTargetContentList, E_JOB_TRANSCODE_TIMEOUT, clsNotify);
 		// Session 만료
 		m_fnCreateSessionEndEv();
@@ -926,7 +1084,6 @@ void Session::m_fnCbkProcess(AppBaseEvent *_pclsEv, void *_pvOwner)
 
 	if(_pclsEv->m_eT == E_MAIN_EV_TRSG_JOB_STATUS_CHANGED_NOTIFY_TRANSCODING_STARTED)
 	{
-		IFLOG(E_LOG_DEBUG, "SessionQueueThread CbkProcess");
 		pclsMy->m_fnProcTrsgTranscoding();
 	}
 

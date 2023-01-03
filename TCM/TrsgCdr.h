@@ -37,10 +37,13 @@ public:
 	KString m_clsResTime;
 	KString m_clsClientIP;
 	KString m_clsSvcName;//WTRSP 고정
-	//KString m_clsFrom;
+	KString m_clsFrom;
 	KString m_clsTrsgIP;
 	KString m_clsTrssIP;
 	KString m_clsTransType;
+	KString m_clsTargetAudioCodec;
+	KString m_clsTargetVideoCodec;
+
 	KString m_clsSessionID;
 	KString m_clsTransSessionID;
 	KString m_clsFileType;
@@ -82,7 +85,7 @@ public:
 		"|SID=" << m_clsSID<<
 		"|RESULT_CODE=" << m_clsResultCode<<
 		"|REQ_TIME=" << m_clsReqTime<<
-		"|RES_TIME=" << m_clsResTime<<
+		"|RSP_TIME=" << m_clsResTime<<
 		"|CLIENT_IP=" << m_clsClientIP<<
 		"|DEV_INFO="<<
 		"|OS_INFO="<<
@@ -90,10 +93,13 @@ public:
 		"|SVC_NAME="<< m_clsSvcName<<
 		"|DEV_MODEL="<<
 		"|CARRIER_TYPE="<<
-		//"|FROM=" << m_clsFrom<<
+		"|FROM=" << m_clsFrom<<
 		"|TRSG_IP=" << m_clsTrsgIP<<
 		"|TRSS_IP=" << m_clsTrssIP<<
 		"|TRANS_TYPE=" << m_clsTransType<<
+		"|TARGET_ACODEC=" << m_clsTargetAudioCodec<<
+		"|TARGET_VCODEC=" << m_clsTargetVideoCodec<<
+
 		"|SESSION_ID=" << m_clsSessionID<<
 		"|TRANS_SESSION_ID=" << m_clsTransSessionID<<
 		"|FILE_TYPE=" << m_clsFileType;
@@ -156,18 +162,18 @@ public:
 		CdrRow * pclsCdrRow = NULL;
 		m_unTranscodingList = _unTranscodingList;
 
-		//KString clsTo, clsFrom;
-		//AppXmlParser::m_fnGetToFrom(_rclsXml, clsTo, clsFrom);
-		//resip::Data dataFrom = (KSTR)clsFrom;
+		KString clsTo, clsFrom;
+		AppXmlParser::m_fnGetToFrom(_rclsXml, clsTo, clsFrom);
+		resip::Data dataFrom = (KSTR)clsFrom;
 		//urn:wtrsp:auth.endpoint: 제거 후 대문자 변환
-		//dataFrom.replace("urn:wtrsp:auth.endpoint:","");
-		//clsFrom = dataFrom.uppercase().c_str();
+		dataFrom.replace("urn:wtrsp:auth.endpoint:","");
+		clsFrom = dataFrom.uppercase().c_str();
 
 		for(unsigned int i=0; i<m_unTranscodingList; i++)
 		{
 			pclsCdrRow = new CdrRow;
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsReqTime,17+2,"%s",(KCSTR)clsCurrent);
-			//KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsFrom,64+2,"%s",(KCSTR)clsFrom);
+			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsFrom,64+2,"%s",(KCSTR)clsFrom);
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsTrsgIP,15+2,"%s",(KCSTR)_rclsTrsgIP);
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsClientIP,15+2,"%s",(KCSTR)_rclsClientIP);
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsSessionID,38+2,"%s",(KCSTR)_rclsSessionID);
@@ -226,7 +232,7 @@ public:
 			{
 				KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsTransType,1+2,"%d", 3);
 			}
-			else if(pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID.m_unRealLen > 0)//동영상
+			else if(pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID.m_unRealLen > 0  && !(pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID == "NONE"))//동영상
 			{
 				//비디오 코덱의 아이디가 존재하면 비디오 변환 요청.
 				KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsTransType,1+2,"%d", 1);
@@ -239,6 +245,16 @@ public:
 			pclsCdrRow->m_nOutputNasCode = (KINT)pclsTargetContent->m_clsNasCode;
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsOutputPath,128+2,"%s",(KCSTR)clsFullPath);
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsOutputContainer,8+2,"%s",(KCSTR)pclsTargetContent->m_clsContainer.m_clsID);
+
+			//Target Audio / Video ID Set.
+			if(pclsTargetContent->m_clsContainer.clsAudioCodec.m_clsID.m_unRealLen > 0 && !(pclsTargetContent->m_clsContainer.clsAudioCodec.m_clsID == "NONE"))
+			{
+				KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsTargetAudioCodec,12+2,"%s",(KCSTR)pclsTargetContent->m_clsContainer.clsAudioCodec.m_clsID);
+			}
+			if(pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID.m_unRealLen > 0 && !(pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID == "NONE"))
+			{
+				KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsTargetVideoCodec,12+2,"%s",(KCSTR)pclsTargetContent->m_clsContainer.clsVideoCodec.m_clsID);
+			}
 
 			pclsTargetContent = (TargetContent*)clsTargetList.m_fnGetNext(stItor1);
 			pclsCdrRow = (CdrRow*)m_listCdrRow.m_fnGetNext(stItor2);
@@ -434,11 +450,10 @@ public:
 					pclsCdrRow->m_clsResultCode = (KCSTR)g_fnGetCdrCode(E_JOB_IS_LIMITED);//TRSS 의 Session 이 Full.
 					IFLOG(E_LOG_ERR, "[TrsgCdr] Result code empty and TRSS Session Full");
 				}
-//				else
-//				{
-//					pclsCdrRow->m_clsResultCode = (KCSTR)g_fnGetCdrCode(E_TRANSCODING_FAILED);//예외 상황으로 판단됨으로, 40003001 코드로 남김.
-//					IFLOG(E_LOG_ERR, "[TrsgCdr] Result code empty. Flow Exception");
-//				}
+				else
+				{
+					pclsCdrRow->m_clsResultCode = g_fnGetCdrCode((ETrsgCodeSet_t)g_fnGetEnumIdx((KCSTR)_rclsResultCode));
+				}
 			}
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsRecvTrssNotiJobDestroyed,12+2,"%s",(KCSTR)clsCurrent);
 			pclsCdrRow = (CdrRow*)m_listCdrRow.m_fnGetNext(stItor);
@@ -514,10 +529,8 @@ public:
 		struct timespec now_monotonic;
 		clock_gettime(CLOCK_REALTIME, &now_monotonic);
 
-		time_t stTime;
 		struct tm tmTime;
-		stTime  = time(NULL);
-		localtime_r(&stTime,&tmTime);
+		localtime_r((time_t *)&now_monotonic,&tmTime);
 
 		//ex) 2022051214173122526123  //Len:22
 		//parse) 2022-05-12 14:17:31.22526123
@@ -534,7 +547,7 @@ public:
 				<< clsformat.substr(12, 2).c_str() << "."
 				<< clsformat.substr(14, 3).c_str();
 	}
-	void m_fnMakeCdrList()
+	void m_fnMakeCdrList(KString & _rclsJobID)
 	{
 		if(m_bWrite == false) return;
 		TrsgCdr* pTrsgCdr = TrsgCdr::m_fnGetInstance();
@@ -545,7 +558,7 @@ public:
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsSeqID,21+2,"%s",(KCSTR)clsCurrent);
 			KString::m_fnStrnCat((KSTR)pclsCdrRow->m_clsLogTime,17+2,"%s",(KCSTR)clsCurrent);
 			KString clsCdrString; pclsCdrRow->m_fnMakeRowCdr(clsCdrString);
-			IFLOG(E_LOG_DEBUG, clsCdrString);
+			IFLOG(E_LOG_DEBUG, "%s|JOB_ID=%s", (KCSTR)clsCdrString, (KCSTR)_rclsJobID);
 			pTrsgCdr->m_fnAddCdr(clsCdrString);
 			pclsCdrRow = (CdrRow*)m_listCdrRow.m_fnGetNext(stItor);
 		}

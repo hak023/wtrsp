@@ -6,7 +6,8 @@
 #include "AppXmlParser.h"
 #include "main.h"
 
-#define SPLIT_SEND_LEN 32000 //32kb
+//#define SPLIT_SEND_LEN 32000 //32kb
+#define SPLIT_SEND_LEN 10000000 //10mbyte
 using namespace eSipUtil;
 
 TrsgTransport* g_fnCreateTrsgTransport()
@@ -15,7 +16,7 @@ TrsgTransport* g_fnCreateTrsgTransport()
 	return pclsObj;
 }
 TrsgTransport *TrsgTransport::m_pclsMy = NULL;
-TrsgTransport::TrsgTransport():SocketCom("TrsgTransport")
+TrsgTransport::TrsgTransport():TrspSocketCom("TrsgTransport")
 {
 	m_fnAddConnection();
 }
@@ -209,6 +210,38 @@ bool TrsgTransport::m_fnXmlSend(const Net5Tuple_t &_rstNet5Tuple, KString _clsXm
    if(CZip::m_fnEZCompress(bufDest, bufSrc) == true)
    {
       //Make Header
+      KString clsHeader; clsHeader.m_fnReSize(50);
+      KString::m_fnStrnCat((KSTR)clsHeader,clsHeader.m_unLen, "WTRSTP/1.0%020d", bufDest.nLen);
+
+      //Header + comp data
+      int nSendLen = TRSG_HEADER_SIZE+bufDest.nLen;
+      if(nSendLen > SPLIT_SEND_LEN)//해더 + 압축데이터 크기 10M 초과 메시지 버림.
+      {
+         IFLOG(E_LOG_ERR,"[TrsgTransport] Send MaxLen Overflow SendLen[%d] MaxLan[%d]", nSendLen, SPLIT_SEND_LEN);
+         return false;
+      }
+      Bytef* pSendByte = new Bytef[nSendLen]; std::fill_n(pSendByte,nSendLen,0x00);
+
+      memcpy(pSendByte, (KCSTR)clsHeader, TRSG_HEADER_SIZE);
+      memcpy(pSendByte+TRSG_HEADER_SIZE, bufDest.pBuf, bufDest.nLen);
+
+      IFLOG(E_LOG_DEBUG,"[TrsgTransport] Make Header[%s] SendLen[%d]", (KCSTR)clsHeader, nSendLen);
+      //SPLIT_SEND_LEN 보다 작거나 같으면 한 번에 전송
+      if(nSendLen <= SPLIT_SEND_LEN)
+      {
+         bool bSend = m_fnSend(_rstNet5Tuple, pSendByte, nSendLen);
+         if(!bSend)
+         {
+            IFLOG(E_LOG_ERR,"[TrsgTransport] Send Fail[%d]", nSendLen);
+            return false;
+         }
+      }
+   }
+
+/*
+   if(CZip::m_fnEZCompress(bufDest, bufSrc) == true)
+   {
+      //Make Header
       KString clsHeader; clsHeader.m_fnReSize(1024);
       KString::m_fnStrnCat((KSTR)clsHeader,clsHeader.m_unLen, "WTRSTP/1.%021d", bufDest.nLen);
 
@@ -269,6 +302,7 @@ bool TrsgTransport::m_fnXmlSend(const Net5Tuple_t &_rstNet5Tuple, KString _clsXm
          if(pSendByte) delete pSendByte;
       }
    }
+*/
    else
    {
       IFLOG(E_LOG_ERR, "TrsgTransport XmlSend data comp fail[%s]", (KCSTR)_clsXml);

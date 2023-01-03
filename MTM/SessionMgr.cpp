@@ -78,6 +78,7 @@ bool SessionMgr::m_fnTrsgDel(unsigned int _unTid, KString _clsJobID, KString _cl
 	m_pclsSesStruct[pclsSes->m_nAllocSes].m_clsJobID = _clsJobID;
 	m_pclsSesStruct[pclsSes->m_nAllocSes].stStartTime = time(NULL);
 
+//	IFLOG(E_LOG_ERR, "LHJ TEST Session Delete Map(%s)", (KCSTR)clsKey);
 	return m_mapSession.m_fnDelMap((KCSTR)clsKey);
 }
 void SessionMgr::m_fnSesAllClear()
@@ -91,7 +92,7 @@ void SessionMgr::m_fnSesAllClear()
 void SessionMgr::m_fnGarbageClear()
 {
 	Worker *pclsWorker = (Worker*) m_pclsOwner;
-	IFLOG(E_LOG_ERR, "Garbage Check Worker[%u], getAvailableIdNum(%d)", pclsWorker->m_unIdx, pclsWorker->m_pWorkerIdMgr->getAvailableIdNum());
+//	IFLOG(E_LOG_ERR, "LHJ TEST Garbage Check Worker[%u], getAvailableIdNum(%d)", pclsWorker->m_unIdx, pclsWorker->m_pWorkerIdMgr->getAvailableIdNum());
 	time_t stCurrentTime = time(NULL);
 	for(unsigned int unIdx = m_unStartIdx; unIdx < m_unEndIdx; unIdx++)
 	{
@@ -134,7 +135,7 @@ void SessionMgr::m_fnGarbageClear()
 	{
 		m_unEndIdx = m_unIdMgrNum;
 	}
-	if(m_unStartIdx > m_unIdMgrNum-1)//시작 배열이 Max index 넘을 경우 처음부터.
+	if(m_unStartIdx > m_unIdMgrNum - 1)//시작 배열이 Max index 넘을 경우 처음부터.
 	{
 		m_unStartIdx = 0;
 		m_unEndIdx = m_unStartIdx + m_unGarbageCheckCnt;

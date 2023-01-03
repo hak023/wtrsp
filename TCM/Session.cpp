@@ -22,12 +22,19 @@ Session::Session()
 	m_clsInternalNasImgFileName = KNULL;
 	m_clsTranscodesCnt.m_fnInit();
 	m_pclsCTrsgCdrInfo = new CTrsgCdrInfo;
+	m_nAllocWorker = Worker::m_pWorkerIdMgr->getAvailableId();
+
+	if(m_nAllocWorker!=-1)
+	{
+		int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerNum) * (MainConfig::m_fnGetInstance()->m_unIdMgrNum);
+		IFLOG(E_LOG_ERR,"[Session] New Session [Total:%d]", nTotalSessionNum - Worker::m_pWorkerIdMgr->getAvailableIdNum());
+	}
 }
 Session::~Session()
 {
 
-	//2022042814150800484344_decode.tmp 파일명 규칙에 의해 최소 33자리
-	if(m_clsInternalNasFileName.m_unRealLen >= 33)
+	//20220428//01/01/01/2022042814150800484344_decode.tmp 파일명 규칙에 의해 최소 42자리
+	if(m_clsInternalNasFileName.m_unRealLen >= 42)
 	{
 		if(MainConfig::m_fnGetInstance()->m_bDeleteDecodeFile)
 		{
@@ -40,8 +47,8 @@ Session::~Session()
 		}
 	}
 
-	//2022042814150800484344_decode.img 파일명 규칙에 의해 최소 33자리
-	if(m_clsInternalNasImgFileName.m_unRealLen >= 33)
+	//20220428/01/01/01/2022042814150800484344_decode.img 파일명 규칙에 의해 최소 42자리
+	if(m_clsInternalNasImgFileName.m_unRealLen >= 42)
 	{
 		if(MainConfig::m_fnGetInstance()->m_bDeleteDecodeFile)//binary delete 와 동일한 config 사용함.
 		{
@@ -73,10 +80,17 @@ Session::~Session()
 	}
 	if(m_pclsCTrsgCdrInfo)
 	{
-		m_pclsCTrsgCdrInfo->m_fnMakeCdrList();
+		m_pclsCTrsgCdrInfo->m_fnMakeCdrList(m_clsJobID);
 		delete m_pclsCTrsgCdrInfo;
 	}
 	m_clsTranscodesCnt.m_fnInit();
+	if(m_nAllocWorker!=-1)
+	{
+		Worker::m_pWorkerIdMgr->releaseId(m_nAllocWorker);
+		int nTotalSessionNum = (MainConfig::m_fnGetInstance()->m_unWorkerNum) * (MainConfig::m_fnGetInstance()->m_unIdMgrNum);
+		IFLOG(E_LOG_ERR,"[Session] Del Session [Total:%d]", nTotalSessionNum - Worker::m_pWorkerIdMgr->getAvailableIdNum());
+	}
+
 }
 void * Session::m_fnGetWorker()
 {
@@ -99,9 +113,18 @@ KString Session::m_fnGetFileName()
 	clock_gettime(CLOCK_REALTIME, &now_monotonic);
 
 	KString::m_fnStrnCat((KSTR) clsFileName, clsFileName.m_unLen,
-			"%04d%02d%02d%02d%02d%02d%08lld_decode.tmp", tmTime.tm_year + 1900,
-			tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min,
-			tmTime.tm_sec, now_monotonic.tv_nsec / 10);
+			"%04d%02d%02d/%02d/%02d/%02d/%04d%02d%02d%02d%02d%02d%08lld_decode.tmp",
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec,
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec,
+			now_monotonic.tv_nsec / 10);
+
+	KString clsDir;
+	KString::m_fnStrnCat((KSTR) clsDir, clsDir.m_unLen, "%s/%04d%02d%02d/%02d/%02d/%02d", (KCSTR)MainConfig::m_fnGetInstance()->m_clsNasInternal,
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
+
+	CfgFile::m_fnCreateDir((KCSTR)clsDir);
 
 	return clsFileName;
 }
@@ -121,9 +144,18 @@ KString Session::m_fnGetImgFileName()
 	clock_gettime(CLOCK_REALTIME, &now_monotonic);
 
 	KString::m_fnStrnCat((KSTR) clsFileName, clsFileName.m_unLen,
-			"%04d%02d%02d%02d%02d%02d%08lld_decode.img", tmTime.tm_year + 1900,
-			tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min,
-			tmTime.tm_sec, now_monotonic.tv_nsec / 10);
+			"%04d%02d%02d/%02d/%02d/%02d/%04d%02d%02d%02d%02d%02d%08lld_decode.img",
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec,
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday,
+			tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec,
+			now_monotonic.tv_nsec / 10);
+
+	KString clsDir;
+	KString::m_fnStrnCat((KSTR) clsDir, clsDir.m_unLen, "%s/%04d%02d%02d/%02d/%02d/%02d", (KCSTR)MainConfig::m_fnGetInstance()->m_clsNasInternal,
+			tmTime.tm_year + 1900, tmTime.tm_mon + 1, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
+
+	CfgFile::m_fnCreateDir((KCSTR)clsDir);
 
 	return clsFileName;
 }
@@ -144,11 +176,12 @@ void Session::m_fnRecvTrseCrtJobReq(KString & _rclsXml)
 	KString clsTrsgIP = m_pclsTrseTr->m_stTrseAddr.m_szLocalIp;
 	KString clsClientIP = m_pclsTrseTr->m_stTrseAddr.m_szRemoteIp;
 	m_clsTranscodesCnt.nTotal = AppXmlParser::m_fnGetTranscodingList(_rclsXml);
+   if(eSt == E_TRANSCODING_ERR ) m_clsTranscodesCnt.nTotal = 1;//Cdr 기록을 위해 강제로 한 줄을 생성 함.
 	if(m_pclsCTrsgCdrInfo) m_pclsCTrsgCdrInfo->m_fnRecvTrseCrtJobReq(_rclsXml, m_clsSessionID, clsTrsgIP, clsClientIP, m_clsTranscodesCnt.nTotal);
 
 	if(eSt != E_JOB_RES_OK)
 	{
-		//SOURCECONTENT_TAG_DOES_NOT_EXIST or TARGETCONTENT_TAG_DOES_NOT_EXIST
+		//SOURCECONTENT_TAG_DOES_NOT_EXIST or TARGETCONTENT_TAG_DOES_NOT_EXIST or TRANSCODING_TAG_DOES_NOT_EXIST
 		m_fnSendTrseCrtJobRes(_rclsXml, eSt);//실패로 응답해야 함.
 		m_fnCreateSessionEndEv();
 		return;

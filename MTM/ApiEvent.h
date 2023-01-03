@@ -92,9 +92,7 @@ public:
 		m_clsJobID = KNULL;
 		m_clsXml = KNULL;
 	}
-	~AppTrsgEvent()
-	{
-	}
+	~AppTrsgEvent() {}
 	unsigned int m_unTid;
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
@@ -113,9 +111,7 @@ public:
 		m_unSuccess = 0;
 		m_unTargetIdx = 1;
 	}
-	~AppTrsgTcStartEvent()
-	{
-	}
+	~AppTrsgTcStartEvent() {}
 	unsigned int m_unTid;
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
@@ -137,9 +133,7 @@ public:
 		m_eTcSt = E_TC_RES_OK;
 		m_clsResultDescription = KNULL;
 	}
-	~AppTrsgTcStopEvent()
-	{
-	}
+	~AppTrsgTcStopEvent() {}
 	unsigned int m_unTid;
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
@@ -159,9 +153,7 @@ public:
 		m_clsJobID = KNULL;
 		m_eT = E_MAIN_EV_TRSG_TR_TIMER;
 	}
-	~AppTrsgTimerEvent()
-	{
-	}
+	~AppTrsgTimerEvent() {}
 	eSipUtil::KString m_clsSessionID;
 	unsigned int m_unTid;
 	unsigned int m_unTime;
@@ -177,9 +169,7 @@ public:
 		m_unTid = 0;
 		m_eT = E_MAIN_EV_SESSION_TIMEOUT;
 	}
-	~AppSessionTimerEvent()
-	{
-	}
+	~AppSessionTimerEvent() {}
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
 	unsigned int m_unTid;
@@ -192,9 +182,7 @@ public:
 		m_unWorkerIdx = 0;
 		m_eT = E_MAIN_EV_GARBAGE_TIMER;
 	}
-	~AppGarbageTimerEvent()
-	{
-	}
+	~AppGarbageTimerEvent() {}
 	unsigned int m_unWorkerIdx;
 };
 class AppSessionEndEvent: public AppBaseEvent
@@ -207,9 +195,7 @@ public:
 		m_unTid = 0;
 		m_eT = E_MAIN_EV_SESSION_END;
 	}
-	~AppSessionEndEvent()
-	{
-	}
+	~AppSessionEndEvent() {}
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
 	unsigned int m_unTid;
@@ -224,9 +210,7 @@ public:
 		m_unTid = 0;
 		m_eT = E_MAIN_EV_SESSION_TC_TIMER;
 	}
-	~AppSessionTcTimerEvent()
-	{
-	}
+	~AppSessionTcTimerEvent() {}
 	eSipUtil::KString m_clsSessionID;
 	eSipUtil::KString m_clsJobID;
 	unsigned int m_unTid;

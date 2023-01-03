@@ -27,7 +27,7 @@ DEF += ${EUTIL_DEF}
 ##############################################################################
 # OBJ LIST
 ##############################################################################
-MAIN_OBJ  = main.o MainConfig.o AclSystemTable.o TrspSocketCom.o 
+MAIN_OBJ  = main.o Trsplog.o MainConfig.o AclSystemTable.o TrspSocketCom.o 
 MAIN_OBJ += TrseTransport.o TrseTransaction.o TrseTransactionMgr.o 
 MAIN_OBJ += TrssTransport.o TrssTransaction.o TrssTransactionMgr.o TrssTransactionTimer.o
 MAIN_OBJ += Worker.o GarbageTimer.o TrsgCdrMgr.o TrsgCdr.o
@@ -61,7 +61,7 @@ CPPFLAGS += ${DEF} ${CPPINCLS}
 ##############################################################################
 LINKLIBS = -L./ -lpthread -L/usr/local/lib -lstdc++ -lcurses -lz #-L../API/pdk-3.2.2/lib -lbase 
 LINKLIBS += ${EUTIL_LIB}
-LINKLIBS += -L/usr/local/lib -lrutil -lresip
+LINKLIBS += -L/home/ibc/ibc/lib -lrutil -lresip
 
 ##############################################################################
 # OS Defined

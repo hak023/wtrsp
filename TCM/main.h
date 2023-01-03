@@ -1,6 +1,6 @@
 #ifndef _VWTRSG_H_
 #define _VWTRSG_H_
-#include "log.hxx"
+#include "Trsplog.hxx"
 
 #define MAIN_SPEC_1K 1024
 #define MAIN_SPEC_1M 1048576

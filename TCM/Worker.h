@@ -32,6 +32,7 @@ class Worker
 		static void m_fnPutSessionEndEv(AppSessionEndEvent * _pclsEv);
 		static Worker * m_pclsMy;
 		static unsigned int m_unMax;
+		static eSipUtil::IdMgr *m_pWorkerIdMgr;
 		unsigned int m_unIdx;
 		TrseTransactionMgr m_clsTrseTrMgr;
 		TrssTransactionMgr m_clsTrssTrMgr;
