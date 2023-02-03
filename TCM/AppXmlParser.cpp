@@ -1091,8 +1091,9 @@ void AppXmlParser::m_fnMakeCreateJobRes(KString & _rclsXml, KString & _rclsTo, K
 	//Kind 는 Realtime 고정임. 그 외 지원 안함.
 	//Job의 ID 는 신규 생성해야함.
 
+	KString clsTmpMessage; clsTmpMessage.m_fnReSize(10240);
 	//To, From swap
-    KString::m_fnStrnCat((KSTR)_rclsCreateJobRes,_rclsCreateJobRes.m_unLen,
+    KString::m_fnStrnCat((KSTR)clsTmpMessage,clsTmpMessage.m_unLen,
 		"<?xml version=\"1.0\"?>"
 		"<WTRS.MSG Version=\"1.0\">"
     		"<HEADER From=\"%s\" SessionID=\"%s\" To=\"%s\" TransactionID=\"%s\">"
@@ -1100,12 +1101,24 @@ void AppXmlParser::m_fnMakeCreateJobRes(KString & _rclsXml, KString & _rclsTo, K
     		"</HEADER>"
     		"<BODY>"
 				"<CreateJobResponse>"
-					"<Job ID=\"%s\" ServiceName=\"%s\" Kind=\"Realtime\" />"
+					"<Job ID=\"%s\" ServiceName=\"ServiceName\" Kind=\"Realtime\" />"
 				"</CreateJobResponse>"
     		"</BODY>"
 		"</WTRS.MSG>", (KSTR)_rclsFrom, (KSTR)clsSessionID, (KSTR)_rclsTo, (KSTR)clsTransactionID,
-		(KCSTR)clsCode, (KCSTR)clsDescription,
-		(KSTR)_rclsJobID, (KSTR)clsServiceName);
+		(KCSTR)clsCode, (KCSTR)clsDescription, (KSTR)_rclsJobID);
+
+	/* ServiceName을 SetAttribute 로 처리하여 특수문자 깨지는 현상을 방지하기 위한 과정 */
+	TiXmlDocument docTmp;
+	docTmp.Parse((KCSTR)clsTmpMessage, 0, TIXML_ENCODING_LEGACY);
+	TiXmlElement *rootElementTmp = docTmp.RootElement();
+	TiXmlElement *JobTmp = rootElementTmp->FirstChildElement("BODY")->FirstChildElement("CreateJobResponse")->FirstChildElement("Job");
+	JobTmp->SetAttribute("ServiceName", (KCSTR)clsServiceName);
+
+	TiXmlPrinter printer;
+	printer.SetStreamPrinting();
+	docTmp.Accept(&printer);
+	_rclsCreateJobRes = printer.CStr();
+
 }
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString & _rclsXml, KString & _rclsTo, KString & _rclsFrom, KString & _rclsSessionID, KString & _rclsJobStatusChgNotify)
 {
@@ -1343,8 +1356,9 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString & _rclsXml, 
 	KString clsDescription;
 	clsCode = g_fnGetTrsgCode(_eSt); clsDescription = g_fnGetTrsgCodeDesc((KCSTR)clsCode);
 
+	KString clsTmpMessage; clsTmpMessage.m_fnReSize(10240);
 	// To, From 유지. (CreateJobResponse 기반의 메시지임.)
-	KString::m_fnStrnCat((KSTR) _rclsJobStatusChgNotify, _rclsJobStatusChgNotify.m_unLen,
+	KString::m_fnStrnCat((KSTR) clsTmpMessage, clsTmpMessage.m_unLen,
 			"<?xml version=\"1.0\"?>"
 					"<WTRS.MSG Version=\"1.0\">"
 					"<HEADER From=\"%s\" SessionID=\"%s\" To=\"%s\" TransactionID=\"%s\">"
@@ -1352,15 +1366,27 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString & _rclsXml, 
 					"</HEADER>"
 					"<BODY>"
 					"<JobStatusChangedNotify>"
-					"<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Destroyed\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"%s\">"
+					"<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Destroyed\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"%s\">"
 					"<Transcodes Cancel=\"0\" Current=\"0\" Fail=\"%d\" Success=\"%d\" Total=\"%d\" />"
 					"</JobState>"
 					"</JobStatusChangedNotify>"
 					"</BODY>"
 					"</WTRS.MSG>", (KSTR) clsFrom, (KSTR) clsSessionID,
 			(KSTR) clsTo, (KSTR) clsTransactionID, (KCSTR)clsCode, (KCSTR)clsDescription, (KSTR) clsJobID,
-			(KSTR) clsServiceName, (KSTR) clsCurrTime, (KSTR) clsCurrTime,
+			(KSTR) clsCurrTime, (KSTR) clsCurrTime,
 			(KCSTR) clsCode, _rclsTranscodesCnt.nFail, _rclsTranscodesCnt.nSuccess, _rclsTranscodesCnt.nTotal);
+
+	/* ServiceName을 SetAttribute 로 처리하여 특수문자 깨지는 현상을 방지하기 위한 과정 */
+	TiXmlDocument docTmp;
+	docTmp.Parse((KCSTR)clsTmpMessage, 0, TIXML_ENCODING_LEGACY);
+	TiXmlElement *rootElementTmp = docTmp.RootElement();
+	TiXmlElement *JobStateTmp = rootElementTmp->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+	JobStateTmp->SetAttribute("ServiceName", (KCSTR)clsServiceName);
+
+	TiXmlPrinter printer;
+	printer.SetStreamPrinting();
+	docTmp.Accept(&printer);
+	_rclsJobStatusChgNotify = printer.CStr();
 }
 ETrsgCodeSet_t AppXmlParser::m_fnWriteSourceFile(KString & _rclsXml, KString & _rclsPath, KString & _rclsFileName)
 {

@@ -217,6 +217,30 @@ void AppXmlParser::m_fnGetToFrom(KString & _rclsXml, KString & _rclsTo, KString 
    _rclsFrom = headerElement->Attribute("From");
    _rclsTo = headerElement->Attribute("To");
 }
+void AppXmlParser::m_fnGetServiceName(KString & _rclsXml, KString & _rclsServiceName)
+{
+   TiXmlDocument doc;
+   doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
+   TiXmlElement* rootElement = doc.RootElement();
+   TiXmlElement* bodyElement = rootElement->FirstChildElement("BODY");
+
+   KString clsBodyType;
+   if(AppXmlParser::m_fnGetBodyType(_rclsXml, clsBodyType))
+   {
+	   IFLOG(E_LOG_INFO, "MSG_TYPE For Get ServiceName :%s", (KCSTR)clsBodyType);
+	   if(clsBodyType == DEF_BODY_CREATE_JOB_REQ)
+	   {
+		   TiXmlElement* jobElement = bodyElement->FirstChildElement("CreateJobRequest")->FirstChildElement("Job");
+		   _rclsServiceName = jobElement->Attribute("ServiceName");
+	   }
+	   else
+	   {
+		   TiXmlElement* jobStateElement = bodyElement->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+		   _rclsServiceName = jobStateElement->Attribute("ServiceName");
+	   }
+	   IFLOG(E_LOG_DEBUG, "ServiceName(%s)", (KCSTR)_rclsServiceName);
+   }
+}
 void AppXmlParser::m_fnGetNasCode(KString & _rclsXml, int* _pnSrcNasCode, int* _pnDstNasCode)
 {
    KString clsBodyType;
@@ -352,20 +376,58 @@ void AppXmlParser::m_fnGetSourceContentInfo(KString & _rclsXml, SourceContent *_
 	TiXmlElement *metadataElement = containerElement->FirstChildElement("Metadata");
 	if(metadataElement != NULL)
 	{
-		_pclsSourceContent->m_clsMetadata.m_clsAlbum = metadataElement->Attribute("Album");
-		_pclsSourceContent->m_clsMetadata.m_clsArtist = metadataElement->Attribute("Artist");
-		_pclsSourceContent->m_clsMetadata.m_clsCopyright = metadataElement->Attribute("Copyright");
-		_pclsSourceContent->m_clsMetadata.m_clsDate = metadataElement->Attribute("Date");
-		_pclsSourceContent->m_clsMetadata.m_clsGenre = metadataElement->Attribute("Genre");
+		// Album
+//		_pclsSourceContent->m_clsMetadata.m_clsAlbum = metadataElement->Attribute("Album");
+		m_fnConvertQuote(metadataElement->Attribute("Album"), _pclsSourceContent->m_clsMetadata.m_clsAlbum);
+
+		// Artist
+//		_pclsSourceContent->m_clsMetadata.m_clsArtist = metadataElement->Attribute("Artist");
+		m_fnConvertQuote(metadataElement->Attribute("Artist"), _pclsSourceContent->m_clsMetadata.m_clsArtist);
+
+		// Copyright
+//		_pclsSourceContent->m_clsMetadata.m_clsCopyright = metadataElement->Attribute("Copyright");
+		m_fnConvertQuote(metadataElement->Attribute("Copyright"), _pclsSourceContent->m_clsMetadata.m_clsCopyright);
+
+		// Date
+//		_pclsSourceContent->m_clsMetadata.m_clsDate = metadataElement->Attribute("Date");
+		m_fnConvertQuote(metadataElement->Attribute("Date"), _pclsSourceContent->m_clsMetadata.m_clsDate);
+
+		// Genre
+//		_pclsSourceContent->m_clsMetadata.m_clsGenre = metadataElement->Attribute("Genre");
+		m_fnConvertQuote(metadataElement->Attribute("Genre"), _pclsSourceContent->m_clsMetadata.m_clsGenre);
+
+		// ImageData
 		_pclsSourceContent->m_clsMetadata.m_clsImageData = metadataElement->Attribute("ImageData");
-		_pclsSourceContent->m_clsMetadata.m_clsImageType = metadataElement->Attribute("ImageType");
-		_pclsSourceContent->m_clsMetadata.m_clsPlayDevice = metadataElement->Attribute("PlayDevice");
-		_pclsSourceContent->m_clsMetadata.m_clsPlayTime = metadataElement->Attribute("PlayTime");
-		_pclsSourceContent->m_clsMetadata.m_clsSite = metadataElement->Attribute("Site");
-		_pclsSourceContent->m_clsMetadata.m_clsTitle = metadataElement->Attribute("Title");
-		_pclsSourceContent->m_clsMetadata.m_clsTrack = metadataElement->Attribute("Track");
-		_pclsSourceContent->m_clsMetadata.m_clsYear = metadataElement->Attribute("Year");
+
+		// ImageType
+//		_pclsSourceContent->m_clsMetadata.m_clsImageType = metadataElement->Attribute("ImageType");
+		m_fnConvertQuote(metadataElement->Attribute("ImageType"), _pclsSourceContent->m_clsMetadata.m_clsImageType);
+
+		// PlayDevice
+//		_pclsSourceContent->m_clsMetadata.m_clsPlayDevice = metadataElement->Attribute("PlayDevice");
+		m_fnConvertQuote(metadataElement->Attribute("PlayDevice"), _pclsSourceContent->m_clsMetadata.m_clsPlayDevice);
+
+		// PlayTime
+//		_pclsSourceContent->m_clsMetadata.m_clsPlayTime = metadataElement->Attribute("PlayTime");
+		m_fnConvertQuote(metadataElement->Attribute("PlayTime"), _pclsSourceContent->m_clsMetadata.m_clsPlayTime);
+
+		// Site
+//		_pclsSourceContent->m_clsMetadata.m_clsSite = metadataElement->Attribute("Site");
+		m_fnConvertQuote(metadataElement->Attribute("Site"), _pclsSourceContent->m_clsMetadata.m_clsSite);
+
+		// Title
+//		_pclsSourceContent->m_clsMetadata.m_clsTitle = metadataElement->Attribute("Title");
+		m_fnConvertQuote(metadataElement->Attribute("Title"), _pclsSourceContent->m_clsMetadata.m_clsTitle);
+
+		// Track
+//		_pclsSourceContent->m_clsMetadata.m_clsTrack = metadataElement->Attribute("Track");
+		m_fnConvertQuote(metadataElement->Attribute("Track"), _pclsSourceContent->m_clsMetadata.m_clsTrack);
+
+		// Year
+//		_pclsSourceContent->m_clsMetadata.m_clsYear = metadataElement->Attribute("Year");
+		m_fnConvertQuote(metadataElement->Attribute("Year"), _pclsSourceContent->m_clsMetadata.m_clsYear);
 	}
+
 	KString clsDebug;
 	_pclsSourceContent->m_fnDebug(clsDebug);
 	IFLOG(E_LOG_DEBUG, (KCSTR)clsDebug);
@@ -386,7 +448,6 @@ unsigned int AppXmlParser::m_fnGetTranscodingList(KString & _rclsXml)
    while(transcodingElement)
    {
       nTranscoding++;
-      //printf("Searching..[%s]\n", transcodingElement->Value());
       transcodingElement = transcodingElement->NextSiblingElement();
    }
    return nTranscoding;
@@ -557,9 +618,9 @@ void AppXmlParser::m_fnMakeEstablishSessionReq(KString &_rclsFrom, KString &_rcl
                "<Endpoint ID=\"\" IP=\"\" PWD=\"\"/>"
             "</EstablishSessionRequest>"
     		"</BODY>"
-		"</WTRS.MSG>", (KSTR)_rclsFrom, (KSTR)_rclsTo, _nTransactionID/*,(KSTR)clsEndpointID, (KSTR)clsEndpointIP, (KSTR) clsEndpointPW*/);
+		"</WTRS.MSG>", (KSTR)_rclsFrom, (KSTR)_rclsTo, _nTransactionID);
 }
-void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString &_rclsXml, KString &_rclsJobStatusChangedNotify)
+void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString &_rclsXml, KString &_rclsServiceName, KString &_rclsJobStatusChangedNotify)
 {
    // _rclsXml == CrtJobReq
    TiXmlDocument doc;
@@ -574,7 +635,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString &_rclsXml, KSt
    KString clsFrom;
    KString clsTransactionID;
    KString clsJobID;
-   KString clsServiceName;
    KString clsCurrTime; m_fnGetCurrentTime(clsCurrTime);
 
    clsTo = headerElement->Attribute("To");
@@ -582,7 +642,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString &_rclsXml, KSt
    clsFrom = headerElement->Attribute("From");
    clsTransactionID = headerElement->Attribute("TransactionID");
    clsJobID = jobElement->Attribute("ID");
-   clsServiceName = jobElement->Attribute("ServiceName");
 
    KString clsCode = "0000";
    KString clsDescription = g_fnGetTrssCodeDesc((KCSTR)clsCode);
@@ -596,10 +655,21 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(KString &_rclsXml, KSt
       "</HEADER>"
       "<BODY>"
            "<JobStatusChangedNotify>"
-               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Created\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" />"
+               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Created\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" />"
            "</JobStatusChangedNotify>"
       "</BODY>"
-   "</WTRS.MSG>", (KSTR)clsTo, (KSTR)clsSessionID, (KSTR)clsFrom, (KSTR)clsTransactionID, (KCSTR)clsCode, (KCSTR)clsDescription, (KSTR)clsJobID, (KSTR)clsServiceName, (KSTR)clsCurrTime);
+   "</WTRS.MSG>", (KSTR)clsTo, (KSTR)clsSessionID, (KSTR)clsFrom, (KSTR)clsTransactionID, (KCSTR)clsCode, (KCSTR)clsDescription, (KSTR)clsJobID, (KSTR)clsCurrTime);
+
+   TiXmlDocument docTmp;
+   docTmp.Parse((KCSTR)_rclsJobStatusChangedNotify, 0, TIXML_ENCODING_LEGACY);
+   rootElement = docTmp.RootElement();
+   TiXmlElement* jobStateElement = rootElement->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+   jobStateElement->SetAttribute("ServiceName", (KCSTR)_rclsServiceName);
+
+   TiXmlPrinter printer;
+   printer.SetStreamPrinting();
+   docTmp.Accept(&printer);
+   _rclsJobStatusChangedNotify = printer.CStr();
 }
 
 void AppXmlParser::m_fnMakeJobStatusChangedNotify_Waiting(KString &_rclsXml, KString &_rclsJobStatusChangedNotify)
@@ -618,7 +688,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Waiting(KString &_rclsXml, KSt
 
 }
 
-void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString &_rclsXml, unsigned int _unTranscodingList, KString &_rclsJobStatusChangedNotify)
+void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString &_rclsXml, KString &_rclsServiceName, unsigned int _unTranscodingList, KString &_rclsJobStatusChangedNotify)
 {
    TiXmlDocument doc;
    doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
@@ -632,7 +702,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString &_rclsXml, 
    KString clsFrom;
    KString clsTransactionID;
    KString clsJobID;
-   KString clsServiceName;
    KString clsStartTime;
 
    clsTo = headerElement->Attribute("To");
@@ -641,7 +710,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString &_rclsXml, 
    clsTransactionID = headerElement->Attribute("TransactionID");
    if(jobStatusChangedNotifyElement == NULL) clsJobID = "UNKNOWN";
    else clsJobID = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ID");
-   clsServiceName = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ServiceName");
    clsStartTime = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("StartTime");
 
    KString clsCode = "0000";
@@ -655,15 +723,27 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(KString &_rclsXml, 
       "</HEADER>"
       "<BODY>"
            "<JobStatusChangedNotify>"
-               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"JobStarted\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" >"
+               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"JobStarted\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" >"
                   "<Transcodes Cancel=\"0\" Current=\"0\" Fail=\"0\" Success=\"0\" Total=\"%d\" />"
                "</JobState>"
            "</JobStatusChangedNotify>"
       "</BODY>"
-   "</WTRS.MSG>", (KSTR)clsFrom, (KSTR)clsSessionID, (KSTR)clsTo, (KSTR)clsTransactionID, (KCSTR)clsCode, (KCSTR)clsDescription, (KSTR)clsJobID, (KSTR)clsServiceName, (KSTR)clsStartTime, _unTranscodingList);
+   "</WTRS.MSG>", (KSTR)clsFrom, (KSTR)clsSessionID, (KSTR)clsTo, (KSTR)clsTransactionID, (KCSTR)clsCode, (KCSTR)clsDescription, (KSTR)clsJobID, (KSTR)clsStartTime, _unTranscodingList);
+
+   TiXmlDocument docTmp;
+   docTmp.Parse((KCSTR)_rclsJobStatusChangedNotify, 0, TIXML_ENCODING_LEGACY);
+   rootElement = docTmp.RootElement();
+   TiXmlElement* jobStateElement = rootElement->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+   jobStateElement->SetAttribute("ServiceName", (KCSTR)_rclsServiceName);
+
+   TiXmlPrinter printer;
+   printer.SetStreamPrinting();
+   docTmp.Accept(&printer);
+   _rclsJobStatusChangedNotify = printer.CStr();
+
 }
 
-void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
+void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml, KString &_rclsServiceName,
 		SourceContent * _pclsSource, TargetContent * _pclsTarget, unsigned int _unFail, unsigned int _unSuccess, unsigned int _unTargetIdx, KString & _rclsJobStatusChangedNotify)
 {
    TiXmlDocument doc;
@@ -679,7 +759,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
    KString clsFrom;
    KString clsTransactionID;
    KString clsJobID;
-   KString clsServiceName;
    KString clsStartTime;
    KString clsTransSessionID;
    KString clsTotal;
@@ -691,7 +770,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
    clsTransactionID = headerElement->Attribute("TransactionID");
    if(jobStatusChangedNotifyElement == NULL) clsJobID = "UNKNOWN";
    else clsJobID = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ID");
-   clsServiceName = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ServiceName");
    clsStartTime = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("StartTime");
    KString::m_fnStrnCat((KSTR)clsTransSessionID,10240,"%s_%d",(KSTR)clsJobID, _unTargetIdx);
    clsTotal = jobStateElement->FirstChildElement("Transcodes")->Attribute("Total");
@@ -707,7 +785,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
       "</HEADER>"
       "<BODY>"
            "<JobStatusChangedNotify>"
-               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"TranscodingStarted\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" >"
+               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"TranscodingStarted\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"\" ResultCode=\"0000\" >"
                   "<Transcodes StartTime=\"%s\" EndTime=\"%s\" TransSessionID=\"%s\" Cancel=\"0\" Current=\"%d\" Fail=\"%d\" Success=\"%d\" Total=\"%s\" ResultCode=\"0000\" ResultDescription=\"0\" >"
                      "<Transcode>"
                         "<Source NASCode=\"%s\" File=\"%s\" WTRSSPath=\"%s\" BinaryData=\"%s\">"
@@ -726,7 +804,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
       "</BODY>"
    "</WTRS.MSG>", (KSTR)clsFrom, (KSTR)clsSessionID, (KSTR)clsTo, (KSTR)clsTransactionID,
    (KCSTR)clsCode, (KCSTR)clsDescription,
-   (KSTR)clsJobID, (KSTR)clsServiceName, (KSTR)clsStartTime,
+   (KSTR)clsJobID, (KSTR)clsStartTime,
    (KSTR)clsStartTime, (KSTR)clsCurrTime, (KSTR)clsTransSessionID, _unTargetIdx, _unFail, _unSuccess, (KSTR)clsTotal,
    (KSTR)_pclsSource->m_clsNasCode, (KSTR)_pclsSource->m_clsFilePath, (KSTR)_pclsSource->m_clsFilePath, (KSTR)_pclsSource->m_clsBinaryData, (KSTR)_pclsSource->m_clsID,
    (KSTR)_pclsTarget->m_clsNasCode, (KSTR)_pclsTarget->m_clsFilePath, (KSTR)_pclsTarget->m_clsFilePath, (KSTR)_pclsTarget->m_clsBinaryData, (KSTR)_pclsTarget->m_clsSize,
@@ -737,6 +815,18 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(KString & _rclsXml,
    resip::Data convertNullStr = (KCSTR)_rclsJobStatusChangedNotify;
    convertNullStr.replace("(null)", "");
    _rclsJobStatusChangedNotify = convertNullStr.c_str();
+
+   TiXmlDocument docTmp;
+   docTmp.Parse((KCSTR)_rclsJobStatusChangedNotify, 0, TIXML_ENCODING_LEGACY);
+   rootElement = docTmp.RootElement();
+   jobStateElement = rootElement->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+   jobStateElement->SetAttribute("ServiceName", (KCSTR)_rclsServiceName);
+
+   TiXmlPrinter printer;
+   printer.SetStreamPrinting();
+   docTmp.Accept(&printer);
+   _rclsJobStatusChangedNotify = printer.CStr();
+
 
 }
 
@@ -774,7 +864,7 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Stopped(KString &_rclsXml, 
 
 }
 
-void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, KString &_rclsJobStatusChangedNotify)
+void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, KString &_rclsServiceName, KString &_rclsJobStatusChangedNotify)
 {
    TiXmlDocument doc;
    doc.Parse((KCSTR)_rclsXml, 0, TIXML_ENCODING_LEGACY);
@@ -789,7 +879,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, 
    KString clsFrom;
    KString clsTransactionID;
    KString clsJobID;
-   KString clsServiceName;
    KString clsStartTime;
    KString clsCurrTime; m_fnGetCurrentTime(clsCurrTime);
 
@@ -803,7 +892,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, 
    clsTransactionID = headerElement->Attribute("TransactionID");
    if(jobStatusChangedNotifyElement == NULL) clsJobID = "UNKNOWN";
    else clsJobID = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ID");
-   clsServiceName = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("ServiceName");
    clsStartTime = jobStatusChangedNotifyElement->FirstChildElement("JobState")->Attribute("StartTime");
 
    clsFail = jobStateElement->FirstChildElement("Transcodes")->Attribute("Fail");
@@ -821,18 +909,30 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(KString &_rclsXml, 
       "</HEADER>"
       "<BODY>"
            "<JobStatusChangedNotify>"
-               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"JobStopped\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"0000\" >"
+               "<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"JobStopped\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"0000\" >"
                   "<Transcodes Cancel=\"0\" Current=\"0\" Fail=\"%s\" Success=\"%s\" Total=\"%s\" />"
                "</JobState>"
            "</JobStatusChangedNotify>"
       "</BODY>"
    "</WTRS.MSG>", (KSTR)clsFrom, (KSTR)clsSessionID, (KSTR)clsTo, (KSTR)clsTransactionID,
    (KCSTR)clsCode, (KCSTR)clsDescription,
-   (KSTR)clsJobID, (KSTR)clsServiceName, (KSTR)clsStartTime, (KSTR)clsCurrTime,
+   (KSTR)clsJobID, (KSTR)clsStartTime, (KSTR)clsCurrTime,
    (KSTR)clsFail, (KSTR)clsSuccess, (KSTR)clsTotal);
+
+   TiXmlDocument docTmp;
+   docTmp.Parse((KCSTR)_rclsJobStatusChangedNotify, 0, TIXML_ENCODING_LEGACY);
+   rootElement = docTmp.RootElement();
+   jobStateElement = rootElement->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+   jobStateElement->SetAttribute("ServiceName", (KCSTR)_rclsServiceName);
+
+   TiXmlPrinter printer;
+   printer.SetStreamPrinting();
+   docTmp.Accept(&printer);
+   _rclsJobStatusChangedNotify = printer.CStr();
+
 }
 
-void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, unsigned int _unTranscodingList, ETrssCodeSet_t _eSt, KString &_rclsJobStatusChangedNotify)
+void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, KString &_rclsServiceName, unsigned int _unTranscodingList, ETrssCodeSet_t _eSt, KString &_rclsJobStatusChangedNotify)
 {
 	// CASE 1. JobStopped
 	// CASE 2. ³ª¸ÓÁöMSG (SessionFull) /Session Timeout
@@ -869,7 +969,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, u
 		KString clsFrom;
 		KString clsTransactionID;
 		KString clsJobID;
-		KString clsServiceName;
 		KString clsCurrTime;
 		m_fnGetCurrentTime(clsCurrTime);
 
@@ -878,7 +977,6 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, u
 		clsFrom = headerElement->Attribute("From");
 		clsTransactionID = headerElement->Attribute("TransactionID");
 		clsJobID = jobElement->Attribute("ID");
-		clsServiceName = jobElement->Attribute("ServiceName");
 
 		KString clsCode = g_fnGetTrssCode(_eSt);
 		KString clsDescription = g_fnGetTrssCodeDesc((KCSTR)clsCode);
@@ -893,15 +991,27 @@ void AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(KString &_rclsXml, u
 			"</HEADER>"
 			"<BODY>"
 				"<JobStatusChangedNotify>"
-					"<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Destroyed\" ServiceName=\"%s\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"%s\">"
+					"<JobState ID=\"%s\" Kind=\"Realtime\" Status=\"Destroyed\" ServiceName=\"ServiceName\" StartTime=\"%s\" EndTime=\"%s\" ResultCode=\"%s\">"
 						"<Transcodes Cancel=\"0\" Current=\"0\" Fail=\"%d\" Success=\"0\" Total=\"%d\"/>"
 					"</JobState>"
 				"</JobStatusChangedNotify>"
 			"</BODY>"
 		"</WTRS.MSG>", (KSTR) clsTo, (KSTR) clsSessionID, (KSTR) clsFrom, (KSTR) clsTransactionID,
 		(KCSTR) clsCode, (KCSTR) clsDescription,
-		(KSTR) clsJobID, (KSTR) clsServiceName, (KSTR) clsCurrTime, (KSTR) clsCurrTime, (KCSTR) clsCode,
+		(KSTR) clsJobID, (KSTR) clsCurrTime, (KSTR) clsCurrTime, (KCSTR) clsCode,
 		_unTranscodingList, _unTranscodingList);
+
+	   TiXmlDocument docTmp;
+	   docTmp.Parse((KCSTR)_rclsJobStatusChangedNotify, 0, TIXML_ENCODING_LEGACY);
+	   rootElement = docTmp.RootElement();
+	   TiXmlElement* jobStateElement = rootElement->FirstChildElement("BODY")->FirstChildElement("JobStatusChangedNotify")->FirstChildElement("JobState");
+	   jobStateElement->SetAttribute("ServiceName", (KCSTR)_rclsServiceName);
+
+	   TiXmlPrinter printer;
+	   printer.SetStreamPrinting();
+	   docTmp.Accept(&printer);
+	   _rclsJobStatusChangedNotify = printer.CStr();
+
 	}
 }
 void AppXmlParser::m_fnGetCurrentTime(KString & _rclsCurrent)
@@ -926,4 +1036,10 @@ void AppXmlParser::m_fnXmlFormatter(KString & _rclsXml, KString & _rclsXmlFormat
 	TiXmlPrinter printer;
 	doc.Accept(&printer);
 	_rclsXmlFormat = printer.CStr();
+}
+void AppXmlParser::m_fnConvertQuote(const char *_rclsStr, KString &_rclsResult)
+{
+	resip::Data convertStr = (KCSTR)_rclsStr;
+	convertStr.replace("\"", "\\\"");
+	_rclsResult = convertStr.c_str();
 }

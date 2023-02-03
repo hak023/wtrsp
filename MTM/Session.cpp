@@ -401,7 +401,7 @@ void Session::m_fnRecvTrsgCrtJobReq(KString &_rclsXml)
 							if (KString::m_fnStrCmp(pclsTarget->m_clsContainer.m_clsID, "VOX") != 0)
 							{
 								if (pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate.m_unRealLen > 0)
-									clsTcCommand << " -ab " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate;
+									clsTcCommand << " -b:a " << pclsTarget->m_clsContainer.clsAudioCodec.m_clsBitRate;
 
 								if (pclsTarget->m_clsSize.m_unRealLen > 0 && KString::m_fnStrCmp(pclsTarget->m_clsContainer.m_clsID, "MMF") == 0)
 								{

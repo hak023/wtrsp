@@ -41,6 +41,8 @@ public:
 	eSipUtil::Net5Tuple_t m_stTrsgAddr;
 	void * m_pclsOwner; // TrsgTransactionMgr
 	eSipUtil::KString m_clsSessionID;
+	// 특수문자 오류 해결
+	eSipUtil::KString m_clsServiceName;
 };
 
 #endif

@@ -132,6 +132,33 @@ void g_fnSetLog(EVwtrsgLogCate_t _eCate,eSipUtil::ELogLevel_t _eLv)
 /********************************** MAIN **********************************************/
 int main(int argc, char ** argv)
 {
+/******* Test *******/
+/*
+   const char* demoStart =
+      "<?xml version=\"1.0\"  standalone='no' >\n"
+      "<ToDo>\n"
+      "<Item priority=\"2\" distance=\"aaaaa &amp;quot; aa\" </Item>"
+      "</ToDo>";
+
+   TiXmlDocument doc;
+   doc.Parse(demoStart, 0, TIXML_ENCODING_LEGACY);
+
+   TiXmlElement* rootElement = doc.RootElement();
+   printf("root=%s\n\n", rootElement->Value());
+   KString clsValue = rootElement->FirstChildElement("Item")->Attribute("distance");
+
+   printf("get distance=%s\n\n", (KCSTR)clsValue);
+
+   rootElement->FirstChildElement("Item")->SetAttribute("newAttr1", "abcd &quot; &amp; aaa");
+   rootElement->FirstChildElement("Item")->SetAttribute("newAttr2", "ccc &\" ddd");
+   TiXmlPrinter printer;
+   doc.Accept( &printer );
+   fprintf( stdout, "%s", printer.CStr() );
+
+   return 0;
+*/
+/******* Test *******/
+
 	main_memory_init();
 	g_unPid = (unsigned int) getpid();
 	g_clsBuildDate << (KCSTR) __DATE__ << " - " << (KCSTR) __TIME__;

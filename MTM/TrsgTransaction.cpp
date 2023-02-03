@@ -29,6 +29,8 @@ void TrsgTransaction::m_fnRecvCrtJobReq(eSipUtil::KString &_rclsXml)
 	if(m_eSt != E_TRSG_TR_ST_NONE) return;
 
 	m_eSt = E_TRSG_TR_ST_REQ_RCV;
+
+	AppXmlParser::m_fnGetServiceName(_rclsXml, m_clsServiceName);
 	m_fnCallLog(false, _rclsXml);
 }
 void TrsgTransaction::m_fnSendNotiCreated(KString &_rclsXml, KString &_rclsNotify)
@@ -38,7 +40,7 @@ void TrsgTransaction::m_fnSendNotiCreated(KString &_rclsXml, KString &_rclsNotif
 	TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 
 	AppXmlParser::m_fnGetSessionID(_rclsXml, m_clsSessionID);
-	AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(_rclsXml, _rclsNotify);
+	AppXmlParser::m_fnMakeJobStatusChangedNotify_Created(_rclsXml, m_clsServiceName, _rclsNotify);
 	m_fnCallLog(true, _rclsNotify);
 	pclsTrans->m_fnXmlSend(m_stTrsgAddr, _rclsNotify);
 
@@ -65,7 +67,7 @@ void TrsgTransaction::m_fnSendNotiJobStarted(KString &_rclsXml, unsigned int _un
 
 	TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 
-	AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(_rclsXml, _unTranscodingList, _rclsNotify);
+	AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStarted(_rclsXml, m_clsServiceName, _unTranscodingList, _rclsNotify);
 	m_fnCallLog(true, _rclsNotify);
 	pclsTrans->m_fnXmlSend(m_stTrsgAddr, _rclsNotify);
 }
@@ -79,7 +81,7 @@ void TrsgTransaction::m_fnSendNotiTcStarted(KString &_rclsXml, SourceContent * _
 
 	TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 
-	AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(_rclsXml, _pclsSource, _pclsTarget, _unFail, _unSuccess, _unTargetIdx, _rclsNotify);
+	AppXmlParser::m_fnMakeJobStatusChangedNotify_TC_Started(_rclsXml, m_clsServiceName, _pclsSource, _pclsTarget, _unFail, _unSuccess, _unTargetIdx, _rclsNotify);
 	m_fnCallLog(true, _rclsNotify);
 	pclsTrans->m_fnXmlSend(m_stTrsgAddr, _rclsNotify);
 }
@@ -106,7 +108,7 @@ void TrsgTransaction::m_fnSendNotiJobStopped(KString &_rclsXml, KString &_rclsNo
 
 	TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 
-	AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(_rclsXml, _rclsNotify);
+	AppXmlParser::m_fnMakeJobStatusChangedNotify_JobStopped(_rclsXml, m_clsServiceName, _rclsNotify);
 	m_fnCallLog(true, _rclsNotify);
 	pclsTrans->m_fnXmlSend(m_stTrsgAddr, _rclsNotify);
 }
@@ -119,7 +121,7 @@ void TrsgTransaction::m_fnSendNotiJobDestroy(KString &_rclsXml, unsigned int _un
 
 	TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
 
-	AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_rclsXml, _unTranscodingList, _eSt, _rclsNotify);
+	AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_rclsXml, m_clsServiceName, _unTranscodingList, _eSt, _rclsNotify);
 	m_fnCallLog(true, _rclsNotify);
 	pclsTrans->m_fnXmlSend(m_stTrsgAddr, _rclsNotify);
 }

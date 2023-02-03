@@ -196,9 +196,13 @@ void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
 
 		unsigned int unTranscodingList = AppXmlParser::m_fnGetTranscodingList(_pclsEv->m_clsXml);
 
+		KString clsServiceName;
+		AppXmlParser::m_fnGetServiceName(_pclsEv->m_clsXml, clsServiceName);
+
 		KString clsJobStatusChangedNotify;
 		clsJobStatusChangedNotify.m_fnReSize(10240);
-		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
+
+		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, clsServiceName, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
 
 		// Destroyed 메시지 전송
 		TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
@@ -244,11 +248,14 @@ void Worker::m_fnProcTrsgCrtJobReq(AppTrsgEvent *_pclsEv)
 		// Session Delete
 		m_clsSesMgr.m_fnTrsgDel(unTid, clsJobID, clsSessionID);
 
+		KString clsServiceName;
+		AppXmlParser::m_fnGetServiceName(_pclsEv->m_clsXml, clsServiceName);
+
 		unsigned int unTranscodingList = AppXmlParser::m_fnGetTranscodingList(_pclsEv->m_clsXml);
 
 		KString clsJobStatusChangedNotify;
 		clsJobStatusChangedNotify.m_fnReSize(10240);
-		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
+		AppXmlParser::m_fnMakeJobStatusChangedNotify_Destroyed(_pclsEv->m_clsXml, clsServiceName, unTranscodingList, E_JOB_IS_LIMITED, clsJobStatusChangedNotify);
 
 		// Destroyed 메시지 전송
 		TrsgTransport *pclsTrans = TrsgTransport::m_fnGetInstance();
@@ -273,7 +280,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyCreated(AppTrsgEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -299,7 +306,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyWaiting(AppTrsgEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -325,7 +332,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyJobStarted(AppTrsgEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -351,7 +358,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyTranscodingStarted(AppTrsgTcStartEve
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -377,7 +384,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyTranscodingStopped(AppTrsgTcStopEven
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -403,7 +410,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyJobStopped(AppTrsgEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -429,7 +436,7 @@ void Worker::m_fnProcTrsgStatusChangedNotifyDestroyed(AppTrsgEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -455,7 +462,7 @@ void Worker::m_fnProcTrsgTrTimeOut(AppTrsgTimerEvent *_pclsEv)
 	TrsgTransaction *pclsTrsgTr = m_clsTrsgTrMgr.m_fnFind(unTid, clsJobID, clsSessionID);
 	if (pclsTrsgTr == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
+		IFLOG(E_LOG_ERR, "Trsg(Tid:%d, JobID:%s, SessionID:%s) TrsgTrTimeOut (Not Exist Trsg Tr) ", unTid, (KCSTR) clsJobID, (KCSTR) clsSessionID);
 		return;
 	}
 
@@ -472,7 +479,7 @@ void Worker::m_fnProcSessionTimeOut(AppSessionTimerEvent *_pclsEv)
 	Session *pclsSess = m_clsSesMgr.m_fnSessionFind(_pclsEv->m_unTid, _pclsEv->m_clsJobID, _pclsEv->m_clsSessionID);
 	if(pclsSess == NULL)
 	{
-		IFLOG(E_LOG_INFO, "Session(Tid:%d, JobID:%s, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsJobID, (KCSTR)_pclsEv->m_clsSessionID);
+		IFLOG(E_LOG_ERR, "Session(Tid:%d, JobID:%s, SessionID:%s)Not Exist Session (SessionTimeOut)", _pclsEv->m_unTid, (KCSTR)_pclsEv->m_clsJobID, (KCSTR)_pclsEv->m_clsSessionID);
 		return;
 	}
 	else
